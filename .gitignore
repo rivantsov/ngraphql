@@ -42,7 +42,6 @@ dlldata.c
 
 # DNX
 project.lock.json
-project.fragment.lock.json
 artifacts/
 
 *_i.c
@@ -143,7 +142,7 @@ publish/
 *.azurePubxml
 # TODO: Comment the next line if you want to checkin your web deploy settings
 # but database connection strings (with potential passwords) will be unencrypted
-#*.pubxml
+*.pubxml
 *.publishproj
 
 # Microsoft Azure Web App publish settings. Comment the next line if you want to
@@ -189,7 +188,6 @@ ClientBin/
 *~
 *.dbmdl
 *.dbproj.schemaview
-*.jfm
 *.pfx
 *.publishsettings
 node_modules/
@@ -252,10 +250,5 @@ paket-files/
 # JetBrains Rider
 .idea/
 *.sln.iml
-
-# CodeRush
-.cr/
-
-# Python Tools for Visual Studio (PTVS)
-__pycache__/
-*.pyc
+*.cache
+5.Tools/Vita.Tools.VdbTool/Properties/launchSettings.json
