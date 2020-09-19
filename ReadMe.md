@@ -43,3 +43,8 @@ NGraphQL comes in 2 nuget packages:
 ## System requirements
 Visual Studio 2019, .NET Standard 2.0, 
 
+## Other GraphQL on .NET solutions
+* [GraphQL DotNet](https://github.com/graphql-dotnet/graphql-dotnet)
+* [HotChocolate](https://github.com/ChilliCream/hotchocolate)
+* [Tanka GraphQL](https://github.com/pekkah/tanka-graphql)
+
