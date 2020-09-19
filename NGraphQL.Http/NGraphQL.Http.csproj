@@ -2,14 +2,13 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
     <LangVersion>8.0</LangVersion>
     <Version>0.9.0</Version>
     <PackageVersion>0.9.0</PackageVersion>
     <Authors>Roman Ivantsov</Authors>
     <Copyright>Roman Ivantsov</Copyright>
     <Company />
-    <Description>A library for building GraphQL APIs in .NET</Description>
+    <Description>Http Server components for NGraphQL library.</Description>
     <PackageProjectUrl>https://github.com/rivantsov/ngraphql</PackageProjectUrl>
     <RepositoryUrl>https://github.com/rivantsov/ngraphql</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
@@ -17,19 +16,23 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-      <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-      <DocumentationFile>bin\Release\netstandard2.0\NGraphQL.xml</DocumentationFile>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <NoWarn>1701;1702;1591</NoWarn>
+        <DocumentationFile>bin\Release\netstandard2.0\NGraphQL.Http.xml</DocumentationFile>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <NoWarn>1701;1702;1591</NoWarn>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-      <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-      <NoWarn>1701;1702;1591</NoWarn>
-  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+  </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Irony" Version="1.1.0" />
+    <ProjectReference Include="..\NGraphQL\NGraphQL.csproj" />
   </ItemGroup>
 
 </Project>

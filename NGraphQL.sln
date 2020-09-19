@@ -1,9 +1,22 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27703.2042
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29709.97
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NGraphQL", "NGraphQL\NGraphQL.csproj", "{C97E9461-889F-4D46-B54D-35853F545963}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NGraphQL", "NGraphQL\NGraphQL.csproj", "{C97E9461-889F-4D46-B54D-35853F545963}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NGraphQL.Tests", "NGraphQL.Tests\NGraphQL.Tests.csproj", "{61BCE757-A7DB-49C6-B863-57204B7DA708}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NGraphQL.TestApp", "NGraphQL.TestApp\NGraphQL.TestApp.csproj", "{44C4FE9B-782F-4D99-8187-E5FE0CF04661}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NGraphQL.Http", "NGraphQL.Http\NGraphQL.Http.csproj", "{88300160-E7CB-410D-AF68-FC4FC745CED5}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NGraphQL.Tests.HttpTests", "NGraphQL.Tests.HttpTests\NGraphQL.Tests.HttpTests.csproj", "{13B3DC8E-6EEE-48A0-BBA3-FE90DC385486}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{99BB55EA-1963-40D6-B085-2DEF6DAA5222}"
+	ProjectSection(SolutionItems) = preProject
+		ReadMe.md = ReadMe.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +28,22 @@ Global
 		{C97E9461-889F-4D46-B54D-35853F545963}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C97E9461-889F-4D46-B54D-35853F545963}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C97E9461-889F-4D46-B54D-35853F545963}.Release|Any CPU.Build.0 = Release|Any CPU
+		{61BCE757-A7DB-49C6-B863-57204B7DA708}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{61BCE757-A7DB-49C6-B863-57204B7DA708}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{61BCE757-A7DB-49C6-B863-57204B7DA708}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{61BCE757-A7DB-49C6-B863-57204B7DA708}.Release|Any CPU.Build.0 = Release|Any CPU
+		{44C4FE9B-782F-4D99-8187-E5FE0CF04661}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44C4FE9B-782F-4D99-8187-E5FE0CF04661}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44C4FE9B-782F-4D99-8187-E5FE0CF04661}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{44C4FE9B-782F-4D99-8187-E5FE0CF04661}.Release|Any CPU.Build.0 = Release|Any CPU
+		{88300160-E7CB-410D-AF68-FC4FC745CED5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{88300160-E7CB-410D-AF68-FC4FC745CED5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{88300160-E7CB-410D-AF68-FC4FC745CED5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{88300160-E7CB-410D-AF68-FC4FC745CED5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{13B3DC8E-6EEE-48A0-BBA3-FE90DC385486}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{13B3DC8E-6EEE-48A0-BBA3-FE90DC385486}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{13B3DC8E-6EEE-48A0-BBA3-FE90DC385486}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{13B3DC8E-6EEE-48A0-BBA3-FE90DC385486}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
