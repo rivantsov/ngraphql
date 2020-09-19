@@ -5,7 +5,7 @@
 
 ## NGraphQL Highlights
 * Follows **GraphQL specification**, June 2018 Edition
-* **Usability**: relative simple and straightforward API development 
+* **Usability**: straightforward API development; NGraphQL takes care of most challenging aspects of GraphQL.
 * **High performance - sub-millisecond roundtrip times** for a typical query 
 * Automatic handling of **GraphQL Enums** - automatic conversion of .NET Enum values to ALL_CAPS strings and back (MyEnumValue <-> MY_ENUM_VALUE)
 * Support for **Enum list types** - mapped to **c# \[Flags\] enums**, conversion is handled automatically.
@@ -14,6 +14,7 @@
 * **Parallel execution** of queries
 * Efficient, intuitive **Batching** implementation (aka **Data Loader** ). 
 * Support for easy **input validation** and adding **GraphQL errors** (if any) to the response; aborting the request if errors detected.
+* **Modular API construction** - great for building large APIs.
 
 ## Exploring the source code
 Download the source code, open the solution in *Visual Studio 2019*. Build all and run unit tests in *NGraphQL.Tests* project - all tests should pass. 
