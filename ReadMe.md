@@ -38,7 +38,7 @@ For now, please look at the _TestApp_ project code, and unit tests.
 ## Nuget packages
 NGraphQL comes in 2 nuget packages: 
 * **NGraphQL** - basic components for building custom GraphQL APIs; GraphQL Server implementation
-* **NGraphQL.Http** - Http Server on top of GraphQL server
+* **NGraphQL.Http** - Http Server on top of GraphQL server. Implementation follows these [Guidelines](https://graphql.org/learn/serving-over-http/).
 
 ## System requirements
 Visual Studio 2019, .NET Standard 2.0, 
