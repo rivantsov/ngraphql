@@ -19,7 +19,7 @@
 ## Exploring the source code
 Download the source code, open the solution in *Visual Studio 2019*. Build all and run unit tests in *NGraphQL.Tests* project - all tests should pass. 
 
-*IMPORTANT*: before running unit tests, open Exception Settings window in Visual Studio and uncheck the box 'Common Language Runtime Exceptions' (for Break When Thrown); also right click on this item and select 'Continue when unhandled in user code'. Don't worry, unit tests and test app have proper exception handling in place.
+**IMPORTANT: Disable 'Break on exception' flag**. Open Exception Settings window in Visual Studio and uncheck the box 'Common Language Runtime Exceptions' (for Break When Thrown); also right click on this item and select 'Continue when unhandled in user code'. Don't worry, unit tests and test app have proper exception handling in place.
 
 The unit tests write a **detailed log** as they go - and this log is quite readable. Open the log file *_graphQLtests.log* in the *bin* folder of the test project (*HttpTests* project has a similar log file). Scroll through the file - for every test there is a test description, request and response printout (with errors if any), and execution metrics. 
 
