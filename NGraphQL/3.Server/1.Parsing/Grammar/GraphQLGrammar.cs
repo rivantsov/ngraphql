@@ -194,7 +194,8 @@ namespace NGraphQL.Server.Parsing {
 
       //typeCond
       typeCond.Rule = "on" + name;
-      typeCondOpt.Rule = Empty | "on" + name;
+      // this is intentional (not typeCond); some specifics of AST Builder; maybe refactor it in the future, looks silly
+      typeCondOpt.Rule = Empty | "on" + name; 
 
       // enum members
       enumValDefsOpt.Rule = Empty | "{" + enumValDefList + "}";

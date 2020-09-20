@@ -23,7 +23,7 @@ Download the source code, open the solution in *Visual Studio 2019*. Build all a
 
 The unit tests write a **detailed log** as they go - and this log is quite readable. Open the log file *_graphQLtests.log* in the *bin* folder of the test project (*HttpTests* project has a similar log file). Scroll through the file - for every test there is a test description, request and response printout (with errors if any), and execution metrics. 
 
-Notice the metrics numbers - once the paths are warmed up, a **typical query runs under 1 ms** - which includes deserializatio, parsing, execution (none for the test app) and serialization of results. 
+Notice the metrics numbers - once the paths are warmed up, a **typical query runs under 1 ms**. 
 
 ## TestApp application
 The tests use a simple test app and its GraphQL API in the project NGraphQL.TestApp. The app/API defined there is completely void of any real-world semantics - just abstract THINGS and other things etc. No *StarWars* or any real/imaginary world story. Just a playground with made up silly named artefacts for testing GraphQL features.
