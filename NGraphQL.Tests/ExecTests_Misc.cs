@@ -8,6 +8,7 @@ using NGraphQL.Server;
 using NGraphQL.Server.Execution;
 using NGraphQL.Utilities;
 using NGraphQL.TestApp;
+using System.Linq;
 
 namespace NGraphQL.Tests {
 
@@ -134,6 +135,10 @@ mutation myMut {
       var resp = await ExecuteAsync(mutReq);
       var newName = resp.GetValue<string>("mutateThing.name");
       Assert.AreEqual("NewName1", newName, "new name mismatch");
+      var th1 = ThingsApp.Instance.Things.First(t => t.Id == 1);
+      Assert.AreEqual("NewName1", th1.Name, "new name mismatch");
+      // undo the change
+      th1.Name = "Name1";
     }
 
     [TestMethod]

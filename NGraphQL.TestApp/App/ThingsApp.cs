@@ -76,11 +76,14 @@ namespace NGraphQL.TestApp {
   }
 
   public class ThingsApp {
+    public static ThingsApp Instance;
+
     // it is just things and other-things
     public List<BizThing> Things;
     public List<OtherBizThing> OtherThings; 
 
     public ThingsApp() {
+      Instance = this; 
       CreateTestData(); 
     }
 

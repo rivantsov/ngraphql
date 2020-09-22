@@ -5,7 +5,7 @@
 
 ## NGraphQL Highlights
 * Follows **GraphQL specification**, June 2018 Edition
-* **Usability**: straightforward API development; NGraphQL takes care of most challenging aspects of GraphQL.
+* **Usability**: straightforward API development; NGraphQL takes care of the most challenging aspects of GraphQL.
 * **High performance - sub-millisecond roundtrip times** for a typical query 
 * Automatic handling of **GraphQL Enums** - automatic conversion of .NET Enum values to ALL_CAPS strings and back (MyEnumValue <-> MY_ENUM_VALUE)
 * Support for **Enum list types** - mapped to **c# \[Flags\] enums**, conversion is handled automatically.
@@ -35,13 +35,16 @@ It turned out, implementing a working GraphQL API requires creating a number of 
 ## Documentation - coming soon
 For now, please look at the _TestApp_ project code, and unit tests. 
 
+## Limitations
+Subscriptions are not implemented yet. *NGraphQL* parses and executes a subscription query (its resolver) the same way as a query, but does not provide the implementation of 2-way HTTP communication (Web sockets). Will be coming soon.
+
 ## Nuget packages
 NGraphQL comes in 2 nuget packages: 
 * **NGraphQL** - basic components for building custom GraphQL APIs; GraphQL Server implementation
 * **NGraphQL.Http** - Http Server on top of GraphQL server. Implementation follows these [Guidelines](https://graphql.org/learn/serving-over-http/).
 
 ## System requirements
-Visual Studio 2019, .NET Standard 2.0, 
+Visual Studio 2019, .NET Standard 2.0 
 
 ## Other GraphQL on .NET solutions
 * [GraphQL DotNet](https://github.com/graphql-dotnet/graphql-dotnet)

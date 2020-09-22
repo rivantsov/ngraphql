@@ -373,9 +373,15 @@ mutation ($id: Int!, $newName: String!) {
       Assert.AreEqual("newName too long, max size = 10.", resp.Errors[1].Message);
 
       TestEnv.LogTestDescr("same resolver method, different variable values, happy path - all values are OK.");
-      vars = new TDict() { { "id", 2 }, { "newName", "Name3" } };
+      var newName2 = "Name2_";
+      vars = new TDict() { { "id", 2 }, { "newName", newName2 } };
       resp = await ExecuteAsync(query, vars, throwOnError: false);
       Assert.AreEqual(0, resp.Errors.Count, "expected no errors");
+      var thing2 = ThingsApp.Instance.Things.First(t => t.Id == 2);
+      Assert.AreEqual(newName2, thing2.Name);
+
+      // undo the change 
+      thing2.Name = "Name2";
     }
 
   }
