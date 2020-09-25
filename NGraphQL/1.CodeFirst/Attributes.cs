@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net.NetworkInformation;
 using NGraphQL.Model;
 
 namespace NGraphQL.CodeFirst {
@@ -71,31 +72,38 @@ namespace NGraphQL.CodeFirst {
   }
 
 
-  public abstract class GraphQLTypeKindBaseAttribute : Attribute {
-    public virtual TypeKind Kind { get; set; }
+  public abstract class GraphQLTypeBaseAttribute : Attribute {
+    public string Name;
+    private TypeKind _kind;
+    public GraphQLTypeBaseAttribute(string name, TypeKind kind) {
+      Name = name;
+      _kind = kind; 
+    }
+    public TypeKind GetKind() => _kind;
   }
 
   [AttributeUsage(AttributeTargets.Class)]
-  public class GraphQLObjectTypeAttribute : GraphQLTypeKindBaseAttribute {
-    public override TypeKind Kind => TypeKind.Object;
+  public class GraphQLObjectTypeAttribute : GraphQLTypeBaseAttribute {
+    public GraphQLObjectTypeAttribute(string name = null) : base(name, TypeKind.Object) { }
   }
 
   [AttributeUsage(AttributeTargets.Class)]
-  public class GraphQLInputAttribute : GraphQLTypeKindBaseAttribute {
-    public override TypeKind Kind => TypeKind.InputObject;
+  public class GraphQLInputAttribute : GraphQLTypeBaseAttribute {
+    public GraphQLInputAttribute(string name = null) : base(name, TypeKind.InputObject) { }
   }
 
   [AttributeUsage(AttributeTargets.Interface)]
-  public class GraphQLInterfaceAttribute : GraphQLTypeKindBaseAttribute {
-    public override TypeKind Kind => TypeKind.Interface;
+  public class GraphQLInterfaceAttribute : GraphQLTypeBaseAttribute {
+    public GraphQLInterfaceAttribute(string name = null) : base(name, TypeKind.Interface) { }
   }
+
   [AttributeUsage(AttributeTargets.Class)]
-  public class GraphQLUnionAttribute : GraphQLTypeKindBaseAttribute {
-    public override TypeKind Kind => TypeKind.Union;
+  public class GraphQLUnionAttribute : GraphQLTypeBaseAttribute {
+    public GraphQLUnionAttribute(string name = null) : base(name, TypeKind.Union) { }
   }
 
   [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Interface |
-                   AttributeTargets.Enum | AttributeTargets.Field | AttributeTargets.Property | 
+                   AttributeTargets.Enum | AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Method |
                    AttributeTargets.Parameter)]
   public class GraphQLNameAttribute : Attribute {
     public string Name; 

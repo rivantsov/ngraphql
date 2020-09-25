@@ -150,7 +150,7 @@ namespace NGraphQL.Model.Construction {
         return new EnumTypeDef(typeName, type, isFlagSet: flagsAttr != null);
       }
 
-      var attrs = type.GetCustomAttributes().Where(a => a is GraphQLTypeKindBaseAttribute).ToList();
+      var attrs = type.GetCustomAttributes().Where(a => a is GraphQLTypeBaseAttribute).ToList();
       switch(attrs.Count) {
         case 0:
           AddError($"Type {type} is missing one of GraphQL-kind attributes, cannot be registered. ");
@@ -163,8 +163,8 @@ namespace NGraphQL.Model.Construction {
       }
 
       // we have a single typeKine attr, create typeDef
-      var attr = attrs[0] as GraphQLTypeKindBaseAttribute;
-      switch(attr.Kind) {
+      var attr = attrs[0] as GraphQLTypeBaseAttribute;
+      switch(attr.GetKind()) {
         case TypeKind.Interface:
           return new InterfaceTypeDef(typeName, type);
         case TypeKind.InputObject:
