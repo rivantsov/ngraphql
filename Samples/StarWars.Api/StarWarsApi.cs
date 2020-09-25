@@ -5,9 +5,11 @@ using NGraphQL.CodeFirst;
 
 namespace StarWars.Api {
   public class StarWarsApi: GraphQLApi {
-    public StarWarsApiModule MainModule; 
+    public readonly StarWarsApp App; 
+    public readonly StarWarsApiModule MainModule; 
 
-    public StarWarsApi() {
+    public StarWarsApi(StarWarsApp app) {
+      App = app; 
       MainModule = new StarWarsApiModule();
       this.RegisterModule(MainModule); 
     }

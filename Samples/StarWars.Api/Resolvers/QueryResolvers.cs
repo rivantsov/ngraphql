@@ -3,6 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace StarWars.Api {
-  public class ApiResolvers {
+  public class QueryResolvers {
   }
 }

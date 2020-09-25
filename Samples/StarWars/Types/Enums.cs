@@ -1,6 +1,7 @@
 ﻿using System;
 
 namespace StarWars {
+
   /// <summary>The episodes in the Star Wars trilogy</summary>
   [Flags]
   public enum Episode {

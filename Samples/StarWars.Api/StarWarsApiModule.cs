@@ -6,6 +6,7 @@ using NGraphQL.CodeFirst;
 namespace StarWars.Api {
   public class StarWarsApiModule: GraphQLModule {
     public StarWarsApiModule() {
+      // Register types
       RegisterTypes(typeof(Episode), typeof(LengthUnit),
         typeof(ICharacter_), typeof(Human_), typeof(Droid_), 
         typeof(Starship_), typeof(Review_),
@@ -14,7 +15,7 @@ namespace StarWars.Api {
         typeof(SearchResult), typeof(PageInfo_)
         );
 
-      RegisterResolversClass<ApiResolvers>(); 
+      RegisterResolversClass<QueryResolvers>(); 
     } //constructor
   
   }
