@@ -6,6 +6,6 @@ using NGraphQL.CodeFirst;
 namespace StarWars.Api {
 
   [GraphQLUnion]
-  public class SearchResult : Union<Human_, Droid_, Starship_> { }
+  public class SearchResult_ : Union<Human_, Droid_, Starship_> { }
 
 }

@@ -18,10 +18,6 @@ namespace StarWars.Api {
     /// <summary>This droid&apos;s friends, or an empty list if they have none</summary>
     public IList<ICharacter_> Friends { get; }
 
-    /// <summary>The friends of the droid exposed as a connection with edges</summary>
-    [GraphQLName("friendsConnection")]
-    public FriendsConnection_ GetFriendsConnection(int first, [Scalar("ID")] string after) { return default; }
-
     /// <summary>The movies this droid appears in</summary>
     public Episode AppearsIn { get; }
 

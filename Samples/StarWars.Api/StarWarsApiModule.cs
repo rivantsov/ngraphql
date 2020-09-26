@@ -12,11 +12,15 @@ namespace StarWars.Api {
         typeof(Starship_), typeof(Review_),
         typeof(FriendsConnection_), typeof(FriendsEdge_),
         typeof(ReviewInput_),  typeof(ColorInput_),
-        typeof(SearchResult), typeof(PageInfo_)
+        typeof(SearchResult_), typeof(PageInfo_)
         );
+      // map Api object types to app types
+      Map<Human, Human_>(h => new Human_() { 
+        // Id, Name, AppearsIn, HomePlanet, Mass are mapped automatically
+      });
 
-      RegisterResolversClass<QueryResolvers>(); 
-    } //constructor
-  
+      RegisterResolversClass<StarWarsResolvers>(); 
+    } //constructor  
+    
   }
 }

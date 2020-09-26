@@ -45,12 +45,12 @@ namespace NGraphQL.Model.Introspection {
       switch(type_.Kind) {
 
         case TypeKind.Object:
-          type_.Fields = new List<Field__>();
+          type_.FieldList = new List<Field__>();
           type_.Interfaces = new List<Type__>();
           break;
 
         case TypeKind.Interface:
-          type_.Fields = new List<Field__>();
+          type_.FieldList = new List<Field__>();
           type_.PossibleTypes = new List<Type__>();
           break;
 
@@ -59,7 +59,7 @@ namespace NGraphQL.Model.Introspection {
           break;
 
         case TypeKind.Enum:
-          type_.EnumValues = new List<EnumValue__>();
+          type_.EnumValueList = new List<EnumValue__>();
           break; 
 
         case TypeKind.Union:
@@ -139,7 +139,7 @@ namespace NGraphQL.Model.Introspection {
                         Type = ivd.TypeRef.Type_, DefaultValue = ivd.DefaultValue + string.Empty
                       })
                   .ToArray();
-        type_.Fields.Add(fld_);
+        type_.FieldList.Add(fld_);
       } //foreach fld
       // Interfaces
       foreach(var intfDef in objTypeDef.Implements) {
@@ -151,7 +151,7 @@ namespace NGraphQL.Model.Introspection {
 
     private void BuildInterfaceType(InterfaceTypeDef intfTypeDef) {
       var type_ = intfTypeDef.Type_; 
-      type_.Fields = new List<Field__>();
+      type_.FieldList = new List<Field__>();
       type_.PossibleTypes = new List<Type__>();
 
       // build fields
@@ -167,7 +167,7 @@ namespace NGraphQL.Model.Introspection {
             Type = ivd.TypeRef.Type_,  DefaultValue = ivd.DefaultValue + string.Empty
           })
           .ToArray();
-        type_.Fields.Add(fld_);
+        type_.FieldList.Add(fld_);
       } //foreach fld
       // PossibleTypes in each interface are taken care of by object types implementing the interface
     }
@@ -192,7 +192,7 @@ namespace NGraphQL.Model.Introspection {
           Name = enumV.Name, Description = enumV.Description,
         };
         SetupDeprecatedFields(enumV_, enumV.Directives);
-        type_.EnumValues.Add(enumV_);
+        type_.EnumValueList.Add(enumV_);
       }
     }
 

@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 using NGraphQL.CodeFirst;
 
 namespace StarWars.Api {
 
   /// <summary>A character from the Star Wars universe </summary>
-  [GraphQLInterface("Character")]
+  [GraphQLInterface("Character"), ResolverClass(typeof(StarWarsResolvers))]
   public interface ICharacter_ {
 
     /// <summary>The ID of the character </summary>
@@ -17,11 +18,8 @@ namespace StarWars.Api {
     string Name { get; set; }
 
     /// <summary>The friends of the character, or an empty list if they have none </summary>
+    [Resolver(nameof(StarWarsResolvers.GetFriendsBatched))] // resolver performs batching (impl of DataLoader)
     IList<ICharacter_> Friends { get; }
-
-    /// <summary>The friends of the character exposed as a connection with edges </summary>
-    [GraphQLName("friendsConnection")]
-    FriendsConnection_ GetFriendsConnection(int first, [Scalar("ID")] string after);
 
     /// <summary>The movies this character appears in </summary>
     Episode AppearsIn { get; }

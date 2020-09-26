@@ -100,8 +100,6 @@ namespace NGraphQL.Server.Execution {
               break;
 
             case TypeKind.Interface:
-              var iObj = (InterfaceBox)rawResult;
-              rawResult = iObj.Value;
               if (rawResult == null)
                 return null;
               break;

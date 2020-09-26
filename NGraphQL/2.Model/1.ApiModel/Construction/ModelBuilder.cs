@@ -306,10 +306,6 @@ namespace NGraphQL.Model.Construction {
 
       UnwrapClrType(type, attributeSource, out var baseType, out var kinds);
 
-      // interface box
-      if(baseType.IsInterfaceBox(out var intType))
-        baseType = intType;
-
       TypeDefBase typeDef;
       if (scalarAttr != null) {
         typeDef = _model.GetScalarTypeDef(scalarAttr.ScalarName);

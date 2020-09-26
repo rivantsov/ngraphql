@@ -91,8 +91,6 @@ namespace NGraphQL.TestApp {
     }
 
     // Demo of BATCHing functionality (aka DataLoader) - loading field values for ALL parent objects in request
-
-    [Field("mainOtherThing", OnType = typeof(ApiThing))]
     public OtherBizThing GetMainOtherThing(IFieldContext context, BizThing parent) {
       var allParents = context.GetAllParentEntities<BizThing>();
       var batchedResults = allParents.ToDictionary(p => p, p => p.MainOtherThing);
@@ -101,7 +99,6 @@ namespace NGraphQL.TestApp {
     }
 
     // Batching when field is a list
-    [Field("otherThings", OnType = typeof(ApiThing))]
     public IList<OtherBizThing> GetOtherThings(IFieldContext context, BizThing parent) {
       var allParents = context.GetAllParentEntities<BizThing>();
       var batchedResults = allParents.ToDictionary(p => p, p => p.OtherThings);
@@ -110,14 +107,12 @@ namespace NGraphQL.TestApp {
     }
 
     // For testing exceptions, thrown by resolver down deep in the data tree
-    [Field("getNameOrThrow", OnType = typeof(ApiOtherThing))]
     public string GetNameOrThrow(IFieldContext context, OtherBizThing otherThing) {
       if (otherThing.Id == 5)
         throw new Exception("Exception thrown by GetNameOrThrow.");
       return otherThing.Name;
     }
 
-    [Field("getNameOrThrowAsync", OnType = typeof(ApiOtherThing))]
     public async Task<string> GetNameOrThrowAsync(IFieldContext context, OtherBizThing otherThing) {
       if (otherThing.Id == 5) // child #2 of ApiThing #1, 
         throw new Exception("Exception thrown by GetNameOrThrowAsync.");
@@ -179,10 +174,10 @@ namespace NGraphQL.TestApp {
     }
 
     [Query]
-    public IList<InterfaceBox<INamedObj>> GetSomeNamedObjects(IFieldContext context) {
-      var list = new List<InterfaceBox<INamedObj>>();
-      list.Add(new InterfaceBox<INamedObj>(_app.Things[0]));
-      list.Add(new InterfaceBox<INamedObj>(_app.Things[0].OtherThings[0]));
+    public IList<object> GetSomeNamedObjects(IFieldContext context) {
+      var list = new List<object>();
+      list.Add(_app.Things[0]);
+      list.Add(_app.Things[0].OtherThings[0]);
       return list;
     }
 

@@ -3,20 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace StarWars {
+  using FriendLink = Tuple<string, string>;
+  using PilotLink = Tuple<string, string>;
 
-  public class StarWarsApp {
+  public partial class StarWarsApp {
     // Base data
-    public IList<Character> Characters = new List<Character>();
-    public IList<Starship> Starships = new List<Starship>();
-    public IList<Review> Reviews = new List<Review>(); 
-
-    // Derived collections
-    public IEnumerable<Human> Humans => Characters.OfType<Human>();
-    public IEnumerable<Droid> Droids => Characters.OfType<Droid>();   
-
-    // transactions mock
-    public Transaction BeginTransaction() {
-      return new Transaction(); 
+    public List<Character> Characters = new List<Character>();
+    public List<Starship> Starships = new List<Starship>();
+    public List<Review> Reviews = new List<Review>();
+    
+    public StarWarsApp() {
+      InitData(); 
     }
 
     // methods supporting API
@@ -40,16 +37,11 @@ namespace StarWars {
     }
 
     public Character GetCharacter(string id) {
-      return Characters.FirstOrDefault(c => c.ID == id);
+      return Characters.FirstOrDefault(c => c.Id == id);
     }
-    public Human GetHuman(string id) {
-      return Humans.FirstOrDefault(h => h.ID == id);
-    }
-    public Droid GetDroid(string id) {
-      return Droids.FirstOrDefault(d => d.ID == id);
-    }
+
     public Starship GetStarship(string id) {
-      return Starships.FirstOrDefault(s => s.ID == id);
+      return Starships.FirstOrDefault(s => s.Id == id);
     }
 
     // mutation CreateReview
@@ -57,6 +49,15 @@ namespace StarWars {
       var review = new Review() { Episode = episode, Stars = stars, Commentary = commentary };
       Reviews.Add(review);
       return review; 
+    }
+
+    public IDictionary<Character, IList<Character>> GetFriendLists(IList<Character> characters) {
+      var result = new Dictionary<Character, IList<Character>>();
+      foreach(var character in characters) {
+        var friends = this.Characters.Where(c => character.FriendIds.Contains(c.Id)).ToList();
+        result[character] = friends;
+      }
+      return result; 
     }
 
   }

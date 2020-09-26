@@ -21,14 +21,18 @@ namespace NGraphQL.Model.Introspection {
       return type; 
     }
 
-    [Field("fields", OnType = typeof(Type__)), Null]
+    //[Field("fields", OnType = typeof(Type__)), Null]
     public IList<Field__> GetFields(IFieldContext context, Type__ type_, bool includeDeprecated = true) {
-      return type_.Fields; 
+      return type_.FieldList; 
     }
 
-    [Field("enumValues", OnType = typeof(Type__)), Null]
+    //[Field("enumValues", OnType = typeof(Type__)), Null]
     public IList<EnumValue__> GetEnumValues(IFieldContext context, Type__ type_, bool includeDeprecated = true) {
-      return type_.Kind == TypeKind.Enum ? type_.EnumValues.ToArray() : null; 
+      if (type_.Kind != TypeKind.Enum)
+        return null;
+      if (includeDeprecated)
+        return type_.EnumValueList.ToArray();
+      return type_.EnumValueList.Where(ev => !ev.IsDeprecated).ToArray();
     }
 
   }

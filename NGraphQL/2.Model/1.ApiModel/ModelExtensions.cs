@@ -12,8 +12,18 @@ using NGraphQL.Model.Request;
 
 namespace NGraphQL.Model {
 
-  public static partial class ModelExtensions { 
+  public static partial class ModelExtensions {
 
+    /*
+    public static bool IsInterfaceBox(this Type type, out Type intType) {
+      intType = null; 
+      if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(InterfaceBox<>)) {
+        intType = type.GetGenericArguments()[0];
+        return true; 
+      }
+      return false; 
+    }
+    */
     public static bool IsSet(this FieldFlags flags, FieldFlags flag) {
       return (flags & flag) != 0; 
     }
@@ -71,15 +81,6 @@ namespace NGraphQL.Model {
 
     public static bool IsEnumFlagArray(this TypeDefBase typeDef) {
       return typeDef.Kind == TypeKind.Enum && (typeDef is EnumTypeDef etd && etd.IsFlagSet);
-    }
-
-    public static bool IsInterfaceBox(this Type type, out Type intType) {
-      intType = null; 
-      if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(InterfaceBox<>)) {
-        intType = type.GetGenericArguments()[0];
-        return true; 
-      }
-      return false; 
     }
 
     public static IList<string> GetRequiredFields(this InputObjectTypeDef inputTypeDef) {

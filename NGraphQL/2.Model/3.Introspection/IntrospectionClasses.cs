@@ -51,20 +51,27 @@ namespace NGraphQL.Model.Introspection {
 
     // Fields and EnumValues fields have includeDeprecated parameter, so they are implemented
     //  through GetFields and GetEnumValues resolver methods. 
-    // The following two lists are for internal use only, they are containers that hold actual lists 
-    [GraphQLIgnore]
-    public List<Field__> Fields = new List<Field__>();
-    // enum only
-    [GraphQLIgnore]
-    public List<EnumValue__> EnumValues = new List<EnumValue__>();
+    [GraphQLName("fields")]
+    public IList<Field__> GetFields(bool includeDeprecated = true) { return default; }
 
-    [GraphQLIgnore]
-    internal TypeDefBase TypeDef; // internally used link to model object
+    // enum only
+    [GraphQLName("enumValues")]
+    public IList<EnumValue__> GetEnumValues() { return default; }
 
     /// <summary>Display name allowing to see the type name when it is List or NotNull - the current arrangement in GraphQL
     /// is quite stupid. This is extension of GraphQL spec. </summary>
     [Null, Hidden, GraphQLName("displayName")]
     public string DisplayName;
+
+    // The following two lists are for internal use only, they are containers that hold actual lists 
+    [GraphQLIgnore]
+    internal IList<Field__> FieldList = new List<Field__>();
+    // enum only
+    [GraphQLIgnore]
+    internal IList<EnumValue__> EnumValueList = new List<EnumValue__>();
+
+    [GraphQLIgnore]
+    internal TypeDefBase TypeDef; // internally used link to model object
 
     public Type__() { }
   }

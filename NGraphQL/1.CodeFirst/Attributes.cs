@@ -4,6 +4,16 @@ using NGraphQL.Model;
 
 namespace NGraphQL.CodeFirst {
 
+  [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Interface |
+                   AttributeTargets.Enum | AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Method |
+                   AttributeTargets.Parameter)]
+  public class GraphQLNameAttribute : Attribute {
+    public string Name;
+    public GraphQLNameAttribute(string name) {
+      Name = name;
+    }
+  }
+
   /// <summary>Marks the value as nullable. The mapped GraphQL type will not have a not-null marker (!). </summary>
   [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property 
                 | AttributeTargets.Method | AttributeTargets.Parameter)]
@@ -49,29 +59,6 @@ namespace NGraphQL.CodeFirst {
     public QueryAttribute(string name) { FieldName = name; }
   }
 
-  [AttributeUsage(AttributeTargets.Method)]
-  public class FieldAttribute : ResolverTargetBaseAttribute {
-    public Type OnType;
-    public override OperationType OperationType => OperationType.Query;
-    public FieldAttribute() { }
-    public FieldAttribute(string name) { FieldName = name; }
-  }
-
-  [AttributeUsage(AttributeTargets.Method)]
-  public class MutationAttribute : ResolverTargetBaseAttribute {
-    public override OperationType OperationType => OperationType.Mutation;
-    public MutationAttribute() { }
-    public MutationAttribute(string name) { FieldName = name; }
-  }
-
-  [AttributeUsage(AttributeTargets.Method)]
-  public class SubscriptionAttribute : ResolverTargetBaseAttribute {
-    public override OperationType OperationType => OperationType.Subscription;
-    public SubscriptionAttribute() { }
-    public SubscriptionAttribute(string name) { FieldName = name; }
-  }
-
-
   public abstract class GraphQLTypeBaseAttribute : Attribute {
     public string Name;
     private TypeKind _kind;
@@ -102,14 +89,47 @@ namespace NGraphQL.CodeFirst {
     public GraphQLUnionAttribute(string name = null) : base(name, TypeKind.Union) { }
   }
 
-  [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Interface |
-                   AttributeTargets.Enum | AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Method |
-                   AttributeTargets.Parameter)]
-  public class GraphQLNameAttribute : Attribute {
-    public string Name; 
-    public GraphQLNameAttribute(string name) {
-      Name = name; 
+  [AttributeUsage(AttributeTargets.Method)]
+  public class MutationAttribute : ResolverTargetBaseAttribute {
+    public override OperationType OperationType => OperationType.Mutation;
+    public MutationAttribute() { }
+    public MutationAttribute(string name) { FieldName = name; }
+  }
+
+  [AttributeUsage(AttributeTargets.Method)]
+  public class SubscriptionAttribute : ResolverTargetBaseAttribute {
+    public override OperationType OperationType => OperationType.Subscription;
+    public SubscriptionAttribute() { }
+    public SubscriptionAttribute(string name) { FieldName = name; }
+  }
+
+  [AttributeUsage(AttributeTargets.Method | AttributeTargets.Property | AttributeTargets.Field)]
+  public class ResolverAttribute : Attribute {
+    public Type ResolverClass;
+    public string MethodName;
+    public ResolverAttribute(string methodName, Type resolverClass = null) {
+      MethodName = methodName;
+      ResolverClass = resolverClass; 
     }
   }
+
+  [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface)]
+  public class ResolverClassAttribute : Attribute {
+    public readonly Type Type;
+    public ResolverClassAttribute(Type resolverClass) {
+      Type = resolverClass; 
+    }
+  }
+
+  /*
+  [AttributeUsage(AttributeTargets.Method)]
+  public class FieldAttribute : ResolverTargetBaseAttribute {
+    public Type OnType;
+    public override OperationType OperationType => OperationType.Query;
+    public FieldAttribute() { }
+    public FieldAttribute(string name) { FieldName = name; }
+  }
+  */
+
 
 }

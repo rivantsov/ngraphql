@@ -22,6 +22,12 @@ namespace NGraphQL.TestApp {
     public ApiThing NextThing;
     [Null]
     public string Tag;
+
+    [Resolver(nameof(ThingsApiResolvers.GetMainOtherThing)), Null]
+    public ApiOtherThing MainOtherThing;
+
+    [Resolver(nameof(ThingsApiResolvers.GetOtherThings))]
+    public IList<ApiOtherThing> OtherThings;
   }
 
   [GraphQLObjectType]
@@ -43,8 +49,8 @@ namespace NGraphQL.TestApp {
 
     public string NameOrThrow;
 
-    // check of unmapped field detection - uncomment to see error at initialization
-    // public string Blah;
+    public string GetNameOrThrow() { return default; }
+    public string GetNameOrThrowAsync() { return default; }
   }
 
 

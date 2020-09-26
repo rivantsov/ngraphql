@@ -29,6 +29,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="1.CodeFirst\InterfaceBox_Disabled.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="1.CodeFirst\InterfaceBox_Disabled.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Irony" Version="1.1.0" />
   </ItemGroup>
 

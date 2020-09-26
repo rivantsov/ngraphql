@@ -15,7 +15,7 @@ namespace StarWars.Api {
 
     /// <summary>The character represented by this friendship edge. </summary>
     [Null]
-    public ICharacter_ Node;
+    public InterfaceBox<ICharacter_> Node;
   }
 
 }

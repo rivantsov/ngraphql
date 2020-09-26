@@ -10,6 +10,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Types\Disabled\FriendsConnection_.cs" />
+    <Compile Remove="Types\Disabled\FriendsEdge_.cs" />
+    <Compile Remove="Types\Disabled\MiscCode.cs" />
+    <Compile Remove="Types\Disabled\PageInfo_.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Types\Disabled\FriendsConnection_.cs" />
+    <None Include="Types\Disabled\FriendsEdge_.cs" />
+    <None Include="Types\Disabled\MiscCode.cs" />
+    <None Include="Types\Disabled\PageInfo_.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\NGraphQL\NGraphQL.csproj" />
     <ProjectReference Include="..\StarWars\StarWars.csproj" />
   </ItemGroup>

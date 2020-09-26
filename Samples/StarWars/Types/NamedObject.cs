@@ -4,7 +4,7 @@ using System.Text;
 
 namespace StarWars {
   public abstract class NamedObject {
-    public string ID;
+    public string Id;
     public string Name;
   }
 }

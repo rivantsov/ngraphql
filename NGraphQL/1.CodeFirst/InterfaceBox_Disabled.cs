@@ -13,12 +13,15 @@ namespace NGraphQL.CodeFirst {
     }
   }
 
-  /// <summary>
-  ///   A container class to box the entities returned by a resolver method as instances of API interface. 
-  /// </summary>
+  /// <summary>A container class to box the entities returned by a resolver method as instances of API interface. </summary>
   /// <typeparam name="TInt">GraphQL interface type.</typeparam>
   public class InterfaceBox<TInt>: InterfaceBox where TInt: class {
     public InterfaceBox(object value): base(value) { }
   }
 
+  public class InterfaceList<TInt> : List<InterfaceBox<TInt>> where TInt: class { 
+    public void AddValue(object value) {
+      Add(new InterfaceBox<TInt>(value));
+    }
+  }
 }
