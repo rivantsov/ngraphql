@@ -9,12 +9,11 @@ namespace NGraphQL.Model.Introspection {
 
   public class IntrospectionResolvers {
 
-    [Query("__schema", Hidden = true)]
+    // Query resolvers
     public Schema__ GetSchema(IFieldContext context) {
       return context.GetModel().Schema_;
     }
 
-    [Query("__type", Hidden = true), Null]
     public Type__ GetType(IFieldContext context, string name) {
       var schema = context.GetModel().Schema_;
       var type = schema.Types.FirstOrDefault(t => t.Name == name);

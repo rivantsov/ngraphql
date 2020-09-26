@@ -15,9 +15,6 @@ namespace StarWars.Api {
     /// <summary>Comment about the movie, optional </summary>
     public string Commentary;
 
-    /// <summary>Favorite color, optional </summary>
-    [GraphQLName("favorite_color"), Null]
-    public ColorInput_ FavoriteColor;
   }
 
 }

@@ -7,12 +7,12 @@ namespace StarWars.Api {
   public class StarWarsApiModule: GraphQLModule {
     public StarWarsApiModule() {
       // Register types
-      RegisterTypes(typeof(Episode), typeof(LengthUnit),
+      RegisterTypes(
+        typeof(StarWarsQuery), typeof(StarWarsMutation),
+        typeof(Episode), typeof(LengthUnit),
         typeof(ICharacter_), typeof(Human_), typeof(Droid_), 
-        typeof(Starship_), typeof(Review_),
-        typeof(FriendsConnection_), typeof(FriendsEdge_),
-        typeof(ReviewInput_),  typeof(ColorInput_),
-        typeof(SearchResult_), typeof(PageInfo_)
+        typeof(Starship_), typeof(Review_), typeof(SearchResult_),
+        typeof(ReviewInput_)  
         );
       // map Api object types to app types
       Map<Human, Human_>(h => new Human_() { 

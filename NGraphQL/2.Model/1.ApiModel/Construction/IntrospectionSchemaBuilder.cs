@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Transactions;
-using NGraphQL.Server.Parsing;
-using NGraphQL.Model;
 using NGraphQL.Model.Introspection;
-using NGraphQL.Model.Core;
 
-namespace NGraphQL.Model.Introspection {
+namespace NGraphQL.Model.Construction {
 
   public class IntrospectionSchemaBuilder {
     GraphQLApiModel _model;
@@ -27,7 +21,6 @@ namespace NGraphQL.Model.Introspection {
 
       // Build types internals - fields, etc
       BuildTypeObjects();
-
       // Add hidden fields to model objects
       return _schema;
     }

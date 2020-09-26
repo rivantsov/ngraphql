@@ -20,7 +20,36 @@ namespace StarWars.Api {
     }
 
     // Queries
+    public IList<ICharacter_> GetCharacters(IFieldContext fieldContext, Episode episode) { 
+      return default; 
+    }
 
+    public IList<Starship_> GetStarships(IFieldContext fieldContext) { 
+      return default; 
+    }
+
+    public IList<Review_> GetReviews(IFieldContext fieldContext, Episode episode) { 
+      return default; 
+    }
+
+    public ICharacter_ GetCharacter(IFieldContext fieldContext, string id) { 
+      return default; 
+    }
+
+    public Starship_ GetStarship(IFieldContext fieldContext, string id) { 
+      return default;
+    }
+
+    public IList<SearchResult_> Search(IFieldContext fieldContext, string text) { 
+      return default; 
+    }
+
+    // Mutations
+    public Review_ CreateReview(IFieldContext fieldContext, Episode episode, ReviewInput_ reviewInput) {
+      return default; 
+    }
+
+    // Fields 
 
     // this is a regular version, not used - we use batched version instead
     public IList<Character> GetFriends(IFieldContext fieldContext, Character character) {

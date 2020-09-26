@@ -48,11 +48,10 @@ namespace NGraphQL.CodeFirst {
 
   public abstract class ResolverTargetBaseAttribute : Attribute {
     public string FieldName;
-    public bool Hidden; // for use by introspection fields like __schema
     public abstract OperationType OperationType { get; }
   }
 
-  [AttributeUsage(AttributeTargets.Method)]
+  [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface)]
   public class QueryAttribute : ResolverTargetBaseAttribute {
     public override OperationType OperationType => OperationType.Query; 
     public QueryAttribute() { }
@@ -89,14 +88,14 @@ namespace NGraphQL.CodeFirst {
     public GraphQLUnionAttribute(string name = null) : base(name, TypeKind.Union) { }
   }
 
-  [AttributeUsage(AttributeTargets.Method)]
+  [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface)]
   public class MutationAttribute : ResolverTargetBaseAttribute {
     public override OperationType OperationType => OperationType.Mutation;
     public MutationAttribute() { }
     public MutationAttribute(string name) { FieldName = name; }
   }
 
-  [AttributeUsage(AttributeTargets.Method)]
+  [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface)]
   public class SubscriptionAttribute : ResolverTargetBaseAttribute {
     public override OperationType OperationType => OperationType.Subscription;
     public SubscriptionAttribute() { }
