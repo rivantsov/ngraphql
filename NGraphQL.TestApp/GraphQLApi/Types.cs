@@ -112,11 +112,11 @@ namespace NGraphQL.TestApp {
 
 
   [GraphQLUnion]
-  public class ThingsUnion : Union<BizThing, OtherBizThing> {
-    public ThingsUnion(BizThing value) {
+  public class ThingsUnion : Union<Thing, OtherThing> {
+    public ThingsUnion(Thing value) {
       Value = value;
     }
-    public ThingsUnion(OtherBizThing value) {
+    public ThingsUnion(OtherThing value) {
       Value = value;
     }
   }

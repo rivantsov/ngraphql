@@ -22,6 +22,7 @@ namespace NGraphQL.TestApp {
     KindThree,
 
     // this value will be hidden by initialization code - an example how to hide a enum value
+    // using code, when you do not control enum definition
     KindFour_Hidden,
   }
 
@@ -34,8 +35,8 @@ namespace NGraphQL.TestApp {
     FlagThree = 1 << 2,
   }
 
-  [DebuggerDisplay("BizThing: {Name}/{TheKind}")]
-  public class BizThing {
+  [DebuggerDisplay("Thing: {Name}/{TheKind}")]
+  public class Thing {
     public int Id { get; set; }
     public string Name { get; set; }
     public string Descr;
@@ -43,18 +44,18 @@ namespace NGraphQL.TestApp {
     public TheFlags Flags;
     public DateTime SomeDate;
     public DateTime? DateQ;
-    public BizThing NextThing;
+    public Thing NextThing;
 
     // For testing batching
-    public OtherBizThing MainOtherThing;
-    public IList<OtherBizThing> OtherThings; 
+    public OtherThing MainOtherThing;
+    public IList<OtherThing> OtherThings; 
 
     [DeprecatedDir("Deprecate-reason1")]
     public string Tag; 
   }
 
   [DebuggerDisplay("{Name}")]
-  public class OtherBizThing {
+  public class OtherThing {
     public int Id;
     public string Name { get; set; }
 
@@ -79,8 +80,8 @@ namespace NGraphQL.TestApp {
     public static ThingsApp Instance;
 
     // it is just things and other-things
-    public List<BizThing> Things;
-    public List<OtherBizThing> OtherThings; 
+    public List<Thing> Things;
+    public List<OtherThing> OtherThings; 
 
     public ThingsApp() {
       Instance = this; 
@@ -101,14 +102,14 @@ namespace NGraphQL.TestApp {
 
     private void CreateTestData() {
       var date0 = DateTime.Now;
-      Things = new List<BizThing>() {
-          new BizThing() { Name = "Name1", Id = 1, Descr = "Descr1",
+      Things = new List<Thing>() {
+          new Thing() { Name = "Name1", Id = 1, Descr = "Descr1",
             SomeDate = date0, DateQ = date0.AddHours(1), TheKind = ThingKind.KindOne,
             Flags = TheFlags.FlagOne | TheFlags.FlagThree},
-          new BizThing() { Name = "Name2", Id = 2, Descr = "Descr2",
+          new Thing() { Name = "Name2", Id = 2, Descr = "Descr2",
             SomeDate = date0, DateQ = null, TheKind = ThingKind.KindTwo,
             Flags = TheFlags.FlagTwo},
-          new BizThing() { Name = "Name3", Id = 3, Descr = "Descr3",
+          new Thing() { Name = "Name3", Id = 3, Descr = "Descr3",
             SomeDate = date0, DateQ = date0, TheKind = ThingKind.KindThree,
             Flags = TheFlags.FlagOne | TheFlags.FlagTwo},
       };
@@ -118,10 +119,10 @@ namespace NGraphQL.TestApp {
       // Setup child lists/refs OtherThings. MainOtherThing
       int id = 1; 
       foreach(var th in Things) {
-        th.OtherThings = new OtherBizThing[] {
-          new OtherBizThing() {Name = $"Other-{th.Id}-a", Id = id++},
-          new OtherBizThing() {Name = $"Other-{th.Id}-b", Id = id++},
-          new OtherBizThing() {Name = $"Other-{th.Id}-c", Id = id++},
+        th.OtherThings = new OtherThing[] {
+          new OtherThing() {Name = $"Other-{th.Id}-a", Id = id++},
+          new OtherThing() {Name = $"Other-{th.Id}-b", Id = id++},
+          new OtherThing() {Name = $"Other-{th.Id}-c", Id = id++},
         };
         th.MainOtherThing = th.OtherThings[0];
       }

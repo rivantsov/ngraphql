@@ -24,11 +24,11 @@ namespace StarWars.Api {
       return default; 
     }
 
-    public IList<Starship_> GetStarships(IFieldContext fieldContext) { 
+    public IList<Starship> GetStarships(IFieldContext fieldContext) { 
       return default; 
     }
 
-    public IList<Review_> GetReviews(IFieldContext fieldContext, Episode episode) { 
+    public IList<Review> GetReviews(IFieldContext fieldContext, Episode episode) { 
       return default; 
     }
 

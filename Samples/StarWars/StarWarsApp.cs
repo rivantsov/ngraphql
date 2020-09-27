@@ -17,11 +17,6 @@ namespace StarWars {
     }
 
     // methods supporting API
-    public Character GetHeroOf(Episode episode) {
-      // find the first character that was in this episode
-      return Characters.FirstOrDefault(c => c.AppearsIn.Includes(episode));
-    }
-
     public IList<Review> GetReviews(Episode episode) {
       return Reviews.Where(r => r.Episode == episode).ToList(); 
     }
@@ -51,6 +46,8 @@ namespace StarWars {
       return review; 
     }
 
+    // used by Friends field resolver in batch mode (aka DataLoader)
+    // return dictionary of characters with lists of their friends
     public IDictionary<Character, IList<Character>> GetFriendLists(IList<Character> characters) {
       var result = new Dictionary<Character, IList<Character>>();
       foreach(var character in characters) {

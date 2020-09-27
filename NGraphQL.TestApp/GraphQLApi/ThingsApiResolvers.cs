@@ -23,11 +23,11 @@ namespace NGraphQL.TestApp {
     ///   - this comment will show up in the schema printout as a field description.</summary>
     /// <param name="context"></param>
     /// <returns></returns>
-    public List<BizThing> GetThings(IFieldContext context) {
+    public List<Thing> GetThings(IFieldContext context) {
       return _app.Things;
     }
 
-    public BizThing GetThing(IFieldContext context, int id) {
+    public Thing GetThing(IFieldContext context, int id) {
       return _app.Things.FirstOrDefault(t => t.Id == id);
     }
 
@@ -81,29 +81,29 @@ namespace NGraphQL.TestApp {
     }
 
     // Demo of BATCHing functionality (aka DataLoader) - loading field values for ALL parent objects in request
-    public OtherBizThing GetMainOtherThing(IFieldContext context, BizThing parent) {
-      var allParents = context.GetAllParentEntities<BizThing>();
+    public OtherThing GetMainOtherThing(IFieldContext context, Thing parent) {
+      var allParents = context.GetAllParentEntities<Thing>();
       var batchedResults = allParents.ToDictionary(p => p, p => p.MainOtherThing);
       context.SetBatchedResults(batchedResults);
       return parent.MainOtherThing;
     }
 
     // Batching when field is a list
-    public IList<OtherBizThing> GetOtherThings(IFieldContext context, BizThing parent) {
-      var allParents = context.GetAllParentEntities<BizThing>();
+    public IList<OtherThing> GetOtherThings(IFieldContext context, Thing parent) {
+      var allParents = context.GetAllParentEntities<Thing>();
       var batchedResults = allParents.ToDictionary(p => p, p => p.OtherThings);
       context.SetBatchedResults(batchedResults);
       return batchedResults[parent];
     }
 
     // For testing exceptions, thrown by resolver down deep in the data tree
-    public string GetNameOrThrow(IFieldContext context, OtherBizThing otherThing) {
+    public string GetNameOrThrow(IFieldContext context, OtherThing otherThing) {
       if (otherThing.Id == 5)
         throw new Exception("Exception thrown by GetNameOrThrow.");
       return otherThing.Name;
     }
 
-    public async Task<string> GetNameOrThrowAsync(IFieldContext context, OtherBizThing otherThing) {
+    public async Task<string> GetNameOrThrowAsync(IFieldContext context, OtherThing otherThing) {
       if (otherThing.Id == 5) // child #2 of ApiThing #1, 
         throw new Exception("Exception thrown by GetNameOrThrowAsync.");
       await Task.CompletedTask;
@@ -122,13 +122,13 @@ namespace NGraphQL.TestApp {
       return string.Join(",", all);
     }
 
-    public BizThing[] GetThingsList(IFieldContext context) {
+    public Thing[] GetThingsList(IFieldContext context) {
       var things = _app.Things;
       var result = new[] { things[0], things[1] };
       return result;
     }
 
-    public BizThing[][] GetThingsListRank2(IFieldContext context) {
+    public Thing[][] GetThingsListRank2(IFieldContext context) {
       var things = _app.Things;
       var result = new[] {
           new[] { things[0], things[1] },
@@ -163,13 +163,13 @@ namespace NGraphQL.TestApp {
       return list;
     }
 
-    public BizThing MutateThing(IFieldContext context, int id, string newName) {
+    public Thing MutateThing(IFieldContext context, int id, string newName) {
       var thing = _app.Things.First(t => t.Id == id);
       thing.Name = newName;
       return thing;
     }
 
-    public BizThing MutateThingWithValidation(IFieldContext context, int id, string newName) {
+    public Thing MutateThingWithValidation(IFieldContext context, int id, string newName) {
       context.AddErrorIf(id < 0, "Id value may not be negative.");
       context.AddErrorIf(string.IsNullOrEmpty(newName), "newName may not be empty."); //abort immediately if cond is true
       context.AddErrorIf(newName.Length > 10, "newName too long, max size = 10.");
