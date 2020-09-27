@@ -119,7 +119,7 @@ namespace NGraphQL.Model.Construction {
       };
       var dirs = BuildDirectivesFromAttributes(resolverMethod);
       var fldDef = new FieldDef(resInfo.FieldName, returnTypeRef) {  Resolver = resInfo, Directives = dirs };
-      if(resAttr.Hidden)
+      if(resolverMethod.HasAttribute<HiddenAttribute>())
         fldDef.Flags |= FieldFlags.Hidden;
       if(returnsTask)
         fldDef.Flags |= FieldFlags.ReturnsTask;

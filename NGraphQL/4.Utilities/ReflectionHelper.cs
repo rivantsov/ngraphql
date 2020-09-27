@@ -48,6 +48,10 @@ namespace NGraphQL.Utilities {
       }
     }
 
+    public static bool HasAttribute<TAttr>(this ICustomAttributeProvider provider) where TAttr : Attribute {
+      return provider.GetAttribute<TAttr>() != null; 
+    }
+
     public static TAttr GetAttribute<TAttr>(this ICustomAttributeProvider provider) where TAttr : Attribute {
       var attr = provider.GetCustomAttributes(inherit: true).Where(a => a is TAttr).OfType<TAttr>().FirstOrDefault();
       return attr;

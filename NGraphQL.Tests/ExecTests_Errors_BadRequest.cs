@@ -92,7 +92,7 @@ query myQuery {
       err = resp.Errors[0];
       var errPath = err.Path.ToCommaText();
       Assert.AreEqual("getThing,nextThing", errPath, "Invalid error path");
-      Assert.AreEqual($"Field 'nextThing' of type '{nameof(ApiThing)}' must have a selection subset.", err.Message);
+      Assert.AreEqual($"Field 'nextThing' of type '{nameof(Thing_)}' must have a selection subset.", err.Message);
 
       TestEnv.LogTestDescr("error - scalar, enum fields may not have a selection subset.");
       query = @"

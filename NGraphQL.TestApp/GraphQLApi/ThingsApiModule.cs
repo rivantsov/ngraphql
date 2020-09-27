@@ -12,16 +12,17 @@ namespace NGraphQL.TestApp {
     public ThingsGraphQLModule() {
       // 1. Register all types
       RegisterTypes(
+        typeof(Query_), typeof(Mutation_), typeof(ISubscription_),
         typeof(ThingKind), typeof(TheFlags),
         typeof(INamedObj), typeof(IObjWithId),
-        typeof(ApiThing), typeof(ApiOtherThing),
+        typeof(Thing_), typeof(OtherThing_),
         typeof(InputObj), typeof(InputObjWithEnums), typeof(InputObjParent), typeof(InputObjChild),
         typeof(InputObjWithList),
         typeof(ThingsUnion)
         );
 
       // Define mappings of entities (biz app objects) to API Object Types 
-      Map<BizThing, ApiThing>(bt => new ApiThing() {
+      Map<BizThing, Thing_>(bt => new Thing_() {
         Id = bt.Id,
         Name = bt.Name,
         Description = bt.Descr,
@@ -31,10 +32,10 @@ namespace NGraphQL.TestApp {
         SomeDateTime = bt.SomeDate,
         // example of using FromMap function to explicitly convert biz object to API object (BizThing => ApiThing)
         // Note: we could skip this, as field names match, it would automap
-        NextThing = FromMap<ApiThing>(bt.NextThing)
+        NextThing = FromMap<Thing_>(bt.NextThing)
         
       });
-      Map<OtherBizThing, ApiOtherThing>(); // engine will automatically map Name->Name
+      Map<OtherBizThing, OtherThing_>(); // engine will automatically map Name->Name
       
       // register resolver classes
       base.RegisterResolversClass<ThingsApiResolvers>();

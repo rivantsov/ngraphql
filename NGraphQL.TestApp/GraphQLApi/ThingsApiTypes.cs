@@ -8,7 +8,7 @@ namespace NGraphQL.TestApp {
 
   /// <summary>A sample GraphQL output object.</summary>
   [GraphQLObjectType] 
-  public class ApiThing : INamedObj, IObjWithId {
+  public class Thing_ : INamedObj, IObjWithId {
     public int Id { get; set; }
     public string Name { get; set; }
     [Null]
@@ -19,19 +19,19 @@ namespace NGraphQL.TestApp {
     public DateTime SomeDateTime;
     public DateTime? DateTimeOpt; //it will be marked as Nullable automatically (no ! mark)
     [Null]
-    public ApiThing NextThing;
+    public Thing_ NextThing;
     [Null]
     public string Tag;
 
     [Resolver(nameof(ThingsApiResolvers.GetMainOtherThing)), Null]
-    public ApiOtherThing MainOtherThing;
+    public OtherThing_ MainOtherThing;
 
     [Resolver(nameof(ThingsApiResolvers.GetOtherThings))]
-    public IList<ApiOtherThing> OtherThings;
+    public IList<OtherThing_> OtherThings;
   }
 
   [GraphQLObjectType]
-  public class ApiOtherThing : INamedObj {
+  public class OtherThing_ : INamedObj {
     [Scalar("ID")]
     public string IdStr;
     public string Name { get; set; }
@@ -95,7 +95,7 @@ namespace NGraphQL.TestApp {
   }
 
   [GraphQLInput]
-  public class InputObjWithList{
+  public class InputObjWithList {
     public int[][] List;
   }
 
