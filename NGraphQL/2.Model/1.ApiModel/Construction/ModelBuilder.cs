@@ -10,6 +10,7 @@ using NGraphQL.Server;
 using NGraphQL.Utilities;
 using NGraphQL.Server.Parsing;
 using NGraphQL.Model.Core;
+using System.Runtime.InteropServices.ComTypes;
 
 namespace NGraphQL.Model.Construction {
 
@@ -25,8 +26,11 @@ namespace NGraphQL.Model.Construction {
     public void Build() {
       _model = _api.Model;
 
-      // register scalars from Sys module
-      foreach(var scalar in _api.CoreTypes.Scalars)
+      if (!CollectRegisteredTypes())
+        return; 
+
+      // Copy scalar type defs
+      foreach(var scalar in _api.Scalars)
         AddTypeDef(scalar);
       if (_model.Faulted)
         return; 
@@ -71,7 +75,7 @@ namespace NGraphQL.Model.Construction {
         return;
 
       // build directives lookup
-      _model.Directives = _model.Api.CoreTypes.Directives.ToDictionary(d => d.Name);
+      _model.Directives = _model.Api.Directives.ToDictionary(d => d.Name);
 
       BuildSchemaDef();
       if (_model.Faulted)
@@ -89,6 +93,70 @@ namespace NGraphQL.Model.Construction {
         module.OnModelConstructed(_api);
 
       VerifyModel(); 
+    }
+
+    private bool CollectRegisteredTypes() {
+      foreach(var module in _api.Modules) {
+        var mName = module.GetType().Name;
+        foreach(var type in module.RegisteredTypes) {
+          if (_model.RegisteredTypes.ContainsKey(type)) {
+            AddError($"Duplicate registration of type {type.Name}, module {mName}.");
+            continue; 
+          }
+          var typeAttrs = type.GetAttributes<GraphQLTypeCategoryAttribute>();
+          TypeKind? kind = null;
+          RegisteredTypeCategory cat; 
+          switch (typeAttrs.Count) {
+            case 0:
+              cat = RegisteredTypeCategory.DataType;
+              kind = GetRegisteredTypeKind(type, null, module);
+              break;
+            case 1:
+              cat = typeAttrs[0].Category;
+              switch(cat) {
+                case RegisteredTypeCategory.DataType:
+                  kind = GetRegisteredTypeKind(type, typeAttrs[0], module);
+                  break; 
+              }
+              break;
+
+            default: //2 or more attributes
+              var strAttrs = string.Join(", ", typeAttrs.Select(a => a.GetType().Name));
+              AddError($"Duplicate/incompatible attributes on type {type.Name}, module {mName}: {strAttrs}");
+              continue;
+          }//switch       
+          
+          var regTypeInfo = new RegisteredTypeInfo() { ClrType = type, Category = cat, Kind = kind, Module = module };
+          _model.RegisteredTypes[type] = regTypeInfo;
+        } //foreach type
+      }
+      return !_model.Faulted;
+    } //method
+
+    private TypeKind GetRegisteredTypeKind(Type regType, GraphQLTypeCategoryAttribute typeAttr, GraphQLModule module) {
+      var errLoc = $"type {regType.Name}, module {module.GetType().Name}";
+      var isSpecialType = regType.IsEnum || regType.IsInterface || regType.IsAssignableFrom(typeof(UnionBase));
+      if (isSpecialType && typeAttr != null) {
+        AddError($"Attribute {typeAttr.GetType().Name} is invalid, {errLoc}");
+        return default; 
+      }
+      switch(typeAttr) {
+        case ObjectTypeAttribute _: return TypeKind.Object;
+        case InputTypeAttribute _: return TypeKind.InputObject;
+        case null:
+          if (regType.IsEnum)
+            return TypeKind.Enum;
+          if (regType.IsInterface)
+            return TypeKind.Interface;
+          if (regType.IsAssignableFrom(typeof(UnionBase)))
+            return TypeKind.Union;
+          if (!regType.IsClass) {
+            AddError($"Invalid registered type, must be a class; {errLoc}");
+          }
+          AddError($"Registered type is missing attribute identifying GraphQL TypeKind; {errLoc}.");
+          break;
+      }
+      return default;
     }
 
     private void BuildTypesInternals() {
@@ -117,21 +185,14 @@ namespace NGraphQL.Model.Construction {
 
     private void LoadXmlDocFiles() {
       // Load all xml files
-      _docLoader = new XmlDocumentationLoader();
-      foreach(var module in _api.Modules) {
-        _docLoader.TryLoadAssemblyXmlFile(module.GetType());
-        foreach(var resClass in module.ResolverClasses) {
-          _docLoader.TryLoadAssemblyXmlFile(resClass.Declaration);
-          _docLoader.TryLoadAssemblyXmlFile(resClass.Implementation);
-        }
+      var allAsmNames = _model.RegisteredTypes.Keys.Select(t => t.Assembly.GetName().Name).Distinct().ToList();
+      foreach(var asmName in allAsmNames) {
+        _docLoader.TryLoadAssemblyXmlFile(asmName);
       }
     }
 
     private void RegisterGraphQLType(Type type) {
-      if(_model.TypesByClrType.TryGetValue(type, out var td))
-        return;
-      var ignoreAttr = type.GetCustomAttribute<IgnoreAttribute>();
-      if(ignoreAttr != null)
+      if(_model.TypesByClrType.TryGetValue(type, out var _))
         return;
       var typeDef = CreateTypeDef(type);
       if(typeDef == null)
@@ -362,7 +423,7 @@ namespace NGraphQL.Model.Construction {
           continue;
         var attrName = attr.GetType().Name;
         var dirDefType = dirAttr.DirectiveDefType;
-        var dirDef = _api.CoreTypes.Directives.FirstOrDefault(def => def.GetType() == dirDefType);
+        var dirDef = _api.CoreModule.Directives.FirstOrDefault(def => def.GetType() == dirDefType);
         if(dirDef == null) {
           AddError($"{target}: directive definition {dirDefType.Name} referenced by [{attrName}] not registered..");
           continue;

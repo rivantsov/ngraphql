@@ -7,7 +7,6 @@ using NGraphQL.CodeFirst;
 namespace StarWars.Api {
 
   /// <summary>A character from the Star Wars universe </summary>
-  [GraphQLInterface("Character"), ResolverClass(typeof(StarWarsResolvers))]
   public interface ICharacter_ {
 
     /// <summary>The ID of the character </summary>

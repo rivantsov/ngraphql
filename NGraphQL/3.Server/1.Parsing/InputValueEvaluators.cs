@@ -101,7 +101,7 @@ namespace NGraphQL.Server.Parsing {
     }
 
     protected override object Evaluate(RequestContext context) {
-      _stringTypeRef = _stringTypeRef ?? context.Server.Api.CoreTypes.String_.TypeRefNotNull;
+      _stringTypeRef = _stringTypeRef ?? context.Server.Api.CoreModule.String_.TypeRefNotNull;
       var values = new object[ElemEvaluators.Length];
       for (int i = 0; i < ElemEvaluators.Length; i++) {
         var eval = ElemEvaluators[i]; 

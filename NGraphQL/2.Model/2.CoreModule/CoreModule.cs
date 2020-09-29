@@ -9,9 +9,6 @@ using NGraphQL.Server.Parsing;
 namespace NGraphQL.Model.Core {
 
   public class CoreModule : GraphQLModule {
-    public readonly List<ScalarTypeDef> Scalars = new List<ScalarTypeDef>();
-    public readonly List<DirectiveDef> Directives = new List<DirectiveDef>(); 
-
     public StringTypeDef String_;
     public IntTypeDef Int_;
     public LongTypeDef Long_;
@@ -43,21 +40,15 @@ namespace NGraphQL.Model.Core {
       this.Time_ = new TimeTypeDef();
       this.Uuid_ = new UuidTypeDef();
       this.Decimal_ = new DecimalTypeDef();
-      Scalars.AddRange(new ScalarTypeDef[] { String_, Int_, Long_, Float_, Double_, Boolean_, Id_, 
+      api.Scalars.AddRange(new ScalarTypeDef[] { String_, Int_, Long_, Float_, Double_, Boolean_, Id_, 
                          DateTime_, Date_, Time_, Uuid_, Decimal_});
 
       // Directives 
       DeprecatedDir = new DeprecatedDirDef(this);
-      Directives.Add(DeprecatedDir);
-      Directives.Add(new IncludeDirectiveDef(this));
-      Directives.Add(new SkipDirectiveDef(this));
+      api.Directives.Add(DeprecatedDir);
+      api.Directives.Add(new IncludeDirectiveDef(this));
+      api.Directives.Add(new SkipDirectiveDef(this));
     }
 
-    /*
-    public ScalarTypeDef ID;
-    public ScalarTypeDef Uuid;
-    */
   }
-
-
 }

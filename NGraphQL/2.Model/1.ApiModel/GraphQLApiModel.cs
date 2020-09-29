@@ -7,11 +7,14 @@ using Irony.Ast;
 using NGraphQL.Model.Introspection;
 using NGraphQL.Server;
 using NGraphQL.CodeFirst;
+using NGraphQL.Model.Construction;
 
 namespace NGraphQL.Model {
 
   public class GraphQLApiModel {
-    public readonly GraphQLApi Api; 
+    public readonly GraphQLApi Api;
+
+    internal Dictionary<Type, RegisteredTypeInfo> RegisteredTypes = new Dictionary<Type, RegisteredTypeInfo>();
 
     public ObjectTypeDef QueryType;
     public ObjectTypeDef MutationType;

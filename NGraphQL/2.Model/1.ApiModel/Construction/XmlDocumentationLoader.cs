@@ -10,13 +10,10 @@ using NGraphQL.Model;
 namespace NGraphQL.Model.Construction {
 
   public class XmlDocumentationLoader {
-    Dictionary<Assembly, Dictionary<string, XElement>> _data = new Dictionary<Assembly, Dictionary<string, XElement>>(); 
+    Dictionary<string, Dictionary<string, XElement>> _data = new Dictionary<string, Dictionary<string, XElement>>(); 
 
-    public bool TryLoadAssemblyXmlFile(Type type) {
-      var asm = type.Assembly;
-      if(_data.ContainsKey(asm))
-        return true; // already loaded
-      var file = asm.GetName().Name + ".xml";
+    public bool TryLoadAssemblyXmlFile(string asmName) {
+      var file = asmName + ".xml";
       if(!File.Exists(file))
         return false; 
 
@@ -37,14 +34,14 @@ namespace NGraphQL.Model.Construction {
           key = key.Substring(0, pIndex);
         dict[key] = mElem; 
       }
-
       return true;
     }
 
     public string GetDocString(object target, Type declaringType) {
       if(target == null)
         throw new Exception("Target may not be null");
-      if(!_data.TryGetValue(declaringType.Assembly, out var dict))
+      var asmName = declaringType.Assembly.GetName().Name;
+      if(!_data.TryGetValue(asmName, out var dict))
         return null;
       var key = GetKey(target);
       if(!dict.TryGetValue(key, out var member))

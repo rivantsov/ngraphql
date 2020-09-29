@@ -52,10 +52,15 @@ namespace NGraphQL.Utilities {
       return provider.GetAttribute<TAttr>() != null; 
     }
 
+    public static IList<TAttr> GetAttributes<TAttr>(this ICustomAttributeProvider provider) where TAttr : Attribute {
+      var attrs = provider.GetCustomAttributes(inherit: true).Where(a => a is TAttr).OfType<TAttr>().ToList();
+      return attrs;
+    }
     public static TAttr GetAttribute<TAttr>(this ICustomAttributeProvider provider) where TAttr : Attribute {
-      var attr = provider.GetCustomAttributes(inherit: true).Where(a => a is TAttr).OfType<TAttr>().FirstOrDefault();
+      var attr = provider.GetAttributes<TAttr>().FirstOrDefault();
       return attr;
     }
+
 
     // detects list and its rank
     public static bool IsGenericListOrArray(this Type type, out Type elemType, out int rank) {
