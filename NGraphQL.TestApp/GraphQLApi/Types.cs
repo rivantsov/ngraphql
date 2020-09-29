@@ -7,7 +7,7 @@ using NGraphQL.CodeFirst;
 namespace NGraphQL.TestApp {
 
   /// <summary>A sample GraphQL output object.</summary>
-  [GraphQLObjectType] 
+  [ObjectType] 
   public class Thing_ : INamedObj, IObjWithId {
     public int Id { get; set; }
     public string Name { get; set; }
@@ -30,7 +30,7 @@ namespace NGraphQL.TestApp {
     public IList<OtherThing_> OtherThings;
   }
 
-  [GraphQLObjectType]
+  [ObjectType]
   public class OtherThing_ : INamedObj {
     [Scalar("ID")]
     public string IdStr;
@@ -54,7 +54,7 @@ namespace NGraphQL.TestApp {
   }
 
 
-  [GraphQLInput]
+  [InputType]
   public class InputObj {
     public int Id;
     public string Name;
@@ -64,7 +64,7 @@ namespace NGraphQL.TestApp {
     public override string ToString() => $"id:{Id},name:{Name},num:{Num}";
   }
 
-  [GraphQLInput]
+  [InputType]
   public class InputObjWithEnums {
     public TheFlags Flags;
     public ThingKind Kind;
@@ -76,7 +76,7 @@ namespace NGraphQL.TestApp {
     }
   }
 
-  [GraphQLInput]
+  [InputType]
   public class InputObjParent {
     public int Id;
     public string Name;
@@ -85,7 +85,7 @@ namespace NGraphQL.TestApp {
     public override string ToString() => $"{Id},{Name}, child count: {ChildObjects?.Count}";
   }
 
-  [GraphQLInput]
+  [InputType]
   public class InputObjChild {
     public InputObjParent Parent;
     public int Id;
@@ -94,24 +94,20 @@ namespace NGraphQL.TestApp {
     public override string ToString() => $"{Id},{Name}";
   }
 
-  [GraphQLInput]
+  [InputType]
   public class InputObjWithList {
     public int[][] List;
   }
 
 
-  [GraphQLInterface]
   public interface INamedObj {
     string Name { get; }
   }
 
-  [GraphQLInterface]
   public interface IObjWithId {
     int Id { get; }
   }
 
-
-  [GraphQLUnion]
   public class ThingsUnion : Union<Thing, OtherThing> {
     public ThingsUnion(Thing value) {
       Value = value;

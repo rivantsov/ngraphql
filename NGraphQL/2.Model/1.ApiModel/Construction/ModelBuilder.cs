@@ -130,7 +130,7 @@ namespace NGraphQL.Model.Construction {
     private void RegisterGraphQLType(Type type) {
       if(_model.TypesByClrType.TryGetValue(type, out var td))
         return;
-      var ignoreAttr = type.GetCustomAttribute<GraphQLIgnoreAttribute>();
+      var ignoreAttr = type.GetCustomAttribute<IgnoreAttribute>();
       if(ignoreAttr != null)
         return;
       var typeDef = CreateTypeDef(type);
@@ -195,7 +195,7 @@ namespace NGraphQL.Model.Construction {
     private void BuildFields(Type clrType, List<FieldDef> fields) {
       var members = clrType.GetFieldsProps(); 
       foreach(var member in members) {
-        var ignoreAttr = member.GetCustomAttribute<GraphQLIgnoreAttribute>();
+        var ignoreAttr = member.GetCustomAttribute<IgnoreAttribute>();
         if(ignoreAttr != null)
           continue;
         var mtype = member.GetMemberType();
@@ -285,7 +285,7 @@ namespace NGraphQL.Model.Construction {
       // enum values are static public fields of enum type
       var fields = enumTypeDef.ClrType.GetFields(BindingFlags.Public | BindingFlags.Static); 
       foreach(var fld in fields) {
-        var ignoreAttr = fld.GetCustomAttribute<GraphQLIgnoreAttribute>();
+        var ignoreAttr = fld.GetCustomAttribute<IgnoreAttribute>();
         if(ignoreAttr != null)
           continue; 
         var fldValue = fld.GetValue(null);

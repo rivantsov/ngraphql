@@ -28,7 +28,7 @@ namespace NGraphQL.Model {
 
   [Flags, GraphQLName("__DirectiveLocation"), Hidden]
   public enum DirectiveLocation {
-    [GraphQLIgnore] //the value should not appear in any output, used internally only
+    [Ignore] //the value should not appear in any output, used internally only
     None = 0,
 
     Query = 1,

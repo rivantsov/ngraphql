@@ -8,18 +8,17 @@ namespace StarWars.Api {
     public StarWarsApiModule() {
       // Register types
       RegisterTypes(
-        typeof(StarWarsQuery), typeof(StarWarsMutation),
+        typeof(IStarWarsQuery), typeof(IStarWarsMutation),
         typeof(Episode), typeof(LengthUnit),
         typeof(ICharacter_), typeof(Human_), typeof(Droid_), 
-        typeof(Starship_), typeof(Review_), typeof(SearchResult_),
-        typeof(ReviewInput_)  
+        typeof(Starship_), typeof(Review_), typeof(SearchResult_), typeof(ReviewInput_), 
+        typeof(StarWarsResolvers)
         );
       // map Api object types to app types
       Map<Human, Human_>(h => new Human_() { 
         // Id, Name, AppearsIn, HomePlanet, Mass are mapped automatically
       });
 
-      RegisterResolversClass<StarWarsResolvers>(); 
     } //constructor  
     
   }

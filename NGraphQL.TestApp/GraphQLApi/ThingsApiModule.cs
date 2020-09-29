@@ -12,13 +12,13 @@ namespace NGraphQL.TestApp {
     public ThingsGraphQLModule() {
       // 1. Register all types
       RegisterTypes(
-        typeof(Query_), typeof(ThingsMutation), typeof(IThingsSubscription),
+        typeof(IThingsQuery), typeof(ThingsMutation), typeof(IThingsSubscription),
         typeof(ThingKind), typeof(TheFlags),
         typeof(INamedObj), typeof(IObjWithId),
         typeof(Thing_), typeof(OtherThing_),
         typeof(InputObj), typeof(InputObjWithEnums), typeof(InputObjParent), typeof(InputObjChild),
-        typeof(InputObjWithList),
-        typeof(ThingsUnion)
+        typeof(InputObjWithList),  typeof(ThingsUnion), 
+        typeof(ThingsApiResolvers)
         );
 
       // Define mappings of entities (biz app objects) to API Object Types 
@@ -35,10 +35,7 @@ namespace NGraphQL.TestApp {
         NextThing = FromMap<Thing_>(bt.NextThing)
         
       });
-      Map<OtherThing, OtherThing_>(); // engine will automatically map Name->Name
-      
-      // register resolver classes
-      base.RegisterResolversClass<ThingsApiResolvers>();
+      Map<OtherThing, OtherThing_>(); // engine will automatically map all matching fields
     }// constructor
 
     public override void OnModelConstructed(GraphQLApi api) {

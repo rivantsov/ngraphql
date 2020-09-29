@@ -6,10 +6,7 @@ using NGraphQL.CodeFirst;
 namespace StarWars.Api {
 
   [Mutation]
-  public class StarWarsMutation {
-
-    public Review_ CreateReview(Episode episode, ReviewInput_ reviewInput) {
-      return default;
-    }
+  public interface IStarWarsMutation {
+    Review_ CreateReview(Episode episode, ReviewInput_ reviewInput);
   }
 }

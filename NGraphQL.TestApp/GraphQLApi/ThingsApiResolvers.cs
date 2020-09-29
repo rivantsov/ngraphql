@@ -8,7 +8,7 @@ using NGraphQL.CodeFirst;
 using NGraphQL.Server;
 
 namespace NGraphQL.TestApp {
-
+  [Resolvers]
   public class ThingsApiResolvers : IResolverClass {
     ThingsApp _app;
 

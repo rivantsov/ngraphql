@@ -4,6 +4,7 @@ using NGraphQL.Model;
 
 namespace NGraphQL.CodeFirst {
 
+
   [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Interface |
                    AttributeTargets.Enum | AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Method |
                    AttributeTargets.Parameter)]
@@ -40,67 +41,12 @@ namespace NGraphQL.CodeFirst {
   }
 
   [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
-  public class GraphQLIgnoreAttribute : Attribute { }
+  public class IgnoreAttribute : Attribute { }
 
   [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum |
                   AttributeTargets.Field | AttributeTargets.Property)]
   public class HiddenAttribute : Attribute { }
 
-  public abstract class ResolverTargetBaseAttribute : Attribute {
-    public string FieldName;
-    public abstract OperationType OperationType { get; }
-  }
-
-  [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface)]
-  public class QueryAttribute : ResolverTargetBaseAttribute {
-    public override OperationType OperationType => OperationType.Query; 
-    public QueryAttribute() { }
-    public QueryAttribute(string name) { FieldName = name; }
-  }
-
-  public abstract class GraphQLTypeBaseAttribute : Attribute {
-    public string Name;
-    private TypeKind _kind;
-    public GraphQLTypeBaseAttribute(string name, TypeKind kind) {
-      Name = name;
-      _kind = kind; 
-    }
-    public TypeKind GetKind() => _kind;
-  }
-
-  [AttributeUsage(AttributeTargets.Class)]
-  public class GraphQLObjectTypeAttribute : GraphQLTypeBaseAttribute {
-    public GraphQLObjectTypeAttribute(string name = null) : base(name, TypeKind.Object) { }
-  }
-
-  [AttributeUsage(AttributeTargets.Class)]
-  public class GraphQLInputAttribute : GraphQLTypeBaseAttribute {
-    public GraphQLInputAttribute(string name = null) : base(name, TypeKind.InputObject) { }
-  }
-
-  [AttributeUsage(AttributeTargets.Interface)]
-  public class GraphQLInterfaceAttribute : GraphQLTypeBaseAttribute {
-    public GraphQLInterfaceAttribute(string name = null) : base(name, TypeKind.Interface) { }
-  }
-
-  [AttributeUsage(AttributeTargets.Class)]
-  public class GraphQLUnionAttribute : GraphQLTypeBaseAttribute {
-    public GraphQLUnionAttribute(string name = null) : base(name, TypeKind.Union) { }
-  }
-
-  [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface)]
-  public class MutationAttribute : ResolverTargetBaseAttribute {
-    public override OperationType OperationType => OperationType.Mutation;
-    public MutationAttribute() { }
-    public MutationAttribute(string name) { FieldName = name; }
-  }
-
-  [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface)]
-  public class SubscriptionAttribute : ResolverTargetBaseAttribute {
-    public override OperationType OperationType => OperationType.Subscription;
-    public SubscriptionAttribute() { }
-    public SubscriptionAttribute(string name) { FieldName = name; }
-  }
 
   [AttributeUsage(AttributeTargets.Method | AttributeTargets.Property | AttributeTargets.Field)]
   public class ResolverAttribute : Attribute {
@@ -109,14 +55,6 @@ namespace NGraphQL.CodeFirst {
     public ResolverAttribute(string methodName, Type resolverClass = null) {
       MethodName = methodName;
       ResolverClass = resolverClass; 
-    }
-  }
-
-  [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface)]
-  public class ResolverClassAttribute : Attribute {
-    public readonly Type Type;
-    public ResolverClassAttribute(Type resolverClass) {
-      Type = resolverClass; 
     }
   }
 

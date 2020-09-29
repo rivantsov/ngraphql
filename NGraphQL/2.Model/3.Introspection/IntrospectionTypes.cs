@@ -10,7 +10,7 @@ namespace NGraphQL.Model.Introspection {
   //  and specify GraphQL name explicitly using attribute
 
   [Hidden]
-  [GraphQLObjectType, GraphQLName("__Schema")]
+  [ObjectType, GraphQLName("__Schema")]
   public class Schema__ {
     public IList<Type__> Types = new List<Type__>();
     public Type__ QueryType;
@@ -29,7 +29,7 @@ namespace NGraphQL.Model.Introspection {
   }
 
   [Hidden]
-  [GraphQLObjectType, GraphQLName("__Type")]
+  [ObjectType, GraphQLName("__Type")]
   public class Type__ : IntroObjectBase {
     public TypeKind Kind;
 
@@ -64,27 +64,27 @@ namespace NGraphQL.Model.Introspection {
     public string DisplayName;
 
     // The following two lists are for internal use only, they are containers that hold actual lists 
-    [GraphQLIgnore]
+    [Ignore]
     internal IList<Field__> FieldList = new List<Field__>();
     // enum only
-    [GraphQLIgnore]
+    [Ignore]
     internal IList<EnumValue__> EnumValueList = new List<EnumValue__>();
 
-    [GraphQLIgnore]
+    [Ignore]
     internal TypeDefBase TypeDef; // internally used link to model object
 
     public Type__() { }
   }
 
   [Hidden]
-  [GraphQLObjectType, GraphQLName("__Field")]
+  [ObjectType, GraphQLName("__Field")]
   public class Field__: IntroObjectBase {
     public IList<InputValue__> Args;
     public Type__ Type; 
   }
 
   [Hidden]
-  [GraphQLObjectType, GraphQLName("__InputValue")]
+  [ObjectType, GraphQLName("__InputValue")]
   public class InputValue__: IntroObjectBase {
     public Type__ Type;
     [Null]
@@ -92,13 +92,13 @@ namespace NGraphQL.Model.Introspection {
   }
 
   [Hidden]
-  [GraphQLObjectType, GraphQLName("__EnumValue")]
+  [ObjectType, GraphQLName("__EnumValue")]
   public class EnumValue__ : IntroObjectBase {
   }
 
 
   [Hidden]
-  [GraphQLObjectType, GraphQLName("__Directive")]
+  [ObjectType, GraphQLName("__Directive")]
   public class Directive__ : IntroObjectBase {
     public DirectiveLocation Locations; 
     public IList<InputValue__> Args;
