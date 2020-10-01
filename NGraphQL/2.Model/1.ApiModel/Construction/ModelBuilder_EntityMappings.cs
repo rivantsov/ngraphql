@@ -11,34 +11,6 @@ using NGraphQL.Utilities;
 namespace NGraphQL.Model.Construction {
   public partial class ModelBuilder {
 
-    private void CollectEntityMappings() {
-      foreach(var module in _api.Modules) {
-        foreach (var mp in module.Mappings) {
-          mp.TypeDef = (ObjectTypeDef)_model.LookupTypeDef(mp.GraphQLType);
-          _model.EntityMappings.Add(mp.EntityType, mp);
-        }
-      }
-    }
-
-    // if some GraphQL type is not mapped to anything, we assume it is mapped it itself. 
-    // This is the case for introspection types, there are no entities behind them, 
-    //  they are entities themselves. 
-    //  Add this mappings explicitly, this will allow building field readers on each
-    //  field definition. 
-    private void AddSelfMappedTypeMappings() {
-      var mappedGqlTypes = _model.EntityMappings.Values.Select(m => m.GraphQLType);
-      var mappedTypeSet = new HashSet<Type>(mappedGqlTypes);
-      var notMappedTypes = _model.GetTypeDefs<ObjectTypeDef>(TypeKind.Object)
-                           // Schema has no CLR type
-                           .Where(td => td.ClrType != null && !mappedTypeSet.Contains(td.ClrType)) 
-                           .ToList();
-      foreach(var td in notMappedTypes) {
-        var type = td.ClrType;
-        var mapping = new EntityMapping() { EntityType = type, GraphQLType = type, TypeDef = td };
-        _model.EntityMappings.Add(type, mapping);
-      }
-    }
-
     // Anaylyze mapping expression and split it into expressions copying each property; 
     //  then compile them and attach to field definitions
     private void ProcessEntityMappings() {

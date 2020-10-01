@@ -26,13 +26,6 @@ namespace NGraphQL.Model.Construction {
     public void Build() {
       _model = _api.Model;
 
-      // Copy scalar type defs
-      foreach (var scalar in _api.Scalars)
-        RegisterTypeDef(scalar);
-
-      if (!CollectRegisteredClrTypes())
-        return; 
-
       // using all known CLR types, collect all assemblies, derive xml file names, load xml files if found
       LoadXmlDocFiles();
 
@@ -71,8 +64,6 @@ namespace NGraphQL.Model.Construction {
       if (_model.HasErrors)
         return;
 
-      // build directives lookup
-      _model.Directives = _model.Api.Directives.ToDictionary(d => d.Name);
 
       BuildSchemaDef();
       if (_model.HasErrors)

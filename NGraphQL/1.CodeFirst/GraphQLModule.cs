@@ -8,9 +8,11 @@ namespace NGraphQL.CodeFirst {
   public class GraphQLModule {
     public readonly GraphQLApi Api; 
     internal List<Type> Types = new List<Type>();
+    internal List<EntityMapping> Mappings = new List<EntityMapping>();
+    internal List<Type> ResolverTypes = new List<Type>();
+
     internal List<ScalarTypeDef> Scalars = new List<ScalarTypeDef>();
     internal List<DirectiveDef> Directives = new List<DirectiveDef>();
-    internal List<EntityMapping> Mappings = new List<EntityMapping>();
 
     public GraphQLModule(GraphQLApi api) {
       Util.Check(api != null, "'api' parameter may not be null.");
@@ -23,6 +25,10 @@ namespace NGraphQL.CodeFirst {
 
     public void RegisterTypes(params Type[] types) {
       Types.AddRange(types); 
+    }
+
+    public void RegisterResolvers(params Type[] resolverTypes) {
+      ResolverTypes.AddRange(resolverTypes);
     }
 
     public void RegisterScalars(params ScalarTypeDef[] scalars) {
