@@ -5,18 +5,13 @@ using NGraphQL.CodeFirst;
 
 namespace NGraphQL.Model.Construction {
 
-  public enum RegisteredTypeCategory {
-    DataType,
-    Query,
-    Mutation,
-    Subscription,
-    Resolver,
-  }
 
   public class RegisteredTypeInfo {
     public Type ClrType;
     public GraphQLModule Module; 
-    public RegisteredTypeCategory Category;
-    public TypeKind? Kind;
+    public ClrTypeRole TypeRole;
+    public TypeKind? DataTypeKind;
+    public TypeDefBase DataTypeDef;
   }
+
 }

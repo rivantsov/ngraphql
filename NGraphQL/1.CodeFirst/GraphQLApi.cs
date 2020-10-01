@@ -11,9 +11,6 @@ namespace NGraphQL.CodeFirst {
     public readonly IList<GraphQLModule> Modules = new List<GraphQLModule>();
     public readonly CoreModule CoreModule;
     public readonly IntrospectionModule IntrospectionModeule;
-    public readonly List<ScalarTypeDef> Scalars = new List<ScalarTypeDef>();
-    public readonly List<DirectiveDef> Directives = new List<DirectiveDef>();
-
 
     public GraphQLApiModel Model { get; internal set; }
 

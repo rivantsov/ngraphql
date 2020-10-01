@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq.Expressions;
 using System.Reflection;
-
 using NGraphQL.CodeFirst;
 using NGraphQL.Model.Introspection;
 using NGraphQL.Server;
 using NGraphQL.Server.Execution;
-using NGraphQL.Server.Parsing;
 
 namespace NGraphQL.Model {
 
@@ -18,7 +16,18 @@ namespace NGraphQL.Model {
     public override string ToString() => Name;
   }
 
+  public enum SchemaTypeRole {
+    Query,
+    Mutation,
+    Subscription,
+    Schema,
+    DataType,
+  }
+
   public class TypeDefBase : GraphQLModelObject {
+    public GraphQLModule Module;
+    public SchemaTypeRole TypeRole;
+
     public TypeKind Kind;
     public Type ClrType;
     public bool Hidden;

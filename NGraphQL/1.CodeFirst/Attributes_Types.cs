@@ -5,38 +5,38 @@ using NGraphQL.Model.Construction;
 
 namespace NGraphQL.CodeFirst {
 
-  public abstract class GraphQLTypeCategoryAttribute : Attribute { 
-    internal abstract RegisteredTypeCategory Category { get; }
+  public abstract class GraphQLTypeRoleAttribute : Attribute { 
+    internal abstract ClrTypeRole TypeRole { get; }
   }
 
   [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface)]
-  public class QueryAttribute : GraphQLTypeCategoryAttribute {
-    internal override RegisteredTypeCategory Category => RegisteredTypeCategory.Query; 
+  public class QueryAttribute : GraphQLTypeRoleAttribute {
+    internal override ClrTypeRole TypeRole => ClrTypeRole.Query; 
   }
 
   [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface)]
-  public class MutationAttribute : GraphQLTypeCategoryAttribute {
-    internal override RegisteredTypeCategory Category => RegisteredTypeCategory.Mutation;
+  public class MutationAttribute : GraphQLTypeRoleAttribute {
+    internal override ClrTypeRole TypeRole => ClrTypeRole.Mutation;
   }
 
   [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface)]
-  public class SubscriptionAttribute : GraphQLTypeCategoryAttribute {
-    internal override RegisteredTypeCategory Category => RegisteredTypeCategory.Subscription;
+  public class SubscriptionAttribute : GraphQLTypeRoleAttribute {
+    internal override ClrTypeRole TypeRole => ClrTypeRole.Subscription;
   }
 
   [AttributeUsage(AttributeTargets.Class)]
-  public class ObjectTypeAttribute : GraphQLTypeCategoryAttribute {
-    internal override RegisteredTypeCategory Category => RegisteredTypeCategory.DataType;
+  public class ObjectTypeAttribute : GraphQLTypeRoleAttribute {
+    internal override ClrTypeRole TypeRole => ClrTypeRole.DataType;
   }
 
   [AttributeUsage(AttributeTargets.Class)]
-  public class InputTypeAttribute : GraphQLTypeCategoryAttribute {
-    internal override RegisteredTypeCategory Category => RegisteredTypeCategory.DataType;
+  public class InputTypeAttribute : GraphQLTypeRoleAttribute {
+    internal override ClrTypeRole TypeRole => ClrTypeRole.DataType;
   }
 
   [AttributeUsage(AttributeTargets.Class)]
-  public class ResolversAttribute : GraphQLTypeCategoryAttribute {
-    internal override RegisteredTypeCategory Category => RegisteredTypeCategory.Resolver;
+  public class ResolversAttribute : GraphQLTypeRoleAttribute {
+    internal override ClrTypeRole TypeRole => ClrTypeRole.Resolver;
   }
 
 }

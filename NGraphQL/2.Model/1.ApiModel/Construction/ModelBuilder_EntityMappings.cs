@@ -12,10 +12,11 @@ namespace NGraphQL.Model.Construction {
   public partial class ModelBuilder {
 
     private void CollectEntityMappings() {
-      var mappings = _api.Modules.SelectMany(m => m.Mappings).ToList();
-      foreach(var mp in mappings) {
-        mp.TypeDef = (ObjectTypeDef)_model.LookupTypeDef(mp.GraphQLType);
-        _model.EntityMappings.Add(mp.EntityType, mp);
+      foreach(var module in _api.Modules) {
+        foreach (var mp in module.Mappings) {
+          mp.TypeDef = (ObjectTypeDef)_model.LookupTypeDef(mp.GraphQLType);
+          _model.EntityMappings.Add(mp.EntityType, mp);
+        }
       }
     }
 
@@ -28,7 +29,7 @@ namespace NGraphQL.Model.Construction {
       var mappedGqlTypes = _model.EntityMappings.Values.Select(m => m.GraphQLType);
       var mappedTypeSet = new HashSet<Type>(mappedGqlTypes);
       var notMappedTypes = _model.GetTypeDefs<ObjectTypeDef>(TypeKind.Object)
-                           // Schema, Query defs have no CLR type
+                           // Schema has no CLR type
                            .Where(td => td.ClrType != null && !mappedTypeSet.Contains(td.ClrType)) 
                            .ToList();
       foreach(var td in notMappedTypes) {

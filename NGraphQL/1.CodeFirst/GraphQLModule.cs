@@ -6,17 +6,33 @@ using NGraphQL.Model;
 namespace NGraphQL.CodeFirst {
 
   public class GraphQLModule {
-    internal HashSet<Type> RegisteredTypes = new HashSet<Type>();
+    public readonly GraphQLApi Api; 
+    internal List<Type> Types = new List<Type>();
+    internal List<ScalarTypeDef> Scalars = new List<ScalarTypeDef>();
+    internal List<DirectiveDef> Directives = new List<DirectiveDef>();
     internal List<EntityMapping> Mappings = new List<EntityMapping>();
 
+    public GraphQLModule(GraphQLApi api) {
+      Util.Check(api != null, "'api' parameter may not be null.");
+      Api = api;
+    }
+
     // called after model constructed
-    public virtual void OnModelConstructed(GraphQLApi api) {
+    public virtual void OnModelConstructed() {
     }
 
     public void RegisterTypes(params Type[] types) {
-      RegisteredTypes.UnionWith(types); 
+      Types.AddRange(types); 
     }
-    
+
+    public void RegisterScalars(params ScalarTypeDef[] scalars) {
+      Scalars.AddRange(scalars);
+    }
+
+    public void RegisterDirectives(params DirectiveDef[] directives) {
+      Directives.AddRange(directives);
+    }
+
     public void Map<TEntity, TGraphQL>(Expression<Func<TEntity, TGraphQL>> mapping) {
       RegisterTypes(typeof(TGraphQL));
       var tmap = new EntityMapping() { GraphQLType = typeof(TGraphQL), EntityType = typeof(TEntity), Expression = mapping };

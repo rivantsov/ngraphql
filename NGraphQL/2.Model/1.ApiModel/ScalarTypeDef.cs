@@ -17,7 +17,9 @@ namespace NGraphQL.Model {
 
     public ScalarTypeDef(string name, Type clrType, bool isCustom = false) : base(name, TypeKind.Scalar, clrType) {
       IsCustom = isCustom;
+      base.TypeRole = SchemaTypeRole.DataType;
     }
+
     public virtual object ParseToken(RequestContext context, TokenValueSource token) {
       if(token.TokenData.TermName == TermNames.NullValue)
         return null; 

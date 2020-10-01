@@ -23,10 +23,12 @@ namespace NGraphQL.Model.Core {
 
     public IdTypeDef Id_;
 
-    public DeprecatedDirDef DeprecatedDir; 
+    public DeprecatedDirDef DeprecatedDir;
+    public IncludeDirectiveDef IncludeDir;
+    public SkipDirectiveDef SkipDir; 
 
-    public CoreModule(GraphQLApi api): base() {
-      // Scalar types
+    public CoreModule(GraphQLApi api): base(api) {
+      // Standard scalar types
       this.String_ = new StringTypeDef();
       this.Int_ = new IntTypeDef();
       this.Long_ = new LongTypeDef();
@@ -40,14 +42,15 @@ namespace NGraphQL.Model.Core {
       this.Time_ = new TimeTypeDef();
       this.Uuid_ = new UuidTypeDef();
       this.Decimal_ = new DecimalTypeDef();
-      api.Scalars.AddRange(new ScalarTypeDef[] { String_, Int_, Long_, Float_, Double_, Boolean_, Id_, 
-                         DateTime_, Date_, Time_, Uuid_, Decimal_});
+      
+      RegisterScalars(String_, Int_, Long_, Float_, Double_, Boolean_, Id_, 
+                         DateTime_, Date_, Time_, Uuid_, Decimal_);
 
       // Directives 
       DeprecatedDir = new DeprecatedDirDef(this);
-      api.Directives.Add(DeprecatedDir);
-      api.Directives.Add(new IncludeDirectiveDef(this));
-      api.Directives.Add(new SkipDirectiveDef(this));
+      IncludeDir = new IncludeDirectiveDef(this);
+      SkipDir = new SkipDirectiveDef(this); 
+      RegisterDirectives(DeprecatedDir, IncludeDir, SkipDir);
     }
 
   }

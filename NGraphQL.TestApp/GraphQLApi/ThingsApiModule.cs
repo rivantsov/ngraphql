@@ -38,12 +38,12 @@ namespace NGraphQL.TestApp {
       Map<OtherThing, OtherThing_>(); // engine will automatically map all matching fields
     }// constructor
 
-    public override void OnModelConstructed(GraphQLApi api) {
-      base.OnModelConstructed(api);
+    public override void OnModelConstructed() {
+      base.OnModelConstructed();
       // testing hide-enum-value feature. Use this if you have no control over enum declaration, but you want to 
       //  remove/hide some members; for ex, some flag enums declare extra flag combinations as enum members (I do this often),
       //  this practice does not fit with GraphQL semantics, so these values should be removed from the GraphQL enum declaration/schema. 
-      api.Model.RemoveEnumValue(ThingKind.KindFour_Hidden);
+      this.Api.Model.RemoveEnumValue(ThingKind.KindFour_Hidden);
     }
   } // class
 

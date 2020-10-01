@@ -12,19 +12,23 @@ namespace NGraphQL.Model.Construction {
   public class XmlDocumentationLoader {
     Dictionary<string, Dictionary<string, XElement>> _data = new Dictionary<string, Dictionary<string, XElement>>(); 
 
-    public bool TryLoadAssemblyXmlFile(string asmName) {
-      var file = asmName + ".xml";
-      if(!File.Exists(file))
+    public bool TryLoadAssemblyXmlFile(Assembly assembly) {
+      var asmLoc = assembly.Location;
+      var dir = Path.GetDirectoryName(asmLoc);
+      var fileName = Path.GetFileNameWithoutExtension(asmLoc); 
+      var filePath = Path.Combine(dir, fileName + ".xml");
+      if(!File.Exists(filePath))
         return false; 
 
       //Load all member elements
-      var xml = File.ReadAllText(file);
+      var xml = File.ReadAllText(filePath);
       var xDoc = XDocument.Parse(xml);
       var memberNodes = xDoc.Root.Descendants("members").First().Descendants("member").ToList();
 
       // Add a dictionary with all member elements for the assembly
+      var asmName = assembly.GetName().Name;
       var dict = new Dictionary<string, XElement>();
-      _data.Add(asm, dict); 
+      _data.Add(asmName, dict); 
       foreach(var mElem in memberNodes) {
         var key = mElem.Attribute("name").Value;
         //for methods, cut off param list in parenthesis - we do not support overloading anyway
