@@ -16,7 +16,7 @@ namespace NGraphQL.Model.Construction {
       var entityPrm = mapping.Expression.Parameters[0];
       var memberInit = mapping.Expression.Body as MemberInitExpression;
       if(memberInit == null) {
-        AddError($"Invalid mapping expression for type {mapping.EntityType}->{mapping.TypeDef.Name}");
+        AddError($"Invalid mapping expression for type {mapping.EntityType}->{mapping.GraphQLType.Name}");
         return;
       }
       foreach(var bnd in memberInit.Bindings) {

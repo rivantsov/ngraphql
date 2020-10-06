@@ -65,12 +65,12 @@ namespace NGraphQL.Model.Construction {
       } //else
 
       // Found matching resolver method
-      if (!SetupResolverMethod(field, resMethod, resAttr))
+      if (!SetupFieldResolverMethod(typeDef, field, resMethod, resClass, resAttr))
         return false;
       return true; 
     }//method
 
-    private bool SetupResolverMethod(FieldDef field, MethodInfo resolverMethod, ResolverAttribute resAttr) {
+    private bool SetupFieldResolverMethod(ComplexTypeDef typeDef, FieldDef field, MethodInfo resolverMethod, Type resolverClass, ResolverAttribute resAttr) {
       var retType = resolverMethod.ReturnType;
       var returnsTask = retType.IsGenericType && retType.GetGenericTypeDefinition() == typeof(Task<>);
       Func<object, object> taskResultReader = null;
@@ -82,11 +82,78 @@ namespace NGraphQL.Model.Construction {
       if (!CheckReturnTypeCompatible(retType, field.TypeRef, resolverMethod))
         return false; 
 
-      field.Resolver = new ResolverMethodInfo() { Attribute = resAttr, Method = resolverMethod, ReturnsTask = returnsTask, TaskResultReader = taskResultReader };
+      field.Resolver = new ResolverMethodInfo() { Attribute = resAttr, Method = resolverMethod, ResolverClass = resolverClass,
+          ReturnsTask = returnsTask, TaskResultReader = taskResultReader };
       if (returnsTask)
         field.Flags |= FieldFlags.ReturnsTask;
+      if (typeDef.TypeRole == SchemaTypeRole.DataType)
+        field.Flags |= FieldFlags.HasParentArg; 
+      BuildResolverMethodArguments(typeDef, field); 
       return !_model.HasErrors;
     }
+
+    private bool BuildResolverMethodArguments(ComplexTypeDef typeDef, FieldDef fieldDef) {
+      var resMethod = fieldDef.Resolver.Method; 
+      // Check first parameter - must be IFieldContext
+      var prms = resMethod.GetParameters();
+      if (prms.Length == 0 || prms[0].ParameterType != typeof(IFieldContext)) {
+        AddError($"Resolver method {resMethod.GetFullRef()}: the first parameter must be of type '{nameof(IFieldContext)}'.");
+        return false;
+      }
+
+      // compare list of field parameters with list of resolver method parameters; 
+      //  resolver method has extra FieldContext and Parent parameters
+      var argCountDiff = 1;
+      if (fieldDef.Flags.IsSet(FieldFlags.HasParentArg))
+        argCountDiff = 2;
+      var expectedPrmCount = fieldDef.Args.Count + argCountDiff;
+      if (expectedPrmCount != prms.Length) {
+        AddError($"Resolver method {resMethod.GetFullRef()}: parameter count mismatch with field arguments, expected {expectedPrmCount}, " + 
+           "with added IFieldContext and possibly Parent object parameter. ");
+        return false; 
+      }
+      // parameter names/types must be identical
+      for(int i = argCountDiff; i < prms.Length; i++) {
+        var prm = prms[i];
+        var arg = fieldDef.Args[i];
+        if (prm.Name != arg.Name || prm.ParameterType != arg.TypeRef.ClrType) {
+          AddError($"Resolver method {resMethod.GetFullRef()}: parameter name/type mismatch with field argument; parameter: {prm.Name}.");
+          return false; 
+        }
+      }
+
+      // build arguments
+      for (int i = 1; i < prms.Length; i++) { //starting with 1, FieldContext already checked
+        var prm = prms[i];
+        if (i == 1 && fieldDef.Flags.IsSet(FieldFlags.HasParentArg)) {
+          // it is auto param, parent object; prm.Type is entity type, check it matches field parent type  
+          var mappedTo = _model.GetMappedGraphQLType(prm.ParameterType);
+          if (mappedTo != typeDef) {
+            AddError($"Resolver method {resMethod.GetFullRef()}: invalid parameter {prm.Name}, expected entity type mapped to '{typeDef.Name}'.");
+            continue;
+          }
+          continue;
+        }
+        var prmTypeRef = GetTypeRef(prm.ParameterType, prm, $"Method {resMethod.Name}, parameter {prm.Name}");
+        if (prmTypeRef.IsList && !prmTypeRef.TypeDef.IsEnumFlagArray())
+          VerifyListParameterType(prm.ParameterType, resMethod, prm.Name);
+        var prmDirs = BuildDirectivesFromAttributes(prm);
+        var dftValue = prm.DefaultValue == DBNull.Value ? null : prm.DefaultValue;
+        var argDef = new InputValueDef() {
+          Name = GetGraphQLName(prm), TypeRef = prmTypeRef,
+          ParamType = prm.ParameterType, HasDefaultValue = prm.HasDefaultValue,
+          DefaultValue = dftValue, Directives = prmDirs
+        };
+        fieldDef.Args.Add(argDef);
+      }
+      return !_model.HasErrors;
+    }
+
+    private void VerifyListParameterType(Type type, MethodInfo method, string paramName) {
+      if (!type.IsArray && !type.IsInterface)
+        AddError($"Resolver method {method.GetFullRef()}: Invalid list parameter type - must be array or IList<T>; parameter {paramName}. ");
+    }
+
 
     private bool CheckReturnTypeCompatible(Type returnType, TypeRef withTypeRef, MethodInfo method) {
       UnwrapClrType(returnType, method, out var retBaseType, out var kinds);
@@ -114,9 +181,12 @@ namespace NGraphQL.Model.Construction {
           }
           return true;
 
-        case UnionTypeDef utd: 
+        case UnionTypeDef _:
+        case InterfaceTypeDef _:
+          //TODO: implement later
+          return true; 
       }
-      throw new NotImplementedException(); 
+      return true;  
     }
   }
 }

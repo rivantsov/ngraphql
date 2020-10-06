@@ -31,11 +31,13 @@
   <ItemGroup>
     <Compile Remove="1.CodeFirst\InterfaceBox_Disabled.cs" />
     <Compile Remove="2.Model\1.ApiModel\Construction\RegisteredTypeInfo_Disabled.cs" />
+    <Compile Remove="2.Model\1.ApiModel\Construction\_ModelBuilder_OLD.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <None Include="1.CodeFirst\InterfaceBox_Disabled.cs" />
     <None Include="2.Model\1.ApiModel\Construction\RegisteredTypeInfo_Disabled.cs" />
+    <None Include="2.Model\1.ApiModel\Construction\_ModelBuilder_OLD.cs" />
   </ItemGroup>
 
   <ItemGroup>

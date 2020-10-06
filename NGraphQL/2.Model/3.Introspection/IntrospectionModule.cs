@@ -8,14 +8,14 @@ namespace NGraphQL.Model.Introspection {
 
   public class IntrospectionModule: GraphQLModule {
 
-    public IntrospectionModule() {
+    public IntrospectionModule(GraphQLApi api): base(api) {
       this.RegisterTypes(
         typeof(IntrospectionQuery),
         typeof(TypeKind), typeof(DirectiveLocation),
         typeof(Schema__), typeof(Type__), typeof(Field__), typeof(InputValue__),
         typeof(EnumValue__), typeof(Directive__)
       );
-      this.RegisterResolversClass<IntrospectionResolvers>();
+      this.RegisterResolvers(typeof(IntrospectionResolvers));
     }
 
   }

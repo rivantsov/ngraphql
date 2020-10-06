@@ -90,7 +90,7 @@ namespace NGraphQL.Model.Construction {
             AddError($"Mapping target type {mp.GraphQLType.Name} is not registered; module {mname}");
             continue; 
           }
-          if(typeDef.TypeRole != SchemaTypeRole.DataType || mp.TypeDef.Kind != TypeKind.Object) {
+          if(typeDef.TypeRole != SchemaTypeRole.DataType || typeDef.Kind != TypeKind.Object) {
             AddError($"Invalid mapping target type {mp.GraphQLType.Name}, expected data object type; module {mname}");
             continue;
           }
@@ -105,8 +105,8 @@ namespace NGraphQL.Model.Construction {
       //  Add this mappings explicitly, this will allow building field readers on each
       //  field definition. 
       foreach (var typeDef in _model.Types) {
-        if (typeDef.TypeRole == SchemaTypeRole.DataType && typeDef is ObjectTypeDef otd && otd.EntityTypes.Count == 0) {
-          otd.EntityTypes.Add(otd.ClrType);
+        if (typeDef.TypeRole == SchemaTypeRole.DataType && typeDef is ObjectTypeDef otd && otd.Mapping == null) {
+          otd.Mapping = new EntityMapping() { EntityType = typeDef.ClrType, GraphQLType = typeDef.ClrType };
         }
       }
       return !_model.HasErrors; 

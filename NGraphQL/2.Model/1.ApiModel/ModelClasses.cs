@@ -140,7 +140,7 @@ namespace NGraphQL.Model {
   public class ResolverMethodInfo {
     public MethodInfo Method;
     public ResolverAttribute Attribute;
-    public TypeDefBase OnType; //Interface or object type
+    public Type ResolverClass; 
 
     public bool ReturnsTask;
     public Func<object, object> TaskResultReader; // reads Task<T>.Result
@@ -154,10 +154,11 @@ namespace NGraphQL.Model {
     public Type Type; 
   }
 
-  public abstract class EntityMapping {
+  public class EntityMapping {
     public Type GraphQLType;
     public Type EntityType;
     public LambdaExpression Expression;
+    internal EntityMapping() { }
   }
 
   public class EntityMapping<TEntity>: EntityMapping {

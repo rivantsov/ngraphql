@@ -21,6 +21,7 @@ namespace NGraphQL.Model.Construction {
 
     public ModelBuilder(GraphQLApi api) {
       _api = api;
+      _docLoader = new XmlDocumentationLoader();
     }
 
     public void Build() {
@@ -42,20 +43,10 @@ namespace NGraphQL.Model.Construction {
         return;
 
       // add self-mapped types (add their mappings to themselves)
-      AssignSelfMappedObjectTypes();
 
       BuildTypesInternals();
       if (_model.HasErrors)
         return;
-
-      ProcessEntityMappings();
-      if (_model.HasErrors)
-        return;
-
-      ProcessResolverClasses();
-      if (_model.HasErrors)
-        return;
-
 
       BuildSchemaDef();
       if (_model.HasErrors)

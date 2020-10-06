@@ -158,11 +158,6 @@ namespace NGraphQL.Model.Construction {
       return fldDef; 
     }
 
-    private void VerifyListParameterType(Type type, string methodName, string paramName) {
-      if (!type.IsArray && !type.IsInterface) 
-        AddError($"Invalid list parameter type - must be array or IList<T>; resolver {methodName}, parameter {paramName}. ");
-    }
-
     private string GetFieldNameFromResolverMethod(MethodInfo resolverMethod, ResolverTargetBaseAttribute resolverAttr) {
       var name = resolverAttr.FieldName; 
       if (string.IsNullOrWhiteSpace(name)) {

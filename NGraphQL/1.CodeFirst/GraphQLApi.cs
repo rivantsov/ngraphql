@@ -17,7 +17,7 @@ namespace NGraphQL.CodeFirst {
     public GraphQLApi() {
       CoreModule = new CoreModule(this);
       RegisterModule(CoreModule);
-      IntrospectionModule = new IntrospectionModule();
+      IntrospectionModule = new IntrospectionModule(this);
       RegisterModule(IntrospectionModule); 
     }
     
