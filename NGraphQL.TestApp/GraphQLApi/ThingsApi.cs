@@ -18,7 +18,7 @@ namespace NGraphQL.TestApp {
     
     public ThingsApi(ThingsApp thingsApp) {
       App = thingsApp; 
-      var thingsModule = new ThingsGraphQLModule();
+      var thingsModule = new ThingsGraphQLModule(this);
       base.RegisterModule(thingsModule);
     }
   }

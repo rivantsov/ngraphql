@@ -120,7 +120,7 @@ namespace NGraphQL.Model.Construction {
       foreach(UnionTypeDef utDef in unionTypes) {
         var objTypes = utDef.ClrType.BaseType.GetGenericArguments();
         foreach(var objType in objTypes) {
-          var typeDef = _model.LookupMappedTypeDef(objType);
+          var typeDef = _model.GetMappedGraphQLType(objType);
           if(typeDef == null) {
             AddError($"Union type {utDef.Name}: type {objType} is not registered.");
             continue;
@@ -186,8 +186,8 @@ namespace NGraphQL.Model.Construction {
           AddError($"{location}: scalar type {scalarAttr.ScalarName} is not defined. ");
           return null;
         }
-      } else if(_model.EntityMappings.TryGetValue(baseType, out var entMapping))
-        typeDef = entMapping.TypeDef;
+      } else if(_model.TypesByEntityType.TryGetValue(baseType, out var mappedTypeDef))
+        typeDef = mappedTypeDef;
       else if(!_model.TypesByClrType.TryGetValue(baseType, out typeDef) ) {
         AddError($"{location}: type {baseType} is not registered. ");
         return null;

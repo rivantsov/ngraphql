@@ -30,6 +30,7 @@ namespace NGraphQL.Model {
           new Dictionary<string, TypeDefBase>(StringComparer.OrdinalIgnoreCase);
 
     public Dictionary<Type, TypeDefBase> TypesByClrType = new Dictionary<Type, TypeDefBase>();
+    public Dictionary<Type, ComplexTypeDef> TypesByEntityType = new Dictionary<Type, ComplexTypeDef>();
 
     public IList<string> Errors = new List<string>();
     public bool HasErrors => Errors.Count > 0;

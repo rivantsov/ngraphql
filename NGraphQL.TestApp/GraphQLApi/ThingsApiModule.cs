@@ -9,7 +9,7 @@ namespace NGraphQL.TestApp {
   // modules then  assembled into a GraphQLApi
   
   public class ThingsGraphQLModule : GraphQLModule {
-    public ThingsGraphQLModule() {
+    public ThingsGraphQLModule(GraphQLApi api): base(api) {
       // 1. Register all types
       RegisterTypes(
         typeof(IThingsQuery), typeof(ThingsMutation), typeof(IThingsSubscription),
@@ -22,7 +22,7 @@ namespace NGraphQL.TestApp {
         );
 
       // Define mappings of entities (biz app objects) to API Object Types 
-      Map<Thing, Thing_>(bt => new Thing_() {
+      MapEntity<Thing>().To<Thing_>(bt => new Thing_() {
         Id = bt.Id,
         Name = bt.Name,
         Description = bt.Descr,
@@ -35,7 +35,7 @@ namespace NGraphQL.TestApp {
         NextThing = FromMap<Thing_>(bt.NextThing)
         
       });
-      Map<OtherThing, OtherThing_>(); // engine will automatically map all matching fields
+      MapEntity<OtherThing>().To<OtherThing_>(); // engine will automatically map all matching fields
     }// constructor
 
     public override void OnModelConstructed() {

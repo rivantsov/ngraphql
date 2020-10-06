@@ -98,7 +98,7 @@ namespace NGraphQL.Server.Execution {
 
     private ObjectTypeDef GetMappedObjectTypeDef(ObjectScope scope) {
       object entity = scope.Entity;
-      var typeDef = _requestContext.ApiModel.LookupMappedTypeDef(entity.GetType());
+      var typeDef = _requestContext.ApiModel.GetMappedGraphQLType(entity.GetType());
       if(typeDef == null || typeDef.Kind != TypeKind.Object) {
         // TODO: see if it can happen we can throw better error here
       }

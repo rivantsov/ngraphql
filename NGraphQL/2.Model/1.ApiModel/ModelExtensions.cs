@@ -73,12 +73,6 @@ namespace NGraphQL.Model {
       return null;
     }
 
-    public static TypeDefBase GetMappedGraphQLType(this GraphQLApiModel model, Type entityType) {
-      if(model.EntityMappings.TryGetValue(entityType, out var mapping))
-        return mapping.TypeDef;
-      return null; 
-    }
-
     public static Directive CreateDirective(this DirectiveDef def, params object[] argValues) {
       var argVcount = argValues == null ? 0 : argValues.Length; 
       if(def.Args.Count != argVcount) 

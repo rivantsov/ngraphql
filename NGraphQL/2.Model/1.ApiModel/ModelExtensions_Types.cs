@@ -19,12 +19,12 @@ namespace NGraphQL.Model {
       return null;
     }
 
-    public static TypeDefBase LookupMappedTypeDef(this GraphQLApiModel model, Type clrType) {
-      var baseType = clrType;
-      if(model.EntityMappings.TryGetValue(baseType, out var mapping))
-        return mapping.TypeDef;
+    public static TypeDefBase GetMappedGraphQLType(this GraphQLApiModel model, Type entityType) {
+      if (model.TypesByEntityType.TryGetValue(entityType, out var typeDef))
+        return typeDef;
       return null;
     }
+
 
 
     public static bool IsComplexReturnType(this TypeDefBase typeDef) {
