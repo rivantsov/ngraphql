@@ -18,9 +18,8 @@ namespace NGraphQL.Model.Construction {
       
       CollectResolverMethods();
 
-      if (!AssignMappedEntities())
+      if (!AssignMappedEntitiesForObjectTypes())
         return; 
-      AssignSelfMappedObjectTypes();
       // build root schema objects: query, mutation, subscription
       _model.QueryType = new ObjectTypeDef("Query", null) { TypeRole = SchemaTypeRole.Query };
 
@@ -54,6 +53,7 @@ namespace NGraphQL.Model.Construction {
     }
 
     private void BuildObjectTypeFields(ComplexTypeDef typeDef) {
+      var objTypeDef = typeDef as ObjectTypeDef;
       var clrType = typeDef.ClrType;
       var members = clrType.GetFieldsProps();
       foreach (var member in members) {
@@ -70,20 +70,18 @@ namespace NGraphQL.Model.Construction {
           Description = descr,
         };
         typeDef.Fields.Add(fld);
-        if (typeDef is ObjectTypeDef otd)
-          AssignFieldResolverOrMappingExpression(otd, fld);
+        if (objTypeDef != null)
+          TryFindAssignFieldResolver(objTypeDef, fld);
+      }
+      // mapping expressions
+      if (objTypeDef != null) {
+        if (objTypeDef.Mapping?.Expression != null)
+          ProcessEntityMappingExpression(objTypeDef);
+        ProcessMappingForMatchingMembers(objTypeDef); 
       }
     }
 
-    private void AssignFieldResolverOrMappingExpression(ObjectTypeDef typeDef, FieldDef field) {
-      if (TryFindAssignFieldResolver(typeDef, field))
-        return; 
-
-      // explicit mapping expression
-    }
-
-
-    private bool AssignMappedEntities() {
+    private bool AssignMappedEntitiesForObjectTypes() {
       foreach (var module in _api.Modules) {
         var mname = module.GetType().Name;
         foreach (var mp in module.Mappings) {
@@ -97,23 +95,21 @@ namespace NGraphQL.Model.Construction {
             continue;
           }
           var objTypeDef = (ObjectTypeDef)typeDef;
-          objTypeDef.EntityTypes.Add(mp.EntityType);
+          objTypeDef.Mapping = mp; 
         }
       }
-      return !_model.HasErrors; 
-    }
-
-    // if some GraphQL type is not mapped to anything, we assume it is mapped it itself. 
-    // This is the case for introspection types, there are no entities behind them, 
-    //  they are entities themselves. 
-    //  Add this mappings explicitly, this will allow building field readers on each
-    //  field definition. 
-    private void AssignSelfMappedObjectTypes() {
-      foreach(var typeDef in _model.Types) {
+      // Self-mapped object types
+      // if some GraphQL type is not mapped to anything, we assume it is mapped it itself. 
+      // This is the case for introspection types, there are no entities behind them, 
+      //  they are entities themselves. 
+      //  Add this mappings explicitly, this will allow building field readers on each
+      //  field definition. 
+      foreach (var typeDef in _model.Types) {
         if (typeDef.TypeRole == SchemaTypeRole.DataType && typeDef is ObjectTypeDef otd && otd.EntityTypes.Count == 0) {
           otd.EntityTypes.Add(otd.ClrType);
         }
       }
+      return !_model.HasErrors; 
     }
 
     private bool CollectRegisteredClrTypes() {

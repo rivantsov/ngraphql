@@ -75,7 +75,7 @@ namespace NGraphQL.Model {
 
   public class ObjectTypeDef : ComplexTypeDef {
     public List<InterfaceTypeDef> Implements = new List<InterfaceTypeDef>();
-    public List<Type> EntityTypes = new List<Type>();
+    public EntityMapping Mapping;
 
     public ObjectTypeDef(string name, Type clrType) : base(name, TypeKind.Object, clrType) { }
     public bool IsSpecialType { get; internal set; } // identifies special types like Query, Mutation, Schema etc
@@ -154,11 +154,23 @@ namespace NGraphQL.Model {
     public Type Type; 
   }
 
-  public class EntityMapping {
+  public abstract class EntityMapping {
     public Type GraphQLType;
     public Type EntityType;
     public LambdaExpression Expression;
-    public ObjectTypeDef TypeDef;
+  }
+
+  public class EntityMapping<TEntity>: EntityMapping {
+    internal EntityMapping() {
+      base.EntityType = typeof(TEntity);
+    }
+    public void To<TGraphQL>(Expression<Func<TEntity, TGraphQL>> expression = null) where TGraphQL: class {
+      GraphQLType = typeof(TGraphQL);
+      Expression = expression;
+    }
+    public void ToUnion<TUnion>() where TUnion: UnionBase {
+      GraphQLType = typeof(TUnion);
+    }
   }
 
   [DisplayName("{Name}/{Kind}")]

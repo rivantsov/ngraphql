@@ -63,13 +63,60 @@ namespace NGraphQL.Model.Construction {
           return false;
         }
       } //else
-      // Assign resolver info
-      var retType = resMethod.ReturnType;
-      var returnsTask = retType.IsGenericType && retType.GetGenericTypeDefinition() == typeof(Task<>);
-      field.Resolver = new ResolverMethodInfo() { Attribute = resAttr, Method = resMethod, 
-         ReturnsTask = returnsTask};
+
+      // Found matching resolver method
+      if (!SetupResolverMethod(field, resMethod, resAttr))
+        return false;
       return true; 
     }//method
 
+    private bool SetupResolverMethod(FieldDef field, MethodInfo resolverMethod, ResolverAttribute resAttr) {
+      var retType = resolverMethod.ReturnType;
+      var returnsTask = retType.IsGenericType && retType.GetGenericTypeDefinition() == typeof(Task<>);
+      Func<object, object> taskResultReader = null;
+      if (returnsTask) {
+        retType = retType.GetGenericArguments()[0];
+        taskResultReader = ReflectionHelper.CompileTaskResultReader(retType);
+      }
+      // validate return type
+      if (!CheckReturnTypeCompatible(retType, field.TypeRef, resolverMethod))
+        return false; 
+
+      field.Resolver = new ResolverMethodInfo() { Attribute = resAttr, Method = resolverMethod, ReturnsTask = returnsTask, TaskResultReader = taskResultReader };
+      if (returnsTask)
+        field.Flags |= FieldFlags.ReturnsTask;
+      return !_model.HasErrors;
+    }
+
+    private bool CheckReturnTypeCompatible(Type returnType, TypeRef withTypeRef, MethodInfo method) {
+      UnwrapClrType(returnType, method, out var retBaseType, out var kinds);
+      var retTypeRank = kinds.GetListRank(); 
+      if (retTypeRank != withTypeRef.Rank) {
+        AddError($"Resolver method {method.GetFullRef()}: return type {returnType.Name} (rank {retTypeRank}) is not compatible with field type " + 
+                 $" {withTypeRef.Name} (rank {withTypeRef.Rank}); list rank mismatch.");
+        return false; 
+      }
+      var withBaseType = withTypeRef.TypeDef.ClrType; 
+      switch (withTypeRef.TypeDef) {
+        case ScalarTypeDef _:
+        case EnumTypeDef _:
+          if(retBaseType != withBaseType) {
+            AddError($"Resolver method {method.GetFullRef()}: return type is incompatible with field type {withTypeRef.Name}");
+            return false; 
+          }
+          return true;
+
+        case ObjectTypeDef objTypeDef:
+          var mappedTypeDef = _model.GetMappedGraphQLType(retBaseType);
+          if (mappedTypeDef != objTypeDef) {
+            AddError($"Resolver method {method.GetFullRef()}: return type is incompatible with field type {withTypeRef.Name}");
+            return false;
+          }
+          return true;
+
+        case UnionTypeDef utd: 
+      }
+      throw new NotImplementedException(); 
+    }
   }
 }

@@ -10,7 +10,7 @@ namespace StarWars.Api {
 
     public StarWarsApi(StarWarsApp app) {
       App = app; 
-      MainModule = new StarWarsApiModule();
+      MainModule = new StarWarsApiModule(this);
       this.RegisterModule(MainModule); 
     }
   

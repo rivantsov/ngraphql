@@ -4,6 +4,7 @@ using System.Text;
 
 namespace StarWars {
   public static class StarWarsExtensions {
+
     public static bool Includes(this Episode episodes, Episode episode) {
       return (episodes & episode) != 0;
     }

@@ -32,6 +32,14 @@ namespace NGraphQL.Model {
       return (locs & loc) != 0;
     }
 
+    public static int GetListRank(this IList<TypeKind> kinds) {
+      return kinds.Count(k => k == TypeKind.List);
+    }
+
+    public static string GetFullRef(this MemberInfo member) {
+      return $"{member.DeclaringType.Name}.{member.Name}";
+    }
+
     public static ObjectTypeDef GetOperationDef(this GraphQLApiModel model, OperationType opType) {
       switch(opType) {
         case OperationType.Query: return model.QueryType;

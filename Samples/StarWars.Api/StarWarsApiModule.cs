@@ -4,6 +4,7 @@ using System.Text;
 using NGraphQL.CodeFirst;
 
 namespace StarWars.Api {
+
   public class StarWarsApiModule: GraphQLModule {
     public StarWarsApiModule(GraphQLApi api): base(api) {
       // Register types
@@ -14,13 +15,20 @@ namespace StarWars.Api {
         typeof(Starship_), typeof(Review_), typeof(SearchResult_), typeof(ReviewInput_)
         );
 
-      RegisterResolvers(typeof(StarWarsResolvers));
-      // map Api object types to app types
-      Map<Human, Human_>(h => new Human_() { 
-        // Id, Name, AppearsIn, HomePlanet, Mass are mapped automatically
+      // map app entity types to GraphQL Api types
+      MapEntity<Human>().To<Human_>(h => new Human_() {
+        Mass = h.MassKg, // we use custom mapping expression here, others with matching names are mapped automatically
       });
+      MapEntity<Droid>().To<Droid_>();
+      MapEntity<Starship>().To<Starship_>();
+      MapEntity<Review>().To<Review_>();
+      MapEntity<Character>().To<ICharacter_>();
+      MapEntity<NamedObject>().ToUnion<SearchResult_>();
+      
+      //resolvers
+      RegisterResolvers(typeof(StarWarsResolvers));
 
     } //constructor  
-    
+
   }
 }

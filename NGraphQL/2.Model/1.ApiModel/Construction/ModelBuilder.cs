@@ -33,7 +33,7 @@ namespace NGraphQL.Model.Construction {
       RegisterImplementedInterfaces();
 
       // collect mappings
-      AssignMappedEntities();
+      AssignMappedEntitiesForObjectTypes();
       if (_model.HasErrors)
         return;
 

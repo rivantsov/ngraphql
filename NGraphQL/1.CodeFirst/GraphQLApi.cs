@@ -10,15 +10,15 @@ namespace NGraphQL.CodeFirst {
   public class GraphQLApi {
     public readonly IList<GraphQLModule> Modules = new List<GraphQLModule>();
     public readonly CoreModule CoreModule;
-    public readonly IntrospectionModule IntrospectionModeule;
+    public readonly IntrospectionModule IntrospectionModule;
 
     public GraphQLApiModel Model { get; internal set; }
 
     public GraphQLApi() {
       CoreModule = new CoreModule(this);
       RegisterModule(CoreModule);
-      IntrospectionModeule = new IntrospectionModule();
-      RegisterModule(IntrospectionModeule); 
+      IntrospectionModule = new IntrospectionModule();
+      RegisterModule(IntrospectionModule); 
     }
     
     public void RegisterModule(GraphQLModule module) {

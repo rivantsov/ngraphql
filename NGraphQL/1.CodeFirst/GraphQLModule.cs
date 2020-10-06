@@ -39,21 +39,15 @@ namespace NGraphQL.CodeFirst {
       Directives.AddRange(directives);
     }
 
-    public void Map<TEntity, TGraphQL>(Expression<Func<TEntity, TGraphQL>> mapping) {
-      RegisterTypes(typeof(TGraphQL));
-      var tmap = new EntityMapping() { GraphQLType = typeof(TGraphQL), EntityType = typeof(TEntity), Expression = mapping };
-      Mappings.Add(tmap);
-    }
-
-    // defines default mapping, fields with the same name are mapped
-    public void Map<TEntity, TGraphQL>() {
-      RegisterTypes(typeof(TGraphQL));
-      var tmap = new EntityMapping() { GraphQLType = typeof(TGraphQL), EntityType = typeof(TEntity) };
-      Mappings.Add(tmap);
-    }
-
     protected internal T FromMap<T>(object value) {
       return default(T);
+    }
+
+    // MapEntity - alt approach
+    protected EntityMapping<TEntity> MapEntity<TEntity>() {
+      var mapping = new EntityMapping<TEntity>();
+      Mappings.Add(mapping);
+      return mapping; 
     }
 
   }

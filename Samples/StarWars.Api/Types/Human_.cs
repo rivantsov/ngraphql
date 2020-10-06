@@ -6,7 +6,7 @@ using NGraphQL.CodeFirst;
 namespace StarWars.Api {
 
   /// <summary>A humanoid creature from the Star Wars universe </summary>
-  [GraphQLObjectType("Human")]
+  [ObjectType, GraphQLName("Human")]
   public class Human_ : ICharacter_ {
 
     /// <summary>The ID of the human </summary>

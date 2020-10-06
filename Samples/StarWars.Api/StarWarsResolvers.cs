@@ -19,39 +19,40 @@ namespace StarWars.Api {
     public void EndRequest(IRequestContext request) {
     }
 
-    // Queries
-    public IList<ICharacter_> GetCharacters(IFieldContext fieldContext, Episode episode) { 
-      return default; 
+    public Episode GetEpisodes() {
+      return _app.GetAllEpisodes();
     }
 
-    public IList<Starship> GetStarships(IFieldContext fieldContext) { 
-      return default; 
+    public IList<Starship> GetStarships(IFieldContext fieldContext) {
+      return _app.GetStarships();
+    }
+
+    public Starship GetStarship(IFieldContext fieldContext, string id) {
+      return _app.GetStarship(id);
+    }
+
+    public IList<Character> GetCharacters(IFieldContext fieldContext, Episode episode) { 
+      return _app.GetCharacters(episode); 
+    }
+
+    public Character GetCharacter(IFieldContext fieldContext, string id) {
+      return _app.GetCharacter(id);
     }
 
     public IList<Review> GetReviews(IFieldContext fieldContext, Episode episode) { 
-      return default; 
+      return _app.GetReviews(episode); 
     }
 
-    public ICharacter_ GetCharacter(IFieldContext fieldContext, string id) { 
-      return default; 
-    }
-
-    public Starship_ GetStarship(IFieldContext fieldContext, string id) { 
-      return default;
-    }
-
-    public IList<SearchResult_> Search(IFieldContext fieldContext, string text) { 
-      return default; 
+    public IList<NamedObject> Search(IFieldContext fieldContext, string text) { 
+      return _app.Search(text).ToList(); 
     }
 
     // Mutations
-    public Review_ CreateReview(IFieldContext fieldContext, Episode episode, ReviewInput_ reviewInput) {
-      return default; 
+    public Review CreateReview(IFieldContext fieldContext, Episode episode, ReviewInput_ reviewInput) {
+      return _app.CreateReview(episode, reviewInput.Stars, reviewInput.Commentary); 
     }
 
-    // Fields 
-
-    // this is a regular version, not used - we use batched version instead
+    // this is a default, non-batched version, not used - we use batched version instead
     public IList<Character> GetFriends(IFieldContext fieldContext, Character character) {
       var friends = _app.Characters.Where(c => character.FriendIds.Contains(c.Id)).ToList();
       return friends; 

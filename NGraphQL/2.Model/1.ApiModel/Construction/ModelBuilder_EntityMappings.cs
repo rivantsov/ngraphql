@@ -11,17 +11,8 @@ using NGraphQL.Utilities;
 namespace NGraphQL.Model.Construction {
   public partial class ModelBuilder {
 
-    //  Anaylyze mapping expression and split it into expressions copying each property; 
-    //  then compile them and attach to field definitions
-    private void ProcessEntityMappings() {
-      foreach(var mapping in _model.EntityMappings.Values) {
-        if (mapping.Expression != null)
-          ProcessEntityMappingExpression(mapping);
-        ProcessMappingForMatchingMembers(mapping); 
-      }
-    } //method
-
-    private void ProcessEntityMappingExpression(EntityMapping mapping) {
+    private void ProcessEntityMappingExpression(ObjectTypeDef typeDef) {
+      var mapping = typeDef.Mapping; 
       var entityPrm = mapping.Expression.Parameters[0];
       var memberInit = mapping.Expression.Body as MemberInitExpression;
       if(memberInit == null) {
@@ -30,7 +21,7 @@ namespace NGraphQL.Model.Construction {
       }
       foreach(var bnd in memberInit.Bindings) {
         var asmtBnd = bnd as MemberAssignment;
-        var fieldDef = mapping.TypeDef.Fields.FirstOrDefault(fld => fld.ClrMember == bnd.Member);
+        var fieldDef = typeDef.Fields.FirstOrDefault(fld => fld.ClrMember == bnd.Member);
         if(asmtBnd == null || fieldDef == null)
           continue; //should never happen, but just in case
         // create lambda reading the source property
@@ -39,9 +30,10 @@ namespace NGraphQL.Model.Construction {
     }
 
     // those members that do not have binding expressions, try mapping props with the same name
-    private void ProcessMappingForMatchingMembers(EntityMapping mapping) {
+    private void ProcessMappingForMatchingMembers(ObjectTypeDef typeDef) {
+      var mapping = typeDef.Mapping;
       var entityType = mapping.EntityType; 
-      foreach(var fldDef in mapping.TypeDef.Fields) {
+      foreach(var fldDef in typeDef.Fields) {
         if(fldDef.Resolver != null || fldDef.Reader != null)
           continue;
         var memberName = fldDef.ClrMember.Name;

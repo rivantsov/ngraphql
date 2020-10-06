@@ -16,7 +16,26 @@ namespace StarWars {
       InitData(); 
     }
 
-    // methods supporting API
+    public Episode GetAllEpisodes() {
+      return Episode.Newhope | Episode.Empire | Episode.Jedi;
+    }
+
+    public IList<Starship> GetStarships() {
+      return Starships;
+    }
+
+    public Starship GetStarship(string id) {
+      return Starships.FirstOrDefault(s => s.Id == id);
+    }
+
+    public IList<Character> GetCharacters(Episode episode) {
+      return Characters.Where(c => c.AppearsIn.Includes(episode)).ToList();
+    }
+
+    public Character GetCharacter(string id) {
+      return Characters.FirstOrDefault(c => c.Id == id);
+    }
+
     public IList<Review> GetReviews(Episode episode) {
       return Reviews.Where(r => r.Episode == episode).ToList(); 
     }
@@ -29,14 +48,6 @@ namespace StarWars {
       foreach (var sh in Starships)
         if (sh.Name.Contains(text))
           yield return sh; 
-    }
-
-    public Character GetCharacter(string id) {
-      return Characters.FirstOrDefault(c => c.Id == id);
-    }
-
-    public Starship GetStarship(string id) {
-      return Starships.FirstOrDefault(s => s.Id == id);
     }
 
     // mutation CreateReview
