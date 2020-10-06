@@ -24,12 +24,12 @@ namespace NGraphQL.Model {
     public string SchemaDoc { get; internal set; }
 
     public Dictionary<string, DirectiveDef> Directives;
+    public IList<ResolverClassInfo> Resolvers = new List<ResolverClassInfo>(); 
     public List<TypeDefBase> Types = new List<TypeDefBase>();
     public Dictionary<string, TypeDefBase> TypesByName =
           new Dictionary<string, TypeDefBase>(StringComparer.OrdinalIgnoreCase);
 
     public Dictionary<Type, TypeDefBase> TypesByClrType = new Dictionary<Type, TypeDefBase>();
-    public Dictionary<Type, EntityMapping> EntityMappings = new Dictionary<Type, EntityMapping>();
 
     public IList<string> Errors = new List<string>();
     public bool HasErrors => Errors.Count > 0;

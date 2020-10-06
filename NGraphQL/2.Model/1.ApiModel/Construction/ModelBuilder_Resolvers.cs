@@ -18,11 +18,11 @@ namespace NGraphQL.Model.Construction {
     private void ProcessResolverClasses() {
       // We create Query type upfront; we create Mutation type when we find first mutation
       //  (mutations are optional in GraphQL model, query is required)
-      _model.QueryType = new ObjectTypeDef("Query", null) { };
+     // _model.QueryType = new ObjectTypeDef("Query", null) { };
 
       var resolverClasses = _api.Modules.SelectMany(m => m.ResolverClasses).ToList();
       foreach(var resClass in  resolverClasses) {
-        var methods = resClass.Declaration.GetMethods(BindingFlags.Public | BindingFlags.Instance);
+        var methods = resClass.GetMethods(BindingFlags.Public | BindingFlags.Instance);
         foreach(var method in methods) {
           var resAttr = method.GetCustomAttribute<ResolverTargetBaseAttribute>();
           if(resAttr == null)

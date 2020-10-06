@@ -11,11 +11,9 @@ using NGraphQL.Utilities;
 namespace NGraphQL.Model.Construction {
   public partial class ModelBuilder {
 
-    // Anaylyze mapping expression and split it into expressions copying each property; 
+    //  Anaylyze mapping expression and split it into expressions copying each property; 
     //  then compile them and attach to field definitions
     private void ProcessEntityMappings() {
-      
-      // actually process mappings
       foreach(var mapping in _model.EntityMappings.Values) {
         if (mapping.Expression != null)
           ProcessEntityMappingExpression(mapping);

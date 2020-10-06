@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using NGraphQL.CodeFirst;
 using NGraphQL.Utilities;
@@ -9,48 +10,111 @@ namespace NGraphQL.Model.Construction {
 
   public partial class ModelBuilder {
 
-
     public void BuildModel() {
       _model = _api.Model;
+      // collect all data types, query/mutation types, resolvers
       if (!CollectRegisteredClrTypes())
         return;
-      CollectEntityMappings();
-      AddSelfMappedTypeMappings();
+      
+      CollectResolverMethods();
 
-      // using all known CLR types, collect all assemblies, derive xml file names, load xml files if found
-      LoadXmlDocFiles();
+      if (!AssignMappedEntities())
+        return; 
+      AssignSelfMappedObjectTypes();
+      // build root schema objects: query, mutation, subscription
+      _model.QueryType = new ObjectTypeDef("Query", null) { TypeRole = SchemaTypeRole.Query };
 
+      BuildTypesInternals();
+      
 
     }
 
-    private void CollectEntityMappings() {
-      foreach (var module in _api.Modules) {
-        foreach (var mp in module.Mappings) {
-          mp.TypeDef = (ObjectTypeDef)_model.LookupTypeDef(mp.GraphQLType);
-          _model.EntityMappings.Add(mp.EntityType, mp);
-        }
+
+
+
+    private void BuildTypesInternals() {
+      
+      foreach (var td in _model.Types) {
+        td.Directives = BuildDirectivesFromAttributes(td.ClrType);
+        switch (td) {
+          case ComplexTypeDef complexTypeDef:
+            BuildObjectTypeFields(complexTypeDef);
+            break;
+          case InputObjectTypeDef itd:
+            BuildInputObjectFields(itd);
+            break;
+          case EnumTypeDef etd:
+            BuildEnumValues(etd);
+            break;
+          case UnionTypeDef utd:
+            // we build union types in a separate loop after building other types
+            break;
+        } //switch
+      } //foreach td
+    }
+
+    private void BuildObjectTypeFields(ComplexTypeDef typeDef) {
+      var clrType = typeDef.ClrType;
+      var members = clrType.GetFieldsProps();
+      foreach (var member in members) {
+        var ignoreAttr = member.GetCustomAttribute<IgnoreAttribute>();
+        if (ignoreAttr != null)
+          continue;
+        var mtype = member.GetMemberType();
+        var typeRef = GetTypeRef(mtype, member, $"Field {clrType.Name}.{member.Name}");
+        var dirs = BuildDirectivesFromAttributes(member);
+        var name = GetGraphQLName(member);
+        var descr = _docLoader.GetDocString(member, clrType);
+        var fld = new FieldDef(name, typeRef) {
+          ClrMember = member, Directives = dirs,
+          Description = descr,
+        };
+        typeDef.Fields.Add(fld);
+        if (typeDef is ObjectTypeDef otd)
+          AssignFieldResolverOrMappingExpression(otd, fld);
       }
     }
+
+    private void AssignFieldResolverOrMappingExpression(ObjectTypeDef typeDef, FieldDef field) {
+      if (TryFindAssignFieldResolver(typeDef, field))
+        return; 
+
+      // explicit mapping expression
+    }
+
+
+    private bool AssignMappedEntities() {
+      foreach (var module in _api.Modules) {
+        var mname = module.GetType().Name;
+        foreach (var mp in module.Mappings) {
+          var typeDef = _model.LookupTypeDef(mp.GraphQLType);
+          if (typeDef == null) {
+            AddError($"Mapping target type {mp.GraphQLType.Name} is not registered; module {mname}");
+            continue; 
+          }
+          if(typeDef.TypeRole != SchemaTypeRole.DataType || mp.TypeDef.Kind != TypeKind.Object) {
+            AddError($"Invalid mapping target type {mp.GraphQLType.Name}, expected data object type; module {mname}");
+            continue;
+          }
+          var objTypeDef = (ObjectTypeDef)typeDef;
+          objTypeDef.EntityTypes.Add(mp.EntityType);
+        }
+      }
+      return !_model.HasErrors; 
+    }
+
     // if some GraphQL type is not mapped to anything, we assume it is mapped it itself. 
     // This is the case for introspection types, there are no entities behind them, 
     //  they are entities themselves. 
     //  Add this mappings explicitly, this will allow building field readers on each
     //  field definition. 
-    private void AddSelfMappedTypeMappings() {
-      var mappedGqlTypes = _model.EntityMappings.Values.Select(m => m.GraphQLType);
-      var mappedTypeSet = new HashSet<Type>(mappedGqlTypes);
-      var notMappedTypes = _model.GetTypeDefs<ObjectTypeDef>(TypeKind.Object)
-                           // Schema has no CLR type
-                           .Where(td => td.ClrType != null && !mappedTypeSet.Contains(td.ClrType))
-                           .ToList();
-      foreach (var td in notMappedTypes) {
-        var type = td.ClrType;
-        var mapping = new EntityMapping() { EntityType = type, GraphQLType = type, TypeDef = td };
-        _model.EntityMappings.Add(type, mapping);
+    private void AssignSelfMappedObjectTypes() {
+      foreach(var typeDef in _model.Types) {
+        if (typeDef.TypeRole == SchemaTypeRole.DataType && typeDef is ObjectTypeDef otd && otd.EntityTypes.Count == 0) {
+          otd.EntityTypes.Add(otd.ClrType);
+        }
       }
     }
-
-
 
     private bool CollectRegisteredClrTypes() {
       foreach (var module in _api.Modules) {
@@ -76,10 +140,11 @@ namespace NGraphQL.Model.Construction {
         foreach (var scalar in module.Scalars)
           RegisterTypeDef(scalar);
         foreach (var dirDef in module.Directives)
-          _model.Directives[dirDef.Name] = dirDef; 
+          _model.Directives[dirDef.Name] = dirDef;
       } // foreach module
       return !_model.HasErrors;
     } //method
+
 
     private void RegisterTypeDef(TypeDefBase typeDef) {
       try {

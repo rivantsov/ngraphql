@@ -75,6 +75,7 @@ namespace NGraphQL.Model {
 
   public class ObjectTypeDef : ComplexTypeDef {
     public List<InterfaceTypeDef> Implements = new List<InterfaceTypeDef>();
+    public List<Type> EntityTypes = new List<Type>();
 
     public ObjectTypeDef(string name, Type clrType) : base(name, TypeKind.Object, clrType) { }
     public bool IsSpecialType { get; internal set; } // identifies special types like Query, Mutation, Schema etc
@@ -137,23 +138,20 @@ namespace NGraphQL.Model {
 
   [DisplayName("{Method.Name}")]
   public class ResolverMethodInfo {
-    public OperationType OperationType;
     public MethodInfo Method;
-    public ResolverTargetBaseAttribute Attribute;
-    public string FieldName;
+    public ResolverAttribute Attribute;
     public TypeDefBase OnType; //Interface or object type
-    public ResolverClassInfo ClassInfo;
 
     public bool ReturnsTask;
     public Func<object, object> TaskResultReader; // reads Task<T>.Result
 
-    public override string ToString() => $"{Method.Name}({OperationType})";
+    public override string ToString() => $"{Method.Name}";
   }
 
-  [DisplayName("{Implementation.Name}")]
+  [DisplayName("{Type}")]
   public class ResolverClassInfo {
-    public Type Declaration; // interface
-    public Type Implementation; //might be the same as type
+    public GraphQLModule Module;
+    public Type Type; 
   }
 
   public class EntityMapping {

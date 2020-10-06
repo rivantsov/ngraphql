@@ -26,14 +26,6 @@ namespace NGraphQL.Model.Construction {
     public void Build() {
       _model = _api.Model;
 
-      // using all known CLR types, collect all assemblies, derive xml file names, load xml files if found
-      LoadXmlDocFiles();
-
-      // build types and fields
-      var allTypes = _api.Modules.SelectMany(m => m.Types).ToList();
-      foreach(var t in allTypes) {
-        RegisterGraphQLType(t);
-      }
       if (_model.HasErrors)
         return;
 
@@ -41,7 +33,7 @@ namespace NGraphQL.Model.Construction {
       RegisterImplementedInterfaces();
 
       // collect mappings
-      CollectEntityMappings();
+      AssignMappedEntities();
       if (_model.HasErrors)
         return;
 
@@ -50,7 +42,7 @@ namespace NGraphQL.Model.Construction {
         return;
 
       // add self-mapped types (add their mappings to themselves)
-      AddSelfMappedTypeMappings();
+      AssignSelfMappedObjectTypes();
 
       BuildTypesInternals();
       if (_model.HasErrors)
@@ -83,49 +75,8 @@ namespace NGraphQL.Model.Construction {
       VerifyModel(); 
     }
 
-    private void BuildTypesInternals() {
-      foreach(var td in _model.Types) {
-        td.Directives = BuildDirectivesFromAttributes(td.ClrType);
-        switch(td) {
-          case ComplexTypeDef fdc:
-            BuildFields(fdc.ClrType, fdc.Fields);
-            break;
-          case InputObjectTypeDef itd:
-            BuildInputObjectFields(itd);
-            break;
-          case EnumTypeDef etd:
-            BuildEnumValues(etd);
-            break;
-          case UnionTypeDef utd:
-            // we build union types in a separate loop after building other types
-            break;
-        } //switch
-      } //foreach td
-    }
-
     public void AddError(string message) {
       _model.Errors.Add(message); 
-    }
-
-    private bool LoadXmlDocFiles() {
-      // Load all xml files
-      var asmList = _model.RegisteredTypes.Keys.Select(t => t.Assembly).Distinct().ToList();
-      foreach(var asm in asmList) {
-        _docLoader.TryLoadAssemblyXmlFile(asm);
-      }
-      return true; 
-    }
-
-    private void RegisterGraphQLType(Type type) {
-      if(_model.TypesByClrType.TryGetValue(type, out var _))
-        return;
-      var typeDef = CreateTypeDef(type);
-      if(typeDef == null)
-        return;
-      var hideAttr = type.GetCustomAttribute<HiddenAttribute>();
-      if(hideAttr != null)
-        typeDef.Hidden = true;
-      RegisterTypeDef(typeDef);
     }
 
     private void RegisterImplementedInterfaces() {
@@ -140,25 +91,6 @@ namespace NGraphQL.Model.Construction {
           }
         }
       } //foreach typeDef
-    }
-
-    private void BuildFields(Type clrType, List<FieldDef> fields) {
-      var members = clrType.GetFieldsProps(); 
-      foreach(var member in members) {
-        var ignoreAttr = member.GetCustomAttribute<IgnoreAttribute>();
-        if(ignoreAttr != null)
-          continue;
-        var mtype = member.GetMemberType();
-        var typeRef = GetTypeRef(mtype, member, $"Field {clrType.Name}.{member.Name}");
-        var dirs = BuildDirectivesFromAttributes(member);
-        var name = GetGraphQLName(member);
-        var descr = _docLoader.GetDocString(member, clrType);
-        var fld = new FieldDef(name, typeRef) {
-          ClrMember = member, Directives = dirs,
-          Description = descr,
-        };
-        fields.Add(fld); 
-      }
     }
 
     private void BuildInputObjectFields(InputObjectTypeDef inpTypeDef) {

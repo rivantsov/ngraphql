@@ -9,7 +9,7 @@ namespace NGraphQL.CodeFirst {
     public readonly GraphQLApi Api; 
     internal List<Type> Types = new List<Type>();
     internal List<EntityMapping> Mappings = new List<EntityMapping>();
-    internal List<Type> ResolverTypes = new List<Type>();
+    internal List<Type> ResolverClasses = new List<Type>();
 
     internal List<ScalarTypeDef> Scalars = new List<ScalarTypeDef>();
     internal List<DirectiveDef> Directives = new List<DirectiveDef>();
@@ -28,7 +28,7 @@ namespace NGraphQL.CodeFirst {
     }
 
     public void RegisterResolvers(params Type[] resolverTypes) {
-      ResolverTypes.AddRange(resolverTypes);
+      ResolverClasses.AddRange(resolverTypes);
     }
 
     public void RegisterScalars(params ScalarTypeDef[] scalars) {
