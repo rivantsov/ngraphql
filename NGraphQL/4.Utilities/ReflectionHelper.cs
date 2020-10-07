@@ -27,7 +27,31 @@ namespace NGraphQL.Utilities {
       return type.Name; 
     }
 
-    public static Type GetMemberType(this MemberInfo member) {
+    public static IList<MemberInfo> GetFieldsPropsMethods(this Type type) {
+      var mTypes = MemberTypes.Field | MemberTypes.Property | MemberTypes.Method;
+      var members = type.GetMembers(BindingFlags.Public | BindingFlags.Instance)
+        .Where(m => m.DeclaringType != typeof(object))
+        .Where(m => (m.MemberType & mTypes) != 0)
+        .Where(m => !(m is MethodInfo mi && mi.IsSpecialName)) //filter out getters/setters
+        .ToList();
+      return members;
+    }
+
+    public static IList<MemberInfo> GetFieldsProps(this Type type) {
+      var all = type.GetFieldsPropsMethods(); 
+      return all.Where(m => m.MemberType != MemberTypes.Method).ToList(); 
+    }
+
+    public static List<MethodInfo> GetResolverMethods(this Type type, string name) {
+      var methods = type.GetMember(name, BindingFlags.Public | BindingFlags.Instance)
+        .Where(m => m.MemberType == MemberTypes.Method)
+        .Where(m => m.DeclaringType != typeof(object))
+        .OfType<MethodInfo>()
+        .ToList();
+      return methods;
+    }
+
+    public static Type GetMemberReturnType(this MemberInfo member) {
       switch (member) {
         case PropertyInfo pi:
           return pi.PropertyType;
@@ -36,7 +60,7 @@ namespace NGraphQL.Utilities {
         case MethodInfo mi:
           return mi.ReturnType;
       }
-      throw new Exception($"Invalid argument for GetMemberReturnType: {member.Name}");
+      throw new Exception($"Invalid argument for {nameof(GetMemberReturnType)}: {member.Name}");
     }
 
     public static void SetMember(this MemberInfo member, object obj, object value) {
@@ -94,12 +118,6 @@ namespace NGraphQL.Utilities {
       if (result)
         elemType = type.GetGenericArguments()[0];
       return result;
-    }
-
-    public static IList<MemberInfo> GetFieldsProps(this Type type) {
-      return type.GetMembers(BindingFlags.Public | BindingFlags.Instance)
-                   .Where(m => m.MemberType == MemberTypes.Field || m.MemberType == MemberTypes.Property)
-                   .ToList();
     }
 
     public static Func<object, object> CompileTaskResultReader(Type resultType) {

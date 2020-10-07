@@ -56,7 +56,7 @@ namespace NGraphQL.Model.Introspection {
 
     // enum only
     [GraphQLName("enumValues")]
-    public IList<EnumValue__> GetEnumValues() { return default; }
+    public IList<EnumValue__> GetEnumValues(bool includeDeprecated = true) { return default; }
 
     /// <summary>Display name allowing to see the type name when it is List or NotNull - the current arrangement in GraphQL
     /// is quite stupid. This is extension of GraphQL spec. </summary>

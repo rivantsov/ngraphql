@@ -15,8 +15,6 @@ namespace NGraphQL.Model.Construction {
       // collect all data types, query/mutation types, resolvers
       if (!CollectRegisteredClrTypes())
         return;
-      if (!CollectResolverMethods())
-        return; 
 
       if (!AssignMappedEntitiesForObjectTypes())
         return;
@@ -73,13 +71,15 @@ namespace NGraphQL.Model.Construction {
     private void BuildObjectTypeFields(ComplexTypeDef typeDef) {
       var objTypeDef = typeDef as ObjectTypeDef;
       var clrType = typeDef.ClrType;
-      var members = clrType.GetMembers();
+      var members = clrType.GetFieldsPropsMethods();
       foreach (var member in members) {
         var ignoreAttr = member.GetCustomAttribute<IgnoreAttribute>();
         if (ignoreAttr != null)
           continue;
-        var mtype = member.GetMemberType();
+        var mtype = member.GetMemberReturnType();
         var typeRef = GetTypeRef(mtype, member, $"Field {clrType.Name}.{member.Name}");
+        if (typeRef == null)
+          continue; //error should be logged already
         var dirs = BuildDirectivesFromAttributes(member);
         var name = GetGraphQLName(member);
         var descr = _docLoader.GetDocString(member, clrType);

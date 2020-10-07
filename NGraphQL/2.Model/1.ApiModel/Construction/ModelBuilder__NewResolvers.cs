@@ -10,67 +10,54 @@ using NGraphQL.Utilities;
 
 namespace NGraphQL.Model.Construction {
   public partial class ModelBuilder {
-    Dictionary<string, List<MethodInfo>> _resolverMethodsByName;
-
-    private bool CollectResolverMethods() {
-      var allMethods = new List<MethodInfo>();
-      foreach (var module in _api.Modules) {
-        var mName = module.GetType().Name;
-        foreach (var resType in module.ResolverClasses) {
-          if (!resType.IsClass) {
-            AddError($"Type {resType} may not be registered as resolver class; module: {mName}. ");
-            continue;
-          }
-          _model.Resolvers.Add(new ResolverClassInfo() { Module = module, Type = resType });
-          // collect all methods
-          var methods = resType.GetMethods(BindingFlags.Public | BindingFlags.Instance);
-          allMethods.AddRange(methods); 
-        }
-      }
-      _resolverMethodsByName = allMethods.GroupBy(m => m.Name).ToDictionary(g => g.Key, g => g.ToList());
-      return !_model.HasErrors;
-    }
 
     private bool TryFindAssignFieldResolver(ObjectTypeDef typeDef, FieldDef field) {
       // check resolver
       var methName = field.ClrMember.Name;
       var resAttr = field.ClrMember.GetAttribute<ResolverAttribute>();
-      if (resAttr != null) {
+      if (resAttr != null)
         methName = resAttr.MethodName;
-      }
-      MethodInfo resMethod;
-      if (!_resolverMethodsByName.TryGetValue(methName, out var resMethods))
-        return false;
-      var resClass = resAttr?.ResolverClass;
-      // Resolver method(s) found
-      if (resMethods.Count == 1) {
-        resMethod = resMethods[0];
-        if (resClass != null && resMethod.DeclaringType != resClass) { 
-          AddError($"Field {typeDef.Name}.{field.Name}: failed to find resolver method {methName}, in class {resClass.Name}. ");
-          return false; 
+      List<MethodInfo> methods = null; 
+      var targetResolver = resAttr?.ResolverClass;
+      if (targetResolver != null) {
+        if (!typeDef.Module.ResolverClasses.Contains(targetResolver)) {
+          AddError($"Field {typeDef.Name}.{field.Name}: target resolver class {targetResolver.Name} is not registered with module. ");
+          return false;
+        }
+        methods = targetResolver.GetResolverMethods(methName);
+        // with explicit resolver, if method not found - it is error
+        if (methods.Count == 0) {
+          AddError($"Field {typeDef.Name}.{field.Name}: failed to find resolver method {methName}, in class {targetResolver.Name}. ");
+          return false;
         }
       } else {
-        // we have more than 1 method, use explicit class type in Resolver attribute
-        if (resClass == null) {
-          var resTypeNames = string.Join(", ", resMethods.Select(m => m.DeclaringType.Name));
-          AddError($"Found more than one resolver method ({methName}) for field '{field.Name}' " +
-            $" in resolver classes: [{resTypeNames}]; use Resolver attribute to specify the resolver class explicitly.");
-          return false;
+        // targetResolver is null
+        methods = new List<MethodInfo>();
+        foreach (var resType in typeDef.Module.ResolverClasses) {
+          var mlist = resType.GetResolverMethods(methName);
+          methods.AddRange(mlist);  
         }
-        resMethod = resMethods.FirstOrDefault(m => m.DeclaringType == resClass);
-        if (resMethod == null) {
-          AddError($"Field {typeDef.Name}.{field.Name}: failed to find resolver method {methName}, in class {resClass.Name}. ");
+      }
+      // if resolver not found
+      switch (methods.Count) {
+        case 0: 
+          if (field.ClrMember.MemberType != MemberTypes.Method)
+            return false; // if it is prop or field - it might have mapping; just return false
+          // if field is method - it is error
+          AddError($"Field {typeDef.Name}.{field.Name}: failed to find resolver method {methName}. ");
           return false;
-        }
-      } //else
+        
+        case 1:
+          return SetupFieldResolverMethod(typeDef, field, methods[0], resAttr);
 
-      // Found matching resolver method
-      if (!SetupFieldResolverMethod(typeDef, field, resMethod, resClass, resAttr))
-        return false;
-      return true; 
+        default:
+          AddError($"Field {typeDef.Name}.{field.Name}: found more than one resolver method ({methName}).");
+          return false;
+      }
+
     }//method
 
-    private bool SetupFieldResolverMethod(ComplexTypeDef typeDef, FieldDef field, MethodInfo resolverMethod, Type resolverClass, ResolverAttribute resAttr) {
+    private bool SetupFieldResolverMethod(ComplexTypeDef typeDef, FieldDef field, MethodInfo resolverMethod, ResolverAttribute resAttr) {
       var retType = resolverMethod.ReturnType;
       var returnsTask = retType.IsGenericType && retType.GetGenericTypeDefinition() == typeof(Task<>);
       Func<object, object> taskResultReader = null;
@@ -82,7 +69,7 @@ namespace NGraphQL.Model.Construction {
       if (!CheckReturnTypeCompatible(retType, field.TypeRef, resolverMethod))
         return false; 
 
-      field.Resolver = new ResolverMethodInfo() { Attribute = resAttr, Method = resolverMethod, ResolverClass = resolverClass,
+      field.Resolver = new ResolverMethodInfo() { Attribute = resAttr, Method = resolverMethod, ResolverClass = resolverMethod.DeclaringType,
           ReturnsTask = returnsTask, TaskResultReader = taskResultReader };
       if (returnsTask)
         field.Flags |= FieldFlags.ReturnsTask;
@@ -115,8 +102,8 @@ namespace NGraphQL.Model.Construction {
       // parameter names/types must be identical
       for(int i = argCountDiff; i < prms.Length; i++) {
         var prm = prms[i];
-        var arg = fieldDef.Args[i];
-        if (prm.Name != arg.Name || prm.ParameterType != arg.TypeRef.ClrType) {
+        var arg = fieldDef.Args[i - argCountDiff];
+        if (prm.Name != arg.Name || prm.ParameterType != arg.ParamType) {
           AddError($"Resolver method {resMethod.GetFullRef()}: parameter name/type mismatch with field argument; parameter: {prm.Name}.");
           return false; 
         }

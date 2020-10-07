@@ -49,6 +49,6 @@ namespace NGraphQL.TestApp {
 
     IList<ThingsUnion> GetThingsUnionList();
 
-    IList<object> GetSomeNamedObjects();
+    IList<INamedObj> GetSomeNamedObjects();
   }
 }

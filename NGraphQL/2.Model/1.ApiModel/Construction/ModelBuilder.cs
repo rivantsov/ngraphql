@@ -87,11 +87,10 @@ namespace NGraphQL.Model.Construction {
     private void BuildInputObjectFields(InputObjectTypeDef inpTypeDef) {
       var members = inpTypeDef.ClrType.GetFieldsProps();
       foreach(var member in members) {
-        var mtype = member.GetMemberType();
+        var mtype = member.GetMemberReturnType();
         var typeRef = GetTypeRef(mtype, member, $"Field {inpTypeDef.Name}.{member.Name}");
         if (typeRef.IsList && !typeRef.TypeDef.IsEnumFlagArray()) {
-          // list members must be IList<T> or T[] - this is important, lists are instantiated as arrays 
-          // when deserializing
+          // list members must be IList<T> or T[] - this is important, lists are instantiated as arrays when deserializing
           if (!mtype.IsArray && !mtype.IsInterface) {
             AddError($"Input type member {inpTypeDef.Name}.{member.Name}: list must be either array or IList<T>.");
             continue;
