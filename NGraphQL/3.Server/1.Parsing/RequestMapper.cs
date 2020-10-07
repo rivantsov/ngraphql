@@ -190,17 +190,18 @@ namespace NGraphQL.Server.Parsing {
     private void ValidateMappedFieldAndProcessSubset(MappedField mappedField) {
       var typeDef = mappedField.FieldDef.TypeRef.TypeDef;
       var selField = mappedField.SelectionField;
-      var selSubset = selField.SelectionSubset; 
+      var selSubset = selField.SelectionSubset;
+      var typeName = typeDef.Name; 
       switch(typeDef) {
         case ScalarTypeDef _:
         case EnumTypeDef _:
           if (selSubset != null)
-            AddError($"Field '{selField.Key}' of type '{typeDef.Name}' may not have a selection subset.", selSubset);
+            AddError($"Field '{selField.Key}' of type '{typeName}' may not have a selection subset.", selSubset);
           break;
         
         default: // ObjectType, Union or Interface 
           if (selSubset == null) {
-            AddError($"Field '{selField.Key}' of type '{typeDef.Name}' must have a selection subset.", selField);
+            AddError($"Field '{selField.Key}' of type '{typeName}' must have a selection subset.", selField);
             return; 
           }
           _pendingSelectionSets.Add(new PendingSelectionSet() {

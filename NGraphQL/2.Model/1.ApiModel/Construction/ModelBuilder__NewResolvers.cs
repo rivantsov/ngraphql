@@ -9,6 +9,7 @@ using NGraphQL.CodeFirst;
 using NGraphQL.Utilities;
 
 namespace NGraphQL.Model.Construction {
+
   public partial class ModelBuilder {
 
     private bool TryFindAssignFieldResolver(ObjectTypeDef typeDef, FieldDef field) {
@@ -109,41 +110,12 @@ namespace NGraphQL.Model.Construction {
         }
       }
       return true;
-
-      /*
-      // build arguments
-      for (int i = 1; i < prms.Length; i++) { //starting with 1, FieldContext already checked
-        var prm = prms[i];
-        if (i == 1 && fieldDef.Flags.IsSet(FieldFlags.HasParentArg)) {
-          // it is auto param, parent object; prm.Type is entity type, check it matches field parent type  
-          var mappedTo = _model.GetMappedGraphQLType(prm.ParameterType);
-          if (mappedTo != typeDef) {
-            AddError($"Resolver method {resMethod.GetFullRef()}: invalid parameter {prm.Name}, expected entity type mapped to '{typeDef.Name}'.");
-            continue;
-          }
-          continue;
-        }
-        var prmTypeRef = GetTypeRef(prm.ParameterType, prm, $"Method {resMethod.Name}, parameter {prm.Name}");
-        if (prmTypeRef.IsList && !prmTypeRef.TypeDef.IsEnumFlagArray())
-          VerifyListParameterType(prm.ParameterType, resMethod, prm.Name);
-        var prmDirs = BuildDirectivesFromAttributes(prm);
-        var dftValue = prm.DefaultValue == DBNull.Value ? null : prm.DefaultValue;
-        var argDef = new InputValueDef() {
-          Name = GetGraphQLName(prm), TypeRef = prmTypeRef,
-          ParamType = prm.ParameterType, HasDefaultValue = prm.HasDefaultValue,
-          DefaultValue = dftValue, Directives = prmDirs
-        };
-        fieldDef.Resolver.Add(argDef);
-      }
-      return !_model.HasErrors;
-      */
     }
 
     private void VerifyListParameterType(Type type, MethodInfo method, string paramName) {
       if (!type.IsArray && !type.IsInterface)
         AddError($"Method {method.GetFullRef()}: Invalid list parameter type - must be array or IList<T>; parameter {paramName}. ");
     }
-
 
     private bool CheckReturnTypeCompatible(Type returnType, FieldDef field, MethodInfo method) {
       UnwrapClrType(returnType, method, out var retBaseType, out var kinds);

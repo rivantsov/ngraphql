@@ -105,7 +105,7 @@ namespace NGraphQL.Server.Parsing {
             var vname = tknValueSrc.TokenData.Text;
             var enumVal = etdef.EnumValues.FirstOrDefault(ev => ev.Name == vname);
             if (enumVal == null)
-              throw new InvalidInputException($"Invalid value '{vname}' for enum '{etdef.Name}'.", valueSource);
+              throw new InvalidInputException($"Invalid value '{vname}' for enum '{etdef.ClrType.Name}'.", valueSource);
             return CreateConstantInputValue(tknValueSrc, resultTypeRef, enumVal.ClrValue);
           } else {
             throw new InvalidInputException($"Invalid input value, expected enum value.", valueSource); 

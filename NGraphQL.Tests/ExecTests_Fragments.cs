@@ -25,7 +25,7 @@ query myQuery {
     ...Fr1 
   }
 }
-fragment Fr1 on ApiThing {
+fragment Fr1 on Thing {
     nameX
     ...Fr2
 }
@@ -46,11 +46,11 @@ query myQuery {
     ...Fr1 
   }
 }
-fragment Fr1 on ApiThing {
+fragment Fr1 on Thing {
     name
     ...Fr2
 }
-fragment Fr2 on ApiThing {
+fragment Fr2 on Thing {
     name
     ...Fr1
 }
@@ -67,7 +67,7 @@ query myQuery {
     ...ThingDetails 
   }
 }
-fragment ThingDetails on ApiThing {
+fragment ThingDetails on Thing {
     name
     nextThing {
       ...ThingDetails
@@ -120,7 +120,7 @@ query myQuery {
     ...Flds 
   }
 }
-fragment Flds on ApiThing {
+fragment Flds on Thing {
     name
     nextThing {
       name
@@ -139,7 +139,7 @@ fragment Flds on ApiThing {
 query myQuery { 
   getThing(id: 1) {
     name
-    ... on ApiThing {
+    ... on Thing {
       id
     }
   }
@@ -186,12 +186,12 @@ query {
 fragment UnionFields on ThingsUnion {
     __typename
     name
-    ... on ApiThing {
+    ... on Thing {
       nextThing {
         nextName: name
       }
     }
-    ... on ApiOtherThing {
+    ... on OtherThing {
       idStr
     }
 }";
