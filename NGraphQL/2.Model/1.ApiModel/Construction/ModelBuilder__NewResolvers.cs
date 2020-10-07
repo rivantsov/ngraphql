@@ -151,7 +151,7 @@ namespace NGraphQL.Model.Construction {
 
     private void VerifyListParameterType(Type type, MethodInfo method, string paramName) {
       if (!type.IsArray && !type.IsInterface)
-        AddError($"Resolver method {method.GetFullRef()}: Invalid list parameter type - must be array or IList<T>; parameter {paramName}. ");
+        AddError($"Method {method.GetFullRef()}: Invalid list parameter type - must be array or IList<T>; parameter {paramName}. ");
     }
 
 

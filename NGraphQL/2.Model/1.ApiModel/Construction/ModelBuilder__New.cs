@@ -49,9 +49,6 @@ namespace NGraphQL.Model.Construction {
 
     }
 
-
-
-
     private void BuildTypesInternals() {
       
       foreach (var td in _model.Types) {
@@ -76,7 +73,7 @@ namespace NGraphQL.Model.Construction {
     private void BuildObjectTypeFields(ComplexTypeDef typeDef) {
       var objTypeDef = typeDef as ObjectTypeDef;
       var clrType = typeDef.ClrType;
-      var members = clrType.GetFieldsProps();
+      var members = clrType.GetMembers();
       foreach (var member in members) {
         var ignoreAttr = member.GetCustomAttribute<IgnoreAttribute>();
         if (ignoreAttr != null)
@@ -91,6 +88,8 @@ namespace NGraphQL.Model.Construction {
           Description = descr,
         };
         typeDef.Fields.Add(fld);
+        if (member is MethodInfo method)
+          BuildFieldArguments(fld, method);
         if (objTypeDef != null)
           TryFindAssignFieldResolver(objTypeDef, fld);
       }
@@ -99,6 +98,25 @@ namespace NGraphQL.Model.Construction {
         if (objTypeDef.Mapping.Expression != null)
           ProcessEntityMappingExpression(objTypeDef);
         ProcessMappingForMatchingMembers(objTypeDef); 
+      }
+    }
+
+    private void BuildFieldArguments(FieldDef fieldDef, MethodInfo resMethod) {
+      var prms = resMethod.GetParameters();
+      if (prms == null || prms.Length == 0)
+        return;
+      foreach (var prm in prms) {
+        var prmTypeRef = GetTypeRef(prm.ParameterType, prm, $"Method {resMethod.Name}, parameter {prm.Name}");
+        if (prmTypeRef.IsList && !prmTypeRef.TypeDef.IsEnumFlagArray())
+          VerifyListParameterType(prm.ParameterType, resMethod, prm.Name);
+        var prmDirs = BuildDirectivesFromAttributes(prm);
+        var dftValue = prm.DefaultValue == DBNull.Value ? null : prm.DefaultValue;
+        var argDef = new InputValueDef() {
+          Name = GetGraphQLName(prm), TypeRef = prmTypeRef,
+          ParamType = prm.ParameterType, HasDefaultValue = prm.HasDefaultValue,
+          DefaultValue = dftValue, Directives = prmDirs
+        };
+        fieldDef.Args.Add(argDef);
       }
     }
 

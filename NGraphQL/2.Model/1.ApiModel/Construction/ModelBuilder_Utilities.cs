@@ -27,6 +27,9 @@ namespace NGraphQL.Model.Construction {
       name = type.Name;
       if (type.IsInterface && name.Length > 1 && name.StartsWith("I") && char.IsUpper(name[1]))
         name = name.Substring(1); //cut-off I
+      // cut off _ suffix
+      if (name.Length > 1 && name.EndsWith("_"))
+        name = name.Substring(0, name.Length - 1);
       return name;
     }
 

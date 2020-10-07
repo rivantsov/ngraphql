@@ -33,6 +33,8 @@ namespace NGraphQL.Utilities {
           return pi.PropertyType;
         case FieldInfo fi:
           return fi.FieldType;
+        case MethodInfo mi:
+          return mi.ReturnType;
       }
       throw new Exception($"Invalid argument for GetMemberReturnType: {member.Name}");
     }
