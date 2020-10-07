@@ -66,7 +66,7 @@ namespace NGraphQL.Model.Construction {
         taskResultReader = ReflectionHelper.CompileTaskResultReader(retType);
       }
       // validate return type
-      if (!CheckReturnTypeCompatible(retType, field.TypeRef, resolverMethod))
+      if (!CheckReturnTypeCompatible(retType, field, resolverMethod))
         return false; 
 
       field.Resolver = new ResolverMethodInfo() { Attribute = resAttr, Method = resolverMethod, ResolverClass = resolverMethod.DeclaringType,
@@ -75,11 +75,11 @@ namespace NGraphQL.Model.Construction {
         field.Flags |= FieldFlags.ReturnsTask;
       if (typeDef.TypeRole == SchemaTypeRole.DataType)
         field.Flags |= FieldFlags.HasParentArg; 
-      BuildResolverMethodArguments(typeDef, field); 
+      ValidateResolverMethodArguments(typeDef, field); 
       return !_model.HasErrors;
     }
 
-    private bool BuildResolverMethodArguments(ComplexTypeDef typeDef, FieldDef fieldDef) {
+    private bool ValidateResolverMethodArguments(ComplexTypeDef typeDef, FieldDef fieldDef) {
       var resMethod = fieldDef.Resolver.Method; 
       // Check first parameter - must be IFieldContext
       var prms = resMethod.GetParameters();
@@ -108,7 +108,9 @@ namespace NGraphQL.Model.Construction {
           return false; 
         }
       }
+      return true;
 
+      /*
       // build arguments
       for (int i = 1; i < prms.Length; i++) { //starting with 1, FieldContext already checked
         var prm = prms[i];
@@ -131,9 +133,10 @@ namespace NGraphQL.Model.Construction {
           ParamType = prm.ParameterType, HasDefaultValue = prm.HasDefaultValue,
           DefaultValue = dftValue, Directives = prmDirs
         };
-        fieldDef.Args.Add(argDef);
+        fieldDef.Resolver.Add(argDef);
       }
       return !_model.HasErrors;
+      */
     }
 
     private void VerifyListParameterType(Type type, MethodInfo method, string paramName) {
@@ -142,20 +145,24 @@ namespace NGraphQL.Model.Construction {
     }
 
 
-    private bool CheckReturnTypeCompatible(Type returnType, TypeRef withTypeRef, MethodInfo method) {
+    private bool CheckReturnTypeCompatible(Type returnType, FieldDef field, MethodInfo method) {
       UnwrapClrType(returnType, method, out var retBaseType, out var kinds);
-      var retTypeRank = kinds.GetListRank(); 
-      if (retTypeRank != withTypeRef.Rank) {
-        AddError($"Resolver method {method.GetFullRef()}: return type {returnType.Name} (rank {retTypeRank}) is not compatible with field type " + 
-                 $" {withTypeRef.Name} (rank {withTypeRef.Rank}); list rank mismatch.");
+      var retTypeRank = kinds.GetListRank();
+      var fldTypeRef = field.TypeRef; 
+      var fldTypeRank = fldTypeRef.Rank;
+      if (field.TypeRef.TypeDef.IsEnumFlagArray())
+        fldTypeRank--;
+      if (retTypeRank != fldTypeRank) {
+        AddError($"Resolver method {method.GetFullRef()}: return type {returnType.Name} (rank {retTypeRank}) is not compatible with type " + 
+                 $" {field.TypeRef.Name} of  field '{field.Name}'; list rank mismatch.");
         return false; 
       }
-      var withBaseType = withTypeRef.TypeDef.ClrType; 
-      switch (withTypeRef.TypeDef) {
+      var withBaseType = fldTypeRef.TypeDef.ClrType; 
+      switch (fldTypeRef.TypeDef) {
         case ScalarTypeDef _:
         case EnumTypeDef _:
           if(retBaseType != withBaseType) {
-            AddError($"Resolver method {method.GetFullRef()}: return type is incompatible with field type {withTypeRef.Name}");
+            AddError($"Resolver method {method.GetFullRef()}: return type is incompatible with type {fldTypeRef.Name} of  field '{field.Name}'.");
             return false; 
           }
           return true;
@@ -163,7 +170,7 @@ namespace NGraphQL.Model.Construction {
         case ObjectTypeDef objTypeDef:
           var mappedTypeDef = _model.GetMappedGraphQLType(retBaseType);
           if (mappedTypeDef != objTypeDef) {
-            AddError($"Resolver method {method.GetFullRef()}: return type is incompatible with field type {withTypeRef.Name}");
+            AddError($"Resolver method {method.GetFullRef()}: return type is incompatible with field type {fldTypeRef.Name}");
             return false;
           }
           return true;
