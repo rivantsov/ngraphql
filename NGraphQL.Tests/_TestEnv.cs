@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-
+using NGraphQL.CodeFirst;
 using NGraphQL.Model;
 using NGraphQL.Server;
 using NGraphQL.Server.Execution;
@@ -113,6 +114,10 @@ Exception:
       try {
         var req = new GraphQLRequest() { Query = query, Variables = variables };
         var resp = await ThingsServer.ExecuteAsync(req);
+        if (!resp.IsSuccess()) {
+          var errText = resp.GetErrorsAsText();
+          Debug.WriteLine("Errors: \r\n" + errText);
+        }
         if (throwOnError && resp.Errors != null && resp.Errors.Count > 0)
           throw new Exception($"Request failed: {resp.Errors[0].Message}");
         return resp;

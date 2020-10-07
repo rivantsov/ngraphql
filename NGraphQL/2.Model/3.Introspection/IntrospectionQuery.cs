@@ -7,10 +7,10 @@ namespace NGraphQL.Model.Introspection {
   [Query]
   public class IntrospectionQuery {
 
-    [GraphQLName("__schema")]
+    [GraphQLName("__schema"), Hidden]
     public Schema__ GetSchema() { return default; }
 
-    [GraphQLName("__type"), Null]
+    [GraphQLName("__type"), Null, Hidden]
     public Type__ GetType(string name) { return default; }
   }
 }

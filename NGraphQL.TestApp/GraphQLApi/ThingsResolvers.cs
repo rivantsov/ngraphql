@@ -9,7 +9,7 @@ using NGraphQL.Server;
 
 namespace NGraphQL.TestApp {
 
-  public class ThingsApiResolvers : IResolverClass {
+  public class ThingsResolvers : IResolverClass {
     ThingsApp _app;
 
     void IResolverClass.BeginRequest(IRequestContext context) {

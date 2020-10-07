@@ -44,7 +44,7 @@ namespace NGraphQL.CodeFirst {
   public class IgnoreAttribute : Attribute { }
 
   [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum |
-                  AttributeTargets.Field | AttributeTargets.Property)]
+                  AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Method)]
   public class HiddenAttribute : Attribute { }
 
 

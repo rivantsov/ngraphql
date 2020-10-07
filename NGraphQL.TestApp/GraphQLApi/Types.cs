@@ -23,10 +23,10 @@ namespace NGraphQL.TestApp {
     [Null]
     public string Tag;
 
-    [Resolver(nameof(ThingsApiResolvers.GetMainOtherThing)), Null]
+    [Resolver(nameof(ThingsResolvers.GetMainOtherThing)), Null]
     public OtherThing_ MainOtherThing;
 
-    [Resolver(nameof(ThingsApiResolvers.GetOtherThings))]
+    [Resolver(nameof(ThingsResolvers.GetOtherThings))]
     public IList<OtherThing_> OtherThings;
   }
 

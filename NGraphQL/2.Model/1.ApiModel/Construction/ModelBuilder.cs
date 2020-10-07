@@ -24,7 +24,7 @@ namespace NGraphQL.Model.Construction {
       _docLoader = new XmlDocumentationLoader();
     }
 
-    public void Build() {
+    public void Build_() {
       _model = _api.Model;
 
       if (_model.HasErrors)
@@ -134,13 +134,19 @@ namespace NGraphQL.Model.Construction {
     }
 
     private void BuildSchemaDef() {
+      _model.QueryType = CreateRootSchemaObject("Query",  SchemaTypeRole.Query);
+      _model.MutationType = CreateRootSchemaObject("Mutation", SchemaTypeRole.Mutation);
+      _model.SubscriptionType = CreateRootSchemaObject("Subscription", SchemaTypeRole.Subscription);
+
       var schemaDef =_model.Schema = new ObjectTypeDef("Schema", null);
       RegisterTypeDef(schemaDef);
+      schemaDef.Hidden = false;
       schemaDef.Fields.Add(new FieldDef("query", _model.QueryType.TypeRefNull));
       if(_model.MutationType != null)
         schemaDef.Fields.Add(new FieldDef("mutation", _model.MutationType.TypeRefNull));
       if(_model.SubscriptionType != null)
         schemaDef.Fields.Add(new FieldDef("subscription", _model.SubscriptionType.TypeRefNull));
+
       // add the schema itself as '__schema' to query
       var schField = new FieldDef("__schema", schemaDef.TypeRefNull);
       schField.Flags |= FieldFlags.Hidden; 
@@ -152,6 +158,19 @@ namespace NGraphQL.Model.Construction {
         _model.MutationType.IsSpecialType = true;
       if (_model.SubscriptionType != null)
         _model.SubscriptionType.IsSpecialType = true;
+    }
+
+    private ObjectTypeDef CreateRootSchemaObject(string name, SchemaTypeRole typeRole) {
+      var allFields = _model.Types.Where(t => t.TypeRole == typeRole)
+          .Select(t => (ComplexTypeDef)t).SelectMany(t => t.Fields).ToList();
+      if (allFields.Count == 0)
+        return null;
+      // TODO: add check for name duplicates
+      var rootObj = new ObjectTypeDef(name, null) { TypeRole = typeRole };
+      rootObj.Fields.AddRange(allFields);
+      RegisterTypeDef(rootObj);
+      rootObj.Hidden = false; // by default Hidden is true for module's Query, Mutation objects
+      return rootObj;
     }
 
     private void BuildEnumValues(EnumTypeDef enumTypeDef) {

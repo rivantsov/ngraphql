@@ -39,7 +39,7 @@ namespace NGraphQL.Server {
       try {
         _model = new GraphQLApiModel(Api);
         var modelBuilder = new ModelBuilder(Api);
-        modelBuilder.Build();
+        modelBuilder.BuildModel();
         _model = Api.Model;
         Grammar = new GraphQLGrammar();
         Grammar.Init();

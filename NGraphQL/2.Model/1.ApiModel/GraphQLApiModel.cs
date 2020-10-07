@@ -23,7 +23,7 @@ namespace NGraphQL.Model {
     public Schema__ Schema_;
     public string SchemaDoc { get; internal set; }
 
-    public Dictionary<string, DirectiveDef> Directives;
+    public Dictionary<string, DirectiveDef> Directives = new Dictionary<string, DirectiveDef>();
     public IList<ResolverClassInfo> Resolvers = new List<ResolverClassInfo>(); 
     public List<TypeDefBase> Types = new List<TypeDefBase>();
     public Dictionary<string, TypeDefBase> TypesByName =

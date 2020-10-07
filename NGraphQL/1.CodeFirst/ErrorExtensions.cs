@@ -36,5 +36,15 @@ namespace NGraphQL.CodeFirst {
       throw new AbortRequestException();
     }
 
+    public static string GetErrorsAsText(this GraphQLResponse response) {
+      if (response.IsSuccess())
+        return string.Empty;
+      return string.Join(Environment.NewLine, response.Errors);
+    }
+
+    public static bool IsSuccess(this GraphQLResponse response) {
+      return (response.Errors == null || response.Errors.Count == 0);
+    }
+
   }
 }

@@ -11,7 +11,7 @@ using NGraphQL.Utilities;
 namespace NGraphQL.Model.Construction {
   public partial class ModelBuilder {
 
-    private void ProcessEntityMappingExpression(ObjectTypeDef typeDef) {
+    private void ProcessEntityMappingExpression(ComplexTypeDef typeDef) {
       var mapping = typeDef.Mapping; 
       var entityPrm = mapping.Expression.Parameters[0];
       var memberInit = mapping.Expression.Body as MemberInitExpression;

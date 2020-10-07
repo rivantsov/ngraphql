@@ -15,16 +15,37 @@ namespace NGraphQL.Model.Construction {
       // collect all data types, query/mutation types, resolvers
       if (!CollectRegisteredClrTypes())
         return;
-      
-      CollectResolverMethods();
+      if (!CollectResolverMethods())
+        return; 
 
       if (!AssignMappedEntitiesForObjectTypes())
-        return; 
-      // build root schema objects: query, mutation, subscription
-      _model.QueryType = new ObjectTypeDef("Query", null) { TypeRole = SchemaTypeRole.Query };
+        return;
+
+      RegisterImplementedInterfaces();
+      BuildUnionTypes();
+      if (_model.HasErrors)
+        return;
 
       BuildTypesInternals();
-      
+      if (_model.HasErrors)
+        return;
+
+      BuildSchemaDef();
+      if (_model.HasErrors)
+        return;
+
+      var introSchemaBuilder = new IntrospectionSchemaBuilder();
+      introSchemaBuilder.Build(_model);
+      if (_model.HasErrors)
+        return;
+
+      var schemaGen = new SchemaDocGenerator();
+      _model.SchemaDoc = schemaGen.GenerateSchema(_model);
+
+      foreach (var module in _api.Modules)
+        module.OnModelConstructed();
+
+      VerifyModel();
 
     }
 
@@ -74,8 +95,8 @@ namespace NGraphQL.Model.Construction {
           TryFindAssignFieldResolver(objTypeDef, fld);
       }
       // mapping expressions
-      if (objTypeDef != null) {
-        if (objTypeDef.Mapping?.Expression != null)
+      if (objTypeDef?.Mapping != null) {
+        if (objTypeDef.Mapping.Expression != null)
           ProcessEntityMappingExpression(objTypeDef);
         ProcessMappingForMatchingMembers(objTypeDef); 
       }
@@ -154,6 +175,8 @@ namespace NGraphQL.Model.Construction {
           if (typeDef.IsDefaultForClrType)
             _model.TypesByClrType.Add(typeDef.ClrType, typeDef);
         }
+        if (typeDef.TypeRole != SchemaTypeRole.DataType)
+          typeDef.Hidden = true; 
       } catch (Exception ex) {
         AddError($"FATAL: Failed to register type {typeDef}, name '{typeDef.Name}', error: " + ex.Message);
       }
@@ -196,10 +219,10 @@ namespace NGraphQL.Model.Construction {
                                       out SchemaTypeRole typeRole, out TypeKind typeKind) {
       typeRole = default;
       typeKind = default;
-      var errLoc = $"type {clrType.Name}, module {module.GetType().Name}";
-      var isSpecialType = clrType.IsEnum || clrType.IsInterface || clrType.IsAssignableFrom(typeof(UnionBase));
+      var errLoc = $"module {module.GetType().Name}";
+      var isSpecialType = clrType.IsEnum || clrType.IsAssignableFrom(typeof(UnionBase));
       if (isSpecialType && typeRoleAttr != null) {
-        AddError($"Attribute {typeRoleAttr.GetType().Name} is invalid on this type; {errLoc}");
+        AddError($"Attribute {typeRoleAttr.GetType().Name} is invalid on type {clrType}; {errLoc}");
         return false;
       }
 
@@ -223,14 +246,14 @@ namespace NGraphQL.Model.Construction {
             typeKind = TypeKind.Enum;
           else if (clrType.IsInterface)
             typeKind = TypeKind.Interface;
-          else if (clrType.IsAssignableFrom(typeof(UnionBase)))
+          else if (typeof(UnionBase).IsAssignableFrom(clrType))
             typeKind = TypeKind.Union;
           else {
             result = false;
             if (!clrType.IsClass) {
-              AddError($"Invalid registered type, must be a class; {errLoc}");
+              AddError($"Invalid registered type  {clrType.Name}, must be a class; {errLoc}");
             }
-            AddError($"Registered type is missing attribute identifying GraphQL TypeKind; {errLoc}.");
+            AddError($"Registered type {clrType.Name} is missing an attribute identifying its role (ObjectType, Query, etc); {errLoc}.");
           }
           break;
 

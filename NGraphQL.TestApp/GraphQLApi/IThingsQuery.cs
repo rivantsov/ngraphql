@@ -7,7 +7,7 @@ namespace NGraphQL.TestApp {
 
   [Query]
   interface IThingsQuery {
-    [Resolver(nameof(ThingsApiResolvers.GetThings))]
+    [Resolver(nameof(ThingsResolvers.GetThings))]
     List<Thing_> Things { get; }
 
     Thing_ GetThing(int id);
