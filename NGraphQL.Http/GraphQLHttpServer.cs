@@ -41,15 +41,6 @@ namespace NGraphQL.Http {
     public async Task HandleGraphQLHttpRequestAsync(HttpContext httpContext) {
       GraphQLHttpRequest gqlHttpReq = null; 
       try {
-        // CORS pre-flight
-        if (httpContext.Request.Method == "OPTIONS") {
-          httpContext.Response.StatusCode = 200; //NoContent
-          
-          httpContext.Response.Headers.Add("Access-Control-Allow-Origin", "*");
-          httpContext.Response.Headers.Add("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-          httpContext.Response.Headers.Add("Access-Control-Allow-Headers", "Content-Type");
-          return; 
-        }
         if (httpContext.Request.Path.Value.EndsWith("/schema")) {
           await HandleSchemaDocRequestAsync(httpContext);
           return; 
