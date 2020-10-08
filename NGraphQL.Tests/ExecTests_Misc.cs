@@ -150,7 +150,7 @@ mutation myMut {
       TestEnv.LogTestDescr(@" handling Union return type.");
       query = @"
 query { 
-  #  return type is a list of Union of ApiThing|ApiOtherThing
+  #  return type is a list of Union of Thing|OtherThing
   uList: getThingsUnionList() { __typename name }
 }";
       resp = await ExecuteAsync(query);

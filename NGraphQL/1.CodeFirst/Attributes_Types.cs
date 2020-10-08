@@ -6,10 +6,6 @@ using NGraphQL.Model.Construction;
 
 namespace NGraphQL.CodeFirst {
 
-  public abstract class GraphQLTypeRoleAttribute : Attribute { 
-    internal abstract SchemaTypeRole TypeRole { get; }
-  }
-
   [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface)]
   public class QueryAttribute : GraphQLTypeRoleAttribute {
     internal override SchemaTypeRole TypeRole => SchemaTypeRole.Query; 

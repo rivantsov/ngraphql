@@ -6,7 +6,7 @@ using NGraphQL.CodeFirst;
 namespace StarWars.Api {
 
   /// <summary>The input object sent when someone is creating a new review </summary>
-  [GraphQLInput("ReviewInput")]
+  [InputType]
   public class ReviewInput_ {
 
     /// <summary>0-5 stars </summary>

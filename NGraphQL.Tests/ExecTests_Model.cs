@@ -54,7 +54,7 @@ query {
       TestEnv.LogTestDescr(@" introspection queries.");
       var introQuery = @"
 query {
-  ApiThingType: __type(name: ""ApiThing"") {
+  ThingType: __type(name: ""Thing"") {
      name 
      fields { 
        name, 
@@ -82,6 +82,7 @@ query introQuery {
 ";
       resp = await ExecuteAsync(introQuery);
       var inpObj = resp.Data["inputObjType"];
+      Assert.IsNotNull(inpObj, "Expected input obj type");
     } //method
 
   }

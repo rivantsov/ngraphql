@@ -37,7 +37,6 @@ namespace NGraphQL.Server {
 
     public void Initialize() {
       try {
-        _model = new GraphQLApiModel(Api);
         var modelBuilder = new ModelBuilder(Api);
         modelBuilder.BuildModel();
         _model = Api.Model;

@@ -6,7 +6,7 @@ using NGraphQL.CodeFirst;
 namespace StarWars.Api {
 
   /// <summary> </summary>
-  [GraphQLObjectType("Starship")]
+  [ObjectType]
   public class Starship_ {
     /// <summary>The ID of the starship </summary>
     [Scalar("ID")]

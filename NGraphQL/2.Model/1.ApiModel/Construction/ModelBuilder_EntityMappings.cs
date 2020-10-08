@@ -11,6 +11,39 @@ using NGraphQL.Utilities;
 namespace NGraphQL.Model.Construction {
   public partial class ModelBuilder {
 
+    private bool AssignMappedEntitiesForObjectTypes() {
+      foreach (var module in _api.Modules) {
+        var mname = module.GetType().Name;
+        foreach (var mp in module.Mappings) {
+          var typeDef = _model.LookupTypeDef(mp.GraphQLType);
+          if (typeDef == null) {
+            AddError($"Mapping target type {mp.GraphQLType.Name} is not registered; module {mname}");
+            continue;
+          }
+          if (typeDef.TypeRole != SchemaTypeRole.DataType || typeDef.Kind != TypeKind.Object) {
+            AddError($"Invalid mapping target type {mp.GraphQLType.Name}, expected data object type; module {mname}");
+            continue;
+          }
+          var objTypeDef = (ObjectTypeDef)typeDef;
+          objTypeDef.Mapping = mp;
+          _model.TypesByEntityType[mp.EntityType] = objTypeDef;
+        }
+      }
+      // Self-mapped object types
+      // if some GraphQL type is not mapped to anything, we assume it is mapped it itself. 
+      // This is the case for introspection types, there are no entities behind them, 
+      //  they are entities themselves. 
+      //  Add this mappings explicitly, this will allow building field readers on each
+      //  field definition. 
+      foreach (var typeDef in _model.Types) {
+        if (typeDef.TypeRole == SchemaTypeRole.DataType && typeDef is ObjectTypeDef otd && otd.Mapping == null) {
+          otd.Mapping = new EntityMapping() { EntityType = typeDef.ClrType, GraphQLType = typeDef.ClrType };
+          _model.TypesByEntityType[typeDef.ClrType] = otd;
+        }
+      }
+      return !_model.HasErrors;
+    }
+
     private void ProcessEntityMappingExpression(ComplexTypeDef typeDef) {
       var mapping = typeDef.Mapping; 
       var entityPrm = mapping.Expression.Parameters[0];

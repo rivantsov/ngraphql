@@ -24,27 +24,22 @@ namespace NGraphQL.Model.Construction {
       _docLoader = new XmlDocumentationLoader();
     }
 
-    public void Build_() {
-      _model = _api.Model;
+    public void BuildModel() {
+      _model = _api.Model = new GraphQLApiModel(_api);
 
-      if (_model.HasErrors)
+      // collect all data types, query/mutation types, resolvers
+      if (!CollectRegisteredClrTypes())
         return;
 
-      // connect interfaces
-      RegisterImplementedInterfaces();
-
-      // collect mappings
-      AssignMappedEntitiesForObjectTypes();
-      if (_model.HasErrors)
+      if (!AssignMappedEntitiesForObjectTypes())
         return;
-
-      BuildUnionTypes();
-      if (_model.HasErrors)
-        return;
-
-      // add self-mapped types (add their mappings to themselves)
 
       BuildTypesInternals();
+      if (_model.HasErrors)
+        return;
+
+      LinkImplementedInterfaces();
+      BuildUnionTypes();
       if (_model.HasErrors)
         return;
 
@@ -63,14 +58,166 @@ namespace NGraphQL.Model.Construction {
       foreach (var module in _api.Modules)
         module.OnModelConstructed();
 
-      VerifyModel(); 
+      VerifyModel();
+
+    }
+
+    private bool CollectRegisteredClrTypes() {
+      foreach (var module in _api.Modules) {
+        var mName = module.GetType().Name;
+        foreach (var type in module.Types) {
+          if (_model.TypesByClrType.ContainsKey(type)) {
+            AddError($"Duplicate registration of type {type.Name}, module {mName}.");
+            continue;
+          }
+          var roleAttrs = type.GetAttributes<GraphQLTypeRoleAttribute>();
+          if (roleAttrs.Count > 1) {
+            var strAttrs = string.Join(", ", roleAttrs.Select(a => a.GetType().Name));
+            AddError($"Duplicate/incompatible attributes on type {type.Name}, module {mName}: {strAttrs}");
+            continue;
+          }
+          var roleAttr = roleAttrs.FirstOrDefault();
+          if (!ValidateTypeRoleKind(type, module, roleAttr, out var typeRole, out var typeKind))
+            continue;
+          var typeDef = CreateTypeDef(type, module, typeRole, typeKind);
+          RegisterTypeDef(typeDef);
+        } //foreach type
+        // scalars and directives
+        foreach (var scalar in module.Scalars)
+          RegisterTypeDef(scalar);
+        foreach (var dirDef in module.Directives)
+          _model.Directives[dirDef.Name] = dirDef;
+      } // foreach module
+      return !_model.HasErrors;
+    } //method
+
+    private bool ValidateTypeRoleKind(Type clrType, GraphQLModule module, GraphQLTypeRoleAttribute typeRoleAttr,
+                                      out SchemaTypeRole typeRole, out TypeKind typeKind) {
+      typeRole = default;
+      typeKind = default;
+      var errLoc = $"module {module.GetType().Name}";
+      var isSpecialType = clrType.IsEnum || clrType.IsAssignableFrom(typeof(UnionBase));
+      if (isSpecialType && typeRoleAttr != null) {
+        AddError($"Attribute {typeRoleAttr.GetType().Name} is invalid on type {clrType}; {errLoc}");
+        return false;
+      }
+
+      typeRole = typeRoleAttr == null ? SchemaTypeRole.DataType : typeRoleAttr.TypeRole;
+      if (typeRole != SchemaTypeRole.DataType) {
+        typeKind = TypeKind.Object;
+        return true;
+      }
+
+      bool result = true;
+      switch (typeRoleAttr) {
+        case ObjectTypeAttribute _:
+          typeKind = TypeKind.Object;
+          break;
+        case InputTypeAttribute _:
+          typeKind = TypeKind.InputObject;
+          break;
+
+        case null:
+          if (clrType.IsEnum)
+            typeKind = TypeKind.Enum;
+          else if (clrType.IsInterface)
+            typeKind = TypeKind.Interface;
+          else if (typeof(UnionBase).IsAssignableFrom(clrType))
+            typeKind = TypeKind.Union;
+          else {
+            result = false;
+            if (!clrType.IsClass) {
+              AddError($"Invalid registered type  {clrType.Name}, must be a class; {errLoc}");
+            }
+            AddError($"Registered type {clrType.Name} is missing an attribute identifying its role (ObjectType, Query, etc); {errLoc}.");
+          }
+          break;
+
+        default:
+          result = false;
+          break;
+      }
+      return result;
+    }
+
+    private void BuildTypesInternals() {
+
+      foreach (var td in _model.Types) {
+        td.Directives = BuildDirectivesFromAttributes(td.ClrType);
+        switch (td) {
+          case ComplexTypeDef complexTypeDef:
+            BuildObjectTypeFields(complexTypeDef);
+            break;
+          case InputObjectTypeDef itd:
+            BuildInputObjectFields(itd);
+            break;
+          case EnumTypeDef etd:
+            BuildEnumValues(etd);
+            break;
+          case UnionTypeDef utd:
+            // we build union types in a separate loop after building other types
+            break;
+        } //switch
+      } //foreach td
+    }
+
+    private void BuildObjectTypeFields(ComplexTypeDef typeDef) {
+      var objTypeDef = typeDef as ObjectTypeDef;
+      var clrType = typeDef.ClrType;
+      var members = clrType.GetFieldsPropsMethods();
+      foreach (var member in members) {
+        var ignoreAttr = member.GetCustomAttribute<IgnoreAttribute>();
+        if (ignoreAttr != null)
+          continue;
+        var mtype = member.GetMemberReturnType();
+        var typeRef = GetTypeRef(mtype, member, $"Field {clrType.Name}.{member.Name}");
+        if (typeRef == null)
+          continue; //error should be logged already
+        var dirs = BuildDirectivesFromAttributes(member);
+        var name = GetGraphQLName(member);
+        var descr = _docLoader.GetDocString(member, clrType);
+        var fld = new FieldDef(name, typeRef) {
+          ClrMember = member, Directives = dirs,
+          Description = descr,
+        };
+        typeDef.Fields.Add(fld);
+        if (member is MethodInfo method)
+          BuildFieldArguments(fld, method);
+        if (objTypeDef != null)
+          TryFindAssignFieldResolver(objTypeDef, fld);
+      }
+      // mapping expressions
+      if (objTypeDef?.Mapping != null) {
+        if (objTypeDef.Mapping.Expression != null)
+          ProcessEntityMappingExpression(objTypeDef);
+        ProcessMappingForMatchingMembers(objTypeDef);
+      }
+    }
+
+    private void BuildFieldArguments(FieldDef fieldDef, MethodInfo resMethod) {
+      var prms = resMethod.GetParameters();
+      if (prms == null || prms.Length == 0)
+        return;
+      foreach (var prm in prms) {
+        var prmTypeRef = GetTypeRef(prm.ParameterType, prm, $"Method {resMethod.Name}, parameter {prm.Name}");
+        if (prmTypeRef.IsList && !prmTypeRef.TypeDef.IsEnumFlagArray())
+          VerifyListParameterType(prm.ParameterType, resMethod, prm.Name);
+        var prmDirs = BuildDirectivesFromAttributes(prm);
+        var dftValue = prm.DefaultValue == DBNull.Value ? null : prm.DefaultValue;
+        var argDef = new InputValueDef() {
+          Name = GetGraphQLName(prm), TypeRef = prmTypeRef,
+          ParamType = prm.ParameterType, HasDefaultValue = prm.HasDefaultValue,
+          DefaultValue = dftValue, Directives = prmDirs
+        };
+        fieldDef.Args.Add(argDef);
+      }
     }
 
     public void AddError(string message) {
       _model.Errors.Add(message); 
     }
 
-    private void RegisterImplementedInterfaces() {
+    private void LinkImplementedInterfaces() {
       var objTypes = _model.GetTypeDefs<ObjectTypeDef>(TypeKind.Object);
       foreach(var typeDef in objTypes) {
         var intTypes = typeDef.ClrType.GetInterfaces();
@@ -132,46 +279,6 @@ namespace NGraphQL.Model.Construction {
       } //foreach unionType
     }
 
-    private void BuildSchemaDef() {
-      _model.QueryType = CreateRootSchemaObject("Query",  SchemaTypeRole.Query);
-      _model.MutationType = CreateRootSchemaObject("Mutation", SchemaTypeRole.Mutation);
-      _model.SubscriptionType = CreateRootSchemaObject("Subscription", SchemaTypeRole.Subscription);
-
-      var schemaDef =_model.Schema = new ObjectTypeDef("Schema", null);
-      RegisterTypeDef(schemaDef);
-      schemaDef.Hidden = false;
-      schemaDef.Fields.Add(new FieldDef("query", _model.QueryType.TypeRefNull));
-      if(_model.MutationType != null)
-        schemaDef.Fields.Add(new FieldDef("mutation", _model.MutationType.TypeRefNull));
-      if(_model.SubscriptionType != null)
-        schemaDef.Fields.Add(new FieldDef("subscription", _model.SubscriptionType.TypeRefNull));
-
-      // add the schema itself as '__schema' to query
-      var schField = new FieldDef("__schema", schemaDef.TypeRefNull);
-      schField.Flags |= FieldFlags.Hidden; 
-      _model.QueryType.Fields.Add(schField);
-      // mark special types
-      _model.Schema.IsSpecialType = true;
-      _model.QueryType.IsSpecialType = true;
-      if (_model.MutationType != null)
-        _model.MutationType.IsSpecialType = true;
-      if (_model.SubscriptionType != null)
-        _model.SubscriptionType.IsSpecialType = true;
-    }
-
-    private ObjectTypeDef CreateRootSchemaObject(string name, SchemaTypeRole typeRole) {
-      var allFields = _model.Types.Where(t => t.TypeRole == typeRole)
-          .Select(t => (ComplexTypeDef)t).SelectMany(t => t.Fields).ToList();
-      if (allFields.Count == 0)
-        return null;
-      // TODO: add check for name duplicates
-      var rootObj = new ObjectTypeDef(name, null) { TypeRole = typeRole };
-      rootObj.Fields.AddRange(allFields);
-      RegisterTypeDef(rootObj);
-      rootObj.Hidden = false; // by default Hidden is true for module's Query, Mutation objects
-      return rootObj;
-    }
-
     private void BuildEnumValues(EnumTypeDef enumTypeDef) {
       // enum values are static public fields of enum type
       var fields = enumTypeDef.ClrType.GetFields(BindingFlags.Public | BindingFlags.Static); 
@@ -192,40 +299,6 @@ namespace NGraphQL.Model.Construction {
       }
     }
 
-    private TypeRef GetTypeRef(Type type, ICustomAttributeProvider attributeSource, string location) {
-      var scalarAttr = attributeSource.GetAttribute<ScalarAttribute>(); 
-
-      UnwrapClrType(type, attributeSource, out var baseType, out var kinds);
-
-      TypeDefBase typeDef;
-      if (scalarAttr != null) {
-        typeDef = _model.GetScalarTypeDef(scalarAttr.ScalarName);
-        if (type == null) {
-          AddError($"{location}: scalar type {scalarAttr.ScalarName} is not defined. ");
-          return null;
-        }
-      } else if(_model.TypesByEntityType.TryGetValue(baseType, out var mappedTypeDef))
-        typeDef = mappedTypeDef;
-      else if(!_model.TypesByClrType.TryGetValue(baseType, out typeDef) ) {
-        AddError($"{location}: type {baseType} is not registered. ");
-        return null;
-      }
-
-      // add typeDef kind to kinds list and find/create type ref
-      var allKinds = new List<TypeKind>();
-      allKinds.Add(typeDef.Kind);
-
-      // Flags enums are represented by enum arrays
-      if(typeDef.IsEnumFlagArray()) {
-        allKinds.Add(TypeKind.NotNull);
-        allKinds.Add(TypeKind.List);
-      }
-      
-      allKinds.AddRange(kinds);
-      var typeRef = typeDef.GetCreateTypeRef(allKinds);
-      return typeRef; 
-    }
-    
     private IList<Directive> BuildDirectivesFromAttributes(ICustomAttributeProvider target) {
       var attrList = target.GetCustomAttributes(inherit: true);
       if(attrList.Length == 0)
@@ -253,37 +326,45 @@ namespace NGraphQL.Model.Construction {
       return dirList;
     } //method
 
-    private void UnwrapClrType(Type type, ICustomAttributeProvider attributeSource, out Type baseType, out List<TypeKind> kinds) {
-      kinds = new List<TypeKind>();
-      bool notNull = attributeSource.GetAttribute<NullAttribute>() == null;
-      Type valueTypeUnder;
+    private void BuildSchemaDef() {
+      _model.QueryType = BuildRootSchemaObject("Query", SchemaTypeRole.Query);
+      _model.MutationType = BuildRootSchemaObject("Mutation", SchemaTypeRole.Mutation);
+      _model.SubscriptionType = BuildRootSchemaObject("Subscription", SchemaTypeRole.Subscription);
 
-      if(type.IsGenericListOrArray(out baseType, out var rank)) {
-        valueTypeUnder = Nullable.GetUnderlyingType(baseType);
-        baseType = valueTypeUnder ?? baseType;
-        var withNulls = attributeSource.GetAttribute<WithNullsAttribute>() != null || valueTypeUnder != null;
-        if(!withNulls)
-          kinds.Add(TypeKind.NotNull);
-        for(int i = 0; i < rank; i++)
-          kinds.Add(TypeKind.List);
-        if(notNull)
-          kinds.Add(TypeKind.NotNull);
-        return;
-      }
+      var schemaDef = _model.Schema = new ObjectTypeDef("Schema", null);
+      RegisterTypeDef(schemaDef);
+      schemaDef.Hidden = false;
+      schemaDef.Fields.Add(new FieldDef("query", _model.QueryType.TypeRefNull));
+      if (_model.MutationType != null)
+        schemaDef.Fields.Add(new FieldDef("mutation", _model.MutationType.TypeRefNull));
+      if (_model.SubscriptionType != null)
+        schemaDef.Fields.Add(new FieldDef("subscription", _model.SubscriptionType.TypeRefNull));
 
-      // not array      
-      baseType = type;
-      // check for nullable value type
-      valueTypeUnder = Nullable.GetUnderlyingType(type);
-      if(valueTypeUnder != null) {
-        baseType = valueTypeUnder;
-        notNull = false;
-      }
-
-      if(notNull)
-        kinds.Add(TypeKind.NotNull);
+      // add the schema itself as '__schema' to query
+      var schField = new FieldDef("__schema", schemaDef.TypeRefNull);
+      schField.Flags |= FieldFlags.Hidden;
+      _model.QueryType.Fields.Add(schField);
+      // mark special types
+      _model.Schema.IsSpecialType = true;
+      _model.QueryType.IsSpecialType = true;
+      if (_model.MutationType != null)
+        _model.MutationType.IsSpecialType = true;
+      if (_model.SubscriptionType != null)
+        _model.SubscriptionType.IsSpecialType = true;
     }
 
+    private ObjectTypeDef BuildRootSchemaObject(string name, SchemaTypeRole typeRole) {
+      var allFields = _model.Types.Where(t => t.TypeRole == typeRole)
+          .Select(t => (ComplexTypeDef)t).SelectMany(t => t.Fields).ToList();
+      if (allFields.Count == 0)
+        return null;
+      // TODO: add check for name duplicates
+      var rootObj = new ObjectTypeDef(name, null) { TypeRole = typeRole };
+      rootObj.Fields.AddRange(allFields);
+      RegisterTypeDef(rootObj);
+      rootObj.Hidden = false; // by default Hidden is true for module's Query, Mutation objects
+      return rootObj;
+    }
 
     private void VerifyModel() {
       foreach(var typeDef in _model.Types) {

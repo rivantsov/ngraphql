@@ -6,7 +6,7 @@ using NGraphQL.CodeFirst;
 namespace StarWars.Api {
 
   /// <summary>Represents a review for a movie </summary>
-  [GraphQLObjectType("Review")]
+  [ObjectType]
   public class Review_ {
 
     /// <summary>The movie </summary>
