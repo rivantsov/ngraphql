@@ -108,7 +108,7 @@ namespace NGraphQL.TestApp {
     int Id { get; }
   }
 
-  public class ThingsUnion : Union<Thing, OtherThing> {
+  public class ThingsUnion : Union<Thing_, OtherThing_> {
     public ThingsUnion(Thing value) {
       Value = value;
     }

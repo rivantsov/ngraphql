@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Irony.Parsing;
 using NGraphQL.CodeFirst;
 using NGraphQL.Model;
 using NGraphQL.Model.Construction;
@@ -37,9 +35,9 @@ namespace NGraphQL.Server {
 
     public void Initialize() {
       try {
+        _model = Api.Model = new GraphQLApiModel(Api);
         var modelBuilder = new ModelBuilder(Api);
         modelBuilder.BuildModel();
-        _model = Api.Model;
         Grammar = new GraphQLGrammar();
         Grammar.Init();
         // call init on all types

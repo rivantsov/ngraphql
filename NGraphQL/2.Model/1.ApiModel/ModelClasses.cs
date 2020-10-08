@@ -71,11 +71,11 @@ namespace NGraphQL.Model {
   public abstract class ComplexTypeDef : TypeDefBase {
     public List<FieldDef> Fields = new List<FieldDef>();
     public ComplexTypeDef(string name, TypeKind kind, Type clrType) : base(name, kind, clrType) { }
-    public EntityMapping Mapping;
   }
 
   public class ObjectTypeDef : ComplexTypeDef {
     public List<InterfaceTypeDef> Implements = new List<InterfaceTypeDef>();
+    public EntityMapping Mapping;
 
     public ObjectTypeDef(string name, Type clrType) : base(name, TypeKind.Object, clrType) { }
     public bool IsSpecialType { get; internal set; } // identifies special types like Query, Mutation, Schema etc

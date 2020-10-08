@@ -19,7 +19,7 @@ namespace StarWars.Api {
     public void EndRequest(IRequestContext request) {
     }
 
-    public Episode GetEpisodes() {
+    public Episode GetEpisodes(IFieldContext fieldContext) {
       return _app.GetAllEpisodes();
     }
 
@@ -42,6 +42,21 @@ namespace StarWars.Api {
     public IList<Review> GetReviews(IFieldContext fieldContext, Episode episode) { 
       return _app.GetReviews(episode); 
     }
+
+    public float? GetHeight(IFieldContext fieldContext, Human human, LengthUnit unit = LengthUnit.Meter) { 
+      if (unit == LengthUnit.Foot)
+        return human.Height * 3.28f; 
+      else
+        return human.Height;
+    }
+
+    public float? GetLength(IFieldContext fieldContext, Starship starship, LengthUnit unit = LengthUnit.Meter) {
+      if (unit == LengthUnit.Foot)
+        return starship.Length * 3.28f;
+      else
+        return starship.Length;
+    }
+
 
     public IList<NamedObject> Search(IFieldContext fieldContext, string text) { 
       return _app.Search(text).ToList(); 

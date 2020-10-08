@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net472</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <OutputType>Exe</OutputType>
+        <AssemblyName>StarWars.HttpServer</AssemblyName>
+        <RootNamespace>StarWars.HttpServer</RootNamespace>
+        <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Remove="ReflectorTests.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Properties\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.AspNetCore" Version="2.2.0" />
+      <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.2.7" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\NGraphQL.Http\NGraphQL.Http.csproj" />
+      <ProjectReference Include="..\..\NGraphQL\NGraphQL.csproj" />
+      <ProjectReference Include="..\StarWars.Api\StarWars.Api.csproj" />
+      <ProjectReference Include="..\StarWars\StarWars.csproj" />
+    </ItemGroup>
+
+</Project>

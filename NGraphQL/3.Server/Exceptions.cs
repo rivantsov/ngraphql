@@ -34,6 +34,11 @@ namespace NGraphQL.Server.Execution {
                " or in server.StartupErrors property or in Trace output.") {
       Errors = errors; 
     }
+
+    public string GetErrorsAsText() {
+      var errText = string.Join(Environment.NewLine, this.Errors);
+      return errText; 
+    }
   }
 
   public class ResolverException : GraphQLException {

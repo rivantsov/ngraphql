@@ -11,7 +11,7 @@ namespace StarWars.Api {
     [GraphQLName("episodes"), Resolver("GetEpisodes")]
     Episode Episodes { get; }
 
-    [GraphQLName("starships")]
+    [GraphQLName("starships"), Resolver("GetStarships")]
     IList<Starship_> Starships { get; }
 
     [GraphQLName("starship")]

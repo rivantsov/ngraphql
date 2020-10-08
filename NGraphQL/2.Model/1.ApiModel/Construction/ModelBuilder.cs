@@ -21,11 +21,11 @@ namespace NGraphQL.Model.Construction {
 
     public ModelBuilder(GraphQLApi api) {
       _api = api;
+      _model = _api.Model;
       _docLoader = new XmlDocumentationLoader();
     }
 
     public void BuildModel() {
-      _model = _api.Model = new GraphQLApiModel(_api);
 
       // collect all data types, query/mutation types, resolvers
       if (!CollectRegisteredClrTypes())
@@ -266,7 +266,7 @@ namespace NGraphQL.Model.Construction {
       foreach(UnionTypeDef utDef in unionTypes) {
         var objTypes = utDef.ClrType.BaseType.GetGenericArguments();
         foreach(var objType in objTypes) {
-          var typeDef = _model.GetMappedGraphQLType(objType);
+          var typeDef = _model.LookupTypeDef(objType);
           if(typeDef == null) {
             AddError($"Union type {utDef.Name}: type {objType} is not registered.");
             continue;

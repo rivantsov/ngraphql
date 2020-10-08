@@ -20,11 +20,13 @@ namespace NGraphQL.Model.Construction {
             AddError($"Mapping target type {mp.GraphQLType.Name} is not registered; module {mname}");
             continue;
           }
-          if (typeDef.TypeRole != SchemaTypeRole.DataType || typeDef.Kind != TypeKind.Object) {
+          
+          if (typeDef.TypeRole != SchemaTypeRole.DataType) { 
             AddError($"Invalid mapping target type {mp.GraphQLType.Name}, expected data object type; module {mname}");
             continue;
           }
-          var objTypeDef = (ObjectTypeDef)typeDef;
+          if (!(typeDef is ObjectTypeDef objTypeDef))
+            continue; 
           objTypeDef.Mapping = mp;
           _model.TypesByEntityType[mp.EntityType] = objTypeDef;
         }
@@ -44,7 +46,7 @@ namespace NGraphQL.Model.Construction {
       return !_model.HasErrors;
     }
 
-    private void ProcessEntityMappingExpression(ComplexTypeDef typeDef) {
+    private void ProcessEntityMappingExpression(ObjectTypeDef typeDef) {
       var mapping = typeDef.Mapping; 
       var entityPrm = mapping.Expression.Parameters[0];
       var memberInit = mapping.Expression.Body as MemberInitExpression;

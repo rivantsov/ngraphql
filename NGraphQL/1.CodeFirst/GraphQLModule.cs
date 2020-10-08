@@ -44,7 +44,7 @@ namespace NGraphQL.CodeFirst {
     }
 
     // MapEntity - alt approach
-    protected EntityMapping<TEntity> MapEntity<TEntity>() {
+    protected EntityMapping<TEntity> MapEntity<TEntity>() where TEntity: class {
       var mapping = new EntityMapping<TEntity>();
       Mappings.Add(mapping);
       return mapping; 
