@@ -14,6 +14,7 @@ namespace StarWars.HttpServer {
   class Program {
     public static string ServiceUrl = "http://127.0.0.1:60000";
     public static string LogFilePath = "_serverLog.log";
+    public static string SchemaFilePath = "_starWarsSchema.txt";
     public static GraphQLHttpServer StarWarsHttpServer;
     static IWebHost _webHost;
     public static string SampleUrl = ServiceUrl + "?query={starships{name,length}}";
@@ -45,10 +46,13 @@ namespace StarWars.HttpServer {
       // create server and Http graphQL server 
       var app = new StarWarsApp();
       var starWarsApi = new StarWarsApi(app);
-      var gqlServer = new GraphQLServer(starWarsApi);
-      gqlServer.Initialize();
-      StarWarsHttpServer = new GraphQLHttpServer(gqlServer);
+      var starWarsServer = new GraphQLServer(starWarsApi);
+      starWarsServer.Initialize();
+      StarWarsHttpServer = new GraphQLHttpServer(starWarsServer);
       StarWarsHttpServer.Events.RequestCompleted += Events_RequestCompleted;
+      var schemaDoc = starWarsServer.Api.Model.SchemaDoc;
+      File.WriteAllText(SchemaFilePath, schemaDoc);
+      Console.WriteLine($" StarWars schema document is saved in file {SchemaFilePath}");
       StartWebHost();
     }
 

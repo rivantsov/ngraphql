@@ -87,7 +87,7 @@ query introQuery {
 
 
 
-      TestEnv.LogTestDescr(@" Introspection, __types list");
+      TestEnv.LogTestDescr(@" Introspection, querying all __schema fields");
       introQuery = @"
 query introQuery {
   __schema {
