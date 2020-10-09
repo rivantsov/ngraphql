@@ -14,6 +14,8 @@ namespace NGraphQL.Model.Construction {
 
       // Create type objects without internal details; for typeDef and its typeRefs
       foreach(var typeDef in _model.Types) {
+        if (typeDef.Hidden)
+          continue; 
         CreateTypeObject(typeDef);
         foreach(var typeRef in typeDef.TypeRefs)
           SetupTypeObject(typeRef); 
@@ -21,8 +23,32 @@ namespace NGraphQL.Model.Construction {
 
       // Build types internals - fields, etc
       BuildTypeObjects();
-      // Add hidden fields to model objects
+      BuildDirectives(); 
+      CompleteSchemaObject(); 
       return _schema;
+    }
+
+    private void CompleteSchemaObject() {
+      _schema.QueryType = _schema.Types.FirstOrDefault(t__ => t__.TypeDef == _model.QueryType);
+      if (_model.MutationType != null)
+        _schema.MutationType = _schema.Types.FirstOrDefault(t__ => t__.TypeDef == _model.MutationType);
+      if (_model.SubscriptionType != null)
+        _schema.SubscriptionType = _schema.Types.FirstOrDefault(t__ => t__.TypeDef == _model.SubscriptionType);
+    }
+
+    private void BuildDirectives() {
+      foreach(var dir in _model.Directives.Values) {
+        var dir_ = new Directive__() {
+           Name = dir.Name, Description = dir.Description, Locations = dir.Locations, 
+          IsDeprecated = dir.IsDeprecated, DeprecationReason = dir.DeprecationReason
+        };
+        dir_.Args =
+          dir.Args.Select(ivd => new InputValue__() {
+            Name = ivd.Name, Description = ivd.Description,
+            Type = ivd.TypeRef.Type_, DefaultValue = ivd.DefaultValue + string.Empty
+          }).ToArray();
+        _schema.Directives.Add(dir_); 
+      }
     }
 
     private void CreateTypeObject(TypeDefBase typeDef) {

@@ -16,7 +16,7 @@ namespace NGraphQL.Model.Introspection {
     public Type__ QueryType;
     public Type__ MutationType;
     public Type__ SubscriptionType;
-
+    public IList<Directive__> Directives = new List<Directive__>();
   }
 
   public abstract class IntroObjectBase {

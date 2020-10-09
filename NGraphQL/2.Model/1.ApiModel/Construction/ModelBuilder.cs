@@ -333,7 +333,7 @@ namespace NGraphQL.Model.Construction {
 
       var schemaDef = _model.Schema = new ObjectTypeDef("Schema", null);
       RegisterTypeDef(schemaDef);
-      schemaDef.Hidden = false;
+      // schemaDef.Hidden = false; // - leave it hidden; RegisterTypeDef sets it to true
       schemaDef.Fields.Add(new FieldDef("query", _model.QueryType.TypeRefNull));
       if (_model.MutationType != null)
         schemaDef.Fields.Add(new FieldDef("mutation", _model.MutationType.TypeRefNull));

@@ -100,31 +100,32 @@ $@" resolver calls: {mx.ResolverCallCount}, output objects: {mx.OutputObjectCoun
 
     public static void LogException(string query, Exception ex) {
       var text = $@"
-------------------------------------------------------------------------------------------      
-Request:
-{query}
 
-Exception:
+!!! Exception !!! ----------------------------------------------------------------      
 {ex.ToString()}
+
+Failed request:
+{query}
 ";
       File.AppendAllText(LogFilePath, text);
     }
 
     public static async Task<GraphQLResponse> ExecuteAsync(string query, IDictionary<string, object> variables = null,bool throwOnError = true) {
+      GraphQLResponse resp = null;       
       try {
         var req = new GraphQLRequest() { Query = query, Variables = variables };
-        var resp = await ThingsServer.ExecuteAsync(req);
+        resp = await ThingsServer.ExecuteAsync(req);
         if (!resp.IsSuccess()) {
           var errText = resp.GetErrorsAsText();
           Debug.WriteLine("Errors: \r\n" + errText);
         }
-        if (throwOnError && resp.Errors != null && resp.Errors.Count > 0)
-          throw new Exception($"Request failed: {resp.Errors[0].Message}");
-        return resp;
       } catch(Exception ex) {
         TestEnv.LogException(query, ex);
         throw;
       }
+      if (resp != null && resp.Errors != null && resp.Errors.Count > 0 && throwOnError)
+        throw new Exception($"Request failed: {resp.Errors[0].Message}");
+      return resp;
     }
 
     // Serialization for logging 

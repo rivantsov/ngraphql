@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using NGraphQL.Model;
+using NGraphQL.Utilities;
 using NGraphQL.Server;
+using System.Collections;
 
 namespace NGraphQL.Tests {
 
@@ -83,6 +84,25 @@ query introQuery {
       resp = await ExecuteAsync(introQuery);
       var inpObj = resp.Data["inputObjType"];
       Assert.IsNotNull(inpObj, "Expected input obj type");
+
+
+
+      TestEnv.LogTestDescr(@" Introspection, __types list");
+      introQuery = @"
+query introQuery {
+  __schema {
+      queryType         { name fields { name } }
+      mutationType      { name fields { name } }
+      subscriptionType  { name fields { name } }
+      types  { name }
+      directives { name }
+  }
+}
+";
+      resp = await ExecuteAsync(introQuery);
+      var typeList = resp.GetValue<IList>("__schema.types");
+      Assert.IsTrue(typeList.Count > 5, "Expected types");
+
     } //method
 
   }

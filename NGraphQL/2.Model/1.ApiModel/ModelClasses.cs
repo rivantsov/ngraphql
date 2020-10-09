@@ -232,6 +232,8 @@ namespace NGraphQL.Model {
   public class DirectiveDef : GraphQLModelObject {
     public DirectiveLocation Locations;
     public IList<InputValueDef> Args;
+    public bool IsDeprecated;
+    public string DeprecationReason; 
   }
 
   public class Directive : GraphQLModelObject {
