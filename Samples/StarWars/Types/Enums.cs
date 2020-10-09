@@ -3,19 +3,15 @@
 namespace StarWars {
 
   /// <summary>The episodes in the Star Wars trilogy</summary>
-  [Flags]
   public enum Episode {
-    /// <summary>Special zero value for internal use, matches empty enum list in GraphQL will not appear in GraphQL schema. </summary>
-    None = 0,
-
     /// <summary>Star Wars Episode IV: A New Hope, released in 1977. </summary>
-    Newhope = 1,
+    Newhope,
     
     /// <summary>Star Wars Episode V: The Empire Strikes Back, released in 1980. </summary>
-    Empire = 1 << 1,
+    Empire,
     
     /// <summary>Star Wars Episode VI: Return of the Jedi, released in 1983. </summary>
-    Jedi = 1 << 2
+    Jedi
   }
 
   /// <summary>Units of length or height.</summary>

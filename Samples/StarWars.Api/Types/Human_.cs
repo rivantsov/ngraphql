@@ -20,7 +20,7 @@ namespace StarWars.Api {
     public IList<ICharacter_> Friends { get; }
 
     /// <summary>The movies this human appears in </summary>
-    public Episode AppearsIn { get; }
+    public IList<Episode> AppearsIn { get; }
 
     /// <summary>The home planet of the human, or null if unknown </summary>
     [Null] public string HomePlanet { get; set; }

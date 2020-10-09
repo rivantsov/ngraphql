@@ -21,7 +21,7 @@ namespace StarWars.Api {
     IList<ICharacter_> Friends { get; }
 
     /// <summary>The movies this character appears in </summary>
-    Episode AppearsIn { get; }
+    IList<Episode> AppearsIn { get; }
   }
 
 }

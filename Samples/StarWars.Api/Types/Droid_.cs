@@ -19,7 +19,7 @@ namespace StarWars.Api {
     public IList<ICharacter_> Friends { get; }
 
     /// <summary>The movies this droid appears in</summary>
-    public Episode AppearsIn { get; }
+    public IList<Episode> AppearsIn { get; }
 
     /// <summary>This droid&apos;s primary function</summary>
     public string PrimaryFunction; //note: we can use field when member is not part of interface

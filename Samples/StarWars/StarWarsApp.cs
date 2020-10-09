@@ -29,7 +29,7 @@ namespace StarWars {
     }
 
     public IList<Character> GetCharacters(Episode episode) {
-      return Characters.Where(c => c.AppearsIn.Includes(episode)).ToList();
+      return Characters.Where(c => c.AppearsIn.Contains(episode)).ToList();
     }
 
     public Character GetCharacter(string id) {

@@ -8,7 +8,7 @@ namespace StarWars {
   public partial class StarWarsApp {
 
     private void InitData() {
-      var allEpisodes = Episode.Empire | Episode.Jedi | Episode.Newhope;
+      var allEpisodes = new[] { Episode.Empire, Episode.Jedi, Episode.Newhope };
       // Humans
       var luke = new Human() { Id = "1000", Name = "Luke Skywalker", AppearsIn = allEpisodes, HomePlanet = "Tatooine",
                  Height = 1.72f, MassKg = 77,
@@ -30,7 +30,7 @@ namespace StarWars {
         FriendIds = ToList("1000", "1002", "2000", "2001"),
         StarshipIds = ToList(),
       };
-      var wilhuff = new Human() { Id = "1004", Name = "Wilhuff Tarkin", AppearsIn = Episode.Newhope, Height = 1.8f,
+      var wilhuff = new Human() { Id = "1004", Name = "Wilhuff Tarkin", AppearsIn = new[] { Episode.Newhope }, Height = 1.8f,
         //starships:[],
         // friends:[ "1001" ],
       };
