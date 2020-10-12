@@ -57,6 +57,7 @@ namespace StarWars.HttpServer {
     }
 
     private static void Events_RequestCompleted(object sender, HttpRequestEventArgs e) {
+      
     }
 
     private static void StartWebHost() {

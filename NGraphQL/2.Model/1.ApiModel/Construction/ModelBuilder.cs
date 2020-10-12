@@ -180,6 +180,8 @@ namespace NGraphQL.Model.Construction {
           ClrMember = member, Directives = dirs,
           Description = descr,
         };
+        if (member.HasAttribute<HiddenAttribute>())
+          fld.Flags |= FieldFlags.Hidden;
         typeDef.Fields.Add(fld);
         if (member is MethodInfo method)
           BuildFieldArguments(fld, method);
@@ -332,25 +334,14 @@ namespace NGraphQL.Model.Construction {
       _model.SubscriptionType = BuildRootSchemaObject("Subscription", SchemaTypeRole.Subscription);
 
       var schemaDef = _model.Schema = new ObjectTypeDef("Schema", null);
-      RegisterTypeDef(schemaDef);
+      RegisterTypeDef(schemaDef, isSchema: true);
+      schemaDef.Hidden = false; // RegisterTypeDef hides it unhide it
       // schemaDef.Hidden = false; // - leave it hidden; RegisterTypeDef sets it to true
       schemaDef.Fields.Add(new FieldDef("query", _model.QueryType.TypeRefNull));
       if (_model.MutationType != null)
         schemaDef.Fields.Add(new FieldDef("mutation", _model.MutationType.TypeRefNull));
       if (_model.SubscriptionType != null)
         schemaDef.Fields.Add(new FieldDef("subscription", _model.SubscriptionType.TypeRefNull));
-
-      // add the schema itself as '__schema' to query
-      var schField = new FieldDef("__schema", schemaDef.TypeRefNull);
-      schField.Flags |= FieldFlags.Hidden;
-      _model.QueryType.Fields.Add(schField);
-      // mark special types
-      _model.Schema.IsSpecialType = true;
-      _model.QueryType.IsSpecialType = true;
-      if (_model.MutationType != null)
-        _model.MutationType.IsSpecialType = true;
-      if (_model.SubscriptionType != null)
-        _model.SubscriptionType.IsSpecialType = true;
     }
 
     private ObjectTypeDef BuildRootSchemaObject(string name, SchemaTypeRole typeRole) {
@@ -370,7 +361,6 @@ namespace NGraphQL.Model.Construction {
       foreach(var typeDef in _model.Types) {
         switch(typeDef) {
           case ObjectTypeDef otd:
-            if (!otd.IsSpecialType)
               VerifyObjectType(otd); 
             break;
           case InputObjectTypeDef itd:
@@ -380,6 +370,8 @@ namespace NGraphQL.Model.Construction {
     }
 
     private void VerifyObjectType(ObjectTypeDef typeDef) {
+      if (typeDef.Name == "Schema")
+        return; // this is pseudo object
       foreach(var field in typeDef.Fields) {
         // so far we have only exec type to set, or post error
         if (field.Reader != null)

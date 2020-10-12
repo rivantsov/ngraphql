@@ -6,6 +6,8 @@ using NGraphQL.Model;
 namespace NGraphQL.CodeFirst {
 
   public class GraphQLModule {
+    public string Name => GetType().Name;
+
     public readonly GraphQLApi Api; 
     internal List<Type> Types = new List<Type>();
     internal List<EntityMapping> Mappings = new List<EntityMapping>();

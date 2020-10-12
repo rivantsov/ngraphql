@@ -78,7 +78,6 @@ namespace NGraphQL.Model {
     public EntityMapping Mapping;
 
     public ObjectTypeDef(string name, Type clrType) : base(name, TypeKind.Object, clrType) { }
-    public bool IsSpecialType { get; internal set; } // identifies special types like Query, Mutation, Schema etc
   }
 
   public class InterfaceTypeDef : ComplexTypeDef {

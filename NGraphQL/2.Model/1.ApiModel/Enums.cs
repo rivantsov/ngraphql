@@ -62,11 +62,12 @@ namespace NGraphQL.Model {
     None = 0,
     Nullable = 1,
     ReturnsComplexType = 1 << 1,
+    ReturnsTask = 1 << 2,
+    Hidden = 1 << 3,
+
     IsBatched = 1 << 4,
-    ReturnsTask = 1 << 5,
     // indicators of arguments in resolver method for the field
-    HasParentArg = 1 << 6,
-    Hidden = 1 << 7,
+    HasParentArg = 1 << 5,
   }
 
 }

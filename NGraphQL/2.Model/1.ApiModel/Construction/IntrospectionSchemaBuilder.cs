@@ -135,8 +135,7 @@ namespace NGraphQL.Model.Construction {
     private void AddTypeNameField(ComplexTypeDef typeDef) {
       var stringNotNull = _model.Api.CoreModule.String_.TypeRefNotNull;
       var fld = new 
-        FieldDef("__typename", stringNotNull) {Flags = FieldFlags.Hidden,
-                                 Reader = t => typeDef.Name  };
+        FieldDef("__typename", stringNotNull) { Reader = t => typeDef.Name  };
       fld.Flags |= FieldFlags.Hidden;
       typeDef.Fields.Add(fld); 
     }

@@ -10,10 +10,12 @@ namespace NGraphQL.Model.Construction {
 
   public partial class ModelBuilder {
 
-    private void RegisterTypeDef(TypeDefBase typeDef) {
+    private void RegisterTypeDef(TypeDefBase typeDef, bool isSchema = false) {
       try {
         _model.Types.Add(typeDef);
-        _model.TypesByName.Add(typeDef.Name, typeDef);
+        if (typeDef.TypeRole == SchemaTypeRole.DataType)
+          if(!TryRegisterTypeDefByName(typeDef, isSchema))
+            return;
         if (typeDef.ClrType != null) {
           if (typeDef.Kind != TypeKind.Scalar)
             typeDef.Description = _docLoader.GetDocString(typeDef.ClrType, typeDef.ClrType);
@@ -21,11 +23,27 @@ namespace NGraphQL.Model.Construction {
             _model.TypesByClrType.Add(typeDef.ClrType, typeDef);
         }
         if (typeDef.TypeRole != SchemaTypeRole.DataType)
-          typeDef.Hidden = true; 
+          typeDef.Hidden = true;
       } catch (Exception ex) {
         AddError($"FATAL: Failed to register type {typeDef}, name '{typeDef.Name}', error: " + ex.Message);
       }
     }
+
+    private bool TryRegisterTypeDefByName(TypeDefBase typeDef, bool isSchema) {
+      var name = typeDef.Name;
+      if (name == "Schema" && !isSchema) {
+        AddError($"Invalid type name Schema for custom object type; module: {typeDef.Module.Name} ");
+        return false; 
+      }
+      if (_model.TypesByName.ContainsKey(name)) {
+        var mName = typeDef.Module.Name;
+        AddError($"Duplication type name, type '{name}' is already registered, possibly by another module; module: {mName} ");
+        return false;
+      }
+      _model.TypesByName.Add(typeDef.Name, typeDef);
+      return true; 
+    }
+
 
     private TypeDefBase CreateTypeDef(Type type, GraphQLModule module, SchemaTypeRole typeRole, TypeKind typeKind) {
       var typeDef = CreateTypeDefImpl(type, typeKind);

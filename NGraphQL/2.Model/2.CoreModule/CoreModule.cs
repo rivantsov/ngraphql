@@ -51,6 +51,7 @@ namespace NGraphQL.Model.Core {
       IncludeDir = new IncludeDirectiveDef(this);
       SkipDir = new SkipDirectiveDef(this); 
       RegisterDirectives(DeprecatedDir, IncludeDir, SkipDir);
+
     }
 
   }
