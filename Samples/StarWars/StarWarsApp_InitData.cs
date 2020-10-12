@@ -11,22 +11,22 @@ namespace StarWars {
       var allEpisodes = new[] { Episode.Empire, Episode.Jedi, Episode.Newhope };
       // Humans
       var luke = new Human() { Id = "1000", Name = "Luke Skywalker", AppearsIn = allEpisodes, HomePlanet = "Tatooine",
-                 Height = 1.72f, MassKg = 77,
+        Height = 1.72f, MassKg = 77,
         StarshipIds = ToList("3001", "3003"),
         FriendIds = ToList("1002", "1003", "2000", "2001"),
       };
 
-      var darth = new Human() { Id = "1001", Name = "Darth Vader", AppearsIn =  allEpisodes, HomePlanet = "Tatooine",
-                 Height = 2.02f, MassKg = 136,
+      var darth = new Human() { Id = "1001", Name = "Darth Vader", AppearsIn = allEpisodes, HomePlanet = "Tatooine",
+        Height = 2.02f, MassKg = 136,
         FriendIds = ToList("1004"),
         StarshipIds = ToList("3002")
       };
       var han = new Human() { Id = "1002", Name = "Han Solo", AppearsIn = allEpisodes, Height = 1.8f, MassKg = 80,
-        FriendIds = ToList( "1000", "1003", "2001"),
+        FriendIds = ToList("1000", "1003", "2001"),
         StarshipIds = ToList("3000", "3003"),
       };
       var leia = new Human() { Id = "1003", Name = "Leia Organa", AppearsIn = allEpisodes, HomePlanet = "Alderaan",
-                               Height = 1.5f, MassKg = 49,
+        Height = 1.5f, MassKg = 49,
         FriendIds = ToList("1000", "1002", "2000", "2001"),
         StarshipIds = ToList(),
       };
@@ -52,6 +52,11 @@ namespace StarWars {
       var s2 = new Starship() { Id = "3002", Name = "TIE Advanced x1", Length = 9.2f };
       var s3 = new Starship() { Id = "3003", Name = "Imperial shuttle", Length = 20 };
       Starships.AddRange(new[] { s0, s1, s2, s3 });
+
+      // reviews
+      CreateReview(Episode.Empire, 2, "Booooring", Emojis.Bored | Emojis.Dislike);
+      CreateReview(Episode.Jedi, 5, "Fabulous!", Emojis.Excited | Emojis.Like);
+      CreateReview(Episode.Newhope, 4, "Could be better", Emojis.Like | Emojis.Smile);
 
     }// method
 

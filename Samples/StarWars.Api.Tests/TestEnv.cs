@@ -70,6 +70,8 @@ namespace StarWars.Api.Tests {
       jsonRequest = jsonRequest.Replace("\\r\\n", Environment.NewLine);
       var jsonResponse = SerializeResponse(response);
       var text = $@"
+
+----------------------------------------------------------------------------------------
 Request: 
 {jsonRequest}
 

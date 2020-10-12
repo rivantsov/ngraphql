@@ -27,6 +27,14 @@ query {
       Assert.AreEqual(0, resp.Errors.Count, "Expected no errors");
       var ships = resp.Data.GetValue<IList>("starships");
       Assert.AreEqual(4, ships.Count, "expected 4 ships");
+
+      query = @"
+{
+  reviews( episode: JEDI) { episode, stars, commentary, emojis }
+}";
+      resp = await TestEnv.ExecuteAsync(query, throwOnError: false);
+      var reviews = resp.Data.GetValue<IList>("reviews");
+      Assert.IsTrue(reviews.Count > 0, "Expected some review");
     }
   }
 }

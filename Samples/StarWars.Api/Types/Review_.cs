@@ -17,6 +17,8 @@ namespace StarWars.Api {
 
     /// <summary>Comment about the movie </summary>
     public string Commentary;
+
+    public Emojis Emojis; 
   }
 
 }

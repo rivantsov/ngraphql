@@ -37,8 +37,8 @@ namespace StarWars {
 
     Smile = 1 << 2, 
 
-    Angry = 1 << 3,
+    Excited = 1 << 3,
 
-    Fear = 1 << 4,
+    Bored = 1 << 4,
   }
 }
