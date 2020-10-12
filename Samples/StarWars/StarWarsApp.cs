@@ -51,8 +51,8 @@ namespace StarWars {
     }
 
     // mutation CreateReview
-    public Review CreateReview(Episode episode, int stars, string commentary) {
-      var review = new Review() { Episode = episode, Stars = stars, Commentary = commentary };
+    public Review CreateReview(Episode episode, int stars, string commentary, Emojis emojis) {
+      var review = new Review() { Episode = episode, Stars = stars, Commentary = commentary, Emojis = emojis };
       Reviews.Add(review);
       return review; 
     }

@@ -8,6 +8,7 @@ namespace StarWars {
     public Episode Episode;
     public int Stars;
     public string Commentary;
+    public Emojis Emojis; 
   }
 
 }

@@ -1,0 +1,19 @@
+query starshipsAndCharacters {
+  
+  starships{name, length}
+
+  characters(episode: JEDI) {name}
+}
+
+
+query introspectionQueries {
+  __type(name: "Droid") { 
+  	fields {
+      name
+      type { displayName }
+    }
+  }
+
+  # all type names
+  __schema {types {name}}
+}

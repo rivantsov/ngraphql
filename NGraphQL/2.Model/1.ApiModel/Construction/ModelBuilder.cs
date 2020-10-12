@@ -202,6 +202,8 @@ namespace NGraphQL.Model.Construction {
         return;
       foreach (var prm in prms) {
         var prmTypeRef = GetTypeRef(prm.ParameterType, prm, $"Method {resMethod.Name}, parameter {prm.Name}");
+        if (prmTypeRef == null)
+          continue; 
         if (prmTypeRef.IsList && !prmTypeRef.TypeDef.IsEnumFlagArray())
           VerifyListParameterType(prm.ParameterType, resMethod, prm.Name);
         var prmDirs = BuildDirectivesFromAttributes(prm);
@@ -238,6 +240,8 @@ namespace NGraphQL.Model.Construction {
       foreach(var member in members) {
         var mtype = member.GetMemberReturnType();
         var typeRef = GetTypeRef(mtype, member, $"Field {inpTypeDef.Name}.{member.Name}");
+        if (typeRef == null)
+          return; // error found, it is already logged
         if (typeRef.IsList && !typeRef.TypeDef.IsEnumFlagArray()) {
           // list members must be IList<T> or T[] - this is important, lists are instantiated as arrays when deserializing
           if (!mtype.IsArray && !mtype.IsInterface) {

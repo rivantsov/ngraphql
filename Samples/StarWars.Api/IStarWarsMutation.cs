@@ -7,6 +7,6 @@ namespace StarWars.Api {
 
   [Mutation]
   public interface IStarWarsMutation {
-    Review_ CreateReview(Episode episode, ReviewInput_ reviewInput);
+    Review_ CreateReview(Episode episode, ReviewInput_ reviewInput, Emojis emojis);
   }
 }

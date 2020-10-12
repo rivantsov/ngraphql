@@ -26,7 +26,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StarWars", "Samples\StarWar
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StarWars.Api", "Samples\StarWars.Api\StarWars.Api.csproj", "{07BC4F1C-E42F-4FB5-9E12-02CFECBCBDCD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StarWars.HttpServer", "Samples\StarWars.HttpServer\StarWars.HttpServer.csproj", "{37665EF2-E3D1-43BB-823C-021BD3468A9C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StarWars.HttpServer", "Samples\StarWars.HttpServer\StarWars.HttpServer.csproj", "{37665EF2-E3D1-43BB-823C-021BD3468A9C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Graphicl", "Graphicl", "{F5F1FFCD-D7A6-49E0-A1F9-0B01616B1C83}"
+	ProjectSection(SolutionItems) = preProject
+		Samples\Graphiql\graphiql.html = Samples\Graphiql\graphiql.html
+		Samples\Graphiql\SampleQueries.txt = Samples\Graphiql\SampleQueries.txt
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StarWars.Api.Tests", "Samples\StarWars.Api.Tests\StarWars.Api.Tests.csproj", "{74D14318-A727-4DA0-A0ED-46AD0B6F646B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -66,6 +74,10 @@ Global
 		{37665EF2-E3D1-43BB-823C-021BD3468A9C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{37665EF2-E3D1-43BB-823C-021BD3468A9C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{37665EF2-E3D1-43BB-823C-021BD3468A9C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{74D14318-A727-4DA0-A0ED-46AD0B6F646B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{74D14318-A727-4DA0-A0ED-46AD0B6F646B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{74D14318-A727-4DA0-A0ED-46AD0B6F646B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{74D14318-A727-4DA0-A0ED-46AD0B6F646B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -77,6 +89,8 @@ Global
 		{868DF15F-C90E-4E1C-8AAA-BD220689C1C0} = {A37BA1FA-FD94-4D1C-ADD9-A5B0F6F20458}
 		{07BC4F1C-E42F-4FB5-9E12-02CFECBCBDCD} = {A37BA1FA-FD94-4D1C-ADD9-A5B0F6F20458}
 		{37665EF2-E3D1-43BB-823C-021BD3468A9C} = {A37BA1FA-FD94-4D1C-ADD9-A5B0F6F20458}
+		{F5F1FFCD-D7A6-49E0-A1F9-0B01616B1C83} = {A37BA1FA-FD94-4D1C-ADD9-A5B0F6F20458}
+		{74D14318-A727-4DA0-A0ED-46AD0B6F646B} = {A37BA1FA-FD94-4D1C-ADD9-A5B0F6F20458}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {487D2E61-A748-4092-A70A-6B3548627DE0}

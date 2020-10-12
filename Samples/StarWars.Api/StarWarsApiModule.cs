@@ -10,7 +10,7 @@ namespace StarWars.Api {
       // Register types
       RegisterTypes(
         typeof(IStarWarsQuery), typeof(IStarWarsMutation),
-        typeof(Episode), typeof(LengthUnit),
+        typeof(Episode), typeof(LengthUnit), typeof(Emojis),
         typeof(ICharacter_), typeof(Human_), typeof(Droid_), 
         typeof(Starship_), typeof(Review_), typeof(SearchResult_), typeof(ReviewInput_)
         );

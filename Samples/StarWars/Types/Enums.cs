@@ -23,5 +23,22 @@ namespace StarWars {
     Foot,
   }
 
+  /// <summary>
+  /// Encodes emoji(s) accompanying review. This enum is added to demonstrate use of multi-valued (Flags)
+  /// enums in NGraphQL
+  /// </summary>
+  [Flags]
+  public enum Emojis {
+    None = 0, 
 
+    Like = 1, 
+
+    Dislike = 1 << 1,
+
+    Smile = 1 << 2, 
+
+    Angry = 1 << 3,
+
+    Fear = 1 << 4,
+  }
 }

@@ -16,7 +16,6 @@ namespace NGraphQL.Tests {
 
   public static class TestEnv {
 
-    // public static GraphQLServer ReflectorServer;
     public static GraphQLServer ThingsServer;
     public static bool LogEnabled = true;
     public static string LogFilePath = "_graphQLtests.log";
@@ -29,8 +28,6 @@ namespace NGraphQL.Tests {
         return;
       if(File.Exists(LogFilePath))
         File.Delete(LogFilePath);
-     // var reflectorApi = new ReflectorGraphQLApi();
-     // ReflectorServer = new GraphQLServer(reflectorApi);
       var thingsBizApp = new ThingsApp();
       var thingsGraphQLApi = new ThingsApi(thingsBizApp);
       ThingsServer = new GraphQLServer(thingsGraphQLApi);
@@ -39,10 +36,8 @@ namespace NGraphQL.Tests {
 
       // Printout
       var schemaGen = new SchemaDocGenerator();
-      //var reflectorSchema = schemaGen.GenerateSchema(reflectorApi.Model);
-      //File.WriteAllText("_reflectorSchema.txt", reflectorSchema);
-      var theAppSchemaDoc = schemaGen.GenerateSchema(thingsGraphQLApi.Model);
-      File.WriteAllText("_thingsApiSchema.txt", theAppSchemaDoc);
+      var schemaDoc = schemaGen.GenerateSchema(thingsGraphQLApi.Model);
+      File.WriteAllText("_thingsApiSchema.txt", schemaDoc);
 
       _serializerSettings = new JsonSerializerSettings() {
         Formatting = Formatting.Indented, 
