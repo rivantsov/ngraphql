@@ -16,6 +16,7 @@ namespace StarWars.Api {
     public string Name { get; set; }
 
     /// <summary>This droid&apos;s friends, or an empty list if they have none</summary>
+    [Resolver(nameof(StarWarsResolvers.GetFriendsBatched))] // resolver performs batching (impl of DataLoader)
     public IList<ICharacter_> Friends { get; }
 
     /// <summary>The movies this droid appears in</summary>

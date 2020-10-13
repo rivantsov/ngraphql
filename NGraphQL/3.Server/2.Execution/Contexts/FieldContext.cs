@@ -64,7 +64,6 @@ namespace NGraphQL.Server.Execution {
       return allFields.ToList(); 
     }
 
-
     public object ConvertToOuputValue(object result) {
       // validate result value
       //ValidateFieldResult(field, resultValue);

@@ -57,6 +57,10 @@ namespace NGraphQL.Server.Execution {
       return _valuesMask.GetValue(index);
     }
 
+    internal object GetValue(int index) {
+      return _values[index];
+    }
+
     // method used by serializer
     public IEnumerator<KeyValuePair<string, object>> GetEnumerator() {
       for(int i = 0; i < Fields.Count; i++) {

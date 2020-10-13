@@ -63,8 +63,8 @@ namespace StarWars.Api {
     }
 
     // Mutations
-    public Review CreateReview(IFieldContext fieldContext, Episode episode, ReviewInput_ reviewInput, Emojis emojis) {
-      return _app.CreateReview(episode, reviewInput.Stars, reviewInput.Commentary, emojis); 
+    public Review CreateReview(IFieldContext fieldContext, Episode episode, ReviewInput_ reviewInput) {
+      return _app.CreateReview(episode, reviewInput.Stars, reviewInput.Commentary, reviewInput.Emojis); 
     }
 
     // this is a default, non-batched version, not used - we use batched version instead
