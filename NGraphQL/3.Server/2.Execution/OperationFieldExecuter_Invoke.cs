@@ -30,9 +30,7 @@ namespace NGraphQL.Server.Execution {
         if(fieldContext.Flags.IsSet(FieldFlags.ReturnsTask))
           result = await UnwrapTaskResultAsync(fieldContext, (Task)result);
         Interlocked.Increment(ref _requestContext.Metrics.ResolverCallCount);
-        // if the resolver set batched result but returned null, retrieve the value
-        if (result == null && fieldContext.BatchResultWasSet)
-          result = fieldContext.CurrentScope.GetValue(fieldContext.FieldIndex);
+        // Note: result might be null, but batched result might be set.
         return result;
       } catch(TargetInvocationException tex) {
         // sync call goes here

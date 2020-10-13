@@ -129,8 +129,12 @@ namespace NGraphQL.Server.Execution {
               break; 
           }
           var outValue = fieldContext.ConvertToOuputValue(result);
-          scope.SetValue(fldIndex, outValue);
-          if (fieldContext.Flags.IsSet(FieldFlags.ReturnsComplexType) && result != null)
+          if (!fieldContext.BatchResultWasSet)
+            scope.SetValue(fldIndex, outValue);
+          // check 
+          var needProcessSelSubset = fieldContext.Flags.IsSet(FieldFlags.ReturnsComplexType) &&
+            (result != null || fieldContext.BatchResultWasSet);
+          if (needProcessSelSubset)
             _executedObjectFieldContexts.Add(fieldContext);
         } //foreach scope
       }

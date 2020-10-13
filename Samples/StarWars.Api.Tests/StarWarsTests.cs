@@ -3,26 +3,28 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using StarWars.Api.Tests;
 using NGraphQL.Utilities;
+using NGraphQL.Server;
 
 namespace StarWars.Tests
 {
   [TestClass]
-  public class StarWarsTests
-  {
+  public class StarWarsTests {
     [TestInitialize]
     public void TestInit() {
-      TestEnv.Init(); 
+      TestEnv.Init();
     }
 
     [TestMethod]
-    public async Task TestStarWarsApi()
-    {
-      var query = @"
+    public async Task TestBasicQueries() {
+      string query;
+      GraphQLResponse resp;
+
+      query = @"
 query {
   starships{name, length}
 }
 ";
-      var resp = await TestEnv.ExecuteAsync(query, throwOnError: false);
+      resp = await TestEnv.ExecuteAsync(query, throwOnError: false);
       Assert.IsNotNull(resp, "Expected response");
       Assert.AreEqual(0, resp.Errors.Count, "Expected no errors");
       var ships = resp.Data.GetValue<IList>("starships");
@@ -42,6 +44,12 @@ query {
       var leiaFriends = resp.Data.GetValue<IList>("leia.friends");
       Assert.AreEqual(4, leiaFriends.Count, "Expected 4 friends");
 
+    }
+
+    [TestMethod]
+    public async Task TestMutation() {
+      GraphQLResponse resp;
+
       // get Jedi reviews, add review, check new count
       // 1. Get Jedi reviews, get count
       var getReviewsQuery = @"
@@ -56,16 +64,17 @@ query {
       // 2. Add review for Jedi
       var createReviewMut = @"
 mutation {
-  createReview( episode: JEDI, reviewInput: { stars: 5, commentary: ""very good"", emojis: [LIKE, EXCITED]}) 
+  createReview( episode: JEDI, reviewInput: { stars: 2, commentary: ""could be better"", emojis: [DISLIKE, BORED]}) 
     { episode, stars, commentary, emojis }
 }";
       resp = await TestEnv.ExecuteAsync(createReviewMut);
 
+      // 3. Get reviews again and check count
       resp = await TestEnv.ExecuteAsync(getReviewsQuery);
       jediReviews = resp.Data.GetValue<IList>("reviews");
       var newReviewsCount = jediReviews.Count;
       Assert.AreEqual(oldReviewsCount + 1, newReviewsCount, "Expected incremented review count");
-
     }
+
   }
 }
