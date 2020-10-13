@@ -6,6 +6,6 @@ namespace StarWars {
 
   public class Character: NamedObject {
     public IList<Episode> AppearsIn;
-    public IList<string> FriendIds;
+    public IList<Character> Friends;
   }
 }

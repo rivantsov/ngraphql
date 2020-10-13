@@ -69,10 +69,10 @@ namespace StarWars.Api {
 
     // this is a default, non-batched version, not used - we use batched version instead
     public IList<Character> GetFriends(IFieldContext fieldContext, Character character) {
-      var friends = _app.Characters.Where(c => character.FriendIds.Contains(c.Id)).ToList();
-      return friends; 
+      return character.Friends;
     }
 
+    // batched version
     public IList<Character> GetFriendsBatched(IFieldContext fieldContext, Character character) {
       // batch execution (aka DataLoader); we retrieve all pending parents (characters)
       //  get all their friend lists as a dictionary, and then post it into context - 

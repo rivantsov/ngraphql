@@ -19,28 +19,26 @@ namespace StarWars.Tests
       string query;
       GraphQLResponse resp;
 
-      query = @"
-query {
-  starships{name, length}
-}
-";
-      resp = await TestEnv.ExecuteAsync(query, throwOnError: false);
-      Assert.IsNotNull(resp, "Expected response");
-      Assert.AreEqual(0, resp.Errors.Count, "Expected no errors");
+      query = @" query { starships{name, length} } ";
+      resp = await TestEnv.ExecuteAsync(query);
       var ships = resp.Data.GetValue<IList>("starships");
       Assert.AreEqual(4, ships.Count, "expected 4 ships");
 
-      // friends query
-      query = @"
-{
+      query = @" query { starship(id: ""3001"") {name, length} } ";
+      resp = await TestEnv.ExecuteAsync(query);
+      var shipName = resp.Data.GetValue<string>("starship.name");
+      Assert.AreEqual("X-Wing", shipName);
+
+      // character query with friends
+      query = @" {
   leia: character(id: ""1003"") { 
     name
-    friends {
-      name
-    }
+    friends { name }
   }
 }";
-      resp = await TestEnv.ExecuteAsync(query, throwOnError: false);
+      resp = await TestEnv.ExecuteAsync(query);
+      var lname = resp.Data.GetValue<string>("leia.name");
+      Assert.AreEqual("Leia Organa", lname);
       var leiaFriends = resp.Data.GetValue<IList>("leia.friends");
       Assert.AreEqual(4, leiaFriends.Count, "Expected 4 friends");
 

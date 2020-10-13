@@ -62,8 +62,7 @@ namespace StarWars {
     public IDictionary<Character, IList<Character>> GetFriendLists(IList<Character> characters) {
       var result = new Dictionary<Character, IList<Character>>();
       foreach(var character in characters) {
-        var friends = this.Characters.Where(c => character.FriendIds.Contains(c.Id)).ToList();
-        result[character] = friends;
+        result[character] = character.Friends;
       }
       return result; 
     }

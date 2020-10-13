@@ -9,8 +9,6 @@ namespace StarWars {
     public float? MassKg;
     public float? Height;
     public IList<Starship> Starships;
-    public IList<string> StarshipIds;
-
   }
 
 }
