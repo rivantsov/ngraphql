@@ -74,5 +74,23 @@ mutation {
       Assert.AreEqual(oldReviewsCount + 1, newReviewsCount, "Expected incremented review count");
     }
 
+    [TestMethod]
+    public async Task TestSearch() {
+      string query;
+      GraphQLResponse resp;
+
+      query = @" 
+query { 
+  search (text: ""er"") {
+    __typename,
+    name, 
+  } 
+} ";
+      resp = await TestEnv.ExecuteAsync(query);
+      var results = resp.Data.GetValue<IList>("search");
+      // Luke SkywalkER, Darth VadER, ImpERial shuttle
+      Assert.AreEqual(3, results.Count, "expected 3 objects");
+    }
+
   }
 }
