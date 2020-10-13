@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
@@ -25,7 +26,12 @@ namespace StarWars.HttpServer {
         Console.WriteLine("StarWars HttpServer starting...");
         Initialize();
         Console.WriteLine("Server started at " + ServiceUrl);
-        Console.WriteLine("  Sample URL:  " + SampleUrl);
+        // printout schema doc
+        var schemaDoc = StarWarsHttpServer.Server.Api.Model.SchemaDoc;
+        File.WriteAllText(SchemaFilePath, schemaDoc);
+        Console.WriteLine($"  StarWars Schema document saved in {SchemaFilePath}");
+        Console.WriteLine($"  Sample URL to try in browser:  {SampleUrl}");
+        Console.WriteLine($"  ... or open graphicl.html page in Graphicl folder to play with the API.");
       } catch (ServerStartupException ex) {
         Console.WriteLine("Startup failed, errors: " + Environment.NewLine + ex.GetErrorsAsText());
       } catch (Exception ex) {
@@ -34,6 +40,7 @@ namespace StarWars.HttpServer {
         Console.Write("Press any key to exit...");
         Console.WriteLine();
         Console.ReadKey();
+        ShutDown();
       }
     }
 
@@ -49,15 +56,7 @@ namespace StarWars.HttpServer {
       var starWarsServer = new GraphQLServer(starWarsApi);
       starWarsServer.Initialize();
       StarWarsHttpServer = new GraphQLHttpServer(starWarsServer);
-      StarWarsHttpServer.Events.RequestCompleted += Events_RequestCompleted;
-      var schemaDoc = starWarsServer.Api.Model.SchemaDoc;
-      File.WriteAllText(SchemaFilePath, schemaDoc);
-      Console.WriteLine($" StarWars schema document is saved in file {SchemaFilePath}");
       StartWebHost();
-    }
-
-    private static void Events_RequestCompleted(object sender, HttpRequestEventArgs e) {
-      
     }
 
     private static void StartWebHost() {
@@ -68,6 +67,7 @@ namespace StarWars.HttpServer {
           ;
       _webHost = hostBuilder.Build();
       Task.Run(() => _webHost.Run());
+      Thread.Sleep(1000);
       Debug.WriteLine("The service is running on URL: " + ServiceUrl);
     }
 

@@ -20,8 +20,6 @@ namespace StarWars.Api.Tests {
     public static string LogFilePath = "_starWarsTests.log";
     private static JsonSerializerSettings _serializerSettings;
 
-    public static RequestContext LastRequestContext;
-
     public static void Init() {
       if (StarWarsServer != null)
         return;

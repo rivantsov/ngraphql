@@ -28,6 +28,21 @@ query {
       var ships = resp.Data.GetValue<IList>("starships");
       Assert.AreEqual(4, ships.Count, "expected 4 ships");
 
+      // friends query
+      query = @"
+{
+  leia: character(id: ""1003"") { 
+    name
+    friends {
+      name
+    }
+  }
+}";
+      resp = await TestEnv.ExecuteAsync(query, throwOnError: false);
+      var leiaFriends = resp.Data.GetValue<IList>("leia.friends");
+      Assert.AreEqual(3, leiaFriends.Count, "Expected 3 friends");
+
+
       query = @"
 {
   reviews( episode: JEDI) { episode, stars, commentary, emojis }
