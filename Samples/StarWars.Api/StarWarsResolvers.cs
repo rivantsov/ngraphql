@@ -57,9 +57,13 @@ namespace StarWars.Api {
         return starship.Length;
     }
 
-
-    public IList<NamedObject> Search(IFieldContext fieldContext, string text) { 
-      return _app.Search(text).ToList(); 
+    // We return Union instances here, we wrap raw result objects into SearchResult_ objects, 
+    //  but we could also return objects. So return type may be IList<object>
+    public IList<SearchResult_> Search(IFieldContext fieldContext, string text) { 
+      var results = _app.Search(text)
+                        .Select(r => new SearchResult_() { Value = r })
+                        .ToList();
+      return results;
     }
 
     // Mutations

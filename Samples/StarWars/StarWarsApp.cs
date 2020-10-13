@@ -40,7 +40,7 @@ namespace StarWars {
       return Reviews.Where(r => r.Episode == episode).ToList(); 
     }
 
-    public IEnumerable<NamedObject> Search(string text) {
+    public IEnumerable<object> Search(string text) {
       // check characters and starships
       foreach (var ch in Characters)
         if (ch.Name.Contains(text))
