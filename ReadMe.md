@@ -35,6 +35,9 @@ It turned out, implementing a working GraphQL API requires creating a number of 
 ## Documentation - coming soon
 For now, please look at the _TestApp_ project code, and unit tests. 
 
+## StarWars example
+Explore the [StarWars sample app](https://github.com/rivantsov/starwars) as an example of _GraphQL API_ implementation on top of a simple app. The example includes an HTTP server implementation with _Grapphiql_ interactive UI for executing queries.  
+
 ## Limitations
 Subscriptions are not implemented yet. *NGraphQL* parses and executes a subscription query (its resolver) the same way as a query, but does not provide the implementation of 2-way HTTP communication (Web sockets). Will be coming soon.
 
