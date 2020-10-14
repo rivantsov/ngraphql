@@ -4,20 +4,14 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>8.0</LangVersion>
     <Version>0.9.1</Version>
-    <PackageVersion>0.9.1</PackageVersion>
     <Authors>Roman Ivantsov</Authors>
     <Copyright>Roman Ivantsov</Copyright>
     <Company />
-    <Description>Http Server components for NGraphQL library.</Description>
-    <PackageProjectUrl>https://github.com/rivantsov/ngraphql</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/rivantsov/ngraphql</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageTags>Beta</PackageTags>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Description>GraphQL Http server</Description>
   </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
         <NoWarn>1701;1702;1591</NoWarn>
         <DocumentationFile>bin\Release\netstandard2.0\NGraphQL.Http.xml</DocumentationFile>
     </PropertyGroup>

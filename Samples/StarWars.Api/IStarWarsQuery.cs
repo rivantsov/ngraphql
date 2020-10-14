@@ -26,6 +26,7 @@ namespace StarWars.Api {
     [GraphQLName("reviews")]
     IList<Review_> GetReviews(Episode episode);
 
+    [Resolver(nameof(StarWarsResolvers.Search))]
     IList<SearchResult_> Search(string text);
   }
 }

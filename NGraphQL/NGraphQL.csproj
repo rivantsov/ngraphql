@@ -5,20 +5,13 @@
     <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
     <LangVersion>8.0</LangVersion>
     <Version>0.9.1</Version>
-    <PackageVersion>0.9.1</PackageVersion>
     <Authors>Roman Ivantsov</Authors>
     <Copyright>Roman Ivantsov</Copyright>
-    <Company />
     <Description>A library for building GraphQL APIs in .NET</Description>
-    <PackageProjectUrl>https://github.com/rivantsov/ngraphql</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/rivantsov/ngraphql</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageTags>Beta</PackageTags>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-      <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+      <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
       <DocumentationFile>bin\Release\netstandard2.0\NGraphQL.xml</DocumentationFile>
     <NoWarn>1701;1702;1591</NoWarn>
   </PropertyGroup>
@@ -27,14 +20,6 @@
       <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
       <NoWarn>1701;1702;1591</NoWarn>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="2.Model\1.ApiModel\Construction\RegisteredTypeInfo_Disabled.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="2.Model\1.ApiModel\Construction\RegisteredTypeInfo_Disabled.cs" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Irony" Version="1.1.0" />
