@@ -16,6 +16,12 @@
 * Support for easy **input validation** and adding **GraphQL errors** (if any) to the response; aborting the request if errors detected.
 * **Modular API construction** - great for building large APIs.
 
+## Documentation
+[Star Wars Sample API - Step-by-step guide to NGraphQL](https://github.com/rivantsov/starwars/wiki) 
+
+## Star Wars example
+Explore the [StarWars sample app](https://github.com/rivantsov/starwars) - a sample of _GraphQL API_ implementation on top of a simple app. The example includes an HTTP server implementation with _Grapphiql_ interactive UI for executing queries.  
+
 ## Exploring the source code
 Download the source code, open the solution in *Visual Studio 2019*. Build all and run unit tests in *NGraphQL.Tests* project - all tests should pass. 
 
@@ -31,12 +37,6 @@ The *TestApp* project contains 2 areas - a 'business app' with some data 'entiti
 
 ## API development: Code-first only, no schema-first
 It turned out, implementing a working GraphQL API requires creating a number of *detailed c#/.NET artefacts that may not be directly derived or guessed from the Schema document*. So for an existing schema/.net code pair, it is not possible to derive necessary .NET code change from GraphQL Schema document changes. The **complete schema-first scenario is not feasible**.
-
-## Documentation - coming soon
-For now, please look at the _TestApp_ project code, and unit tests. 
-
-## StarWars example
-Explore the [StarWars sample app](https://github.com/rivantsov/starwars) as an example of _GraphQL API_ implementation on top of a simple app. The example includes an HTTP server implementation with _Grapphiql_ interactive UI for executing queries.  
 
 ## Limitations
 Subscriptions are not implemented yet. *NGraphQL* parses and executes a subscription query (its resolver) the same way as a query, but does not provide the implementation of 2-way HTTP communication (Web sockets). Will be coming soon.
