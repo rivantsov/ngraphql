@@ -58,15 +58,4 @@ namespace NGraphQL.CodeFirst {
     }
   }
 
-  /*
-  [AttributeUsage(AttributeTargets.Method)]
-  public class FieldAttribute : ResolverTargetBaseAttribute {
-    public Type OnType;
-    public override OperationType OperationType => OperationType.Query;
-    public FieldAttribute() { }
-    public FieldAttribute(string name) { FieldName = name; }
-  }
-  */
-
-
 }

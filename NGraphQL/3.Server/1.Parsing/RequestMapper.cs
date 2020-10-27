@@ -169,8 +169,13 @@ namespace NGraphQL.Server.Parsing {
       }
       // inline fragments are mapped in-place, here.
       // we need to map them here, once we know the target type
-      if (fs.IsInline)
+      if (fs.IsInline) {
+        var onTypeRef = fs.Fragment.OnTypeRef;
+        var skip = onTypeRef != null && onTypeRef.TypeDef != objectTypeDef;
+        if (skip)
+          return MappedField.EmptyList; 
         MapObjectSelectionSubset(fs.Fragment.SelectionSubset, objectTypeDef, fs.Directives, isForUnion);
+      }
       // there must be mapped field set now
       var mappedFragmFieldSet = fs.Fragment.SelectionSubset.MappedFieldSets.FirstOrDefault(fset => fset.ObjectTypeDef == objectTypeDef);
       if (mappedFragmFieldSet == null) {

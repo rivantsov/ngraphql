@@ -200,8 +200,31 @@ fragment UnionFields on ThingsUnion {
       Assert.IsNotNull(nextName, "Expected nextName");
       var idStr = resp.GetValue<string>("uList/#1/idStr");
       Assert.IsNotNull(idStr, "Expected idStr");
+    }
 
 
+
+    [TestMethod]
+    public async Task Test_InlineFragments() {
+      TestEnv.LogTestMethodStart();
+      string query;
+      GraphQLResponse resp;
+      TestEnv.LogTestDescr("Testing inline fragment");
+
+      query = @"
+query  { 
+  getSomeNamedObjects {
+    name
+    ... on OtherThing {
+      idStr
+    }
+  }
+}
+";
+      resp = await ExecuteAsync(query);
+      // check that idStr appears in the output
+      var list = resp.Data.GetValue<IList>("getSomeNamedObjects");
+      //Assert.IsTrue(id > 0, "id expected > 0");
     }
   } //class
 }

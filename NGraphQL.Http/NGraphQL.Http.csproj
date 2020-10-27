@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>8.0</LangVersion>
-    <Version>0.9.1</Version>
+    <Version>0.9.2</Version>
     <Authors>Roman Ivantsov</Authors>
     <Copyright>Roman Ivantsov</Copyright>
     <Company />
