@@ -205,7 +205,7 @@ fragment UnionFields on ThingsUnion {
 
 
     [TestMethod]
-    public async Task Test_InlineFragments() {
+    public async Task Test_FragmentsInline() {
       TestEnv.LogTestMethodStart();
       string query;
       GraphQLResponse resp;
@@ -221,10 +221,10 @@ query  {
   }
 }
 ";
+      // we just testing it won't fail on idStr
       resp = await ExecuteAsync(query);
-      // check that idStr appears in the output
       var list = resp.Data.GetValue<IList>("getSomeNamedObjects");
-      //Assert.IsTrue(id > 0, "id expected > 0");
+      Assert.IsTrue(list.Count > 0);
     }
   } //class
 }
