@@ -20,7 +20,7 @@
 [Star Wars Sample API - Step-by-step guide to NGraphQL](https://github.com/rivantsov/starwars/wiki) 
 
 ## Star Wars example
-Explore the [StarWars sample app](https://github.com/rivantsov/starwars) - a sample of _GraphQL API_ implementation on top of a simple app. The example includes an HTTP server implementation with _Grapphiql_ interactive UI for executing queries.  
+Explore the [StarWars sample app](https://github.com/rivantsov/starwars) - a sample of _GraphQL API_ implementation on top of a simple app. The example includes an HTTP server implementation with _Graphiql_ interactive UI for executing queries.  
 
 ## Exploring the source code
 Download the source code, open the solution in *Visual Studio 2019*. Build all and run unit tests in *NGraphQL.Tests* project - all tests should pass. 
