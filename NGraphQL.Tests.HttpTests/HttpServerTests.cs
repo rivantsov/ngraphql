@@ -34,6 +34,12 @@ namespace NGraphQL.Tests.HttpTests {
     public async Task TestBasicQueries() {
       TestEnv.LogTestMethodStart();
 
+      TestEnv.LogTestDescr("Testing dynamic query");
+      dynamic respD = await TestEnv.SendAsync<object>("query { things {name} }");
+      dynamic thing0Name = respD.data.things[0].name;
+      Assert.IsNotNull(respD);
+
+
       TestEnv.LogTestDescr("successful simple query."); 
       var resp = await TestEnv.SendAsync("query { things {name} }");
       Assert.IsNotNull(resp);

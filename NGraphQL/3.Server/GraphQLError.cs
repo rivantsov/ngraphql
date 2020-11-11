@@ -28,9 +28,9 @@ namespace NGraphQL.Server {
     public override string ToString() {
       var str = Message;
       if (Path != null)
-        str += " path: [" + Path.ToCommaText() + "]";
-      if (Locations.Count > 0)
-        str += " at: " + string.Join<Location>(", ", Locations);
+        str += " path: [" + string.Join(", ", Path) + "]";
+      if (Locations != null && Locations.Count > 0)
+        str += $" at: {Locations[0]}";
       return str;
     }
   }

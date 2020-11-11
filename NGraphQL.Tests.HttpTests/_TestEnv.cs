@@ -4,8 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Arrest;
-using Arrest.Json;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Newtonsoft.Json;
@@ -16,6 +14,7 @@ using NGraphQL.Http;
 using NGraphQL.Server;
 using NGraphQL.TestApp;
 using NGraphQL.Utilities;
+using Arrest;
 
 namespace NGraphQL.Tests.HttpTests {
   using TDict = IDictionary<string, object>;
@@ -34,7 +33,7 @@ namespace NGraphQL.Tests.HttpTests {
 
     static IWebHost _webHost;
 
-    public static void Initialize () {
+    public static void Initialize() {
       if (ThingsHttpServer != null) //already initialized
         return;
       if (File.Exists(LogFilePath))
@@ -50,11 +49,11 @@ namespace NGraphQL.Tests.HttpTests {
       var thingsBizApp = new ThingsApp();
       ThingsApi = new ThingsApi(thingsBizApp);
       var thingsServer = new GraphQLServer(ThingsApi);
-      thingsServer.Initialize(); 
+      thingsServer.Initialize();
       ThingsHttpServer = new GraphQLHttpServer(thingsServer);
       ThingsHttpServer.Events.RequestCompleted += ThingsHttpServer_RequestCompleted;
 
-      StartWebHost(); 
+      StartWebHost();
       Client = new RestClient(ServiceUrl + "/graphql");
     }
 
@@ -73,8 +72,16 @@ namespace NGraphQL.Tests.HttpTests {
       _webHost?.StopAsync().Wait();
     }
 
-    public static async Task<GraphQLResponse> SendAsync(string query, IDictionary<string, object> vars = null, 
-         string opName = null, bool throwOnError = true) {
+    public static async Task<GraphQLResponse> SendAsync(string query, IDictionary<string, object> vars = null,
+                                                        string opName = null, bool throwOnError = true) {
+      var resp = await SendAsync<GraphQLResponse>(query, vars, opName, throwOnError);
+      if (throwOnError && resp.Errors != null && resp.Errors.Count > 0)
+        throw new Exception("Server returned error: " + resp.Errors[0].Message);
+      return resp; 
+    }
+
+    public static async Task<TResp> SendAsync<TResp>(string query, IDictionary<string, object> vars = null, 
+                                                     string opName = null, bool throwOnError = true) {
       var start = AppTime.GetTimestamp(); 
       var reqDict = new Dictionary<string, object>();
       reqDict["query"] = query;
@@ -88,12 +95,9 @@ namespace NGraphQL.Tests.HttpTests {
       // read response
       var reader = new StreamReader(respStream);
       var respBody = reader.ReadToEnd();
-      var resp = JsonConvert.DeserializeObject<GraphQLResponse>(respBody, _serializerSettings);
+      var resp = JsonConvert.DeserializeObject<TResp>(respBody, _serializerSettings);
       LastRequestDuration = AppTime.GetDuration(start);
       LogCompletedRequest(reqDict, LastServerSideRequestObject); 
-
-      if (throwOnError && resp.Errors != null && resp.Errors.Count > 0)
-        throw new Exception("Server returned error: " + resp.Errors[0].Message);
       return resp; 
     }
 

@@ -1,0 +1,10 @@
+<Project>
+  <PropertyGroup>
+    <AssemblyVersion>0.9.5</AssemblyVersion>
+    <Version>0.9.5</Version>
+    <LangVersion>8.0</LangVersion>
+    <Authors>Roman Ivantsov</Authors>
+    <Copyright>Roman Ivantsov</Copyright>
+    <Company />
+  </PropertyGroup>
+</Project>

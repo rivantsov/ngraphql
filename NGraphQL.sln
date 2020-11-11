@@ -16,9 +16,12 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{99BB55EA-1963-40D6-B085-2DEF6DAA5222}"
 	ProjectSection(SolutionItems) = preProject
 		ReadMe.md = ReadMe.md
+		Version.proj = Version.proj
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{CA7361EF-78F4-4367-953F-28A1CDEDBB35}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NGraphQL.Client", "NGraphQL.Client\NGraphQL.Client.csproj", "{614DAA9A-13E2-47EB-ACC3-F4B024D6F7AE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -46,6 +49,10 @@ Global
 		{13B3DC8E-6EEE-48A0-BBA3-FE90DC385486}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{13B3DC8E-6EEE-48A0-BBA3-FE90DC385486}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{13B3DC8E-6EEE-48A0-BBA3-FE90DC385486}.Release|Any CPU.Build.0 = Release|Any CPU
+		{614DAA9A-13E2-47EB-ACC3-F4B024D6F7AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{614DAA9A-13E2-47EB-ACC3-F4B024D6F7AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{614DAA9A-13E2-47EB-ACC3-F4B024D6F7AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{614DAA9A-13E2-47EB-ACC3-F4B024D6F7AE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
