@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Text;
 using System.Threading;
 
@@ -24,22 +25,21 @@ namespace NGraphQL.Client {
     public IDictionary<string, object> Variables;
     public Type ResultType;
     public CancellationToken CancellationToken;
-    public IDictionary<string, string> Headers; 
+    public IDictionary<string, string> Headers;
+    public HttpCompletionOption CompletionOption = HttpCompletionOption.ResponseContentRead;
   }
 
   public class ServerResponse {
-    public IList<RequestError> Errors = new List<RequestError>();
+    public IList<ServerError> Errors;
     public object Data;
+    public int TimeMs; 
   }
 
-  public class RequestError {
-    public const string ErrorTypeKey = "type";
+  public class ServerError {
     public string Message;
     public IList<Location> Locations = new List<Location>();
     public IList<object> Path;
     public IDictionary<string, object> Extensions = new Dictionary<string, object>();
-
-    public RequestError() { }
 
     public override string ToString() {
       var str = Message;

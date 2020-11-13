@@ -15,6 +15,7 @@ using NGraphQL.Server;
 using NGraphQL.TestApp;
 using NGraphQL.Utilities;
 using Arrest;
+using NGraphQL.Client;
 
 namespace NGraphQL.Tests.HttpTests {
   using TDict = IDictionary<string, object>;
@@ -23,7 +24,8 @@ namespace NGraphQL.Tests.HttpTests {
     public static string ServiceUrl = "http://127.0.0.1:5900";
     public static GraphQLHttpServer ThingsHttpServer;
     public static ThingsApi ThingsApi;
-    public static RestClient Client;
+    public static RestClient RestClient;
+    public static GraphQLClient Client; 
     public static GraphQLHttpRequest LastServerSideRequestObject;
     public static TimeSpan LastRequestDuration; // measured on the client
 
@@ -54,7 +56,8 @@ namespace NGraphQL.Tests.HttpTests {
       ThingsHttpServer.Events.RequestCompleted += ThingsHttpServer_RequestCompleted;
 
       StartWebHost();
-      Client = new RestClient(ServiceUrl + "/graphql");
+      RestClient = new RestClient(ServiceUrl + "/graphql");
+      Client = new GraphQLClient(ServiceUrl + "/graphql");
     }
 
     private static void StartWebHost() {
@@ -91,7 +94,7 @@ namespace NGraphQL.Tests.HttpTests {
         reqDict["operationName"] = opName;
       // we cannot get response directly as GraphQLResponse because casing ('data' in json vs Data prop in GraphQLResponse)
       //  so we get it as stream and deserialize using custom settings (with camel case naming policy)
-      var respStream = await Client.PostAsync<TDict, Stream>(reqDict, string.Empty);
+      var respStream = await RestClient.PostAsync<TDict, Stream>(reqDict, string.Empty);
       // read response
       var reader = new StreamReader(respStream);
       var respBody = reader.ReadToEnd();

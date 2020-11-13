@@ -25,9 +25,20 @@ namespace NGraphQL.Tests.HttpTests {
     public async Task TestGetSchema() {
       TestEnv.LogTestMethodStart(); 
 
-      var schema = await TestEnv.Client.GetStringAsync("/schema");
+      var schema = await TestEnv.RestClient.GetStringAsync("/schema");
       Assert.IsTrue(!string.IsNullOrWhiteSpace(schema), "expected schema doc");
       TestEnv.LogText("  Success: received Schema doc from server using endpoint '.../schema' ");
+    }
+
+    [TestMethod]
+    public async Task TestGraphQLClient() {
+      TestEnv.LogTestMethodStart();
+
+      TestEnv.LogTestDescr("Testing dynamic query");
+      var resp = await TestEnv.Client.PostAsync("query { things {name} }");
+      var thing0Name = resp.Data.things[0].name;
+      Assert.IsNotNull(thing0Name);
+
     }
 
     [TestMethod]

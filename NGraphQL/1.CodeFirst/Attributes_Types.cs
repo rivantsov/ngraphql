@@ -31,11 +31,4 @@ namespace NGraphQL.CodeFirst {
     internal override SchemaTypeRole TypeRole => SchemaTypeRole.DataType;
   }
 
-  /*
-  [AttributeUsage(AttributeTargets.Class)]
-  public class ResolversAttribute : GraphQLTypeRoleAttribute {
-    internal override SchemaTypeRole TypeRole => SchemaTypeRole.Resolver;
-  }
-  */
-
 }
