@@ -1,13 +1,9 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using NGraphQL.Http;
 using NGraphQL.Server;
-using NGraphQL.TestApp;
-using NGraphQL.Utilities; 
+using NGraphQL.Utilities;
 
 namespace NGraphQL.Tests.HttpTests {
   using TDict = Dictionary<string, object>;
@@ -49,8 +45,6 @@ namespace NGraphQL.Tests.HttpTests {
       resp = await TestEnv.Client.PostAsync(queryM, vars);
       thingName = resp.Data.things[1].name;
       Assert.AreEqual("Name2", thingName);
-
-
     }
 
     [TestMethod]

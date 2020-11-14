@@ -21,7 +21,8 @@ namespace NGraphQL.Tests.HttpTests {
   using TDict = IDictionary<string, object>;
 
   public static class TestEnv {
-    public static string ServiceUrl = "http://127.0.0.1:5900";
+    public static string ServiceUrl = "http://127.0.0.1:55000";
+    public static string GraphQLEndPointUrl = ServiceUrl + "/graphql";
     public static GraphQLHttpServer ThingsHttpServer;
     public static ThingsApi ThingsApi;
     public static RestClient RestClient;
@@ -56,8 +57,8 @@ namespace NGraphQL.Tests.HttpTests {
       ThingsHttpServer.Events.RequestCompleted += ThingsHttpServer_RequestCompleted;
 
       StartWebHost();
-      RestClient = new RestClient(ServiceUrl + "/graphql");
-      Client = new GraphQLClient(ServiceUrl + "/graphql");
+      RestClient = new RestClient(GraphQLEndPointUrl);
+      Client = new GraphQLClient(GraphQLEndPointUrl);
     }
 
     private static void StartWebHost() {
