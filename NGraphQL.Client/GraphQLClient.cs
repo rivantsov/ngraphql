@@ -2,12 +2,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Dynamic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 
 namespace NGraphQL.Client {
@@ -15,14 +17,17 @@ namespace NGraphQL.Client {
 
   public class GraphQLClient {
     public const string MediaTypeJson = "application/json";
-    JsonSerializerSettings _serializerSettings = new JsonSerializerSettings();
+    JsonSerializerSettings _serializerSettings;
 
     public readonly string ServiceUrl; 
     HttpClient _client;
 
     public GraphQLClient(string serviceUrl) {
       ServiceUrl = serviceUrl;
+      _serializerSettings = new JsonSerializerSettings();
+      _serializerSettings.Converters.Add(new ExpandoObjectConverter());
       _client = new HttpClient();
+      
     }
 
     #region Headers
@@ -78,7 +83,7 @@ namespace NGraphQL.Client {
 
     private async Task<ServerResponse> ReadServerResponseAsync(HttpResponseMessage respMessage) {
       var json = await respMessage.Content.ReadAsStringAsync();
-      var bodyDict = JsonConvert.DeserializeObject<IDictionary<string, object>>(json);
+      IDictionary<string, object> bodyDict = JsonConvert.DeserializeObject<ExpandoObject>(json, _serializerSettings);
       var resp = new ServerResponse();
       if (bodyDict.TryGetValue("errors", out var errorsObj) && errorsObj is JObject errJObj) {
         resp.Errors = errJObj.ToObject<IList<ServerError>>();
@@ -112,7 +117,6 @@ namespace NGraphQL.Client {
       var timeMs = (now - start) * 1000 / Stopwatch.Frequency;
       return (int) timeMs;
     }
-
-
   }
+
 }

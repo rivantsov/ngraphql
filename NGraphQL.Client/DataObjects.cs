@@ -31,8 +31,9 @@ namespace NGraphQL.Client {
 
   public class ServerResponse {
     public IList<ServerError> Errors;
-    public object Data;
+    public dynamic Data;
     public int TimeMs; 
+    
   }
 
   public class ServerError {

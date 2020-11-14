@@ -33,11 +33,23 @@ namespace NGraphQL.Tests.HttpTests {
     [TestMethod]
     public async Task TestGraphQLClient() {
       TestEnv.LogTestMethodStart();
+      dynamic resp;
+      var query1 = "query ($id: Int) { getThing(id: $id) {name} }";
+      var queryM = "query { things {name} }";
+      var vars = new TDict() { { "id", 2 } };
+      
+      // Post requests
+      TestEnv.LogTestDescr("Testing Post requests");
+      // single thing with query parameter
+      resp = await TestEnv.Client.PostAsync(query1, vars);
+      var thingName = resp.Data.getThing.name;
+      Assert.AreEqual("Name2", thingName);
 
-      TestEnv.LogTestDescr("Testing dynamic query");
-      var resp = await TestEnv.Client.PostAsync("query { things {name} }");
-      var thing0Name = resp.Data.things[0].name;
-      Assert.IsNotNull(thing0Name);
+      // list of things 
+      resp = await TestEnv.Client.PostAsync(queryM, vars);
+      thingName = resp.Data.things[1].name;
+      Assert.AreEqual("Name2", thingName);
+
 
     }
 
