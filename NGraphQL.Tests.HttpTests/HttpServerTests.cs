@@ -30,6 +30,7 @@ namespace NGraphQL.Tests.HttpTests {
     public async Task TestGraphQLClient() {
       TestEnv.LogTestMethodStart();
       dynamic resp;
+      string thingName;
       var query1 = "query ($id: Int) { getThing(id: $id) {name} }";
       var queryM = "query { things {name} }";
       var vars = new TDict() { { "id", 2 } };
@@ -38,13 +39,26 @@ namespace NGraphQL.Tests.HttpTests {
       TestEnv.LogTestDescr("Testing Post requests");
       // single thing with query parameter
       resp = await TestEnv.Client.PostAsync(query1, vars);
-      var thingName = resp.Data.getThing.name;
+      thingName = resp.data.getThing.name;
       Assert.AreEqual("Name2", thingName);
 
       // list of things 
       resp = await TestEnv.Client.PostAsync(queryM, vars);
-      thingName = resp.Data.things[1].name;
+      thingName = resp.data.things[1].name;
       Assert.AreEqual("Name2", thingName);
+
+      TestEnv.LogTestDescr("Testing Get requests");
+      // single thing with query parameter
+      resp = await TestEnv.Client.GetAsync(query1, vars);
+      thingName = resp.data.getThing.name;
+      Assert.AreEqual("Name2", thingName);
+
+      // list of things 
+      resp = await TestEnv.Client.GetAsync(queryM, vars);
+      thingName = resp.data.things[1].name;
+      Assert.AreEqual("Name2", thingName);
+
+
     }
 
     [TestMethod]

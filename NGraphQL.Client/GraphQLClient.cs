@@ -101,10 +101,10 @@ namespace NGraphQL.Client {
       IDictionary<string, object> bodyDict = JsonConvert.DeserializeObject<ExpandoObject>(json, _serializerSettings);
       var resp = new ServerResponse();
       if (bodyDict.TryGetValue("errors", out var errorsObj) && errorsObj is JObject errJObj) {
-        resp.Errors = errJObj.ToObject<IList<ServerError>>();
+        resp.errors = errJObj.ToObject<IList<ServerError>>();
       }
       if (bodyDict.TryGetValue("data", out var data))
-        resp.Data = data;
+        resp.data = data;
       return resp; 
     }
 
@@ -124,7 +124,7 @@ namespace NGraphQL.Client {
 
     // see https://graphql.org/learn/serving-over-http/#get-request
     private string BuildGetMessageUrlQuery(ClientRequest request) {
-      var urlQry = "?query=" + Uri.EscapeUriString(request.Query);
+      var urlQry = "query=" + Uri.EscapeUriString(request.Query);
       if (!string.IsNullOrWhiteSpace(request.OperationName))
         urlQry += "&operationName=" + Uri.EscapeUriString(request.OperationName);
       if (request.Variables == null || request.Variables.Count == 0)
@@ -132,7 +132,7 @@ namespace NGraphQL.Client {
       // serializer vars as json, and add to URL qry
       // do not use settings here, we don't need fancy settings here from body serialization process
       var varsJson = JsonConvert.SerializeObject(request.Variables, Formatting.None);
-      urlQry += "&" + Uri.EscapeUriString(varsJson);
+      urlQry += "&variables=" + Uri.EscapeUriString(varsJson);
       return urlQry;       
     }
 
