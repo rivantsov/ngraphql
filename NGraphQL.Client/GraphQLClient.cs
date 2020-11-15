@@ -14,16 +14,19 @@ using Newtonsoft.Json.Linq;
 
 namespace NGraphQL.Client {
   using TDict = Dictionary<string, object>;
+  using IDict = IDictionary<string, object>;
 
   public class GraphQLClient {
     public const string MediaTypeJson = "application/json";
     JsonSerializerSettings _serializerSettings;
 
-    public readonly string ServiceUrl; 
+    public readonly string ServiceUrl;
+    public readonly Uri ServiceUri;
     HttpClient _client;
 
     public GraphQLClient(string serviceUrl) {
       ServiceUrl = serviceUrl;
+      ServiceUri = new Uri(ServiceUrl);
       _serializerSettings = new JsonSerializerSettings();
       _serializerSettings.Converters.Add(new ExpandoObjectConverter());
       _client = new HttpClient();
@@ -40,37 +43,49 @@ namespace NGraphQL.Client {
    
     #endregion
 
-    public async Task<dynamic> PostAsync(string query, TDict variables = null, CancellationToken cancellationToken = default) {
+    public async Task<dynamic> PostAsync(string query, TDict variables = null, string operationName = null, 
+                                         CancellationToken cancellationToken = default) {
       var request = new ClientRequest() {
-        RequestType = RequestType.Post, Query = query, Variables = variables,
+        RequestType = RequestType.Post, Query = query, Variables = variables, OperationName = operationName,
         CancellationToken = cancellationToken
       };
       var resp = await SendAsync(request);
       return resp; 
     }
 
-    private async Task<ServerResponse> SendAsync(ClientRequest request) {
+    public async Task<dynamic> GetAsync(string query, TDict variables = null, string operationName = null, 
+                                        CancellationToken cancellationToken = default) {
+      var request = new ClientRequest() {
+        RequestType = RequestType.Get, Query = query, Variables = variables, OperationName = operationName,
+        CancellationToken = cancellationToken
+      };
+      var resp = await SendAsync(request);
+      return resp;
+    }
+
+    public async Task<ServerResponse> SendAsync(ClientRequest request) {
       var start = GetTimestamp();
       var reqMessage = new HttpRequestMessage();
-      reqMessage.RequestUri = new Uri(ServiceUrl);
       switch(request.RequestType) {
         case RequestType.Post:
+          reqMessage.RequestUri = ServiceUri;
           reqMessage.Method = HttpMethod.Post; 
           reqMessage.Content = BuildPostMessageContent(request);
           break;
         case RequestType.Get:
           reqMessage.Method = HttpMethod.Get;
-          reqMessage.Content = BuildGetMessageContent(request);
+          var urlQuery = BuildGetMessageUrlQuery(request);
+          reqMessage.RequestUri = new Uri(ServiceUrl + "?" + urlQuery);
           break;
       }
       // Headers - copy default headers and custom headers
-      var headers = reqMessage.Headers;
-      headers.Add("accept", MediaTypeJson);
+      var reqHeaders = reqMessage.Headers;
+      reqHeaders.Add("accept", MediaTypeJson);
       foreach (var kv in this.DefaultRequestHeaders)
-        headers.Add(kv.Key, kv.Value);
+        reqHeaders.Add(kv.Key, kv.Value);
       if (request.Headers != null)
         foreach (var de in request.Headers)
-          headers.Add(de.Key, de.Value);
+          reqHeaders.Add(de.Key, de.Value);
       
       // actually execute
       var respMessage = await _client.SendAsync(reqMessage, request.CompletionOption, request.CancellationToken);
@@ -96,16 +111,29 @@ namespace NGraphQL.Client {
     private HttpContent BuildPostMessageContent(ClientRequest request) {
       var bodyDict = new Dictionary<string, object>();
       bodyDict["query"] = request.Query;
-      if (request.Variables != null && request.Variables.Count > 0) {
-        bodyDict["variables"] = request.Variables;
+      var vars = request.Variables;
+      if (vars != null && vars.Count > 0) {
+        bodyDict["variables"] = vars;
       }
+      if (!string.IsNullOrWhiteSpace(request.OperationName))
+        bodyDict["operationName"] = request.OperationName;
       var strBody = JsonConvert.SerializeObject(bodyDict, _serializerSettings);
       var content = new StringContent(strBody, Encoding.UTF8, MediaTypeJson);
       return content; 
     }
 
-    private HttpContent BuildGetMessageContent(ClientRequest request) {
-      throw new NotImplementedException();
+    // see https://graphql.org/learn/serving-over-http/#get-request
+    private string BuildGetMessageUrlQuery(ClientRequest request) {
+      var urlQry = "?query=" + Uri.EscapeUriString(request.Query);
+      if (!string.IsNullOrWhiteSpace(request.OperationName))
+        urlQry += "&operationName=" + Uri.EscapeUriString(request.OperationName);
+      if (request.Variables == null || request.Variables.Count == 0)
+        return urlQry;
+      // serializer vars as json, and add to URL qry
+      // do not use settings here, we don't need fancy settings here from body serialization process
+      var varsJson = JsonConvert.SerializeObject(request.Variables, Formatting.None);
+      urlQry += "&" + Uri.EscapeUriString(varsJson);
+      return urlQry;       
     }
 
     private static long GetTimestamp() {

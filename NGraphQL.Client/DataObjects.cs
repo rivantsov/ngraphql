@@ -22,6 +22,7 @@ namespace NGraphQL.Client {
   public class ClientRequest {
     public RequestType RequestType;
     public string Query;
+    public string OperationName; 
     public IDictionary<string, object> Variables;
     public Type ResultType;
     public CancellationToken CancellationToken;
