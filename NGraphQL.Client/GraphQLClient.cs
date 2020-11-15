@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
@@ -13,16 +12,19 @@ using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 
 namespace NGraphQL.Client {
-  using TDict = Dictionary<string, object>;
   using IDict = IDictionary<string, object>;
 
   public class GraphQLClient {
     public const string MediaTypeJson = "application/json";
-    JsonSerializerSettings _serializerSettings;
 
     public readonly string ServiceUrl;
     public readonly Uri ServiceUri;
+    public event EventHandler<RequestStartingEventArgs> RequestStarting;
+    public event EventHandler<RequestCompletedEventArgs> RequestCompleted;
+
+
     HttpClient _client;
+    JsonSerializerSettings _serializerSettings;
 
     public GraphQLClient(string serviceUrl) {
       ServiceUrl = serviceUrl;
@@ -43,35 +45,50 @@ namespace NGraphQL.Client {
    
     #endregion
 
-    public async Task<dynamic> PostAsync(string query, TDict variables = null, string operationName = null, 
+    public Task<ServerResponse> PostAsync(string query, IDict variables = null, string operationName = null, 
                                          CancellationToken cancellationToken = default) {
       var request = new ClientRequest() {
         RequestType = RequestType.Post, Query = query, Variables = variables, OperationName = operationName,
         CancellationToken = cancellationToken
       };
-      var resp = await SendAsync(request);
-      return resp; 
+      return SendAsync(request);
     }
 
-    public async Task<dynamic> GetAsync(string query, TDict variables = null, string operationName = null, 
+    public Task<ServerResponse> GetAsync(string query, IDict variables = null, string operationName = null, 
                                         CancellationToken cancellationToken = default) {
       var request = new ClientRequest() {
         RequestType = RequestType.Get, Query = query, Variables = variables, OperationName = operationName,
         CancellationToken = cancellationToken
       };
-      var resp = await SendAsync(request);
-      return resp;
+      return SendAsync(request);
     }
 
     public async Task<ServerResponse> SendAsync(ClientRequest request) {
       var start = GetTimestamp();
+      var response = new ServerResponse() { Request = request };
+      try {
+        RequestStarting?.Invoke(this, new RequestStartingEventArgs(request));
+        await SendAsync(request, response);
+        response.TimeMs = GetTimeSince(start);
+        RequestCompleted?.Invoke(this, new RequestCompletedEventArgs(response));
+      } catch (Exception ex) {
+        response.Exception = ex;
+        RequestCompleted?.Invoke(this, new RequestCompletedEventArgs(response));
+        throw; //??   
+      } 
+      return response;
+    }
+
+    private async Task SendAsync(ClientRequest request, ServerResponse response) {
       var reqMessage = new HttpRequestMessage();
       switch(request.RequestType) {
+
         case RequestType.Post:
           reqMessage.RequestUri = ServiceUri;
           reqMessage.Method = HttpMethod.Post; 
           reqMessage.Content = BuildPostMessageContent(request);
           break;
+        
         case RequestType.Get:
           reqMessage.Method = HttpMethod.Get;
           var urlQuery = BuildGetMessageUrlQuery(request);
@@ -91,21 +108,17 @@ namespace NGraphQL.Client {
       var respMessage = await _client.SendAsync(reqMessage, request.CompletionOption, request.CancellationToken);
       respMessage.EnsureSuccessStatusCode();
 
-      var resp = await ReadServerResponseAsync(respMessage);  
-      resp.TimeMs = GetTimeSince(start);
-      return resp; 
+      await ReadServerResponseAsync(response, respMessage);  
     } 
 
-    private async Task<ServerResponse> ReadServerResponseAsync(HttpResponseMessage respMessage) {
+    private async Task ReadServerResponseAsync(ServerResponse response, HttpResponseMessage respMessage) {
       var json = await respMessage.Content.ReadAsStringAsync();
       IDictionary<string, object> bodyDict = JsonConvert.DeserializeObject<ExpandoObject>(json, _serializerSettings);
-      var resp = new ServerResponse();
       if (bodyDict.TryGetValue("errors", out var errorsObj) && errorsObj is JObject errJObj) {
-        resp.errors = errJObj.ToObject<IList<ServerError>>();
+        response.Errors = errJObj.ToObject<IList<ServerError>>();
       }
       if (bodyDict.TryGetValue("data", out var data))
-        resp.data = data;
-      return resp; 
+        response.Data = data;
     }
 
     private HttpContent BuildPostMessageContent(ClientRequest request) {

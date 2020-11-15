@@ -31,10 +31,11 @@ namespace NGraphQL.Client {
   }
 
   public class ServerResponse {
-    public IList<ServerError> errors;
-    public dynamic data;
-    public int TimeMs; 
-    
+    public ClientRequest Request; 
+    public IList<ServerError> Errors;
+    public dynamic Data;
+    public int TimeMs;
+    public Exception Exception; 
   }
 
   public class ServerError {
@@ -58,6 +59,23 @@ namespace NGraphQL.Client {
     public int Column;
     public override string ToString() => $"({Line}, {Column})";
   }
+
+  public class RequestStartingEventArgs : EventArgs {
+    public readonly ClientRequest Request;
+
+    public RequestStartingEventArgs(ClientRequest request) {
+      Request = request; 
+    }
+  }
+
+  public class RequestCompletedEventArgs : EventArgs {
+    public readonly ServerResponse Response;
+
+    public RequestCompletedEventArgs(ServerResponse response) {
+      Response = response; 
+    }
+  }
+
 
 }
 
