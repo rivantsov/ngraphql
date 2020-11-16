@@ -59,6 +59,7 @@ namespace NGraphQL.Tests.HttpTests {
       StartWebHost();
       RestClient = new RestClient(GraphQLEndPointUrl);
       Client = new GraphQLClient(GraphQLEndPointUrl);
+      Client.RequestCompleted += Client_RequestCompleted;
     }
 
     private static void StartWebHost() {
@@ -105,6 +106,7 @@ namespace NGraphQL.Tests.HttpTests {
       return resp; 
     }
 
+
     private static void ThingsHttpServer_RequestCompleted(object sender, HttpRequestEventArgs e) {
       // we hook to server event to catch the request context data here;
       // we need server-side metrics info, which we won't get in the regular response - it will contain just json data.
@@ -143,6 +145,39 @@ namespace NGraphQL.Tests.HttpTests {
 Testing: {descr}
 ");
     }
+
+
+    private static void Client_RequestCompleted(object sender, RequestCompletedEventArgs e) {
+      LogCompletedRequestNew(e.Response);
+    }
+
+    public static void LogCompletedRequestNew(ServerResponse response) {
+      string reqText;
+      var req = response.Request; 
+      if (req.RequestType == RequestType.Get) {
+        reqText = @$"GET: {req.GetUrlQuery} 
+                unescaped: {Uri.UnescapeDataString(req.GetUrlQuery)}";
+      } else 
+        reqText = "POST: " +  response.Request.GetPayloadJson();
+      // for better readability, unescape \r\n
+      reqText = reqText.Replace("\\r\\n", Environment.NewLine);
+      var jsonResponse = JsonConvert.SerializeObject(response.Payload, Formatting.Indented);
+      var text = $@"
+Request: 
+{reqText}
+
+Response:
+{jsonResponse}
+
+//  time: {response.TimeMs} ms
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+";
+      LogText(text);
+      if (response.Exception != null)
+        LogText(response.Exception.ToText());
+    }
+
 
     public static void LogCompletedRequest(IDictionary<string, object> reqDict, GraphQLHttpRequest serverReqData) {
       var reqCtx = serverReqData.RequestContext;

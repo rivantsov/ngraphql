@@ -19,6 +19,7 @@ namespace NGraphQL.Client {
 
     public readonly string ServiceUrl;
     public readonly Uri ServiceUri;
+    public bool RethrowExceptions = true;
     public event EventHandler<RequestStartingEventArgs> RequestStarting;
     public event EventHandler<RequestCompletedEventArgs> RequestCompleted;
 
@@ -74,7 +75,12 @@ namespace NGraphQL.Client {
       } catch (Exception ex) {
         response.Exception = ex;
         RequestCompleted?.Invoke(this, new RequestCompletedEventArgs(response));
-        throw; //??   
+        if (RethrowExceptions && response.Exception != null) {
+          if (response.Exception == ex)
+            throw;
+          else
+            throw response.Exception; //throw new exception
+        }
       } 
       return response;
     }
@@ -91,8 +97,8 @@ namespace NGraphQL.Client {
         
         case RequestType.Get:
           reqMessage.Method = HttpMethod.Get;
-          var urlQuery = BuildGetMessageUrlQuery(request);
-          reqMessage.RequestUri = new Uri(ServiceUrl + "?" + urlQuery);
+          request.GetUrlQuery = BuildGetMessageUrlQuery(request);
+          reqMessage.RequestUri = new Uri(ServiceUrl + "?" + request.GetUrlQuery);
           break;
       }
       // Headers - copy default headers and custom headers
@@ -113,25 +119,18 @@ namespace NGraphQL.Client {
 
     private async Task ReadServerResponseAsync(ServerResponse response, HttpResponseMessage respMessage) {
       var json = await respMessage.Content.ReadAsStringAsync();
-      IDictionary<string, object> bodyDict = JsonConvert.DeserializeObject<ExpandoObject>(json, _serializerSettings);
-      if (bodyDict.TryGetValue("errors", out var errorsObj) && errorsObj is JObject errJObj) {
+      response.Payload = JsonConvert.DeserializeObject<ExpandoObject>(json, _serializerSettings);
+      if (response.Payload.TryGetValue("errors", out var errorsObj) && errorsObj is JObject errJObj) {
         response.Errors = errJObj.ToObject<IList<ServerError>>();
       }
-      if (bodyDict.TryGetValue("data", out var data))
+      if (response.Payload.TryGetValue("data", out var data))
         response.Data = data;
     }
 
     private HttpContent BuildPostMessageContent(ClientRequest request) {
-      var bodyDict = new Dictionary<string, object>();
-      bodyDict["query"] = request.Query;
-      var vars = request.Variables;
-      if (vars != null && vars.Count > 0) {
-        bodyDict["variables"] = vars;
-      }
-      if (!string.IsNullOrWhiteSpace(request.OperationName))
-        bodyDict["operationName"] = request.OperationName;
-      var strBody = JsonConvert.SerializeObject(bodyDict, _serializerSettings);
-      var content = new StringContent(strBody, Encoding.UTF8, MediaTypeJson);
+      request.PostPayload = request.GetPayload();
+      var json = JsonConvert.SerializeObject(request.PostPayload, Formatting.Indented);
+      var content = new StringContent(json, Encoding.UTF8, MediaTypeJson);
       return content; 
     }
 
@@ -146,7 +145,7 @@ namespace NGraphQL.Client {
       // do not use settings here, we don't need fancy settings here from body serialization process
       var varsJson = JsonConvert.SerializeObject(request.Variables, Formatting.None);
       urlQry += "&variables=" + Uri.EscapeUriString(varsJson);
-      return urlQry;       
+      return urlQry;
     }
 
     private static long GetTimestamp() {

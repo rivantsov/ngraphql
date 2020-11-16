@@ -24,6 +24,8 @@ namespace NGraphQL.Client {
     public string Query;
     public string OperationName; 
     public IDictionary<string, object> Variables;
+    public IDictionary<string, object> PostPayload;
+    public string GetUrlQuery;
     public Type ResultType;
     public CancellationToken CancellationToken;
     public IDictionary<string, string> Headers;
@@ -31,7 +33,8 @@ namespace NGraphQL.Client {
   }
 
   public class ServerResponse {
-    public ClientRequest Request; 
+    public ClientRequest Request;
+    public IDictionary<string, object> Payload; 
     public IList<ServerError> Errors;
     public dynamic Data;
     public int TimeMs;
