@@ -23,9 +23,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NGraphQL.Http\NGraphQL.Http.csproj" />
+    <ProjectReference Include="..\..\NGraphQL\NGraphQL.csproj" />
     <ProjectReference Include="..\NGraphQL.TestApp\NGraphQL.TestApp.csproj" />
-    <ProjectReference Include="..\NGraphQL\NGraphQL.csproj" />
   </ItemGroup>
 
 

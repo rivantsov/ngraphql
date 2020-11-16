@@ -127,7 +127,7 @@ namespace NGraphQL.Client {
         response.Data = data;
     }
 
-
+    // convert to strongly-typed Error objects
     private IList<RequestError> ConvertErrors(object errors) {
       var json = JsonConvert.SerializeObject(errors);
       var errList = JsonConvert.DeserializeObject<IList<RequestError>>(json);

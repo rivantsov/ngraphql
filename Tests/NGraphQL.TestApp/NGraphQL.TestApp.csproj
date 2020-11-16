@@ -18,7 +18,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NGraphQL\NGraphQL.csproj" />
+    <ProjectReference Include="..\..\NGraphQL\NGraphQL.csproj" />
   </ItemGroup>
 
 </Project>
