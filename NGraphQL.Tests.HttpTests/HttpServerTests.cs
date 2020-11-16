@@ -58,6 +58,10 @@ namespace NGraphQL.Tests.HttpTests {
       thingName = resp.Data.things[1].name;
       Assert.AreEqual("Name2", thingName);
 
+      TestEnv.LogTestDescr("Testing queries with errors");
+      resp = await TestEnv.Client.PostAsync(query1 + " ABCD ", vars);
+      var errs = resp.Errors;
+      Assert.IsTrue(errs.Count > 0, "Expected syntax error");
 
     }
 

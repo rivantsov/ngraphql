@@ -155,10 +155,10 @@ Testing: {descr}
       string reqText;
       var req = response.Request; 
       if (req.RequestType == RequestType.Get) {
-        reqText = @$"GET: {req.GetUrlQuery} 
+        reqText = @$"GET, URL: {req.GetUrlQuery} 
                 unescaped: {Uri.UnescapeDataString(req.GetUrlQuery)}";
       } else 
-        reqText = "POST: " +  response.Request.GetPayloadJson();
+        reqText = "POST, payload: " + Environment.NewLine + response.Request.GetPayloadJson();
       // for better readability, unescape \r\n
       reqText = reqText.Replace("\\r\\n", Environment.NewLine);
       var jsonResponse = JsonConvert.SerializeObject(response.Payload, Formatting.Indented);

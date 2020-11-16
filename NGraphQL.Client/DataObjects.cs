@@ -35,13 +35,13 @@ namespace NGraphQL.Client {
   public class ServerResponse {
     public ClientRequest Request;
     public IDictionary<string, object> Payload; 
-    public IList<ServerError> Errors;
+    public IList<RequestError> Errors;
     public dynamic Data;
     public int TimeMs;
     public Exception Exception; 
   }
 
-  public class ServerError {
+  public class RequestError {
     public string Message;
     public IList<Location> Locations = new List<Location>();
     public IList<object> Path;

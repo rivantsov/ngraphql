@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
@@ -120,11 +121,18 @@ namespace NGraphQL.Client {
     private async Task ReadServerResponseAsync(ServerResponse response, HttpResponseMessage respMessage) {
       var json = await respMessage.Content.ReadAsStringAsync();
       response.Payload = JsonConvert.DeserializeObject<ExpandoObject>(json, _serializerSettings);
-      if (response.Payload.TryGetValue("errors", out var errorsObj) && errorsObj is JObject errJObj) {
-        response.Errors = errJObj.ToObject<IList<ServerError>>();
+      if (response.Payload.TryGetValue("errors", out var errorsObj) && errorsObj != null) {
+        response.Errors = ConvertErrors(errorsObj); //convert to strongly-typed objects
       }
       if (response.Payload.TryGetValue("data", out var data))
         response.Data = data;
+    }
+
+
+    private IList<RequestError> ConvertErrors(object errors) {
+      var json = JsonConvert.SerializeObject(errors);
+      var errList = JsonConvert.DeserializeObject<IList<RequestError>>(json);
+      return errList; 
     }
 
     private HttpContent BuildPostMessageContent(ClientRequest request) {
