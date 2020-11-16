@@ -62,7 +62,6 @@ namespace NGraphQL.Tests.HttpTests {
       resp = await TestEnv.Client.PostAsync(query1 + " ABCD ", vars);
       var errs = resp.Errors;
       Assert.IsTrue(errs.Count > 0, "Expected syntax error");
-
     }
 
     [TestMethod]
@@ -70,18 +69,18 @@ namespace NGraphQL.Tests.HttpTests {
       TestEnv.LogTestMethodStart();
 
       TestEnv.LogTestDescr("Testing dynamic query");
-      dynamic respD = await TestEnv.SendAsync<object>("query { things {name} }");
-      dynamic thing0Name = respD.data.things[0].name;
-      Assert.IsNotNull(respD);
+      var resp = await TestEnv.Client.PostAsync("query { things {name} }");
+      var thing0Name = resp.Data.things[0].name;
+      Assert.IsNotNull(resp);
 
 
       TestEnv.LogTestDescr("successful simple query."); 
-      var resp = await TestEnv.SendAsync("query { things {name} }");
+      resp = await TestEnv.Client.PostAsync("query { things {name} }");
       Assert.IsNotNull(resp);
 
       TestEnv.LogTestDescr("invalid query");
       // invalid query - things field needs selection subset
-      var errResp = await TestEnv.SendAsync("query { things  }", throwOnError: false);
+      var errResp = await TestEnv.Client.PostAsync("query { things  }");
       Assert.IsNotNull(errResp);
       Assert.IsTrue(errResp.Errors.Count > 0);
     }
@@ -107,9 +106,10 @@ query ($objWithEnums: InputObjWithEnums) {
         }, 
       };
 
-      var resp = await TestEnv.SendAsync(query, vars);
+      var resp = await TestEnv.Client.PostAsync(query, vars);
       Assert.IsNotNull(resp);
-      var theFlagsStr = resp.GetValue<string>("echo").Replace(" ", string.Empty);
+      var theFlagsStr = (string) resp.Data.echo;
+      theFlagsStr = theFlagsStr.Replace(" ", string.Empty);
       Assert.AreEqual("Flags:FlagOne,FlagThree;kind:KindTwo;FlagsArray:[FlagOne,FlagTwo;FlagThree]", theFlagsStr, 
         "Invalid inputObjWithEnums echo");
     }
@@ -119,7 +119,7 @@ query ($objWithEnums: InputObjWithEnums) {
     public async Task TestVariables() {
       string query;
       TDict varsDict;
-      GraphQLResponse resp;
+      ServerResponse resp;
 
       TestEnv.LogTestMethodStart();
 
@@ -134,8 +134,8 @@ query myQuery($boolVal: Boolean, $longVal: Long, $doubleVal: Double, $strVal: St
         { "kindVal", "KIND_ONE" }, {"flags", new string[] {"FLAG_ONE", "FLAG_TWO"}},
         { "strVal", "SomeString" }
       };
-      resp = await TestEnv.SendAsync(query, varsDict);
-      var echoResp = resp.GetValue<string>("echo");
+      resp = await TestEnv.Client.PostAsync(query, varsDict);
+      var echoResp = resp.Data.echo;
       Assert.AreEqual("True|654321|543.21|SomeString|KindOne|FlagOne, FlagTwo", echoResp); //this is InputObj.ToString()
 
       TestEnv.LogTestDescr("error - invalid argument values, type mismatch.");
@@ -143,7 +143,7 @@ query myQuery($boolVal: Boolean, $longVal: Long, $doubleVal: Double, $strVal: St
 query myQuery($boolVal: Boolean, $longVal: Long, $doubleVal: Double, $strVal: String, $kindVal: ThingKind, $flags: [TheFlags!]) { 
   echo: echoInputValuesWithNulls (boolVal: $longVal, longVal: $doubleVal, doubleVal: $strVal )
 }";
-      resp = await TestEnv.SendAsync(query, varsDict, throwOnError: false);
+      resp = await TestEnv.Client.PostAsync(query, varsDict, throwOnError: false);
       Assert.AreEqual(3, resp.Errors.Count, "Expected 3 errors");
 
       TestEnv.LogTestDescr("complex object type in a variable.");
@@ -153,8 +153,8 @@ query myQuery($inpObj: InputObj!) {
 }";
       varsDict = new TDict();
       varsDict["inpObj"] = new TDict() { { "id", 123 }, { "num", 456 }, { "name", "SomeName" } };
-      resp = await TestEnv.SendAsync(query, varsDict); 
-      var echoInpObj = resp.GetValue<string>("echoInputObj");
+      resp = await TestEnv.Client.PostAsync(query, varsDict); 
+      var echoInpObj = resp.Data.echoInputObj;
       Assert.AreEqual("id:123,name:SomeName,num:456", echoInpObj); //this is InputObj.ToString()
 
       TestEnv.LogTestDescr("literal object as argument, but with prop values coming from variables.");
@@ -166,8 +166,8 @@ query myQuery($num: Int!, $name: String!) {
       // we cannot use InputObj here, serializer will send first-cap prop names and request will fail
       varsDict["num"] = 456;
       varsDict["name"] = "SomeName";
-      resp = await TestEnv.SendAsync(query, varsDict);
-      var echoInpObj2 = resp.GetValue<string>("echoInputObj");
+      resp = await TestEnv.Client.PostAsync(query, varsDict);
+      var echoInpObj2 = resp.Data.echoInputObj;
       Assert.AreEqual("id:123,name:SomeName,num:456", echoInpObj2); //this is InputObj.ToString()
     }
 

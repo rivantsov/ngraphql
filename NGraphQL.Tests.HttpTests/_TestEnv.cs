@@ -77,15 +77,15 @@ namespace NGraphQL.Tests.HttpTests {
       _webHost?.StopAsync().Wait();
     }
 
-    public static async Task<GraphQLResponse> SendAsync(string query, IDictionary<string, object> vars = null,
+    public static async Task<GraphQLResponse> SendAsync_(string query, IDictionary<string, object> vars = null,
                                                         string opName = null, bool throwOnError = true) {
-      var resp = await SendAsync<GraphQLResponse>(query, vars, opName, throwOnError);
+      var resp = await SendAsync_<GraphQLResponse>(query, vars, opName, throwOnError);
       if (throwOnError && resp.Errors != null && resp.Errors.Count > 0)
         throw new Exception("Server returned error: " + resp.Errors[0].Message);
       return resp; 
     }
 
-    public static async Task<TResp> SendAsync<TResp>(string query, IDictionary<string, object> vars = null, 
+    public static async Task<TResp> SendAsync_<TResp>(string query, IDictionary<string, object> vars = null, 
                                                      string opName = null, bool throwOnError = true) {
       var start = AppTime.GetTimestamp(); 
       var reqDict = new Dictionary<string, object>();

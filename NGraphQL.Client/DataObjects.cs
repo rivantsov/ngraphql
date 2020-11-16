@@ -28,6 +28,7 @@ namespace NGraphQL.Client {
     public string GetUrlQuery;
     public Type ResultType;
     public CancellationToken CancellationToken;
+    public bool ThrowOnError;
     public IDictionary<string, string> Headers;
     public HttpCompletionOption CompletionOption = HttpCompletionOption.ResponseContentRead;
   }

@@ -20,7 +20,6 @@ namespace NGraphQL.Client {
 
     public readonly string ServiceUrl;
     public readonly Uri ServiceUri;
-    public bool RethrowExceptions = true;
     public event EventHandler<RequestStartingEventArgs> RequestStarting;
     public event EventHandler<RequestCompletedEventArgs> RequestCompleted;
 
@@ -48,19 +47,19 @@ namespace NGraphQL.Client {
     #endregion
 
     public Task<ServerResponse> PostAsync(string query, IDict variables = null, string operationName = null, 
-                                         CancellationToken cancellationToken = default) {
+                                         CancellationToken cancellationToken = default, bool throwOnError = false) {
       var request = new ClientRequest() {
         RequestType = RequestType.Post, Query = query, Variables = variables, OperationName = operationName,
-        CancellationToken = cancellationToken
+        CancellationToken = cancellationToken, ThrowOnError = throwOnError
       };
       return SendAsync(request);
     }
 
     public Task<ServerResponse> GetAsync(string query, IDict variables = null, string operationName = null, 
-                                        CancellationToken cancellationToken = default) {
+                          CancellationToken cancellationToken = default, bool throwOnError = false) {
       var request = new ClientRequest() {
         RequestType = RequestType.Get, Query = query, Variables = variables, OperationName = operationName,
-        CancellationToken = cancellationToken
+        CancellationToken = cancellationToken, ThrowOnError = throwOnError
       };
       return SendAsync(request);
     }
@@ -76,7 +75,7 @@ namespace NGraphQL.Client {
       } catch (Exception ex) {
         response.Exception = ex;
         RequestCompleted?.Invoke(this, new RequestCompletedEventArgs(response));
-        if (RethrowExceptions && response.Exception != null) {
+        if (request.ThrowOnError && response.Exception != null) {
           if (response.Exception == ex)
             throw;
           else
