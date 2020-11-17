@@ -12,6 +12,11 @@ namespace NGraphQL.Client {
 
   public static class GraphQLClientHelper {
 
+    public static void EnsureNoErrors(this ServerResponse response) {
+      if (response.Errors != null && response.Errors.Count > 0)
+        throw new Exception("GraphQL request failed.");
+    }
+
     public static string GetPayloadJson(this ClientRequest request) {
       var payload = request.GetPayload();
       var json = JsonConvert.SerializeObject(payload, Formatting.Indented);

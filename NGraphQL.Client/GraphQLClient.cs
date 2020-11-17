@@ -48,19 +48,19 @@ namespace NGraphQL.Client {
     #endregion
 
     public Task<ServerResponse> PostAsync(string query, IDict variables = null, string operationName = null, 
-                                         CancellationToken cancellationToken = default, bool throwOnError = false) {
+                                         CancellationToken cancellationToken = default) {
       var request = new ClientRequest() {
         RequestType = RequestType.Post, Query = query, Variables = variables, OperationName = operationName,
-        CancellationToken = cancellationToken, ThrowOnError = throwOnError
+        CancellationToken = cancellationToken
       };
       return SendAsync(request);
     }
 
     public Task<ServerResponse> GetAsync(string query, IDict variables = null, string operationName = null, 
-                          CancellationToken cancellationToken = default, bool throwOnError = false) {
+                          CancellationToken cancellationToken = default) {
       var request = new ClientRequest() {
         RequestType = RequestType.Get, Query = query, Variables = variables, OperationName = operationName,
-        CancellationToken = cancellationToken, ThrowOnError = throwOnError
+        CancellationToken = cancellationToken
       };
       return SendAsync(request);
     }
@@ -85,7 +85,7 @@ namespace NGraphQL.Client {
       } catch (Exception ex) {
         response.Exception = ex;
         RequestCompleted?.Invoke(this, new RequestCompletedEventArgs(response));
-        if (request.ThrowOnError && response.Exception != null) {
+        if (response.Exception != null) {
           if (response.Exception == ex)
             throw;
           else

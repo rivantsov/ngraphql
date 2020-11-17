@@ -20,8 +20,6 @@ namespace NGraphQL.Tests.HttpTests {
     [TestMethod]
     public async Task TestGetSchema() {
       TestEnv.LogTestMethodStart();
-
-      // var schema = await TestEnv.RestClient.GetStringAsync("/schema");
       var schema = await TestEnv.Client.GetSchemaDocument(); 
       Assert.IsTrue(!string.IsNullOrWhiteSpace(schema), "expected schema doc");
       TestEnv.LogText("  Success: received Schema doc from server using endpoint '.../schema' ");
@@ -40,22 +38,26 @@ namespace NGraphQL.Tests.HttpTests {
       TestEnv.LogTestDescr("Testing Post requests");
       // single thing with query parameter
       resp = await TestEnv.Client.PostAsync(query1, vars);
+      resp.EnsureNoErrors(); 
       thingName = resp.Data.getThing.name;
       Assert.AreEqual("Name2", thingName);
 
       // list of things 
       resp = await TestEnv.Client.PostAsync(queryM, vars);
+      resp.EnsureNoErrors();
       thingName = resp.Data.things[1].name;
       Assert.AreEqual("Name2", thingName);
 
       TestEnv.LogTestDescr("Testing Get requests");
       // single thing with query parameter
       resp = await TestEnv.Client.GetAsync(query1, vars);
+      resp.EnsureNoErrors();
       thingName = resp.Data.getThing.name;
       Assert.AreEqual("Name2", thingName);
 
       // list of things 
       resp = await TestEnv.Client.GetAsync(queryM, vars);
+      resp.EnsureNoErrors();
       thingName = resp.Data.things[1].name;
       Assert.AreEqual("Name2", thingName);
 
@@ -71,12 +73,14 @@ namespace NGraphQL.Tests.HttpTests {
 
       TestEnv.LogTestDescr("Testing dynamic query");
       var resp = await TestEnv.Client.PostAsync("query { things {name} }");
+      resp.EnsureNoErrors();
       var thing0Name = resp.Data.things[0].name;
       Assert.IsNotNull(resp);
 
 
       TestEnv.LogTestDescr("successful simple query."); 
       resp = await TestEnv.Client.PostAsync("query { things {name} }");
+      resp.EnsureNoErrors();
       Assert.IsNotNull(resp);
 
       TestEnv.LogTestDescr("invalid query");
@@ -108,6 +112,7 @@ query ($objWithEnums: InputObjWithEnums) {
       };
 
       var resp = await TestEnv.Client.PostAsync(query, vars);
+      resp.EnsureNoErrors();
       Assert.IsNotNull(resp);
       var theFlagsStr = (string) resp.Data.echo;
       theFlagsStr = theFlagsStr.Replace(" ", string.Empty);
@@ -136,6 +141,7 @@ query myQuery($boolVal: Boolean, $longVal: Long, $doubleVal: Double, $strVal: St
         { "strVal", "SomeString" }
       };
       resp = await TestEnv.Client.PostAsync(query, varsDict);
+      resp.EnsureNoErrors();
       var echoResp = resp.Data.echo;
       Assert.AreEqual("True|654321|543.21|SomeString|KindOne|FlagOne, FlagTwo", echoResp); //this is InputObj.ToString()
 
@@ -144,7 +150,7 @@ query myQuery($boolVal: Boolean, $longVal: Long, $doubleVal: Double, $strVal: St
 query myQuery($boolVal: Boolean, $longVal: Long, $doubleVal: Double, $strVal: String, $kindVal: ThingKind, $flags: [TheFlags!]) { 
   echo: echoInputValuesWithNulls (boolVal: $longVal, longVal: $doubleVal, doubleVal: $strVal )
 }";
-      resp = await TestEnv.Client.PostAsync(query, varsDict, throwOnError: false);
+      resp = await TestEnv.Client.PostAsync(query, varsDict);
       Assert.AreEqual(3, resp.Errors.Count, "Expected 3 errors");
 
       TestEnv.LogTestDescr("complex object type in a variable.");
@@ -154,7 +160,8 @@ query myQuery($inpObj: InputObj!) {
 }";
       varsDict = new TDict();
       varsDict["inpObj"] = new TDict() { { "id", 123 }, { "num", 456 }, { "name", "SomeName" } };
-      resp = await TestEnv.Client.PostAsync(query, varsDict); 
+      resp = await TestEnv.Client.PostAsync(query, varsDict);
+      resp.EnsureNoErrors();
       var echoInpObj = resp.Data.echoInputObj;
       Assert.AreEqual("id:123,name:SomeName,num:456", echoInpObj); //this is InputObj.ToString()
 
@@ -168,6 +175,7 @@ query myQuery($num: Int!, $name: String!) {
       varsDict["num"] = 456;
       varsDict["name"] = "SomeName";
       resp = await TestEnv.Client.PostAsync(query, varsDict);
+      resp.EnsureNoErrors();
       var echoInpObj2 = resp.Data.echoInputObj;
       Assert.AreEqual("id:123,name:SomeName,num:456", echoInpObj2); //this is InputObj.ToString()
     }
