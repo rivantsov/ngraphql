@@ -17,6 +17,7 @@ namespace NGraphQL.Client {
 
   public class GraphQLClient {
     public const string MediaTypeJson = "application/json";
+    public const string MediaTypeText = "application/text";
 
     public readonly string ServiceUrl;
     public readonly Uri ServiceUri;
@@ -62,6 +63,15 @@ namespace NGraphQL.Client {
         CancellationToken = cancellationToken, ThrowOnError = throwOnError
       };
       return SendAsync(request);
+    }
+
+    public async Task<string> GetSchemaDocument(string url = "/schema", CancellationToken cancellationToken = default) {
+      var reqMsg = new HttpRequestMessage(HttpMethod.Get, ServiceUrl + url);
+      reqMsg.Headers.Add("accept", MediaTypeText);
+      var respMsg = await _client.SendAsync(reqMsg, cancellationToken);
+      respMsg.EnsureSuccessStatusCode();
+      var doc = await respMsg.Content.ReadAsStringAsync();
+      return doc; 
     }
 
     public async Task<ServerResponse> SendAsync(ClientRequest request) {
@@ -120,7 +130,7 @@ namespace NGraphQL.Client {
     private async Task ReadServerResponseAsync(ServerResponse response, HttpResponseMessage respMessage) {
       var json = await respMessage.Content.ReadAsStringAsync();
       response.Payload = JsonConvert.DeserializeObject<ExpandoObject>(json, _serializerSettings);
-      if (response.Payload.TryGetValue("errors", out var errorsObj) && errorsObj != null) {
+      if (response.Payload.TryGetValue("errors", out var errorsObj) && errorsObj is IList list && list.Count > 0) {
         response.Errors = ConvertErrors(errorsObj); //convert to strongly-typed objects
       }
       if (response.Payload.TryGetValue("data", out var data))

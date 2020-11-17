@@ -19,9 +19,10 @@ namespace NGraphQL.Tests.HttpTests {
 
     [TestMethod]
     public async Task TestGetSchema() {
-      TestEnv.LogTestMethodStart(); 
+      TestEnv.LogTestMethodStart();
 
-      var schema = await TestEnv.RestClient.GetStringAsync("/schema");
+      // var schema = await TestEnv.RestClient.GetStringAsync("/schema");
+      var schema = await TestEnv.Client.GetSchemaDocument(); 
       Assert.IsTrue(!string.IsNullOrWhiteSpace(schema), "expected schema doc");
       TestEnv.LogText("  Success: received Schema doc from server using endpoint '.../schema' ");
     }

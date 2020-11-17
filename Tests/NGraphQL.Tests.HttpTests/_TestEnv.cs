@@ -27,8 +27,6 @@ namespace NGraphQL.Tests.HttpTests {
     public static ThingsApi ThingsApi;
     public static RestClient RestClient;
     public static GraphQLClient Client; 
-    public static GraphQLHttpRequest LastServerSideRequestObject;
-    public static TimeSpan LastRequestDuration; // measured on the client
 
     public static string LogFilePath = "_graphQLHttpTests.log";
     private static JsonSerializerSettings _serializerSettings;
@@ -54,7 +52,6 @@ namespace NGraphQL.Tests.HttpTests {
       var thingsServer = new GraphQLServer(ThingsApi);
       thingsServer.Initialize();
       ThingsHttpServer = new GraphQLHttpServer(thingsServer);
-      ThingsHttpServer.Events.RequestCompleted += ThingsHttpServer_RequestCompleted;
 
       StartWebHost();
       RestClient = new RestClient(GraphQLEndPointUrl);
@@ -77,62 +74,6 @@ namespace NGraphQL.Tests.HttpTests {
       _webHost?.StopAsync().Wait();
     }
 
-    public static async Task<GraphQLResponse> SendAsync_(string query, IDictionary<string, object> vars = null,
-                                                        string opName = null, bool throwOnError = true) {
-      var resp = await SendAsync_<GraphQLResponse>(query, vars, opName, throwOnError);
-      if (throwOnError && resp.Errors != null && resp.Errors.Count > 0)
-        throw new Exception("Server returned error: " + resp.Errors[0].Message);
-      return resp; 
-    }
-
-    public static async Task<TResp> SendAsync_<TResp>(string query, IDictionary<string, object> vars = null, 
-                                                     string opName = null, bool throwOnError = true) {
-      var start = AppTime.GetTimestamp(); 
-      var reqDict = new Dictionary<string, object>();
-      reqDict["query"] = query;
-      if (vars != null)
-        reqDict["variables"] = vars;
-      if (opName != null)
-        reqDict["operationName"] = opName;
-      // we cannot get response directly as GraphQLResponse because casing ('data' in json vs Data prop in GraphQLResponse)
-      //  so we get it as stream and deserialize using custom settings (with camel case naming policy)
-      var respStream = await RestClient.PostAsync<TDict, Stream>(reqDict, string.Empty);
-      // read response
-      var reader = new StreamReader(respStream);
-      var respBody = reader.ReadToEnd();
-      var resp = JsonConvert.DeserializeObject<TResp>(respBody, _serializerSettings);
-      LastRequestDuration = AppTime.GetDuration(start);
-      LogCompletedRequest(reqDict, LastServerSideRequestObject); 
-      return resp; 
-    }
-
-
-    private static void ThingsHttpServer_RequestCompleted(object sender, HttpRequestEventArgs e) {
-      // we hook to server event to catch the request context data here;
-      // we need server-side metrics info, which we won't get in the regular response - it will contain just json data.
-      // We do not log to file here, to avoid impacting client-side metrics (total time for the client). 
-      // So we just save it, and SendAsync method will print it all after client completes the request. 
-      LastServerSideRequestObject = e.Request;
-    }
-
-    // Serialization for logging 
-    private static string SerializeResponse(GraphQLResponse response) {
-      try {
-        if (response.Errors.Count > 0)
-          return JsonConvert.SerializeObject(response, _serializerSettings);
-        else
-          return JsonConvert.SerializeObject(new { response.Data }, _serializerSettings);
-      } catch (Exception ex) {
-        var errText = "FATAL: " + ex.ToString();
-        LogText(errText);
-        return errText;
-      }
-    }
-
-    public static void LogText(string text) {
-      File.AppendAllText(LogFilePath, text);
-    }
-
     public static void LogTestMethodStart([CallerMemberName] string testName = null) {
       LogText($@"
 
@@ -148,10 +89,10 @@ Testing: {descr}
 
 
     private static void Client_RequestCompleted(object sender, RequestCompletedEventArgs e) {
-      LogCompletedRequestNew(e.Response);
+      LogCompletedRequest(e.Response);
     }
 
-    public static void LogCompletedRequestNew(ServerResponse response) {
+    public static void LogCompletedRequest(ServerResponse response) {
       string reqText;
       var req = response.Request; 
       if (req.RequestType == RequestType.Get) {
@@ -178,29 +119,11 @@ Response:
         LogText(response.Exception.ToText());
     }
 
-
-    public static void LogCompletedRequest(IDictionary<string, object> reqDict, GraphQLHttpRequest serverReqData) {
-      var reqCtx = serverReqData.RequestContext;
-      var mx = reqCtx.Metrics;
-      var jsonReq = JsonConvert.SerializeObject(reqDict, _serializerSettings); 
-      // for better readability, unescape \r\n
-      jsonReq = jsonReq.Replace("\\r\\n", Environment.NewLine);
-      var jsonResponse = SerializeResponse(reqCtx.Response);
-      var text = $@"
-Request: 
-{jsonReq}
-
-Response:
-{jsonResponse}
-
-//  client time: {LastRequestDuration.TotalMilliseconds} ms, HTTP server execution time: {mx.HttpRequestDuration.TotalMilliseconds} ms
-//  request from cache: {mx.FromCache}, threads: {mx.ExecutionThreadCount}, resolver calls: {mx.ResolverCallCount}, output objects: {mx.OutputObjectCount}
------------------------------------------------------------------------------------------------------------------------------------ 
-
-";
-      LogText(text);
-      foreach (var ex in reqCtx.Exceptions)
-        LogText(ex.ToText());
+    static object _lock = new object();
+    public static void LogText(string text) {
+      lock (_lock) {
+        File.AppendAllText(LogFilePath, text);
+      }
     }
 
   }
