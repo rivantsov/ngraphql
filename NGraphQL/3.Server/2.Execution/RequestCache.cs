@@ -27,8 +27,8 @@ namespace NGraphQL.Server.Execution {
     public bool TryLookupParsedRequest(RequestContext context) {
       if (!Enabled)
         return false;
-      var reqText = context.RawRequest.Query;
-      if (_cache.TryLookup(reqText, out var item)) {
+      var query = context.RawRequest.Query;
+      if (_cache.TryLookup(query, out var item)) {
         Interlocked.Increment(ref item.UseCount);
         context.ParsedRequest = item.ParsedRequest;
         context.Metrics.FromCache = true;

@@ -96,10 +96,10 @@ Testing: {descr}
       string reqText;
       var req = response.Request; 
       if (req.RequestType == RequestType.Get) {
-        reqText = @$"GET, URL: {req.GetUrlQuery} 
-                unescaped: {Uri.UnescapeDataString(req.GetUrlQuery)}";
+        reqText = @$"GET, URL: {req.UrlQueryPartForGet} 
+                unescaped: {Uri.UnescapeDataString(req.UrlQueryPartForGet)}";
       } else 
-        reqText = "POST, payload: " + Environment.NewLine + response.Request.GetPayloadJson();
+        reqText = "POST, payload: " + Environment.NewLine + GetPayloadJson(response.Request);
       // for better readability, unescape \r\n
       reqText = reqText.Replace("\\r\\n", Environment.NewLine);
       var jsonResponse = JsonConvert.SerializeObject(response.Payload, Formatting.Indented);
@@ -118,6 +118,14 @@ Response:
       if (response.Exception != null)
         LogText(response.Exception.ToText());
     }
+
+    private static string GetPayloadJson(ClientRequest request) {
+      var payload = request.PostPayload;
+      var json = JsonConvert.SerializeObject(payload, Formatting.Indented);
+      return json;
+    }
+
+
 
     static object _lock = new object();
     public static void LogText(string text) {

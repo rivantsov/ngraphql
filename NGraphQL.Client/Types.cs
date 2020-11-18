@@ -25,7 +25,7 @@ namespace NGraphQL.Client {
     public string OperationName; 
     public IDictionary<string, object> Variables;
     public IDictionary<string, object> PostPayload;
-    public string GetUrlQuery;
+    public string UrlQueryPartForGet;
     public Type ResultType;
     public CancellationToken CancellationToken;
     public IDictionary<string, string> Headers;

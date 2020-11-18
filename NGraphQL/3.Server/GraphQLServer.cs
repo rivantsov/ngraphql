@@ -68,6 +68,9 @@ namespace NGraphQL.Server {
 
     public async Task ExecuteRequestAsync(RequestContext context) {
       try {
+        // validate 
+        if (string.IsNullOrWhiteSpace(context.RawRequest.Query))
+          throw new GraphQLException("Query may not be empty.");
         Events.OnRequestStarting(context);
         var handler = new RequestHandler(this, context);
         await handler.ExecuteAsync();
