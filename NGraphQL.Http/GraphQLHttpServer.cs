@@ -22,7 +22,6 @@ namespace NGraphQL.Http {
     public readonly JsonSerializerSettings SerializerSettings; 
     public readonly GraphQLServer Server;
     public readonly HttpServerEvents Events = new HttpServerEvents(); 
-    JsonSerializer _serializer;
     JsonVariablesDeserializer _varDeserializer;
 
     public GraphQLHttpServer(GraphQLServer server, JsonSerializerSettings serializerSettings = null) {
@@ -36,7 +35,6 @@ namespace NGraphQL.Http {
         };
         SerializerSettings.MaxDepth = 50;
      }
-      _serializer = JsonSerializer.Create(this.SerializerSettings);
       _varDeserializer = new JsonVariablesDeserializer(this); 
       // hook to RequestPrepared to deserialize variables after query is parsed and var types are known
       Server.Events.RequestPrepared += Server_RequestPrepared;
@@ -172,9 +170,7 @@ namespace NGraphQL.Http {
     }
 
     private T Deserialize<T>(string json) {
-      using (var reader = new JsonTextReader(new StringReader(json))) {
-        return _serializer.Deserialize<T>(reader);
-      }
+      return JsonConvert.DeserializeObject<T>(json, SerializerSettings); 
     }
 
     private string SerializeResponse(GraphQLResponse response) {
@@ -187,10 +183,8 @@ namespace NGraphQL.Http {
         respObj = new { data = response.Data };
       else 
         respObj = new { errors = response.Errors, data = response.Data };
-      var sb = new StringBuilder();
-      var writer = new StringWriter(sb);
-      _serializer.Serialize(writer, respObj);
-      var json = sb.ToString();
+
+      var json = JsonConvert.SerializeObject(respObj, SerializerSettings);
       return json; 
     }
    
