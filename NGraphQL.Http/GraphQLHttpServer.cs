@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using NGraphQL.Server;
 using NGraphQL.Server.Execution;
 using NGraphQL.Utilities;
@@ -30,6 +31,9 @@ namespace NGraphQL.Http {
       if (SerializerSettings == null) {
         var stt = SerializerSettings = new JsonSerializerSettings();
         stt.Formatting = Formatting.Indented;
+        stt.ContractResolver = new DefaultContractResolver {
+          NamingStrategy = new CamelCaseNamingStrategy()
+        };
         SerializerSettings.MaxDepth = 50;
      }
       _serializer = JsonSerializer.Create(this.SerializerSettings);
