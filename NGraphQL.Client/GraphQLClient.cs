@@ -21,7 +21,7 @@ namespace NGraphQL.Client {
     string _endpointUrl; 
     HttpClient _client;
     // Deserializer settings with ExpandoObjectConverter for deserializing data into dynamic object
-    JsonSerializerSettings _dynamicJsonSettings;
+    JsonSerializerSettings _expandoObjectsJsonSettings;
     // settings for regular strong-typed object, serializing body mostly
     JsonSerializerSettings _typedJsonSettings;
     // serializer for variables in URL (GET queries) - non-indented formatting
@@ -41,8 +41,8 @@ namespace NGraphQL.Client {
     }
 
     private void InitSerializerSettings() {
-      _dynamicJsonSettings = new JsonSerializerSettings();
-      _dynamicJsonSettings.Converters.Add(new ExpandoObjectConverter());
+      _expandoObjectsJsonSettings = new JsonSerializerSettings();
+      _expandoObjectsJsonSettings.Converters.Add(new ExpandoObjectConverter());
       _typedJsonSettings = new JsonSerializerSettings();
       _typedJsonSettings.Formatting = Formatting.Indented;
       _typedJsonSettings.ContractResolver = new DefaultContractResolver {
@@ -65,7 +65,7 @@ namespace NGraphQL.Client {
     public Task<ServerResponse> PostAsync(string query, IDict variables = null, string operationName = null,
                                          CancellationToken cancellationToken = default) {
       var request = new ClientRequest() {
-        RequestType = RequestType.Post, Query = query, Variables = variables, OperationName = operationName,
+        Method = RequestMethod.Post, Query = query, Variables = variables, OperationName = operationName,
         CancellationToken = cancellationToken
       };
       return SendAsync(request);
@@ -74,7 +74,7 @@ namespace NGraphQL.Client {
     public Task<ServerResponse> GetAsync(string query, IDict variables = null, string operationName = null,
                           CancellationToken cancellationToken = default) {
       var request = new ClientRequest() {
-        RequestType = RequestType.Get, Query = query, Variables = variables, OperationName = operationName,
+        Method = RequestMethod.Get, Query = query, Variables = variables, OperationName = operationName,
         CancellationToken = cancellationToken
       };
       return SendAsync(request);

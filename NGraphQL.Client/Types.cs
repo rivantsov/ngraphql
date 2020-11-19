@@ -6,21 +6,8 @@ using System.Threading;
 
 namespace NGraphQL.Client {
 
-  public enum RequestType {
-    Get,
-    Post,
-  }
-
-  [Flags]
-  public enum RequestOptions {
-    None = 0,
-    MultiPart = 1, 
-    Chunked = 1 << 1, 
-
-  }
-
   public class ClientRequest {
-    public RequestType RequestType;
+    public RequestMethod Method;
     public string Query;
     public string OperationName; 
     public IDictionary<string, object> Variables;

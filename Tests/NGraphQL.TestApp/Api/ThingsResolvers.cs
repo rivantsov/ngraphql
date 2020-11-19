@@ -183,6 +183,13 @@ namespace NGraphQL.TestApp {
       return thing;
     }
 
+    public int[] GetRandoms(IFieldContext context, Thing parent,  int count = 3) {
+      var rand = new Random();
+      var result = Enumerable.Range(1, count).Select(i => rand.Next(100)).ToArray();
+      return result; 
+    }
+
+
     // this is just a test placeholder
     public bool Subscribe(IFieldContext context, string childName) {
       return true;

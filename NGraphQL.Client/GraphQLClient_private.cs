@@ -13,15 +13,15 @@ namespace NGraphQL.Client {
 
     private async Task SendAsync(ClientRequest request, ServerResponse response) {
       var reqMessage = new HttpRequestMessage();
-      switch (request.RequestType) {
+      switch (request.Method) {
 
-        case RequestType.Post:
+        case RequestMethod.Post:
           //reqMessage.RequestUri = _serviceUri;
           reqMessage.Method = HttpMethod.Post;
           reqMessage.Content = BuildPostMessageContent(request);
           break;
 
-        case RequestType.Get:
+        case RequestMethod.Get:
           reqMessage.Method = HttpMethod.Get;
           request.UrlQueryPartForGet = BuildGetMessageUrlQuery(request);
           reqMessage.RequestUri = new Uri(_endpointUrl + "?" + request.UrlQueryPartForGet);
@@ -43,7 +43,7 @@ namespace NGraphQL.Client {
 
     private async Task ReadServerResponseAsync(ServerResponse response, HttpResponseMessage respMessage) {
       var json = await respMessage.Content.ReadAsStringAsync();
-      response.Payload = JsonConvert.DeserializeObject<ExpandoObject>(json, _dynamicJsonSettings);
+      response.Payload = JsonConvert.DeserializeObject<ExpandoObject>(json, _expandoObjectsJsonSettings);
       if (response.Payload.TryGetValue("errors", out var errorsObj) && errorsObj is IList list && list.Count > 0) {
         response.Errors = ConvertErrors(errorsObj); //convert to strongly-typed objects
       }

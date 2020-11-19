@@ -58,7 +58,7 @@ query {
   things() { 
     id 
     name 
-    otherThings {
+    otherThings() {
       name
     }
   }

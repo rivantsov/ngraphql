@@ -27,7 +27,12 @@ namespace NGraphQL.TestApp {
     public OtherThing_ MainOtherThing;
 
     [Resolver(nameof(ThingsResolvers.GetOtherThings))]
-    public IList<OtherThing_> OtherThings;
+    public IList<OtherThing_> otherThings;
+
+    // example of method defined on type
+    [Resolver(nameof(ThingsResolvers.GetRandoms))]
+    public int[] GetRandoms(int count = 3) { return null; }
+
   }
 
   [ObjectType]

@@ -17,6 +17,20 @@ namespace NGraphQL.Tests {
       string query;
       GraphQLResponse resp;
 
+      TestEnv.LogTestDescr(@" Returning plain list of randoms");
+      query = @"
+query { 
+  getThing(id: 1) {
+    getRandoms(count: 5) 
+  }
+}";
+      resp = await ExecuteAsync(query); 
+      var randArr = resp.GetValue<int[]>("getThing.getRandoms");
+      Assert.AreEqual(5, randArr.Length, "Expected array of 5 randoms");
+
+
+
+
       TestEnv.LogTestDescr(@" lists of lists.");
       query = @"
 query { 
