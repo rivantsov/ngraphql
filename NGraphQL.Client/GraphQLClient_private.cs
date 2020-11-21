@@ -7,9 +7,39 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 
 namespace NGraphQL.Client {
   public partial class GraphQLClient {
+
+    // Deserializer settings with ExpandoObjectConverter for deserializing data into dynamic object
+    internal static JsonSerializer DynamicObjectJsonSerializer;
+    // settings for regular strong-typed object, serializing body mostly
+    internal static JsonSerializer TypedJsonSerializer;
+    // serializer for variables in URL (GET queries) - non-indented formatting
+    internal static JsonSerializerSettings UrlJsonSettings;
+
+    private void InitSerializerSettings() {
+      if (DynamicObjectJsonSerializer != null)
+        return;
+      var dynStt = new JsonSerializerSettings();
+      dynStt.Converters.Add(new ExpandoObjectConverter());
+      DynamicObjectJsonSerializer = JsonSerializer.Create(dynStt);
+      var stt = new JsonSerializerSettings();
+      stt.Formatting = Formatting.Indented;
+      stt.ContractResolver = new DefaultContractResolver {
+        NamingStrategy = new CamelCaseNamingStrategy()
+      };
+      TypedJsonSerializer = JsonSerializer.Create(stt); 
+
+      UrlJsonSettings = new JsonSerializerSettings();
+      UrlJsonSettings.Formatting = Formatting.None;
+    }
+
+
+
 
     private async Task SendAsync(ClientRequest request, ServerResponse response) {
       var reqMessage = new HttpRequestMessage();
@@ -42,25 +72,19 @@ namespace NGraphQL.Client {
     }
 
     private async Task ReadServerResponseAsync(ServerResponse response, HttpResponseMessage respMessage) {
-      var json = await respMessage.Content.ReadAsStringAsync();
-      response.Payload = JsonConvert.DeserializeObject<ExpandoObject>(json, _expandoObjectsJsonSettings);
-      if (response.Payload.TryGetValue("errors", out var errorsObj) && errorsObj is IList list && list.Count > 0) {
-        response.Errors = ConvertErrors(errorsObj); //convert to strongly-typed objects
+      response.BodyJson = await respMessage.Content.ReadAsStringAsync();
+      response.Body = JsonConvert.DeserializeObject<IDictionary<string, JToken>>(response.BodyJson, TypedJsonSettings);
+      if (response.Body.TryGetValue("errors", out var errs) && errs != null) {
+        response.Errors = errs.ToObject<IList<RequestError>>(); //convert to strongly-typed objects
       }
-      if (response.Payload.TryGetValue("data", out var data))
-        response.Data = data;
-    }
-
-    // convert to strongly-typed Error objects
-    private IList<RequestError> ConvertErrors(object errors) {
-      var json = JsonConvert.SerializeObject(errors, _typedJsonSettings);
-      var errList = JsonConvert.DeserializeObject<IList<RequestError>>(json, _typedJsonSettings);
-      return errList;
+      // read 'data' object as JObject 
+      if (response.Body.TryGetValue("data", out var data) && data is JObject jdata)
+        response.DataJObject = jdata;
     }
 
     private HttpContent BuildPostMessageContent(ClientRequest request) {
       request.PostPayload = BuildPayload(request);
-      var json = JsonConvert.SerializeObject(request.PostPayload, _typedJsonSettings);
+      var json = JsonConvert.SerializeObject(request.PostPayload, TypedJsonSettings);
       var content = new StringContent(json, Encoding.UTF8, MediaTypeJson);
       return content;
     }
@@ -74,7 +98,7 @@ namespace NGraphQL.Client {
         return urlQry;
       // serializer vars as json, and add to URL qry
       // do not use settings here, we don't need fancy settings here from body serialization process
-      var varsJson = JsonConvert.SerializeObject(request.Variables, _urlJsonSettings);
+      var varsJson = JsonConvert.SerializeObject(request.Variables, UrlJsonSettings);
       urlQry += "&variables=" + Uri.EscapeUriString(varsJson);
       return urlQry;
     }
@@ -90,8 +114,6 @@ namespace NGraphQL.Client {
         dict["operationName"] = request.OperationName;
       return dict;
     }
-
-
 
     private static long GetTimestamp() {
       return Stopwatch.GetTimestamp();

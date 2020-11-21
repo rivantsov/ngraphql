@@ -39,26 +39,26 @@ namespace NGraphQL.Tests.HttpTests {
       // single thing with query parameter
       resp = await TestEnv.Client.PostAsync(query1, vars);
       resp.EnsureNoErrors(); 
-      thingName = resp.Data.getThing.name;
+      thingName = resp.data.getThing.name;
       Assert.AreEqual("Name2", thingName);
 
       // list of things 
       resp = await TestEnv.Client.PostAsync(queryM, vars);
       resp.EnsureNoErrors();
-      thingName = resp.Data.things[1].name;
+      thingName = resp.data.things[1].name;
       Assert.AreEqual("Name2", thingName);
 
       TestEnv.LogTestDescr("Testing Get requests");
       // single thing with query parameter
       resp = await TestEnv.Client.GetAsync(query1, vars);
       resp.EnsureNoErrors();
-      thingName = resp.Data.getThing.name;
+      thingName = resp.data.getThing.name;
       Assert.AreEqual("Name2", thingName);
 
       // list of things 
       resp = await TestEnv.Client.GetAsync(queryM, vars);
       resp.EnsureNoErrors();
-      thingName = resp.Data.things[1].name;
+      thingName = resp.data.things[1].name;
       Assert.AreEqual("Name2", thingName);
 
       TestEnv.LogTestDescr("Testing queries with errors");
@@ -74,7 +74,7 @@ namespace NGraphQL.Tests.HttpTests {
       TestEnv.LogTestDescr("Testing dynamic query");
       var resp = await TestEnv.Client.PostAsync("query { things {name} }");
       resp.EnsureNoErrors();
-      var thing0Name = resp.Data.things[0].name;
+      var thing0Name = resp.data.things[0].name;
       Assert.IsNotNull(resp);
 
 
@@ -114,7 +114,7 @@ query ($objWithEnums: InputObjWithEnums) {
       var resp = await TestEnv.Client.PostAsync(query, vars);
       resp.EnsureNoErrors();
       Assert.IsNotNull(resp);
-      var theFlagsStr = (string) resp.Data.echo;
+      var theFlagsStr = (string) resp.data.echo;
       theFlagsStr = theFlagsStr.Replace(" ", string.Empty);
       Assert.AreEqual("Flags:FlagOne,FlagThree;kind:KindTwo;FlagsArray:[FlagOne,FlagTwo;FlagThree]", theFlagsStr, 
         "Invalid inputObjWithEnums echo");
@@ -142,7 +142,7 @@ query myQuery($boolVal: Boolean, $longVal: Long, $doubleVal: Double, $strVal: St
       };
       resp = await TestEnv.Client.PostAsync(query, varsDict);
       resp.EnsureNoErrors();
-      var echoResp = resp.Data.echo;
+      var echoResp = resp.data.echo;
       Assert.AreEqual("True|654321|543.21|SomeString|KindOne|FlagOne, FlagTwo", echoResp); //this is InputObj.ToString()
 
       TestEnv.LogTestDescr("error - invalid argument values, type mismatch.");
@@ -162,7 +162,7 @@ query myQuery($inpObj: InputObj!) {
       varsDict["inpObj"] = new TDict() { { "id", 123 }, { "num", 456 }, { "name", "SomeName" } };
       resp = await TestEnv.Client.PostAsync(query, varsDict);
       resp.EnsureNoErrors();
-      var echoInpObj = resp.Data.echoInputObj;
+      var echoInpObj = resp.data.echoInputObj;
       Assert.AreEqual("id:123,name:SomeName,num:456", echoInpObj); //this is InputObj.ToString()
 
       TestEnv.LogTestDescr("literal object as argument, but with prop values coming from variables.");
@@ -176,7 +176,7 @@ query myQuery($num: Int!, $name: String!) {
       varsDict["name"] = "SomeName";
       resp = await TestEnv.Client.PostAsync(query, varsDict);
       resp.EnsureNoErrors();
-      var echoInpObj2 = resp.Data.echoInputObj;
+      var echoInpObj2 = resp.data.echoInputObj;
       Assert.AreEqual("id:123,name:SomeName,num:456", echoInpObj2); //this is InputObj.ToString()
     }
 

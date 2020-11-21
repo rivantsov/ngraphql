@@ -102,7 +102,7 @@ Testing: {descr}
         reqText = "POST, payload: " + Environment.NewLine + GetPayloadJson(response.Request);
       // for better readability, unescape \r\n
       reqText = reqText.Replace("\\r\\n", Environment.NewLine);
-      var jsonResponse = JsonConvert.SerializeObject(response.Payload, Formatting.Indented);
+      var jsonResponse = JsonConvert.SerializeObject(response.Body, Formatting.Indented);
       var text = $@"
 Request: 
 {reqText}

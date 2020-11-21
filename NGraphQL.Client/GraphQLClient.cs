@@ -20,12 +20,6 @@ namespace NGraphQL.Client {
 
     string _endpointUrl; 
     HttpClient _client;
-    // Deserializer settings with ExpandoObjectConverter for deserializing data into dynamic object
-    JsonSerializerSettings _expandoObjectsJsonSettings;
-    // settings for regular strong-typed object, serializing body mostly
-    JsonSerializerSettings _typedJsonSettings;
-    // serializer for variables in URL (GET queries) - non-indented formatting
-    JsonSerializerSettings _urlJsonSettings;
 
     public GraphQLClient(string endpointUrl) {
       _endpointUrl = endpointUrl;
@@ -38,18 +32,6 @@ namespace NGraphQL.Client {
       _client = httpClient;
       _endpointUrl = httpClient.BaseAddress.ToString();
       InitSerializerSettings();
-    }
-
-    private void InitSerializerSettings() {
-      _expandoObjectsJsonSettings = new JsonSerializerSettings();
-      _expandoObjectsJsonSettings.Converters.Add(new ExpandoObjectConverter());
-      _typedJsonSettings = new JsonSerializerSettings();
-      _typedJsonSettings.Formatting = Formatting.Indented;
-      _typedJsonSettings.ContractResolver = new DefaultContractResolver {
-        NamingStrategy = new CamelCaseNamingStrategy()
-      };
-      _urlJsonSettings = new JsonSerializerSettings();
-      _urlJsonSettings.Formatting = Formatting.None;
     }
 
     #region Headers
@@ -91,7 +73,7 @@ namespace NGraphQL.Client {
 
     public async Task<ServerResponse> SendAsync(ClientRequest request) {
       var start = GetTimestamp();
-      var response = new ServerResponse() { Request = request };
+      var response = new ServerResponse(this, request);
       try {
         RequestStarting?.Invoke(this, new RequestStartingEventArgs(request));
         await SendAsync(request, response);
