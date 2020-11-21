@@ -1,9 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NGraphQL.Client;
-using NGraphQL.Server;
-using NGraphQL.Utilities;
 
 namespace NGraphQL.Tests.HttpTests {
   using TDict = Dictionary<string, object>;
@@ -16,57 +15,6 @@ namespace NGraphQL.Tests.HttpTests {
       TestEnv.Initialize();
     }
 
-
-    [TestMethod]
-    public async Task TestGetSchema() {
-      TestEnv.LogTestMethodStart();
-      var schema = await TestEnv.Client.GetSchemaDocument(); 
-      Assert.IsTrue(!string.IsNullOrWhiteSpace(schema), "expected schema doc");
-      TestEnv.LogText("  Success: received Schema doc from server using endpoint '.../schema' ");
-    }
-
-    [TestMethod]
-    public async Task TestGraphQLClient() {
-      TestEnv.LogTestMethodStart();
-      ServerResponse resp;
-      string thingName;
-      var query1 = "query ($id: Int) { getThing(id: $id) {name} }";
-      var queryM = "query { things {name} }";
-      var vars = new TDict() { { "id", 2 } };
-      
-      // Post requests
-      TestEnv.LogTestDescr("Testing Post requests");
-      // single thing with query parameter
-      resp = await TestEnv.Client.PostAsync(query1, vars);
-      resp.EnsureNoErrors(); 
-      thingName = resp.data.getThing.name;
-      Assert.AreEqual("Name2", thingName);
-
-      // list of things 
-      resp = await TestEnv.Client.PostAsync(queryM, vars);
-      resp.EnsureNoErrors();
-      thingName = resp.data.things[1].name;
-      Assert.AreEqual("Name2", thingName);
-
-      TestEnv.LogTestDescr("Testing Get requests");
-      // single thing with query parameter
-      resp = await TestEnv.Client.GetAsync(query1, vars);
-      resp.EnsureNoErrors();
-      thingName = resp.data.getThing.name;
-      Assert.AreEqual("Name2", thingName);
-
-      // list of things 
-      resp = await TestEnv.Client.GetAsync(queryM, vars);
-      resp.EnsureNoErrors();
-      thingName = resp.data.things[1].name;
-      Assert.AreEqual("Name2", thingName);
-
-      TestEnv.LogTestDescr("Testing queries with errors");
-      resp = await TestEnv.Client.PostAsync(query1 + " ABCD ", vars);
-      var errs = resp.Errors;
-      Assert.IsTrue(errs.Count > 0, "Expected syntax error");
-    }
-
     [TestMethod]
     public async Task TestBasicQueries() {
       TestEnv.LogTestMethodStart();
@@ -76,7 +24,6 @@ namespace NGraphQL.Tests.HttpTests {
       resp.EnsureNoErrors();
       var thing0Name = resp.data.things[0].name;
       Assert.IsNotNull(resp);
-
 
       TestEnv.LogTestDescr("successful simple query."); 
       resp = await TestEnv.Client.PostAsync("query { things {name} }");
@@ -91,7 +38,7 @@ namespace NGraphQL.Tests.HttpTests {
     }
 
     [TestMethod]
-    public async Task TestEnumsDeserialization() {
+    public async Task TestServerEnumHandling() {
       TestEnv.LogTestMethodStart();
 
       TestEnv.LogTestDescr("input object with enum fields.");
@@ -178,6 +125,14 @@ query myQuery($num: Int!, $name: String!) {
       resp.EnsureNoErrors();
       var echoInpObj2 = resp.data.echoInputObj;
       Assert.AreEqual("id:123,name:SomeName,num:456", echoInpObj2); //this is InputObj.ToString()
+    }
+
+    [TestMethod]
+    public async Task TestGetSchema() {
+      TestEnv.LogTestMethodStart();
+      var schema = await TestEnv.Client.GetSchemaDocument();
+      Assert.IsTrue(!string.IsNullOrWhiteSpace(schema), "expected schema doc");
+      TestEnv.LogText("  Success: received Schema doc from server using endpoint '.../schema' ");
     }
 
   }
