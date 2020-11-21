@@ -17,5 +17,16 @@ namespace NGraphQL.Client {
         throw new Exception("GraphQL request failed.");
     }
 
+    public static bool CheckNullable(ref Type type) {
+      if (!type.IsValueType)
+        return true;   
+      var underType = Nullable.GetUnderlyingType(type);
+      if (underType != null) {
+          type = underType;
+          return true;
+      }
+      return false;       
+    }
+
   }
 }

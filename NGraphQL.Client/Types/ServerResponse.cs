@@ -35,10 +35,24 @@ namespace NGraphQL.Client {
     }
 
     public T GetField<T>(string name) {
-
+      if (this.DataJObject == null)
+        throw new Exception("'data' element was not returned by the request. See errors in response.");
+      if (!this.DataJObject.TryGetValue(name, out var jtoken))
+        throw new Exception($"Field '{name}' not found in response.");
+      var type = typeof(T);
+      var nullable = GraphQLClientHelper.CheckNullable(ref type);
+      if (jtoken == null) {
+        if (nullable)
+          return (T) (object) null;
+        throw new Exception($"Field '{name}': cannot convert null value to type {typeof(T)}.");
+      }
+      if (jtoken is JValue jv && !type.IsValueType)
+        return (T) jv.Value;
+      // deserialize as type
+      var res = jtoken.ToObject<T>(GraphQLClient.TypedJsonSerializer);
+      return res; 
     }
 
   }
-
 }
 

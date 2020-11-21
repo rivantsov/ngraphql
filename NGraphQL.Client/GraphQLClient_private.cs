@@ -73,7 +73,7 @@ namespace NGraphQL.Client {
 
     private async Task ReadServerResponseAsync(ServerResponse response, HttpResponseMessage respMessage) {
       response.BodyJson = await respMessage.Content.ReadAsStringAsync();
-      response.Body = JsonConvert.DeserializeObject<IDictionary<string, JToken>>(response.BodyJson, TypedJsonSettings);
+      response.Body = JsonConvert.DeserializeObject<IDictionary<string, JToken>>(response.BodyJson);
       if (response.Body.TryGetValue("errors", out var errs) && errs != null) {
         response.Errors = errs.ToObject<IList<RequestError>>(); //convert to strongly-typed objects
       }
@@ -84,7 +84,7 @@ namespace NGraphQL.Client {
 
     private HttpContent BuildPostMessageContent(ClientRequest request) {
       request.PostPayload = BuildPayload(request);
-      var json = JsonConvert.SerializeObject(request.PostPayload, TypedJsonSettings);
+      var json = JsonConvert.SerializeObject(request.PostPayload);
       var content = new StringContent(json, Encoding.UTF8, MediaTypeJson);
       return content;
     }
