@@ -12,10 +12,8 @@ using NGraphQL.Utilities;
 namespace NGraphQL.Http {
 
   public class JsonVariablesDeserializer {
-    GraphQLHttpServer _httpServer;
 
-    public JsonVariablesDeserializer(GraphQLHttpServer httpServer) {
-      _httpServer = httpServer;
+    public JsonVariablesDeserializer() {
     }
 
     public void PrepareRequestVariables(RequestContext context) {

@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
+using NGraphQL.Client.Serialization;
 
 namespace NGraphQL.Client {
   public partial class GraphQLClient {
@@ -24,15 +25,18 @@ namespace NGraphQL.Client {
     private void InitSerializerSettings() {
       if (DynamicObjectJsonSerializer != null)
         return;
+      var enumConv = new JsonEnumConverter(); 
+
       var dynStt = new JsonSerializerSettings();
+      // dynStt.Converters.Add(enumConv); 
       dynStt.Converters.Add(new ExpandoObjectConverter());
       DynamicObjectJsonSerializer = JsonSerializer.Create(dynStt);
-      var stt = new JsonSerializerSettings();
-      stt.Formatting = Formatting.Indented;
-      stt.ContractResolver = new DefaultContractResolver {
-        NamingStrategy = new CamelCaseNamingStrategy()
-      };
-      TypedJsonSerializer = JsonSerializer.Create(stt); 
+      
+      var typedStt = new JsonSerializerSettings();
+      typedStt.Formatting = Formatting.Indented;
+      typedStt.ContractResolver = new DefaultContractResolver { NamingStrategy = new CamelCaseNamingStrategy() };
+      typedStt.Converters.Add(enumConv); 
+      TypedJsonSerializer = JsonSerializer.Create(typedStt); 
 
       UrlJsonSettings = new JsonSerializerSettings();
       UrlJsonSettings.Formatting = Formatting.None;

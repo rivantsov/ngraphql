@@ -20,7 +20,7 @@ namespace NGraphQL.Tests.HttpTests.Client {
       TestEnv.LogTestMethodStart();
       ServerResponse resp;
       string thingName;
-      var query1 = "query ($id: Int) { getThing(id: $id) {name} }";
+      var query1 = "query ($id: Int) { getThing(id: $id) {name kind theFlags} }";
       var queryM = "query { things {name} }";
       var vars = new TDict() { { "id", 2 } };
 
@@ -29,8 +29,14 @@ namespace NGraphQL.Tests.HttpTests.Client {
       // single thing with query parameter
       resp = await TestEnv.Client.PostAsync(query1, vars);
       resp.EnsureNoErrors();
-      thingName = resp.data.getThing.name;
+      var thing = resp.data.getThing;
+      thingName = thing.name;
       Assert.AreEqual("Name2", thingName);
+      var thingKind = EnumConvert.ToEnum<ThingKind>(thing.kind);
+      var flags = EnumConvert.ToEnum<TheFlags>(thing.theFlags);
+
+      var kindTestStr = "KIND_ONE";
+      ThingKind? kindTest = kindTestStr.ToEnumOrNull<ThingKind>();
 
       // list of things 
       resp = await TestEnv.Client.PostAsync(queryM, vars);
@@ -62,7 +68,6 @@ namespace NGraphQL.Tests.HttpTests.Client {
     public async Task TestGraphQLClient_StrongTypes() {
       TestEnv.LogTestMethodStart();
       ServerResponse resp;
-      string thingName;
       string query;
       var vars = new TDict() { { "id", 2 } };
 

@@ -35,7 +35,7 @@ namespace NGraphQL.Http {
         };
         SerializerSettings.MaxDepth = 50;
      }
-      _varDeserializer = new JsonVariablesDeserializer(this); 
+      _varDeserializer = new JsonVariablesDeserializer(); 
       // hook to RequestPrepared to deserialize variables after query is parsed and var types are known
       Server.Events.RequestPrepared += Server_RequestPrepared;
     }
