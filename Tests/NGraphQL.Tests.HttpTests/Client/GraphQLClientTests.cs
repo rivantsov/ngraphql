@@ -22,7 +22,7 @@ namespace NGraphQL.Tests.HttpTests.Client {
       string thingName;
       var query1 = "query ($id: Int) { getThing(id: $id) {name kind theFlags} }";
       var queryM = "query { things {name} }";
-      var vars = new TDict() { { "id", 2 } };
+      var vars = new TDict() { { "id", 3 } };
 
       // Post requests
       TestEnv.LogTestDescr("Testing Post requests");
@@ -31,12 +31,11 @@ namespace NGraphQL.Tests.HttpTests.Client {
       resp.EnsureNoErrors();
       var thing = resp.data.getThing;
       thingName = thing.name;
-      Assert.AreEqual("Name2", thingName);
+      Assert.AreEqual("Name3", thingName);
       var thingKind = EnumConvert.ToEnum<ThingKind>(thing.kind);
+      Assert.AreEqual(ThingKind.KindThree, thingKind, "Invalid kind field value.");
       var flags = EnumConvert.ToEnum<TheFlags>(thing.theFlags);
-
-      var kindTestStr = "KIND_ONE";
-      ThingKind? kindTest = kindTestStr.ToEnumOrNull<ThingKind>();
+      Assert.AreEqual(TheFlags.FlagOne | TheFlags.FlagTwo, flags, "Invalid flags field value");
 
       // list of things 
       resp = await TestEnv.Client.PostAsync(queryM, vars);
@@ -49,7 +48,7 @@ namespace NGraphQL.Tests.HttpTests.Client {
       resp = await TestEnv.Client.GetAsync(query1, vars);
       resp.EnsureNoErrors();
       thingName = resp.data.getThing.name;
-      Assert.AreEqual("Name2", thingName);
+      Assert.AreEqual("Name3", thingName);
 
       // list of things 
       resp = await TestEnv.Client.GetAsync(queryM, vars);

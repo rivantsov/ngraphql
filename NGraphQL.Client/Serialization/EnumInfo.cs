@@ -7,8 +7,9 @@ namespace NGraphQL.Client.Serialization {
   public class EnumInfo {
     public Type Type;
     public bool IsFlagSet;
-    public Dictionary<string, EnumValueInfo> ValueInfos = new Dictionary<string, EnumValueInfo>();
+    public Dictionary<string, EnumValueInfo> ValueInfos = new Dictionary<string, EnumValueInfo>(StringComparer.OrdinalIgnoreCase); //let's be forgiving about casing
     public Func<object, long> ConvertToLong;
+    public object NoneValue; 
 
     public EnumInfo(Type enumType) {
       Type = enumType;
@@ -22,8 +23,12 @@ namespace NGraphQL.Client.Serialization {
           Name = v.ToString().ToUnderscoreUpperCase(),
           LongValue = ConvertToLong(v) 
         };
+        if (vInfo.LongValue == 0)
+          NoneValue = vInfo.Value;
         ValueInfos.Add(vInfo.Name, vInfo);
       }
+      if (NoneValue == null)
+        NoneValue = Activator.CreateInstance(enumType);
     }
   }
 

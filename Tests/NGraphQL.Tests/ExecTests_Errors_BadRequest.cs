@@ -35,7 +35,7 @@ query myQuery {
       resp = await ExecuteAsync(query, throwOnError: false);
       Assert.AreEqual(1, resp.Errors.Count, "Expected 1 error");
       err = resp.Errors[0];
-      Assert.IsTrue(err.Message.StartsWith("Query syntax error: Invalid character: '?'."), "Invalid error message");
+      Assert.IsTrue(err.Message.StartsWith("Query parsing failed: Invalid character: '?'."), "Invalid error message");
       var loc = err.Locations[0];
       Assert.AreEqual(5, loc.Line, "Invalid error loc line");
       Assert.AreEqual(19, loc.Column, "Invalid error loc column");
@@ -49,7 +49,7 @@ query myQuery {
       resp = await ExecuteAsync(query, throwOnError: false);
       Assert.AreEqual(1, resp.Errors.Count, "Expected 1 error");
       err = resp.Errors[0];
-      Assert.AreEqual("Query syntax error: Unmatched closing brace ']'.", err.Message);
+      Assert.AreEqual("Query parsing failed: Unmatched closing brace ']'.", err.Message);
       loc = err.Locations[0];
       Assert.AreEqual(3, loc.Line, "Invalid error loc line");
       Assert.AreEqual(18, loc.Column, "Invalid error loc column");

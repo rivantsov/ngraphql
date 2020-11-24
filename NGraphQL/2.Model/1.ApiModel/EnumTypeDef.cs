@@ -67,16 +67,16 @@ namespace NGraphQL.Model {
 
     public object FlagsValueFromOutputStrings(IList<string> strings) {
       if(strings.Count == 0)
-        return NoneValue; 
-      var clrNames = new List<string>(); 
+        return NoneValue;
+      long result = 0; 
       foreach(var s in strings) {
         var enumVal = EnumValues.FirstOrDefault(ev => ev.Name == s);
         if(enumVal == null)
           throw new Exception($"Invalid value {s} for enum type {this.Name}");
-        clrNames.Add(enumVal.ClrName);
+        result |= enumVal.LongValue; 
       }
-      var clrNamesStr = string.Join(",", clrNames);
-      var v = Enum.Parse(this.ClrType, clrNamesStr);
+      // convert long to enum;
+      var v = Enum.Parse(this.ClrType, result.ToString()); // Parse actually can do this - parse int representation
       return v; 
     }
 
