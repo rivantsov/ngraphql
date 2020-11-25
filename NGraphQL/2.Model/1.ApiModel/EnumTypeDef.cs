@@ -76,7 +76,7 @@ namespace NGraphQL.Model {
         result |= enumVal.LongValue; 
       }
       // convert long to enum;
-      var v = Enum.Parse(this.ClrType, result.ToString()); // Parse actually can do this - parse int representation
+      var v = Enum.ToObject(this.ClrType, result); 
       return v; 
     }
 

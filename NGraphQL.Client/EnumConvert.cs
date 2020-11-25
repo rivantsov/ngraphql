@@ -12,7 +12,7 @@ namespace NGraphQL.Client {
     /// <param name="dynamicValue">The value to convert.</param>
     /// <returns></returns>
     public static T ToEnum<T>(this object dynamicValue)  {
-      return EnumValuesConverter.Instance.Convert<T>(dynamicValue); 
+      return EnumConverter.Instance.Convert<T>(dynamicValue); 
     }
 
   }

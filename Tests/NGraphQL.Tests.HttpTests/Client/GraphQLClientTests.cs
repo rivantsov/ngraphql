@@ -68,23 +68,26 @@ namespace NGraphQL.Tests.HttpTests.Client {
       TestEnv.LogTestMethodStart();
       ServerResponse resp;
       string query;
-      var vars = new TDict() { { "id", 2 } };
+      var vars = new TDict() { { "id", 3 } };
 
       // Post requests
       TestEnv.LogTestDescr("Basic test for returned strong-type");
       query = @"
 query ($id: Int) { 
   thing: getThing(id: $id) {
-    id, name, kind, getRandoms(count: 5) 
+    id, name, kind, theFlags, getRandoms(count: 5) 
   } 
 }";
       resp = await TestEnv.Client.PostAsync(query, vars);
       resp.EnsureNoErrors();
       var thing = resp.GetField<Thing>("thing");
       Assert.IsNotNull(thing);
-      Assert.AreEqual("Name2", thing.Name, "thing name mismatch");
+      Assert.AreEqual("Name3", thing.Name, "thing name mismatch");
+      Assert.AreEqual(ThingKind.KindThree, thing.Kind, "Kind mismatch");
+      Assert.AreEqual(TheFlags.FlagOne | TheFlags.FlagTwo, thing.TheFlags, "Flags mismatch");
       Assert.IsNotNull(thing.Randoms, "Expected randoms array");
       Assert.AreEqual(5, thing.Randoms.Length, "expected 5 randoms");
+
     }
   } //class
 }
