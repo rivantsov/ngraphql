@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NGraphQL.Client;
+using NGraphQL.Client.Introspection;
 
 namespace NGraphQL.Tests.HttpTests.Client {
   using TDict = Dictionary<string, object>;
@@ -75,7 +76,7 @@ namespace NGraphQL.Tests.HttpTests.Client {
       query = @"
 query ($id: Int) { 
   thing: getThing(id: $id) {
-    id, name, kind, theFlags, getRandoms(count: 5) 
+    id, name, kind, theFlags, getRandoms(count: 5), __typename
   } 
 }";
       resp = await TestEnv.Client.PostAsync(query, vars);
@@ -87,7 +88,39 @@ query ($id: Int) {
       Assert.AreEqual(TheFlags.FlagOne | TheFlags.FlagTwo, thing.TheFlags, "Flags mismatch");
       Assert.IsNotNull(thing.Randoms, "Expected randoms array");
       Assert.AreEqual(5, thing.Randoms.Length, "expected 5 randoms");
-
+      // Check introspection field
+      Assert.AreEqual("Thing", thing.__typename, "type name does not match");
     }
+
+    [TestMethod]
+    public async Task TestGraphQLClient_Introspection() {
+      TestEnv.LogTestMethodStart();
+      ServerResponse resp;
+      string query;
+
+      // Post requests
+      TestEnv.LogTestDescr("Querying type object for Thing type.");
+      query = @"
+query { 
+  thingType: __type(name: ""Thing"") {
+    name
+    fields {
+      name
+      type {
+        name
+        displayName # NGraphQL extension
+      }
+    }
+  } 
+}";
+      resp = await TestEnv.Client.PostAsync(query);
+      resp.EnsureNoErrors();
+      var type = resp.GetField<__Type>("thingType");
+      Assert.IsNotNull(type);
+      Assert.AreEqual("Thing", type.Name, "thing name mismatch");
+      Assert.IsTrue(type.Fields.Count > 5, "Expected fields");
+    }
+
+
   } //class
 }

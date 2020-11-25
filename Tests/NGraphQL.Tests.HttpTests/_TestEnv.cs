@@ -95,7 +95,7 @@ Testing: {descr}
     public static void LogCompletedRequest(ServerResponse response) {
       string reqText;
       var req = response.Request; 
-      if (req.Method == RequestMethod.Get) {
+      if (req.HttpMethod == "GET") {
         reqText = @$"GET, URL: {req.UrlQueryPartForGet} 
                 unescaped: {Uri.UnescapeDataString(req.UrlQueryPartForGet)}";
       } else 

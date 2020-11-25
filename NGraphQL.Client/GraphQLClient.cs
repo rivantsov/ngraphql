@@ -45,7 +45,7 @@ namespace NGraphQL.Client {
     public Task<ServerResponse> PostAsync(string query, IDict variables = null, string operationName = null,
                                          CancellationToken cancellationToken = default) {
       var request = new ClientRequest() {
-        Method = RequestMethod.Post, Query = query, Variables = variables, OperationName = operationName,
+        HttpMethod = "POST", Query = query, Variables = variables, OperationName = operationName,
         CancellationToken = cancellationToken
       };
       return SendAsync(request);
@@ -54,7 +54,7 @@ namespace NGraphQL.Client {
     public Task<ServerResponse> GetAsync(string query, IDict variables = null, string operationName = null,
                           CancellationToken cancellationToken = default) {
       var request = new ClientRequest() {
-        Method = RequestMethod.Get, Query = query, Variables = variables, OperationName = operationName,
+        HttpMethod = "GET", Query = query, Variables = variables, OperationName = operationName,
         CancellationToken = cancellationToken
       };
       return SendAsync(request);

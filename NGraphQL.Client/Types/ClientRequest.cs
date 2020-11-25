@@ -6,7 +6,7 @@ using System.Threading;
 namespace NGraphQL.Client {
 
   public class ClientRequest {
-    public RequestMethod Method;
+    public string HttpMethod;
     public string Query;
     public string OperationName; 
     public IDictionary<string, object> Variables;

@@ -17,15 +17,15 @@ namespace NGraphQL.Client {
 
     private async Task SendAsync(ClientRequest request, ServerResponse response) {
       var reqMessage = new HttpRequestMessage();
-      switch (request.Method) {
+      switch (request.HttpMethod) {
 
-        case RequestMethod.Post:
+        case "POST":
           //reqMessage.RequestUri = _serviceUri;
           reqMessage.Method = HttpMethod.Post;
           reqMessage.Content = BuildPostMessageContent(request);
           break;
 
-        case RequestMethod.Get:
+        case "GET":
           reqMessage.Method = HttpMethod.Get;
           request.UrlQueryPartForGet = BuildGetMessageUrlQuery(request);
           reqMessage.RequestUri = new Uri(_endpointUrl + "?" + request.UrlQueryPartForGet);

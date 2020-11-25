@@ -11,7 +11,8 @@ namespace NGraphQL.Client {
     /// <typeparam name="T">Enum type.</typeparam>
     /// <param name="dynamicValue">The value to convert.</param>
     /// <returns></returns>
-    public static T ToEnum<T>(this object dynamicValue)  {
+    // Note: dynamic object do not allow externsion methods, so don't try putting 'this' before parameter
+    public static T ToEnum<T>(object dynamicValue)  {
       return EnumConverter.Instance.Convert<T>(dynamicValue); 
     }
 

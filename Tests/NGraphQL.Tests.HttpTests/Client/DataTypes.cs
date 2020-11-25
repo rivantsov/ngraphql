@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Newtonsoft.Json;
+using NGraphQL.Client;
 
 namespace NGraphQL.Tests.HttpTests.Client {
 
@@ -22,7 +23,7 @@ namespace NGraphQL.Tests.HttpTests.Client {
     FlagThree = 1 << 2,
   }
 
-  public class Thing {
+  public class Thing: ClientDataType {
     public int Id { get; set; }
     public string Name { get; set; }
     public string Description;
@@ -42,7 +43,7 @@ namespace NGraphQL.Tests.HttpTests.Client {
     public int[] Randoms;
   }
 
-  public class OtherThing {
+  public class OtherThing: ClientDataType {
     public string IdStr;
     public string Name { get; set; }
     public DateTime DateValue;

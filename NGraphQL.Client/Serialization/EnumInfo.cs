@@ -4,10 +4,11 @@ using System.Text;
 
 namespace NGraphQL.Client.Serialization {
 
-  public class EnumInfo {
+  internal class EnumInfo {
     public Type Type;
     public bool IsFlagSet;
-    public Dictionary<string, EnumValueInfo> ValueInfos = new Dictionary<string, EnumValueInfo>(StringComparer.OrdinalIgnoreCase); //let's be forgiving about casing
+    public Dictionary<string, EnumValueInfo> ValueInfos = 
+         new Dictionary<string, EnumValueInfo>(StringComparer.OrdinalIgnoreCase); //let's be forgiving about casing
     public Func<object, long> ConvertToLong;
     public object NoneValue; 
 
@@ -32,7 +33,7 @@ namespace NGraphQL.Client.Serialization {
     }
   }
 
-  public class EnumValueInfo {
+  internal class EnumValueInfo {
     public object Value;
     public string Name; //GraphQL name
     public long LongValue;

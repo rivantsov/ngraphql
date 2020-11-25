@@ -7,7 +7,7 @@ using Newtonsoft.Json.Linq;
 
 namespace NGraphQL.Client.Serialization {
 
-  public class JsonEnumConverter : JsonConverter {
+  internal class JsonEnumConverter : JsonConverter {
     EnumConverter _conv = EnumConverter.Instance;
 
     // We want to handle enum, enum? types. For arrays of enums, we do not want to interfere, the main serializer will handle 
@@ -24,7 +24,7 @@ namespace NGraphQL.Client.Serialization {
 
     public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer) {
       var enumType = objectType; 
-      var nullable = GraphQLClientHelper.CheckNullable(ref enumType);
+      var nullable = ClientExtensions.CheckNullable(ref enumType);
       if (!enumType.IsEnum)
         throw new Exception($"{nameof(JsonEnumConverter)}: unexpected conversion type {enumType}; expected enum.");
       var enumInfo = _conv.GetEnumInfo(enumType);

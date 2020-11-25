@@ -41,7 +41,7 @@ namespace NGraphQL.Client {
       if (!this.DataJObject.TryGetValue(name, out var jtoken))
         throw new Exception($"Field '{name}' not found in response.");
       var type = typeof(T);
-      var nullable = GraphQLClientHelper.CheckNullable(ref type);
+      var nullable = ClientExtensions.CheckNullable(ref type);
       if (jtoken == null) {
         if (nullable)
           return (T) (object) null;

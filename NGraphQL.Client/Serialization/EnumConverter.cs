@@ -31,7 +31,7 @@ namespace NGraphQL.Client.Serialization {
     }
 
     public object Convert(object value, Type type) {
-      var nullable = GraphQLClientHelper.CheckNullable(ref type);
+      var nullable = ClientExtensions.CheckNullable(ref type);
       var enumInfo = GetEnumInfo(type);
       if (enumInfo == null)
         throw new Exception($"Type {type} is not enum, expected enum type."); 
