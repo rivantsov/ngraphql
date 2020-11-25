@@ -15,36 +15,6 @@ using NGraphQL.Client.Serialization;
 namespace NGraphQL.Client {
   public partial class GraphQLClient {
 
-    // Deserializer settings with ExpandoObjectConverter for deserializing data into dynamic object
-    internal static JsonSerializer DynamicObjectJsonSerializer;
-    // settings for regular strong-typed object, serializing body mostly
-    internal static JsonSerializer TypedJsonSerializer;
-    // serializer for variables in URL (GET queries) - non-indented formatting
-    internal static JsonSerializerSettings UrlJsonSettings;
-
-    private void InitSerializerSettings() {
-      if (DynamicObjectJsonSerializer != null)
-        return;
-      var enumConv = new JsonEnumConverter(); 
-
-      var dynStt = new JsonSerializerSettings();
-      // dynStt.Converters.Add(enumConv); 
-      dynStt.Converters.Add(new ExpandoObjectConverter());
-      DynamicObjectJsonSerializer = JsonSerializer.Create(dynStt);
-      
-      var typedStt = new JsonSerializerSettings();
-      typedStt.Formatting = Formatting.Indented;
-      typedStt.ContractResolver = new DefaultContractResolver { NamingStrategy = new CamelCaseNamingStrategy() };
-      typedStt.Converters.Add(enumConv); 
-      TypedJsonSerializer = JsonSerializer.Create(typedStt); 
-
-      UrlJsonSettings = new JsonSerializerSettings();
-      UrlJsonSettings.Formatting = Formatting.None;
-    }
-
-
-
-
     private async Task SendAsync(ClientRequest request, ServerResponse response) {
       var reqMessage = new HttpRequestMessage();
       switch (request.Method) {
@@ -102,7 +72,7 @@ namespace NGraphQL.Client {
         return urlQry;
       // serializer vars as json, and add to URL qry
       // do not use settings here, we don't need fancy settings here from body serialization process
-      var varsJson = JsonConvert.SerializeObject(request.Variables, UrlJsonSettings);
+      var varsJson = JsonConvert.SerializeObject(request.Variables, ClientSerializers.UrlJsonSettings);
       urlQry += "&variables=" + Uri.EscapeUriString(varsJson);
       return urlQry;
     }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.Net;
 using Newtonsoft.Json.Linq;
+using NGraphQL.Client.Serialization;
 
 namespace NGraphQL.Client {
 
@@ -21,7 +22,7 @@ namespace NGraphQL.Client {
     public dynamic data {
       get {
         if (_data == null)
-          _data = DataJObject.ToObject<ExpandoObject>(GraphQLClient.DynamicObjectJsonSerializer);
+          _data = DataJObject.ToObject<ExpandoObject>(ClientSerializers.DynamicObjectJsonSerializer);
         return _data; 
       }
     } 
@@ -49,7 +50,7 @@ namespace NGraphQL.Client {
       if (jtoken is JValue jv && !type.IsValueType)
         return (T) jv.Value;
       // deserialize as type
-      var res = jtoken.ToObject<T>(GraphQLClient.TypedJsonSerializer);
+      var res = jtoken.ToObject<T>(ClientSerializers.TypedJsonSerializer);
       return res; 
     }
 

@@ -25,13 +25,11 @@ namespace NGraphQL.Client {
       _endpointUrl = endpointUrl;
       _client = new HttpClient();
       _client.BaseAddress = new Uri(endpointUrl);
-      InitSerializerSettings(); 
     }
 
     public GraphQLClient(HttpClient httpClient) {
       _client = httpClient;
       _endpointUrl = httpClient.BaseAddress.ToString();
-      InitSerializerSettings();
     }
 
     #region Headers
