@@ -97,7 +97,7 @@ query ($id: Int) {
       TestEnv.LogTestMethodStart();
       ServerResponse resp;
       string query;
-
+       
       // Post requests
       TestEnv.LogTestDescr("Querying type object for Thing type.");
       query = @"
