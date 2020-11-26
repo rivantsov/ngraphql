@@ -3,10 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29709.97
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NGraphQL", "NGraphQL\NGraphQL.csproj", "{C97E9461-889F-4D46-B54D-35853F545963}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NGraphQL.Http", "NGraphQL.Http\NGraphQL.Http.csproj", "{88300160-E7CB-410D-AF68-FC4FC745CED5}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{99BB55EA-1963-40D6-B085-2DEF6DAA5222}"
 	ProjectSection(SolutionItems) = preProject
 		ReadMe.md = ReadMe.md
@@ -23,20 +19,18 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NGraphQL.Tests", "Tests\NGr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NGraphQL.Tests.HttpTests", "Tests\NGraphQL.Tests.HttpTests\NGraphQL.Tests.HttpTests.csproj", "{53D550B1-5D5D-41FB-A333-37B661DEC728}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NGraphQL", "NGraphQL\NGraphQL.csproj", "{E39AF58D-EF22-4CD5-8585-01BA2FEFF166}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NGraphQL.Server", "NGraphQL.Server\NGraphQL.Server.csproj", "{2A3CDD5D-CB9F-4E1E-9BA6-E28BEC06E85D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NGraphQL.Server.Http", "NGraphQL.Server.Http\NGraphQL.Server.Http.csproj", "{53B7E281-B8C8-4A05-BA04-381CD9FEA89B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{C97E9461-889F-4D46-B54D-35853F545963}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C97E9461-889F-4D46-B54D-35853F545963}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C97E9461-889F-4D46-B54D-35853F545963}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C97E9461-889F-4D46-B54D-35853F545963}.Release|Any CPU.Build.0 = Release|Any CPU
-		{88300160-E7CB-410D-AF68-FC4FC745CED5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{88300160-E7CB-410D-AF68-FC4FC745CED5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{88300160-E7CB-410D-AF68-FC4FC745CED5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{88300160-E7CB-410D-AF68-FC4FC745CED5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{614DAA9A-13E2-47EB-ACC3-F4B024D6F7AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{614DAA9A-13E2-47EB-ACC3-F4B024D6F7AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{614DAA9A-13E2-47EB-ACC3-F4B024D6F7AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -53,6 +47,18 @@ Global
 		{53D550B1-5D5D-41FB-A333-37B661DEC728}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{53D550B1-5D5D-41FB-A333-37B661DEC728}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{53D550B1-5D5D-41FB-A333-37B661DEC728}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E39AF58D-EF22-4CD5-8585-01BA2FEFF166}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E39AF58D-EF22-4CD5-8585-01BA2FEFF166}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E39AF58D-EF22-4CD5-8585-01BA2FEFF166}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E39AF58D-EF22-4CD5-8585-01BA2FEFF166}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2A3CDD5D-CB9F-4E1E-9BA6-E28BEC06E85D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A3CDD5D-CB9F-4E1E-9BA6-E28BEC06E85D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A3CDD5D-CB9F-4E1E-9BA6-E28BEC06E85D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A3CDD5D-CB9F-4E1E-9BA6-E28BEC06E85D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{53B7E281-B8C8-4A05-BA04-381CD9FEA89B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{53B7E281-B8C8-4A05-BA04-381CD9FEA89B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{53B7E281-B8C8-4A05-BA04-381CD9FEA89B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{53B7E281-B8C8-4A05-BA04-381CD9FEA89B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
