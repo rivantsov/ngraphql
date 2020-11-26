@@ -103,7 +103,7 @@ namespace NGraphQL.Server.Parsing {
       var nameOpt = new NonTerminal("nameopt", name | Empty);
       var typeRef = new NonTerminal("typeRef");
       var dftValueOpt = new NonTerminal("dftValueOpt");
-      var constVal = new NonTerminal("constVal");
+      var constVal = new NonTerminal(TermNames.ConstValue);
       var val = new NonTerminal("val");
       var arg = new NonTerminal("arg");
       var argListOpt = new NonTerminal(TermNames.ArgListOpt);

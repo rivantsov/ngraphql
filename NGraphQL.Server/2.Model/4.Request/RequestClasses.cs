@@ -71,7 +71,7 @@ namespace NGraphQL.Model.Request {
     public bool HasDefaultValue;
     public ValueSource ParsedDefaultValue;
     public object DefaultValue;
-    public IList<Directive> Directives;
+    public IList<RequestDirective> Directives;
     public override string ToString() => $"{Name}/{TypeRef}";
     public VariableDef() { }
 
