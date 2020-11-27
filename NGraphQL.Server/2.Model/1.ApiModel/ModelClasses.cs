@@ -16,14 +16,6 @@ namespace NGraphQL.Model {
     public override string ToString() => Name;
   }
 
-  public enum SchemaTypeRole {
-    Query,
-    Mutation,
-    Subscription,
-    Schema,
-    DataType,
-  }
-
   public class TypeDefBase : GraphQLModelObject {
     public GraphQLModule Module;
     public SchemaTypeRole TypeRole;
@@ -34,7 +26,7 @@ namespace NGraphQL.Model {
     public IList<Directive> Directives = Directive.EmptyList;
     public bool IsDefaultForClrType = true; // false for ID type, to skip registration
 
-    public Type__ Type_; // Introspection object
+    public __Type Type_; // Introspection object
     // Default type refs
     public readonly TypeRef TypeRefNull;
     public readonly TypeRef TypeRefNotNull;
@@ -181,7 +173,7 @@ namespace NGraphQL.Model {
     // list of all kinds in parents starting from original type def. 
     public readonly IList<TypeKind> KindsPath;
     public readonly string Name;
-    public Type__ Type_;
+    public __Type Type_;
     public readonly int Rank;
     public readonly bool IsList;
     public bool IsNotNull => Kind == TypeKind.NotNull;

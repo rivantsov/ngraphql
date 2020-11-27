@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using NGraphQL.CodeFirst;
 
-namespace NGraphQL.CodeFirst {
+namespace NGraphQ.Runtime {
 
   // see https://spec.graphql.org/June2018/#sec-Errors
   public class GraphQLError {
@@ -31,15 +32,6 @@ namespace NGraphQL.CodeFirst {
         str += $" at: {Locations[0]}";
       return str;
     }
-  }
-
-
-  public class Location {
-    public int Line;
-    public int Column;
-
-    public static readonly Location StartLocation = new Location() { Line = 1, Column = 1 };
-    public override string ToString() => $"({Line}, {Column})";
   }
 
 }

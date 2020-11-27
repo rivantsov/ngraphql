@@ -6,11 +6,11 @@ namespace NGraphQL.Model.Construction {
 
   public class IntrospectionSchemaBuilder {
     GraphQLApiModel _model;
-    Schema__ _schema;
+    __Schema _schema;
 
-    public Schema__ Build(GraphQLApiModel model) {
+    public __Schema Build(GraphQLApiModel model) {
       _model = model;
-      _schema = _model.Schema_ = new Schema__();
+      _schema = _model.Schema_ = new __Schema();
 
       // Create type objects without internal details; for typeDef and its typeRefs
       foreach(var typeDef in _model.Types) {
@@ -38,12 +38,12 @@ namespace NGraphQL.Model.Construction {
 
     private void BuildDirectives() {
       foreach(var dir in _model.Directives.Values) {
-        var dir_ = new Directive__() {
+        var dir_ = new __Directive() {
            Name = dir.Name, Description = dir.Description, Locations = dir.Locations, 
           IsDeprecated = dir.IsDeprecated, DeprecationReason = dir.DeprecationReason
         };
         dir_.Args =
-          dir.Args.Select(ivd => new InputValue__() {
+          dir.Args.Select(ivd => new __InputValue() {
             Name = ivd.Name, Description = ivd.Description,
             Type = ivd.TypeRef.Type_, DefaultValue = ivd.DefaultValue + string.Empty
           }).ToArray();
@@ -52,7 +52,7 @@ namespace NGraphQL.Model.Construction {
     }
 
     private void CreateTypeObject(TypeDefBase typeDef) {
-      var type_ = typeDef.Type_ = new Type__() {
+      var type_ = typeDef.Type_ = new __Type() {
         Name = typeDef.Name, Kind = typeDef.Kind, Description = typeDef.Description, TypeDef = typeDef,
         DisplayName = typeDef.Name,
       };
@@ -64,25 +64,25 @@ namespace NGraphQL.Model.Construction {
       switch(type_.Kind) {
 
         case TypeKind.Object:
-          type_.FieldList = new List<Field__>();
-          type_.Interfaces = new List<Type__>();
+          type_.FieldList = new List<__Field>();
+          type_.Interfaces = new List<__Type>();
           break;
 
         case TypeKind.Interface:
-          type_.FieldList = new List<Field__>();
-          type_.PossibleTypes = new List<Type__>();
+          type_.FieldList = new List<__Field>();
+          type_.PossibleTypes = new List<__Type>();
           break;
 
         case TypeKind.InputObject:
-          type_.InputFields = new List<InputValue__>();
+          type_.InputFields = new List<__InputValue>();
           break;
 
         case TypeKind.Enum:
-          type_.EnumValueList = new List<EnumValue__>();
+          type_.EnumValueList = new List<__EnumValue>();
           break; 
 
         case TypeKind.Union:
-          type_.PossibleTypes = new List<Type__>();
+          type_.PossibleTypes = new List<__Type>();
           break;
       }
     }
@@ -148,11 +148,11 @@ namespace NGraphQL.Model.Construction {
       var type_ = objTypeDef.Type_; 
       // build fields
       foreach(var fld in objTypeDef.Fields) {
-        var fld_ = new Field__() { Name = fld.Name, Description = fld.Description, Type = fld.TypeRef.Type_ };
+        var fld_ = new __Field() { Name = fld.Name, Description = fld.Description, Type = fld.TypeRef.Type_ };
         SetupDeprecatedFields(fld_, fld.Directives);
         // convert args
         fld_.Args = 
-          fld.Args.Select(ivd => new InputValue__() { 
+          fld.Args.Select(ivd => new __InputValue() { 
                         Name = ivd.Name, Description = ivd.Description, 
                         Type = ivd.TypeRef.Type_, DefaultValue = ivd.DefaultValue + string.Empty
                       })
@@ -169,18 +169,18 @@ namespace NGraphQL.Model.Construction {
 
     private void BuildInterfaceType(InterfaceTypeDef intfTypeDef) {
       var type_ = intfTypeDef.Type_; 
-      type_.FieldList = new List<Field__>();
-      type_.PossibleTypes = new List<Type__>();
+      type_.FieldList = new List<__Field>();
+      type_.PossibleTypes = new List<__Type>();
 
       // build fields
       foreach(var fld in intfTypeDef.Fields) {
-        var fld_ = new Field__() {
+        var fld_ = new __Field() {
           Name = fld.Name, Description = fld.Description, Type = fld.TypeRef.Type_
         };
         SetupDeprecatedFields(fld_, fld.Directives);
         // convert args
         fld_.Args =
-          fld.Args.Select(ivd => new InputValue__() {
+          fld.Args.Select(ivd => new __InputValue() {
             Name = ivd.Name, Description = ivd.Description,
             Type = ivd.TypeRef.Type_,  DefaultValue = ivd.DefaultValue + string.Empty
           })
@@ -193,7 +193,7 @@ namespace NGraphQL.Model.Construction {
     private void BuildInputType(InputObjectTypeDef inpTypeDef) {
       var type_ = inpTypeDef.Type_; 
       foreach(var inpFldDef in inpTypeDef.Fields) {
-        var inp_ = new InputValue__() {
+        var inp_ = new __InputValue() {
           Name = inpFldDef.Name, Description = inpFldDef.Description,
           DefaultValue = inpFldDef.HasDefaultValue ? inpFldDef.DefaultValue + string.Empty : null,
           Type = inpFldDef.TypeRef.Type_
@@ -206,7 +206,7 @@ namespace NGraphQL.Model.Construction {
     private void BuildEnumType(EnumTypeDef enumTypeDef) {
       var type_ = enumTypeDef.Type_; 
       foreach(var enumV in enumTypeDef.EnumValues) {
-        var enumV_ = new EnumValue__() {
+        var enumV_ = new __EnumValue() {
           Name = enumV.Name, Description = enumV.Description,
         };
         SetupDeprecatedFields(enumV_, enumV.Directives);
@@ -234,7 +234,7 @@ namespace NGraphQL.Model.Construction {
       switch(typeRef.Kind) {
         case TypeKind.NotNull:
         case TypeKind.List:
-          typeRef.Type_ = new Type__() { Kind = typeRef.Kind, OfType = parent.Type_, DisplayName = typeRef.Name };
+          typeRef.Type_ = new __Type() { Kind = typeRef.Kind, OfType = parent.Type_, DisplayName = typeRef.Name };
           return; 
       }
     }

@@ -3,17 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using NGraphQL.CodeFirst;
 
-namespace NGraphQL.Core {
-
-  public class TokenData {
-    public string TermName;
-    public string Text;
-    public object ParsedValue;
-  }
-
-  public interface IScalarContext {
-    void AddError(GraphQLError error, Exception sourceException = null);
-  }
+namespace NGraphQL.Core.Scalars {
 
   public class Scalar {
     public readonly string Name;
@@ -46,8 +36,6 @@ namespace NGraphQL.Core {
     public virtual object ToOutput(IFieldContext context, object value) {
       return value;
     }
-
-
 
   }
 }

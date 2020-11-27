@@ -12,8 +12,8 @@ namespace NGraphQL.Model.Introspection {
       this.RegisterTypes(
         typeof(IntrospectionQuery),
         typeof(TypeKind), typeof(DirectiveLocation),
-        typeof(Schema__), typeof(Type__), typeof(Field__), typeof(InputValue__),
-        typeof(EnumValue__), typeof(Directive__)
+        typeof(__Schema), typeof(__Type), typeof(__Field), typeof(__InputValue),
+        typeof(__EnumValue), typeof(__Directive)
       );
       this.RegisterResolvers(typeof(IntrospectionResolvers));
     }

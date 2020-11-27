@@ -10,23 +10,23 @@ namespace NGraphQL.Model.Introspection {
   public class IntrospectionResolvers {
 
     // Query resolvers
-    public Schema__ GetSchema(IFieldContext context) {
+    public __Schema GetSchema(IFieldContext context) {
       return context.GetModel().Schema_;
     }
 
-    public Type__ GetType(IFieldContext context, string name) {
+    public __Type GetType(IFieldContext context, string name) {
       var schema = context.GetModel().Schema_;
       var type = schema.Types.FirstOrDefault(t => t.Name == name);
       return type; 
     }
 
     //[Field("fields", OnType = typeof(Type__)), Null]
-    public IList<Field__> GetFields(IFieldContext context, Type__ type_, bool includeDeprecated = true) {
+    public IList<__Field> GetFields(IFieldContext context, __Type type_, bool includeDeprecated = true) {
       return type_.FieldList; 
     }
 
     //[Field("enumValues", OnType = typeof(Type__)), Null]
-    public IList<EnumValue__> GetEnumValues(IFieldContext context, Type__ type_, bool includeDeprecated = true) {
+    public IList<__EnumValue> GetEnumValues(IFieldContext context, __Type type_, bool includeDeprecated = true) {
       if (type_.Kind != TypeKind.Enum)
         return null;
       if (includeDeprecated)

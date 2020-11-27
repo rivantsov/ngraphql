@@ -20,7 +20,7 @@ namespace NGraphQL.Model {
     public ObjectTypeDef Schema;
 
     // Introspection schema object
-    public Schema__ Schema_;
+    public __Schema Schema_;
     public string SchemaDoc { get; internal set; }
 
     public Dictionary<string, DirectiveDef> Directives = new Dictionary<string, DirectiveDef>();

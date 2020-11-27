@@ -1,8 +1,9 @@
 ﻿using System;
+using NGraphQ.Runtime;
 
 namespace NGraphQL.CodeFirst {
 
-  public static class ErrorExtensions {
+  public static class ValidationExtensions {
 
     public static GraphQLError AddError(this IFieldContext fieldContext, string message,
                                              string type = ErrorTypes.InputError) {

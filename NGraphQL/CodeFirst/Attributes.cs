@@ -59,14 +59,4 @@ namespace NGraphQL.CodeFirst {
     }
   }
 
-  /// <summary>Marks type, field or parameter as deprecated. The element in schema document will appear with @deprecated
-  /// directive.</summary>
-  [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Method | AttributeTargets.Parameter)]
-  public class DeprecatedDirAttribute : Attribute {
-    public readonly string Reason;
-    public DeprecatedDirAttribute(string reason) {
-      Reason = reason;
-    }
-  }
-
 }
