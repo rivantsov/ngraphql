@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using NGraphQL.Client.Utilities;
 
 namespace NGraphQL.Client.Serialization {
   internal class EnumConverter {
@@ -31,7 +32,7 @@ namespace NGraphQL.Client.Serialization {
     }
 
     public object Convert(object value, Type type) {
-      var nullable = ClientExtensions.CheckNullable(ref type);
+      var nullable = ReflectionHelper.CheckNullable(ref type);
       var enumInfo = GetEnumInfo(type);
       if (enumInfo == null)
         throw new Exception($"Type {type} is not enum, expected enum type."); 

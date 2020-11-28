@@ -4,12 +4,13 @@ using System.Dynamic;
 using System.Net;
 using Newtonsoft.Json.Linq;
 using NGraphQL.Client.Serialization;
+using NGraphQL.Client.Utilities;
 
 namespace NGraphQL.Client {
 
   public class ServerResponse {
     public readonly ClientRequest Request;
-    public HttpStatusCode Status { get; internal set; }
+    public HttpStatusCode StatusCode { get; internal set; }
 
     public string BodyJson { get; internal set; } 
     public IDictionary<string, JToken> Body { get; internal set; }
@@ -20,7 +21,7 @@ namespace NGraphQL.Client {
 
     /// <summary>The "data" response field as dynamic object. </summary>
     public dynamic data {
-      get {
+      get { 
         if (_data == null)
           _data = DataJObject.ToObject<ExpandoObject>(ClientSerializers.DynamicObjectJsonSerializer);
         return _data; 
@@ -41,7 +42,7 @@ namespace NGraphQL.Client {
       if (!this.DataJObject.TryGetValue(name, out var jtoken))
         throw new Exception($"Field '{name}' not found in response.");
       var type = typeof(T);
-      var nullable = ClientExtensions.CheckNullable(ref type);
+      var nullable = ReflectionHelper.CheckNullable(ref type);
       if (jtoken == null) {
         if (nullable)
           return (T) (object) null;

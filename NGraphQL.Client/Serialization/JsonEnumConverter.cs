@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NGraphQL.Client.Utilities;
 
 namespace NGraphQL.Client.Serialization {
 
@@ -24,7 +25,7 @@ namespace NGraphQL.Client.Serialization {
 
     public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer) {
       var enumType = objectType; 
-      var nullable = ClientExtensions.CheckNullable(ref enumType);
+      var nullable = ReflectionHelper.CheckNullable(ref enumType);
       if (!enumType.IsEnum)
         throw new Exception($"{nameof(JsonEnumConverter)}: unexpected conversion type {enumType}; expected enum.");
       var enumInfo = _conv.GetEnumInfo(enumType);

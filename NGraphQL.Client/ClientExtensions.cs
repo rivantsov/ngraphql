@@ -14,17 +14,6 @@ namespace NGraphQL.Client {
       throw new Exception(msg);
     }
 
-    public static bool CheckNullable(ref Type type) {
-      if (!type.IsValueType)
-        return true;   
-      var underType = Nullable.GetUnderlyingType(type);
-      if (underType != null) {
-          type = underType;
-          return true;
-      }
-      return false;       
-    }
-
     public static string GetErrorsAsText(this ServerResponse response) {
       if (response.Errors == null || response.Errors.Count == 0)
         return string.Empty;

@@ -7,9 +7,12 @@ namespace NGraphQL.Client {
 
   public class ClientRequest {
     public string HttpMethod;
+
+
     public string Query;
     public string OperationName; 
     public IDictionary<string, object> Variables;
+
     public IDictionary<string, object> PostPayload;
     public string UrlQueryPartForGet;
     public Type ResultType;
