@@ -11,6 +11,8 @@ namespace NGraphQL.CodeFirst {
 
   public class ModelAdjustment {
     public AdjustmentType Type;
-    public object Target;
+    public Type ModelType; 
+    public string Field;
+    public object Value; 
   }
 }

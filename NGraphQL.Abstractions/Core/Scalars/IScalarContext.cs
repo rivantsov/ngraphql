@@ -1,5 +1,5 @@
 ﻿using System;
-using NGraphQ.Runtime;
+using NGraphQL.Runtime;
 
 namespace NGraphQL.Core.Scalars {
 

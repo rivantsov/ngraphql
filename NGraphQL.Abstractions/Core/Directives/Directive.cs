@@ -4,6 +4,7 @@ using System.Text;
 using NGraphQ.Runtime;
 using NGraphQL.CodeFirst;
 using NGraphQL.Core.Introspection;
+using NGraphQL.Runtime;
 
 namespace NGraphQL.Core.Directives {
 

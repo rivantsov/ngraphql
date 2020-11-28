@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace NGraphQL.CodeFirst {
+﻿namespace NGraphQL.Runtime {
 
   public class Location {
     public int Line;

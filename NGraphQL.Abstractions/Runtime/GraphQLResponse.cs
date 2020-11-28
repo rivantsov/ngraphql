@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace NGraphQ.Runtime {
+namespace NGraphQL.Runtime {
 
   public class GraphQLResponse {
     public IList<GraphQLError> Errors = new List<GraphQLError>();

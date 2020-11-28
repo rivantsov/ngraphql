@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using NGraphQL.CodeFirst;
 
-namespace NGraphQ.Runtime {
+namespace NGraphQL.Runtime {
 
   // see https://spec.graphql.org/June2018/#sec-Errors
   public class GraphQLError {
