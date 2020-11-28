@@ -35,7 +35,6 @@ namespace NGraphQL.CodeFirst {
       throw new AbortRequestException();
     }
 
-    /*
     public static string GetErrorsAsText(this GraphQLResponse response) {
       if (response.IsSuccess())
         return string.Empty;
@@ -45,6 +44,5 @@ namespace NGraphQL.CodeFirst {
     public static bool IsSuccess(this GraphQLResponse response) {
       return (response.Errors == null || response.Errors.Count == 0);
     }
-    */
   }
 }

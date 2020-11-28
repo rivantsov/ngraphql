@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
-using NGraphQ.Runtime;
-using NGraphQL.Core.Directives;
+using NGraphQL.Core;
 
 namespace NGraphQL.CodeFirst {
 

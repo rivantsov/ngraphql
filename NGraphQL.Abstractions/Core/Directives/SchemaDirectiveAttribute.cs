@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using NGraphQL.CodeFirst;
-using NGraphQL.Core.Introspection;
 
-namespace NGraphQL.Core.Directives {
+namespace NGraphQL.Core {
 
 
   /// <summary>Base class for custom attributes identifying custom schema directives; the derived attirbutes 

@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using NGraphQL.CodeFirst;
+using NGraphQL.Runtime;
 
-namespace NGraphQL.Core.Scalars {
+namespace NGraphQL.Core {
 
   public class Scalar {
     public readonly string Name;
@@ -18,7 +17,7 @@ namespace NGraphQL.Core.Scalars {
       IsCustom = isCustom;
     }
 
-    public virtual object ParseToken(IFieldContext context, TokenData tokenData) {
+    public virtual object ParseToken(IRequestContext context, TokenData tokenData) {
       return tokenData.ParsedValue; // this is value converted by Irony parser
     }
     // from deserialized Json variable value

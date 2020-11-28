@@ -2,14 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>NGraphQL</RootNamespace>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="CodeFirst\GraphQLAp_Disabledi.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="CodeFirst\GraphQLAp_Disabledi.cs" />
-  </ItemGroup>
 
 </Project>

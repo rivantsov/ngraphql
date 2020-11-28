@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using NGraphQL.Core;
-using NGraphQL.Core.Directives;
-using NGraphQL.Core.Introspection;
+using NGraphQL.Introspection;
 
 namespace NGraphQL.CodeFirst {
 
@@ -20,7 +19,7 @@ namespace NGraphQL.CodeFirst {
   [DirectiveMetaData(
     name: "deprecated",
     description: "Marks element as deprecated.",
-    locations: __DirectiveLocation.AllSchemaLocations,
+    locations: DirectiveLocation.AllSchemaLocations,
     listInSchema: false
     )]
   public class DeprecatedDirective: Directive {

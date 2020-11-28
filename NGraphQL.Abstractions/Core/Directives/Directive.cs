@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Text;
 using NGraphQ.Runtime;
 using NGraphQL.CodeFirst;
-using NGraphQL.Core.Introspection;
+using NGraphQL.Introspection;
 using NGraphQL.Runtime;
 
-namespace NGraphQL.Core.Directives {
+namespace NGraphQL.Core {
 
   /// <summary>Provides a context information for directive instance. </summary>
   public interface IDirectiveContext {
-    __DirectiveLocation Locaton { get; }
+    DirectiveLocation Locaton { get; }
     // Query directives only
     IRequestContext RequestContext { get; }
     Location SourceLocation { get; }
@@ -23,6 +23,10 @@ namespace NGraphQL.Core.Directives {
 
     public Directive(IDirectiveContext context) {
       Context = context; 
+    }
+
+    public virtual object GetData(IRequestContext context) {
+      return null; 
     }
   }
 
