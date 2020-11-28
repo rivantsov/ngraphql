@@ -9,13 +9,13 @@ namespace NGraphQL.CodeFirst {
   public class GraphQLModule {
     public string Name => GetType().Name;
 
-    internal List<TypeRegistration> RegisteredTypes = new List<TypeRegistration>();
-    internal List<EntityMapping> Mappings = new List<EntityMapping>();
-    internal List<Type> ResolverClasses = new List<Type>();
+    public readonly List<TypeRegistration> RegisteredTypes = new List<TypeRegistration>();
+    public readonly List<EntityMapping> Mappings = new List<EntityMapping>();
+    public readonly List<Type> ResolverClasses = new List<Type>();
 
-    internal List<Scalar> Scalars = new List<Scalar>();
-    internal List<Type> DirectiveTypes = new List<Type>();
-    internal List<ModelAdjustment> Adjustments = new List<ModelAdjustment>();
+    public readonly List<Scalar> Scalars = new List<Scalar>();
+    public readonly List<Type> DirectiveTypes = new List<Type>();
+    public readonly List<ModelAdjustment> Adjustments = new List<ModelAdjustment>();
 
     public GraphQLModule() {
     }

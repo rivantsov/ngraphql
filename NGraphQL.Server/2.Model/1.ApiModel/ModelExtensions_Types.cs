@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using NGraphQL.CodeFirst;
+using NGraphQL.Core.Introspection;
 using NGraphQL.Model.Request;
 using NGraphQL.Utilities;
 
@@ -29,9 +30,9 @@ namespace NGraphQL.Model {
 
     public static bool IsComplexReturnType(this TypeDefBase typeDef) {
       switch(typeDef.Kind) {
-        case TypeKind.Object:
-        case TypeKind.Interface:
-        case TypeKind.Union:
+        case __TypeKind.Object:
+        case __TypeKind.Interface:
+        case __TypeKind.Union:
           return true;
         default:
           return false;
@@ -41,16 +42,16 @@ namespace NGraphQL.Model {
     internal static string GetTypeRefName(this TypeRef typeRef) {
       var baseName = typeRef.Parent == null ? typeRef.TypeDef.Name : typeRef.Parent.Name;
       switch(typeRef.Kind) {
-        case TypeKind.List:
+        case __TypeKind.List:
           return "[" + baseName + "]";
-        case TypeKind.NotNull:
+        case __TypeKind.NotNull:
           return baseName + "!";
         default:
           return typeRef.TypeDef.Name;
       }
     }
 
-    internal static bool Matches(this IList<TypeKind> typeKindList, IList<TypeKind> other) {
+    internal static bool Matches(this IList<__TypeKind> typeKindList, IList<__TypeKind> other) {
       if(typeKindList.Count != other.Count)
         return false;
       for(int i = 0; i < typeKindList.Count; i++)
@@ -59,7 +60,7 @@ namespace NGraphQL.Model {
       return true;
     }
 
-    public static TypeRef FindTypeRef(this TypeDefBase typeDef, IList<TypeKind> kinds) {
+    public static TypeRef FindTypeRef(this TypeDefBase typeDef, IList<__TypeKind> kinds) {
       return typeDef.TypeRefs.FirstOrDefault(tr => tr.KindsPath.Matches(kinds));
     }
 
@@ -70,7 +71,7 @@ namespace NGraphQL.Model {
       Type baseType;
       Type resultType; 
       switch(typeRef.Kind) {
-        case TypeKind.List:
+        case __TypeKind.List:
           // special case: flags enums. arrays of string values are mapped into a single multi-flag value
           //  so we return ClrType of parent (element)
           var isFlagArray = (typeRef.TypeDef.IsEnumFlagArray() && typeRef.Rank == 1);
@@ -81,7 +82,7 @@ namespace NGraphQL.Model {
           resultType = baseType.MakeArrayType();
           return resultType;
 
-        case TypeKind.NotNull:
+        case __TypeKind.NotNull:
           baseType = typeRef.Parent.ClrType;
           // If it is Nullable<ValueType>, get the underlying type
           var underType = Nullable.GetUnderlyingType(baseType);
@@ -96,7 +97,7 @@ namespace NGraphQL.Model {
       }
     }
 
-    public static TypeRef GetCreateTypeRef(this TypeDefBase typeDef, IList<TypeKind> kinds) {
+    public static TypeRef GetCreateTypeRef(this TypeDefBase typeDef, IList<__TypeKind> kinds) {
       var typeRef = typeDef.FindTypeRef(kinds);
       if(typeRef != null)
         return typeRef;
@@ -113,8 +114,8 @@ namespace NGraphQL.Model {
 
     public static TypeRef GetListElementTypeRef(this TypeRef typeRef) {
       switch (typeRef.Kind) {
-        case TypeKind.List: return typeRef.Parent;
-        case TypeKind.NotNull: return GetListElementTypeRef(typeRef.Parent);
+        case __TypeKind.List: return typeRef.Parent;
+        case __TypeKind.NotNull: return GetListElementTypeRef(typeRef.Parent);
         default:
           if (typeRef.TypeDef.IsEnumFlagArray())
             return typeRef.TypeDef.TypeRefNotNull; //return enum type ref itself

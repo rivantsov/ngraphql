@@ -66,7 +66,7 @@ namespace NGraphQL.Server.Parsing {
     public InputListEvaluator(TypeRef resultTypeRef, RequestObjectBase anchor,
                  InputValueEvaluator[] elemEvaluators) : base(resultTypeRef, anchor) {
       ElemEvaluators = elemEvaluators;
-      if (ResultTypeRef.Kind == TypeKind.NotNull)
+      if (ResultTypeRef.Kind == __TypeKind.NotNull)
         ElemTypeRef = ResultTypeRef.Parent.Parent;
       else
         ElemTypeRef = ResultTypeRef.Parent;

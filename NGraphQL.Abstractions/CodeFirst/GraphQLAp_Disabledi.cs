@@ -6,9 +6,6 @@ namespace NGraphQL.CodeFirst {
   public class GraphQLApi {
     public readonly IList<GraphQLModule> Modules = new List<GraphQLModule>();
 
-    public GraphQLApi() {
-    }
-    
     public void RegisterModule(GraphQLModule module) {
       Modules.Add(module); 
     }

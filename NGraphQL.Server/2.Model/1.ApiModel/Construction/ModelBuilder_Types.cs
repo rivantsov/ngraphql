@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using NGraphQL.CodeFirst;
+using NGraphQL.Core.Introspection;
 using NGraphQL.Utilities;
 
 namespace NGraphQL.Model.Construction {
@@ -13,16 +14,16 @@ namespace NGraphQL.Model.Construction {
     private void RegisterTypeDef(TypeDefBase typeDef, bool isSchema = false) {
       try {
         _model.Types.Add(typeDef);
-        if (typeDef.TypeRole == SchemaTypeRole.DataType)
+        if (typeDef.TypeRole == TypeRole.DataType)
           if(!TryRegisterTypeDefByName(typeDef, isSchema))
             return;
         if (typeDef.ClrType != null) {
-          if (typeDef.Kind != TypeKind.Scalar)
+          if (typeDef.Kind != __TypeKind.Scalar)
             typeDef.Description = _docLoader.GetDocString(typeDef.ClrType, typeDef.ClrType);
           if (typeDef.IsDefaultForClrType)
             _model.TypesByClrType.Add(typeDef.ClrType, typeDef);
         }
-        if (typeDef.TypeRole != SchemaTypeRole.DataType)
+        if (typeDef.TypeRole != TypeRole.DataType)
           typeDef.Hidden = true;
       } catch (Exception ex) {
         AddError($"FATAL: Failed to register type {typeDef}, name '{typeDef.Name}', error: " + ex.Message);
@@ -45,7 +46,7 @@ namespace NGraphQL.Model.Construction {
     }
 
 
-    private TypeDefBase CreateTypeDef(Type type, GraphQLModule module, SchemaTypeRole typeRole, TypeKind typeKind) {
+    private TypeDefBase CreateTypeDef(Type type, GraphQLModule module, TypeRole typeRole, __TypeKind typeKind) {
       var typeDef = CreateTypeDefImpl(type, typeKind);
       if (typeDef == null)
         return null;
@@ -65,13 +66,13 @@ namespace NGraphQL.Model.Construction {
         return new EnumTypeDef(typeName, type, isFlagSet: flagsAttr != null);
       }
       switch (typeKind) {
-        case TypeKind.Object:
+        case __TypeKind.Object:
           return new ObjectTypeDef(typeName, type);
-        case TypeKind.Interface:
+        case __TypeKind.Interface:
           return new InterfaceTypeDef(typeName, type);
-        case TypeKind.InputObject:
+        case __TypeKind.InputObject:
           return new InputObjectTypeDef(typeName, type);
-        case TypeKind.Union:
+        case __TypeKind.Union:
           return new UnionTypeDef(typeName, type);
       }
       // should never happen
@@ -98,13 +99,13 @@ namespace NGraphQL.Model.Construction {
       }
 
       // add typeDef kind to kinds list and find/create type ref
-      var allKinds = new List<TypeKind>();
+      var allKinds = new List<__TypeKind>();
       allKinds.Add(typeDef.Kind);
 
       // Flags enums are represented by enum arrays
       if (typeDef.IsEnumFlagArray()) {
-        allKinds.Add(TypeKind.NotNull);
-        allKinds.Add(TypeKind.List);
+        allKinds.Add(__TypeKind.NotNull);
+        allKinds.Add(__TypeKind.List);
       }
 
       allKinds.AddRange(kinds);
@@ -112,8 +113,8 @@ namespace NGraphQL.Model.Construction {
       return typeRef;
     }
 
-    private void UnwrapClrType(Type type, ICustomAttributeProvider attributeSource, out Type baseType, out List<TypeKind> kinds) {
-      kinds = new List<TypeKind>();
+    private void UnwrapClrType(Type type, ICustomAttributeProvider attributeSource, out Type baseType, out List<__TypeKind> kinds) {
+      kinds = new List<__TypeKind>();
       bool notNull = attributeSource.GetAttribute<NullAttribute>() == null;
       Type valueTypeUnder;
 
@@ -122,11 +123,11 @@ namespace NGraphQL.Model.Construction {
         baseType = valueTypeUnder ?? baseType;
         var withNulls = attributeSource.GetAttribute<WithNullsAttribute>() != null || valueTypeUnder != null;
         if (!withNulls)
-          kinds.Add(TypeKind.NotNull);
+          kinds.Add(__TypeKind.NotNull);
         for (int i = 0; i < rank; i++)
-          kinds.Add(TypeKind.List);
+          kinds.Add(__TypeKind.List);
         if (notNull)
-          kinds.Add(TypeKind.NotNull);
+          kinds.Add(__TypeKind.NotNull);
         return;
       }
 
@@ -140,7 +141,7 @@ namespace NGraphQL.Model.Construction {
       }
 
       if (notNull)
-        kinds.Add(TypeKind.NotNull);
+        kinds.Add(__TypeKind.NotNull);
     }
 
   }//class

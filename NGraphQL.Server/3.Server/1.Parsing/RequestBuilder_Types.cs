@@ -19,15 +19,15 @@ namespace NGraphQL.Server.Parsing {
       switch(typeNode.Term.Name) {
         case TermNames.ListTypeRef:
           trbase = BuildTypeRefRec(typeNode.ChildNodes[0]);
-          return GetCreateDerivedTypeRef(trbase, TypeKind.List);
+          return GetCreateDerivedTypeRef(trbase, __TypeKind.List);
 
         case TermNames.NotNullTypeRef:
           trbase = BuildTypeRefRec(typeNode.ChildNodes[0]);
-          if (trbase.Kind == TypeKind.NotNull) {
+          if (trbase.Kind == __TypeKind.NotNull) {
             AddError($"Duplicate not-null type spec: '{typeNode.GetText()}'", typeNode);
             return trbase;
           } 
-          return GetCreateDerivedTypeRef(trbase, TypeKind.NotNull);
+          return GetCreateDerivedTypeRef(trbase, __TypeKind.NotNull);
 
         case TermNames.BaseTypeRef:
         default:

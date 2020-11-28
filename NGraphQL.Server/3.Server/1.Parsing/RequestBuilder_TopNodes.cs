@@ -108,7 +108,7 @@ namespace NGraphQL.Server.Parsing {
     }
 
     static TypeKind[] _allowedVarTypeKinds = new TypeKind[]
-              { TypeKind.Scalar, TypeKind.Enum, TypeKind.InputObject };
+              { __TypeKind.Scalar, __TypeKind.Enum, __TypeKind.InputObject };
 
     private IList<VariableDef> BuildOperationVariables(Node varDefsNode) {
       if(varDefsNode == null)

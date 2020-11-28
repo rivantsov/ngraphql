@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
+using NGraphQL.Core.Introspection;
 using NGraphQL.Model;
 using NGraphQL.Server.Parsing;
 
@@ -20,7 +20,7 @@ namespace NGraphQL.Model {
       _builder = new StringBuilder();
 
       // custom scalar types 
-      var scalarTypes = SelectTypes<ScalarTypeDef>(TypeKind.Scalar)
+      var scalarTypes = SelectTypes<ScalarTypeDef>(__TypeKind.Scalar)
           .Where(td => td.IsCustom).ToList(); 
       foreach(var sd in scalarTypes) {
         AppendDescr(sd.Description);
@@ -29,7 +29,7 @@ namespace NGraphQL.Model {
       _builder.AppendLine();
 
       // enums 
-      var enumDefs = SelectTypes<EnumTypeDef>(TypeKind.Enum); 
+      var enumDefs = SelectTypes<EnumTypeDef>(__TypeKind.Enum); 
       foreach(var enumDef in enumDefs) {
         AppendDescr(enumDef.Description);
         _builder.AppendLine("enum " + enumDef.Name + " {");
@@ -42,7 +42,7 @@ namespace NGraphQL.Model {
       }
 
       // interfaces
-      var intfTypes = SelectTypes<InterfaceTypeDef>(TypeKind.Interface);
+      var intfTypes = SelectTypes<InterfaceTypeDef>(__TypeKind.Interface);
       foreach(var tDef in intfTypes) {
         AppendDescr(tDef.Description);
         _builder.AppendLine("interface " + tDef.Name + " {");
@@ -57,7 +57,7 @@ namespace NGraphQL.Model {
       }
 
       // Input types
-      var inpTypes = SelectTypes<InputObjectTypeDef>(TypeKind.InputObject);
+      var inpTypes = SelectTypes<InputObjectTypeDef>(__TypeKind.InputObject);
       foreach(var tDef in inpTypes) {
         AppendDescr(tDef.Description);
         _builder.Append("input " + tDef.Name);
@@ -71,7 +71,7 @@ namespace NGraphQL.Model {
       }
 
       // Unions
-      var unionTypes = SelectTypes<UnionTypeDef>(TypeKind.Union);
+      var unionTypes = SelectTypes<UnionTypeDef>(__TypeKind.Union);
       foreach(var tDef in unionTypes) {
         var typeNames = string.Join(" | ", tDef.PossibleTypes.Select(t => t.Name));
         AppendDescr(tDef.Description);
@@ -80,7 +80,7 @@ namespace NGraphQL.Model {
       }
 
       // types
-      var objTypes = SelectTypes<ObjectTypeDef>(TypeKind.Object);
+      var objTypes = SelectTypes<ObjectTypeDef>(__TypeKind.Object);
       foreach(var tDef in objTypes) {
         AppendDescr(tDef.Description);
         _builder.Append("type " + tDef.Name);
@@ -190,7 +190,7 @@ namespace NGraphQL.Model {
       }
     }
 
-    private IList<T> SelectTypes<T>(TypeKind kind) where T: TypeDefBase {
+    private IList<T> SelectTypes<T>(__TypeKind kind) where T: TypeDefBase {
       return _model.GetTypeDefs<T>(kind, excludeHidden: true);
     }
 

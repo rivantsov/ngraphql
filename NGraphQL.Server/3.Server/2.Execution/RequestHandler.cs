@@ -8,6 +8,7 @@ using NGraphQL.CodeFirst;
 using NGraphQL.Model;
 using NGraphQL.Server.Parsing;
 using NGraphQL.Model.Request;
+using NGraphQL.Runtime;
 
 namespace NGraphQL.Server.Execution {
 

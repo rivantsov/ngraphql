@@ -17,38 +17,42 @@ namespace NGraphQL.Server {
 
   public class GraphQLServer {
     public readonly GraphQLServerSettings Settings;
-    public readonly GraphQLApi Api;
+    public readonly IList<GraphQLModule> Modules = new List<GraphQLModule>();
     public GraphQLGrammar Grammar { get; private set; }
     public readonly GraphQLServerEvents Events = new GraphQLServerEvents();
     public readonly RequestCache RequestCache;
     public RequestQuota DefaultRequestQuota = new RequestQuota(); //init with default values
-    public IList<string> StartupErrors => _model?.Errors ?? Array.Empty<string>();
-    public bool Faulted => StartupErrors.Count > 0; 
+    public IList<string> StartupErrors => Model?.Errors ?? Array.Empty<string>();
 
-    GraphQLApiModel _model;
+    public GraphQLApiModel Model { get; internal set; }
 
-    public GraphQLServer(GraphQLApi api, GraphQLServerSettings settings = null) {
-      Api = api;
+    public GraphQLServer(GraphQLServerSettings settings = null) {
       Settings = settings ?? new GraphQLServerSettings();
       RequestCache = new RequestCache(this.Settings);
     }
 
+    public void RegisterModules(params GraphQLModule[] modules) {
+      if (modules == null || modules.Length == 0)
+        throw new ArgumentException("modules parameter may not be null or empty.");
+      foreach (var m in modules)
+        Modules.Add(m); 
+    }
+
     public void Initialize() {
       try {
-        _model = Api.Model = new GraphQLApiModel(Api);
-        var modelBuilder = new ModelBuilder(Api);
+        var modelBuilder = new ModelBuilder(this);
         modelBuilder.BuildModel();
         Grammar = new GraphQLGrammar();
         Grammar.Init();
         // call init on all types
-        foreach (var typeDef in _model.Types)
+        foreach (var typeDef in Model.Types)
           typeDef.Init(this);
       } catch (Exception ex) {
-        _model.Errors.Add(ex.ToText());
+        Model.Errors.Add(ex.ToText());
       }
-      if (_model.Errors.Count > 0) {
-        Trace.WriteLine("API model errors: \r\n" + string.Join(Environment.NewLine, _model.Errors));
-        throw new ServerStartupException(_model.Errors);
+      if (Model.Errors.Count > 0) {
+        Trace.WriteLine("API model errors: \r\n" + string.Join(Environment.NewLine, Model.Errors));
+        throw new ServerStartupException(Model.Errors);
       }
     }
     
@@ -60,7 +64,7 @@ namespace NGraphQL.Server {
 
     public RequestContext CreateRequestContext(GraphQLRequest request, CancellationToken cancellationToken = default,
                       ClaimsPrincipal user = null, RequestQuota quota = null, object httpRequest = null) {
-      if (_model == null)
+      if (Model == null)
         Initialize(); 
       var context = new RequestContext(this, request, cancellationToken, user, quota, httpRequest);
       return context; 

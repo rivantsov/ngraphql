@@ -27,7 +27,7 @@ namespace NGraphQL.Model.Introspection {
 
     //[Field("enumValues", OnType = typeof(Type__)), Null]
     public IList<__EnumValue> GetEnumValues(IFieldContext context, __Type type_, bool includeDeprecated = true) {
-      if (type_.Kind != TypeKind.Enum)
+      if (type_.Kind != __TypeKind.Enum)
         return null;
       if (includeDeprecated)
         return type_.EnumValueList.ToArray();

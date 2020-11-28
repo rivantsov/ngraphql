@@ -7,6 +7,7 @@ using System.Threading;
 using NGraphQL.CodeFirst;
 using NGraphQL.Model;
 using NGraphQL.Model.Request;
+using NGraphQL.Runtime;
 using NGraphQL.Utilities;
 
 namespace NGraphQL.Server.Execution {
@@ -24,7 +25,7 @@ namespace NGraphQL.Server.Execution {
     public RequestMetrics Metrics { get; } = new RequestMetrics();
     public RequestQuota Quota; 
     /// <summary>Dictionary for use by resolvers to pass data around. </summary>
-    public IDictionary<string, object> Values { get; } = new ConcurrentDictionary<string, object>();
+    public IDictionary<string, object> CustomData { get; } = new ConcurrentDictionary<string, object>();
 
     public CancellationToken CancellationToken => _cancellationTokenSource.Token;
     private CancellationTokenSource _cancellationTokenSource;

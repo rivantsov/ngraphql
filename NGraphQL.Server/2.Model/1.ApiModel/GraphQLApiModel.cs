@@ -8,11 +8,12 @@ using NGraphQL.Model.Introspection;
 using NGraphQL.Server;
 using NGraphQL.CodeFirst;
 using NGraphQL.Model.Construction;
+using NGraphQL.Core.Introspection;
 
 namespace NGraphQL.Model {
 
   public class GraphQLApiModel {
-    public readonly GraphQLApi Api;
+    public readonly GraphQLServer Server;
 
     public ObjectTypeDef QueryType;
     public ObjectTypeDef MutationType;
@@ -36,9 +37,8 @@ namespace NGraphQL.Model {
     public bool HasErrors => Errors.Count > 0;
 
 
-    public GraphQLApiModel(GraphQLApi api) {
-      Api = api;
-      Api.Model = this; 
+    public GraphQLApiModel(GraphQLServer server) {
+      Server = server; 
     }
 
   }

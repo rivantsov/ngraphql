@@ -6,17 +6,20 @@ using NGraphQL.Core.Introspection;
 
 namespace NGraphQL.Core.Directives {
 
-  public class DirectiveMetadataAttribute : Attribute {
+  public class DirectiveMetaDataAttribute : Attribute {
     public string Name;
     public string Description;
     public __DirectiveLocation Locations;
-    public bool IsCustom;
+    public bool ListInSchema;
+    public bool IsDeprecated;
+    public string DeprecationReason;
 
-    public DirectiveMetadataAttribute(string name, __DirectiveLocation locations, string description = null, bool isCustom = true) {
+    public DirectiveMetaDataAttribute(string name, __DirectiveLocation locations, string description = null,
+           bool listInSchema = true) {
       Name = name;
       Locations = locations;
       Description = description;
-      IsCustom = isCustom; 
+      ListInSchema = listInSchema; 
     }
   }
 

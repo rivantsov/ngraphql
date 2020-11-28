@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace NGraphQL.Core.Scalars {
+namespace NGraphQL.Runtime {
 
   public class TokenData {
     public string TermName;
     public string Text;
     public object ParsedValue;
+    public Location Location; 
   }
 
 }

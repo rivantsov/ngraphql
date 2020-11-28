@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
 
 namespace NGraphQL.Client {
-
+  // Note: this class is a (renamed) copy of GraphQLError class in NGraphQL.Abstractions assembly. 
+  // Redeclaring it here to avoid refence to the entire assembly. 
   public class RequestError {
     public string Message;
     public IList<Location> Locations = new List<Location>();

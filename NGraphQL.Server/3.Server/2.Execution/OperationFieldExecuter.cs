@@ -75,12 +75,12 @@ namespace NGraphQL.Server.Execution {
       var typeDef = fieldContext.FieldDef.TypeRef.TypeDef;
       var selSubSet = fieldContext.SelectionField.SelectionSubset;
       switch(typeDef.Kind) {
-        case TypeKind.Object:
+        case __TypeKind.Object:
           await ExecuteObjectsSelectionSubsetAsync(scopes, (ObjectTypeDef)typeDef, selSubSet);
           return;
 
-        case TypeKind.Interface:
-        case TypeKind.Union:
+        case __TypeKind.Interface:
+        case __TypeKind.Union:
           // Map every entity object in scopes to ObjectTypeDef, for every scope
           foreach(var scope in scopes) {
             scope.MappedTypeDef = GetMappedObjectTypeDef(scope);
@@ -99,7 +99,7 @@ namespace NGraphQL.Server.Execution {
     private ObjectTypeDef GetMappedObjectTypeDef(ObjectScope scope) {
       object entity = scope.Entity;
       var typeDef = _requestContext.ApiModel.GetMappedGraphQLType(entity.GetType());
-      if(typeDef == null || typeDef.Kind != TypeKind.Object) {
+      if(typeDef == null || typeDef.Kind != __TypeKind.Object) {
         // TODO: see if it can happen we can throw better error here
       }
       return (ObjectTypeDef)typeDef;

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using NGraphQL.Core.Introspection;
 using NGraphQL.Model.Introspection;
 
 namespace NGraphQL.Model.Construction {
@@ -63,25 +64,25 @@ namespace NGraphQL.Model.Construction {
       //  to PossibleTypes list of each interface it implements
       switch(type_.Kind) {
 
-        case TypeKind.Object:
+        case __TypeKind.Object:
           type_.FieldList = new List<__Field>();
           type_.Interfaces = new List<__Type>();
           break;
 
-        case TypeKind.Interface:
+        case __TypeKind.Interface:
           type_.FieldList = new List<__Field>();
           type_.PossibleTypes = new List<__Type>();
           break;
 
-        case TypeKind.InputObject:
+        case __TypeKind.InputObject:
           type_.InputFields = new List<__InputValue>();
           break;
 
-        case TypeKind.Enum:
+        case __TypeKind.Enum:
           type_.EnumValueList = new List<__EnumValue>();
           break; 
 
-        case TypeKind.Union:
+        case __TypeKind.Union:
           type_.PossibleTypes = new List<__Type>();
           break;
       }
@@ -232,8 +233,8 @@ namespace NGraphQL.Model.Construction {
       if(parent.Type_ == null)
         SetupTypeObject(parent);
       switch(typeRef.Kind) {
-        case TypeKind.NotNull:
-        case TypeKind.List:
+        case __TypeKind.NotNull:
+        case __TypeKind.List:
           typeRef.Type_ = new __Type() { Kind = typeRef.Kind, OfType = parent.Type_, DisplayName = typeRef.Name };
           return; 
       }

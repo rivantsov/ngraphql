@@ -53,7 +53,7 @@ namespace NGraphQL.Server.Parsing {
           continue;
         }
         // check it is a proper type
-        var typeIsOk = onTypeDef.IsOneOf(TypeKind.Object, TypeKind.Interface, TypeKind.Union);
+        var typeIsOk = onTypeDef.IsOneOf(__TypeKind.Object, __TypeKind.Interface, __TypeKind.Union);
         if (!typeIsOk) {
           AddError($"Fragment cannot be defined on type '{onTypeDef.Name}'.", fragm.OnTypeRef);
           continue;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using NGraphQL.Model.Introspection;
+using NGraphQL.Runtime;
 using NGraphQL.Server.Parsing;
 
 namespace NGraphQL.Model.Request {
@@ -101,15 +102,6 @@ namespace NGraphQL.Model.Request {
     public VariableDef Variable;
     public object Value;
     public override string ToString() => $"{Variable.Name}:{Value}";
-  }
-
-
-  public class Location {
-    public int Line;
-    public int Column;
-
-    public static readonly Location StartLocation = new Location() { Line = 1, Column = 1 };
-    public override string ToString() => $"({Line}, {Column})";
   }
 
   public class RequestDirective : NamedRequestObject {

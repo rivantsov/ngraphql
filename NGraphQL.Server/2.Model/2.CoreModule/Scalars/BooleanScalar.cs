@@ -6,16 +6,17 @@ using NGraphQL.Server;
 using NGraphQL.Server.Parsing;
 using NGraphQL.Server.Execution;
 using NGraphQL.Model.Request;
+using NGraphQL.Core.Scalars;
+using NGraphQL.CodeFirst;
 
 namespace NGraphQL.Model.Core {
 
-  public class BooleanTypeDef : ScalarTypeDef {
+  public class BooleanScalar : Scalar {
 
-    public BooleanTypeDef() : base("Boolean", typeof(bool)) { }
+    public BooleanScalar() : base("Boolean", typeof(bool)) { }
 
-    public override object ParseToken(RequestContext context, TokenValueSource tokenInput) {
-      var tkn = tokenInput.TokenData;
-      switch(tkn.TermName) {
+    public override object ParseToken(IFieldContext context, TokenData tokenData) {
+      switch(tokenData.TermName) {
         case TermNames.NullValue:
           return null;
         case TermNames.True:
@@ -23,7 +24,7 @@ namespace NGraphQL.Model.Core {
         case TermNames.False:
           return false;
       }
-      context.ThrowScalarInput($"Invalid value: '{tkn.Text}' for bool variable.", tokenInput);
+      context.ThrowScalarInput($"Invalid value: '{tokenData.Text}' for bool variable.", tokenData);
       return default(bool);
     }
 

@@ -11,21 +11,22 @@ using NGraphQL.Utilities;
 using NGraphQL.Server.Parsing;
 using NGraphQL.Model.Core;
 using System.Runtime.InteropServices.ComTypes;
+using NGraphQL.Core.Introspection;
 
 namespace NGraphQL.Model.Construction {
 
   public partial class ModelBuilder {
-    GraphQLApi _api;
+    GraphQLServer _server; 
     GraphQLApiModel _model;
     XmlDocumentationLoader _docLoader;
 
-    public ModelBuilder(GraphQLApi api) {
-      _api = api;
-      _model = _api.Model;
+    public ModelBuilder(GraphQLServer server) {
+      _server = server;
       _docLoader = new XmlDocumentationLoader();
     }
 
     public void BuildModel() {
+      _model = _server.Model = new GraphQLApiModel(_server);
 
       // collect all data types, query/mutation types, resolvers
       if (!CollectRegisteredClrTypes())
@@ -55,15 +56,12 @@ namespace NGraphQL.Model.Construction {
       var schemaGen = new SchemaDocGenerator();
       _model.SchemaDoc = schemaGen.GenerateSchema(_model);
 
-      foreach (var module in _api.Modules)
-        module.OnModelConstructed();
-
       VerifyModel();
 
     }
 
     private bool CollectRegisteredClrTypes() {
-      foreach (var module in _api.Modules) {
+      foreach (var module in _server.Modules) {
         var mName = module.GetType().Name;
         foreach (var type in module.Types) {
           if (_model.TypesByClrType.ContainsKey(type)) {
@@ -83,16 +81,19 @@ namespace NGraphQL.Model.Construction {
           RegisterTypeDef(typeDef);
         } //foreach type
         // scalars and directives
-        foreach (var scalar in module.Scalars)
-          RegisterTypeDef(scalar);
-        foreach (var dirDef in module.Directives)
+        foreach (var scalar in module.Scalars) {
+          var sTypeDef = new ScalarTypeDef(scalar);
+          RegisterTypeDef(sTypeDef); 
+        }
+        foreach (var dirType in module.DirectiveTypes)
           _model.Directives[dirDef.Name] = dirDef;
       } // foreach module
       return !_model.HasErrors;
     } //method
 
+    /*
     private bool ValidateTypeRoleKind(Type clrType, GraphQLModule module, GraphQLTypeRoleAttribute typeRoleAttr,
-                                      out SchemaTypeRole typeRole, out TypeKind typeKind) {
+                                      out TypeRole typeRole, out __TypeKind typeKind) {
       typeRole = default;
       typeKind = default;
       var errLoc = $"module {module.GetType().Name}";
@@ -102,28 +103,28 @@ namespace NGraphQL.Model.Construction {
         return false;
       }
 
-      typeRole = typeRoleAttr == null ? SchemaTypeRole.DataType : typeRoleAttr.TypeRole;
-      if (typeRole != SchemaTypeRole.DataType) {
-        typeKind = TypeKind.Object;
+      typeRole = typeRoleAttr == null ? TypeRole.DataType : typeRoleAttr.TypeRole;
+      if (typeRole != TypeRole.DataType) {
+        typeKind = __TypeKind.Object;
         return true;
       }
 
       bool result = true;
       switch (typeRoleAttr) {
         case ObjectTypeAttribute _:
-          typeKind = TypeKind.Object;
+          typeKind = __TypeKind.Object;
           break;
         case InputTypeAttribute _:
-          typeKind = TypeKind.InputObject;
+          typeKind = __TypeKind.InputObject;
           break;
 
         case null:
           if (clrType.IsEnum)
-            typeKind = TypeKind.Enum;
+            typeKind = __TypeKind.Enum;
           else if (clrType.IsInterface)
-            typeKind = TypeKind.Interface;
+            typeKind = __TypeKind.Interface;
           else if (typeof(UnionBase).IsAssignableFrom(clrType))
-            typeKind = TypeKind.Union;
+            typeKind = __TypeKind.Union;
           else {
             result = false;
             if (!clrType.IsClass) {
@@ -139,6 +140,7 @@ namespace NGraphQL.Model.Construction {
       }
       return result;
     }
+    */
 
     private void BuildTypesInternals() {
 
@@ -222,7 +224,7 @@ namespace NGraphQL.Model.Construction {
     }
 
     private void LinkImplementedInterfaces() {
-      var objTypes = _model.GetTypeDefs<ObjectTypeDef>(TypeKind.Object);
+      var objTypes = _model.GetTypeDefs<ObjectTypeDef>(__TypeKind.Object);
       foreach(var typeDef in objTypes) {
         var intTypes = typeDef.ClrType.GetInterfaces();
         foreach(var iType in intTypes) {
@@ -250,9 +252,9 @@ namespace NGraphQL.Model.Construction {
           }
         }
         switch(typeRef.TypeDef.Kind) {
-          case TypeKind.Scalar:
-          case TypeKind.Enum:
-          case TypeKind.InputObject:
+          case __TypeKind.Scalar:
+          case __TypeKind.Enum:
+          case __TypeKind.InputObject:
             break;
           default:
             AddError($"Input type member {inpTypeDef.Name}.{member.Name}: type {mtype} is not scalar or input type.");
@@ -268,7 +270,7 @@ namespace NGraphQL.Model.Construction {
     }
 
     private void BuildUnionTypes() {
-      var unionTypes = _model.Types.Where(td => td.Kind == TypeKind.Union).ToList();
+      var unionTypes = _model.Types.Where(td => td.Kind == __TypeKind.Union).ToList();
       foreach(UnionTypeDef utDef in unionTypes) {
         var objTypes = utDef.ClrType.BaseType.GetGenericArguments();
         foreach(var objType in objTypes) {
@@ -333,9 +335,9 @@ namespace NGraphQL.Model.Construction {
     } //method
 
     private void BuildSchemaDef() {
-      _model.QueryType = BuildRootSchemaObject("Query", SchemaTypeRole.Query);
-      _model.MutationType = BuildRootSchemaObject("Mutation", SchemaTypeRole.Mutation);
-      _model.SubscriptionType = BuildRootSchemaObject("Subscription", SchemaTypeRole.Subscription);
+      _model.QueryType = BuildRootSchemaObject("Query", TypeRole.Query);
+      _model.MutationType = BuildRootSchemaObject("Mutation", TypeRole.Mutation);
+      _model.SubscriptionType = BuildRootSchemaObject("Subscription", TypeRole.Subscription);
 
       var schemaDef = _model.Schema = new ObjectTypeDef("Schema", null);
       RegisterTypeDef(schemaDef, isSchema: true);
@@ -348,7 +350,7 @@ namespace NGraphQL.Model.Construction {
         schemaDef.Fields.Add(new FieldDef("subscription", _model.SubscriptionType.TypeRefNull));
     }
 
-    private ObjectTypeDef BuildRootSchemaObject(string name, SchemaTypeRole typeRole) {
+    private ObjectTypeDef BuildRootSchemaObject(string name, TypeRole typeRole) {
       var allFields = _model.Types.Where(t => t.TypeRole == typeRole)
           .Select(t => (ComplexTypeDef)t).SelectMany(t => t.Fields).ToList();
       if (allFields.Count == 0)

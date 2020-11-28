@@ -11,9 +11,9 @@ namespace NGraphQL.Server.Execution {
       if (source == target)
         return true;
       // cut-off not-null wrapper and check again
-      if (target.Kind == TypeKind.NotNull)
+      if (target.Kind == __TypeKind.NotNull)
         target = target.Parent;
-      if (source.Kind == TypeKind.NotNull)
+      if (source.Kind == __TypeKind.NotNull)
         source = source.Parent;
       if (source == target)
         return true; 

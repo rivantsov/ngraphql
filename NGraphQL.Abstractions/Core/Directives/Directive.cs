@@ -14,7 +14,7 @@ namespace NGraphQL.Core.Directives {
     // Query directives only
     IRequestContext RequestContext { get; }
     Location SourceLocation { get; }
-    DirectiveMetadataAttribute Info { get; }
+    DirectiveMetaDataAttribute Info { get; }
   }
 
   /// <summary>Base class for directives - classes implementing directives. </summary>

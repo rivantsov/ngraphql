@@ -9,6 +9,7 @@ using NGraphQL.Utilities;
 using NGraphQL.Server.Execution;
 using NGraphQL.Server;
 using NGraphQL.Model.Request;
+using NGraphQL.Core.Introspection;
 
 namespace NGraphQL.Model {
 
@@ -28,12 +29,12 @@ namespace NGraphQL.Model {
       return (flags & flag) != 0; 
     }
 
-    public static bool IsSet(this DirectiveLocation locs, DirectiveLocation loc) {
+    public static bool IsSet(this __DirectiveLocation locs, __DirectiveLocation loc) {
       return (locs & loc) != 0;
     }
 
-    public static int GetListRank(this IList<TypeKind> kinds) {
-      return kinds.Count(k => k == TypeKind.List);
+    public static int GetListRank(this IList<__TypeKind> kinds) {
+      return kinds.Count(k => k == __TypeKind.List);
     }
 
     public static string GetFullRef(this MemberInfo member) {
@@ -49,7 +50,7 @@ namespace NGraphQL.Model {
       }
     }
 
-    public static IList<T> GetTypeDefs<T>(this GraphQLApiModel model, TypeKind kind, 
+    public static IList<T> GetTypeDefs<T>(this GraphQLApiModel model, __TypeKind kind, 
                                            bool excludeHidden = false) where T : TypeDefBase {
       var temp = model.Types.Where(td => td.Kind == kind)
                             .Where(td => !excludeHidden || !td.Hidden)
@@ -82,11 +83,11 @@ namespace NGraphQL.Model {
     }
 
     public static bool IsEnumFlagArray(this TypeDefBase typeDef) {
-      return typeDef.Kind == TypeKind.Enum && (typeDef is EnumTypeDef etd && etd.IsFlagSet);
+      return typeDef.Kind == __TypeKind.Enum && (typeDef is EnumTypeDef etd && etd.IsFlagSet);
     }
 
     public static IList<string> GetRequiredFields(this InputObjectTypeDef inputTypeDef) {
-      var reqFNames = inputTypeDef.Fields.Where(f => f.TypeRef.Kind == TypeKind.NotNull)
+      var reqFNames = inputTypeDef.Fields.Where(f => f.TypeRef.Kind == __TypeKind.NotNull)
         .Select(f => f.Name).ToList();
       return reqFNames; 
     }

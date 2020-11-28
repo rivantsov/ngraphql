@@ -17,11 +17,11 @@ namespace NGraphQL.CodeFirst {
     }
   }
 
-  [DirectiveMetadata(
+  [DirectiveMetaData(
     name: "deprecated",
     description: "Marks element as deprecated.",
     locations: __DirectiveLocation.AllSchemaLocations,
-    isCustom: false
+    listInSchema: false
     )]
   public class DeprecatedDirective: Directive {
     public string Reason;

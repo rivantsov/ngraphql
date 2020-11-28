@@ -91,14 +91,14 @@ namespace NGraphQL.Server.Execution {
           var typeDef = Field.FieldDef.TypeRef.TypeDef;
           // special cases - Union, Interface; extract actual value from box
           switch (typeDef.Kind) {
-            case TypeKind.Union:
+            case __TypeKind.Union:
               if (rawResult is UnionBase ub)
                 rawResult = ub.Value;
               if (rawResult == null)
                 return null;
               break;
 
-            case TypeKind.Interface:
+            case __TypeKind.Interface:
               if (rawResult == null)
                 return null;
               break;

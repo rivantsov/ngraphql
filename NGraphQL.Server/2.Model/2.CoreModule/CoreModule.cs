@@ -8,13 +8,16 @@ using NGraphQL.Server.Parsing;
 
 namespace NGraphQL.Model.Core {
 
+  /// <summary>Core module defines standard and custom scalars; @include and @skip directives
+  /// 
+  /// </summary>
   public class CoreModule : GraphQLModule {
     public StringTypeDef String_;
     public IntTypeDef Int_;
     public LongTypeDef Long_;
     public FloatTypeDef Float_;
     public DoubleTypeDef Double_;
-    public BooleanTypeDef Boolean_;
+    public BooleanScalar Boolean_;
     public DateTimeTypeDef DateTime_;
     public DateTypeDef Date_;
     public TimeTypeDef Time_;
@@ -27,14 +30,14 @@ namespace NGraphQL.Model.Core {
     public IncludeDirectiveDef IncludeDir;
     public SkipDirectiveDef SkipDir; 
 
-    public CoreModule(GraphQLApi api): base(api) {
+    public CoreModule() {
       // Standard scalar types
       this.String_ = new StringTypeDef();
       this.Int_ = new IntTypeDef();
       this.Long_ = new LongTypeDef();
       this.Float_ = new FloatTypeDef();
       this.Double_ = new DoubleTypeDef();
-      this.Boolean_ = new BooleanTypeDef();
+      this.Boolean_ = new BooleanScalar();
       this.Id_ = new IdTypeDef(); 
       // custom scalars
       this.DateTime_ = new DateTimeTypeDef();
