@@ -8,7 +8,7 @@ namespace NGraphQL.CodeFirst {
     public static GraphQLError AddError(this IFieldContext fieldContext, string message,
                                              string type = ErrorTypes.InputError) {
       var loc = fieldContext.SelectionField.Location;
-      var path = fieldContext.GetFullRequestPath();
+      var path = fieldContext.Path.GetFullPath();
       var err = new GraphQLError(message, path, loc, type);
       fieldContext.RootField.AddError(err);
       return err;

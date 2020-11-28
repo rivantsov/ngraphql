@@ -42,11 +42,11 @@ namespace NGraphQL.CodeFirst {
       RegisterTypes(TypeRole.Union, unions);
     }
 
-    protected void RegisterResolvers(params Type[] resolverTypes) {
+    public void RegisterResolvers(params Type[] resolverTypes) {
       ResolverClasses.AddRange(resolverTypes);
     }
 
-    protected EntityMapping<TEntity> MapEntity<TEntity>() where TEntity : class {
+    public EntityMapping<TEntity> MapEntity<TEntity>() where TEntity : class {
       var mapping = new EntityMapping<TEntity>();
       Mappings.Add(mapping);
       return mapping;

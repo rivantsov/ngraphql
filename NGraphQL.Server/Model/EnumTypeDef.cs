@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-
-using Irony.Parsing;
-using NGraphQL.CodeFirst;
-using NGraphQL.Model.Request;
+using NGraphQL.Introspection;
 using NGraphQL.Server;
 using NGraphQL.Server.Execution;
-using NGraphQL.Server.Parsing;
+using NGraphQL.Server.RequestModel;
 using NGraphQL.Utilities;
 
 namespace NGraphQL.Model {

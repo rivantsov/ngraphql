@@ -9,9 +9,7 @@ using NGraphQL.Server.Parsing;
 
 namespace NGraphQL.Core {
 
-  /// <summary>Core module defines standard and custom scalars; @include and @skip directives
-  /// 
-  /// </summary>
+  /// <summary>Core module defines standard and custom scalars; @include and @skip directives.</summary>
   public class CoreModule : GraphQLModule {
     public StringTypeDef String_;
     public IntTypeDef Int_;
@@ -51,7 +49,7 @@ namespace NGraphQL.Core {
                          DateTime_, Date_, Time_, Uuid_, Decimal_);
 
       // Directives 
-      DeprecatedDir = new DeprecatedDirDef(this);
+      DeprecatedDir = new DeprecatedDirective(this);
       IncludeDir = new IncludeDirectiveDef(this);
       SkipDir = new SkipDirectiveDef(this); 
       RegisterDirectives(DeprecatedDir, IncludeDir, SkipDir);
