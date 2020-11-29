@@ -1,13 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-
-using Irony.Parsing;
-using NGraphQL.Model;
-using NGraphQL.Model.Introspection;
-using NGraphQL.Server.Parsing;
-using NGraphQL.Model.Request;
+using NGraphQL.Server.RequestModel;
 
 namespace NGraphQL.Server.Parsing {
 

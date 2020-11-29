@@ -1,14 +1,7 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using NGraphQL.CodeFirst;
-using NGraphQL.Core.Introspection;
-using NGraphQL.Model.Request;
-using NGraphQL.Utilities;
+using NGraphQL.Introspection;
 
 namespace NGraphQL.Model {
   public static partial class ModelExtensions {

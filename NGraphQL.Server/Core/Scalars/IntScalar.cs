@@ -1,31 +1,25 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Irony.Parsing;
-using NGraphQL.Server;
-using NGraphQL.Server.Parsing;
+
 using NGraphQL.Server.Execution;
-using NGraphQL.Model.Request;
-using NGraphQL.CodeFirst;
+using NGraphQL.Server.Parsing;
 
-namespace NGraphQL.Model.Core {
+namespace NGraphQL.Core.Scalars {
 
-  public class IntTypeDef : ScalarTypeDef {
+  public class IntScalar : Scalar {
 
-    public IntTypeDef() : base("Int", typeof(int)) {
+    public IntScalar() : base("Int", "Int scalar", typeof(int), isCustom: false) {
       CanConvertFrom = new[] { typeof(long) };
     }
 
-    public override object ParseToken(RequestContext context, TokenValueSource tokenInput) {
-      var tkn = tokenInput.TokenData;
-      switch(tkn.TermName) {
+    public override object ParseToken(IScalarContext context, TokenData token) {
+      switch(token.TermName) {
         case TermNames.NullValue:
           return null;
 
         case TermNames.Number:
-          return tkn.ParsedValue;  //relying on converting by parser, including hex conversion
+          return token.ParsedValue;  //relying on converting by parser, including hex conversion
       }
-      context.ThrowScalarInput($"Invalid int value: '{tkn.Text}'", tokenInput);
+      context.ThrowScalarError($"Invalid int value: '{token.Text}'", token);
       return null;
     }
 
@@ -44,7 +38,6 @@ namespace NGraphQL.Model.Core {
         case ulong _:
           return Convert.ChangeType(value, typeof(Int32));
 
-        case bool b:
         default:
           throw new Exception($"Invalid Int value: '{value}'"); 
       }

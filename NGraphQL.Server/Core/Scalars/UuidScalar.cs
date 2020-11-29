@@ -1,32 +1,24 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-using Irony.Parsing;
-using NGraphQL.CodeFirst;
-using NGraphQL.Server;
-using NGraphQL.Server.Parsing;
 using NGraphQL.Server.Execution;
-using NGraphQL.Model.Request;
+using NGraphQL.Server.Parsing;
 
-namespace NGraphQL.Model.Core {
-  public class UuidTypeDef : ScalarTypeDef {
+namespace NGraphQL.Core.Scalars {
+  public class UuidScalar : Scalar {
 
-    public UuidTypeDef() : base("Uuid", typeof(Guid), isCustom: true) { }
+    public UuidScalar() : base("Uuid", "Uuid scalar", typeof(Guid), isCustom: true) { }
 
-    public override object ParseToken(RequestContext context, TokenValueSource tokenInput) {
-      var tkn = tokenInput.TokenData;
-      switch(tkn.TermName) {
+    public override object ParseToken(IScalarContext context, TokenData token) {
+      switch(token.TermName) {
         case TermNames.NullValue:
           return null;
 
         case TermNames.StrSimple:
         case TermNames.Qstr: //single quote string
-          if(Guid.TryParse((string) tkn.ParsedValue, out var value))
+          if(Guid.TryParse( token.Text.Trim(), out var value))
             return value;
           break;
       }
-      context.ThrowScalarInput($"Invalid Uuid value: '{tkn.Text}'", tokenInput);
+      context.ThrowScalarError($"Invalid Uuid value: '{token.Text}'", token);
       return null;
     }
 

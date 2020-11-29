@@ -1,34 +1,27 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-using Irony.Parsing;
-using NGraphQL.Server;
-using NGraphQL.Server.Parsing;
+using NGraphQL.CodeFirst;
 using NGraphQL.Server.Execution;
-using NGraphQL.Model.Request;
-using NGraphQL.Core.Scalars;
+using NGraphQL.Server.Parsing;
 
-namespace NGraphQL.Model.Core {
+namespace NGraphQL.Core.Scalars {
 
-  public class DateTimeTypeDef : Scalar {
+  public class DateTimeScalar : Scalar {
 
-    public DateTimeTypeDef(string name = "DateTime") : base(name, typeof(DateTime), isCustom: true) { }
+    public DateTimeScalar(string name = "DateTime") : base(name, "DateTime scalar", typeof(DateTime), isCustom: true) { }
 
-    public override object ParseToken(RequestContext context, TokenValueSource tokenInput) {
-      var tkn = tokenInput.TokenData;
-      switch(tkn.TermName) {
+    public override object ParseToken(IScalarContext context, TokenData token) {
+      switch(token.TermName) {
         case TermNames.NullValue:
           return null;
 
         case TermNames.StrSimple:
         case TermNames.Qstr:
-          var vstr = (string) tkn.ParsedValue; //parser does all char escaping 
+          var vstr = (string) token.ParsedValue; //parser does all char escaping 
           if(DateTime.TryParse(vstr, out var value))
             return value;
           break;
       }
-      context.ThrowScalarInput($"Invalid datetime value: '{tkn.ParsedValue}'", tokenInput);
+      context.ThrowScalarError($"Invalid datetime value: '{token.Text}'", token);
       return null; 
     }
 
@@ -53,7 +46,6 @@ namespace NGraphQL.Model.Core {
           throw new Exception($"Invalid DateTime value: '{value}'");
       }
     }
-
 
   }
 

@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace NGraphQL.Model.Core {
+namespace NGraphQL.Core.Scalars {
 
-  public class DateTypeDef: DateTimeTypeDef {
+  public class DateScalar: Scalar {
 
-    public DateTypeDef(): base("Date") {
+    public DateScalar(): base("Date", "Date scalar", typeof(DateTime), isCustom: true) {
       IsDefaultForClrType = false; 
     }
 

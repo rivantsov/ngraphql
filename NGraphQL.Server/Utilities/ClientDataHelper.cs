@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Text;
-
+using NGraphQL.Runtime;
 using NGraphQL.Server;
 using NGraphQL.Server.Execution;
 

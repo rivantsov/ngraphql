@@ -2,20 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
+using NGraphQL.CodeFirst;
+using NGraphQL.Core;
 using NGraphQL.Model;
-using NGraphQL.Model.Request;
 using NGraphQL.Runtime;
 using NGraphQL.Server.Parsing;
+using NGraphQL.Server.RequestModel;
 
 namespace NGraphQL.Server.Execution {
   public static partial class ExecutionExtensions {
 
-    public static void ThrowScalarInput(this RequestContext requestContext, string message, TokenValueSource token) {
-      throw new InvalidInputException(message, token);
-    }
-
-    public static void AddInputError (this RequestContext context, InvalidInputException exc) {
+    public static void AddInputError (this IRequestContext context, InvalidInputException exc) {
       var path = exc.Anchor.GetRequestObjectPath();
       var loc = exc.Anchor.Location; 
       var err = new GraphQLError(exc.Message, path, loc, ErrorTypes.InputError);

@@ -1,5 +1,6 @@
 ﻿using System; 
 using System.Collections.Generic;
+using NGraphQL.Core;
 using NGraphQL.Core.Scalars;
 using NGraphQL.Runtime;
 using NGraphQL.Server.Parsing;

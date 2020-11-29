@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using NGraphQL.Core.Introspection;
+using NGraphQL.Introspection;
 using NGraphQL.Model;
-using NGraphQL.Server.Parsing;
 
 namespace NGraphQL.Model {
 
@@ -21,7 +20,7 @@ namespace NGraphQL.Model {
 
       // custom scalar types 
       var scalarTypes = SelectTypes<ScalarTypeDef>(TypeKind.Scalar)
-          .Where(td => td.IsCustom).ToList(); 
+          .Where(td => td.Scalar.IsCustom).ToList(); 
       foreach(var sd in scalarTypes) {
         AppendDescr(sd.Description);
         _builder.AppendLine("scalar " + sd.Name);

@@ -10,7 +10,7 @@ namespace NGraphQL.CodeFirst {
     IRequestContext RequestContext { get; }
     IOperationFieldContext RootField { get; }
     CancellationToken CancellationToken { get; }
-    RequestPath Path { get; }
+    IList<object> GetFullRequestPath();
     IList<Directive> Directives { get; }
 
     // to be used by resolver methods, to know in advance which fields  to load from db

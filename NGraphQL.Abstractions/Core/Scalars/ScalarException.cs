@@ -12,4 +12,11 @@ namespace NGraphQL.Core {
     }
   }
 
+  public static class ScalarExtensions {
+
+    public static void ThrowScalarError(this IScalarContext requestContext, string message, TokenData token) {
+      throw new ScalarException(message, token);
+    }
+
+  }
 }

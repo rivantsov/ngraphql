@@ -1,34 +1,26 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-using Irony.Parsing;
-using NGraphQL.Server;
-using NGraphQL.Server.Parsing;
 using NGraphQL.Server.Execution;
-using NGraphQL.Model.Request;
-using NGraphQL.CodeFirst;
+using NGraphQL.Server.Parsing;
 
-namespace NGraphQL.Model.Core {
+namespace NGraphQL.Core.Scalars {
 
-  public class FloatTypeDef : ScalarTypeDef {
+  public class FloatScalar : Scalar {
 
-    public FloatTypeDef() : base("Float", typeof(Single)) {
+    public FloatScalar() : base("Float", "Float scalar", typeof(Single), isCustom: false) {
       CanConvertFrom = new[] { typeof(Double), typeof(int), typeof(long), typeof(Decimal) };
     }
 
-    public override object ParseToken(RequestContext context, TokenValueSource tokenInput) {
-      var tkn = tokenInput.TokenData;
-      switch(tkn.TermName) {
+    public override object ParseToken(IScalarContext context, TokenData token) {
+      switch(token.TermName) {
         case TermNames.NullValue:
           return null;
 
         case TermNames.Number:
-          if(double.TryParse(tkn.Text, out var value))
+          if(double.TryParse(token.Text, out var value))
             return value;
           break;
       }
-      context.ThrowScalarInput($"Invalid float value: '{tkn.Text}'", tokenInput);
+      context.ThrowScalarError($"Invalid float value: '{token.Text}'", token);
       return null; 
     }
 

@@ -1,19 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using NGraphQL.CodeFirst;
-using NGraphQL.Model.Introspection;
+using NGraphQL.Model;
 using NGraphQL.Runtime;
-using NGraphQL.Server.Parsing;
 
 namespace NGraphQL.Server.RequestModel {
 
   public abstract class RequestObjectBase {
     public RequestObjectBase Parent; 
-    public Location Location { get; private set; } 
+    public Location Location { get; internal set; } 
   }
 
   public abstract class NamedRequestObject: RequestObjectBase {
-    public string Name { get; private set; }
+    public string Name { get; internal set; }
     public override string ToString() => Name; 
   }
 

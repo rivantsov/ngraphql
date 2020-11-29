@@ -1,15 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Irony.Parsing;
-using NGraphQL.Server;
-using NGraphQL.Server.Parsing;
 
-namespace NGraphQL.Model.Core {
+namespace NGraphQL.Core.Scalars {
 
-  public class IdTypeDef : StringTypeDef {
+  public class IdScalar : StringScalar {
 
-    public IdTypeDef() : base("ID", isCustom: true) {
+    public IdScalar() : base("ID", "ID scalar", isCustom: true) {
       IsDefaultForClrType = false; 
     }
 

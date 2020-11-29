@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 using NGraphQL.Model;
-using NGraphQL.Model.Core;
-using NGraphQL.Model.Request;
-using NGraphQL.Server.Parsing;
-using NGraphQL.Utilities;
+using NGraphQL.Runtime;
+using NGraphQL.Server.RequestModel;
 
 namespace NGraphQL.Server.Execution {
 

@@ -29,22 +29,22 @@ namespace NGraphQL.Server.Execution {
 
     internal object[] ArgValues = null;
     internal object ResolverClassInstance;
-    internal ObjectScope CurrentScope;
-    internal IList<ObjectScope> AllParentScopes = ObjectScope.EmptyList;
-    internal IList<ObjectScope> AllResultScopes = ObjectScope.EmptyList;
+    internal OutputObjectScope CurrentScope;
+    internal IList<OutputObjectScope> AllParentScopes = OutputObjectScope.EmptyList;
+    internal IList<OutputObjectScope> AllResultScopes = OutputObjectScope.EmptyList;
     internal bool BatchResultWasSet;
 
     RequestContext _requestContext;
 
     public FieldContext(RequestContext requestContext, IOperationFieldContext rootField, MappedField field, int fieldIndex,
-                         IList<ObjectScope> allParentScopes = null) {
+                         IList<OutputObjectScope> allParentScopes = null) {
       _requestContext = requestContext;
       RootField = rootField;
       Field = field;
       FieldIndex = fieldIndex;
-      AllParentScopes = allParentScopes ?? ObjectScope.EmptyList;
+      AllParentScopes = allParentScopes ?? OutputObjectScope.EmptyList;
       if (Flags.IsSet(FieldFlags.ReturnsComplexType))
-        AllResultScopes = new List<ObjectScope>();
+        AllResultScopes = new List<OutputObjectScope>();
     }
 
     public override string ToString() => Field.ToString();
@@ -105,7 +105,7 @@ namespace NGraphQL.Server.Execution {
                 return null;
               break;
           }
-          var scope = new ObjectScope(this, path, rawResult);
+          var scope = new OutputObjectScope(this, path, rawResult);
           AllResultScopes.Add(scope);
           var newCount = Interlocked.Increment(ref _requestContext.Metrics.OutputObjectCount);
           // check total count against quota

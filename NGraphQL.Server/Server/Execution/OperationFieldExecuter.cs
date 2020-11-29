@@ -16,7 +16,7 @@ namespace NGraphQL.Server.Execution {
   /// OperationFieldExecuter instances. </remarks>
   public partial class OperationFieldExecuter : IOperationFieldContext {
     RequestContext _requestContext;
-    ObjectScope _parentScope; 
+    OutputObjectScope _parentScope; 
     int _fieldIndex; 
     MappedField _operationField; 
     List<object> _resolverInstances = new List<object>();
@@ -31,7 +31,7 @@ namespace NGraphQL.Server.Execution {
     // resolvers are executed. This is all to make it possible to do batched calls (aka Data Loader)
     List<FieldContext> _executedObjectFieldContexts = new List<FieldContext>();
 
-    public OperationFieldExecuter(RequestContext requestContext, ObjectScope parentScope, int fieldIndex) {
+    public OperationFieldExecuter(RequestContext requestContext, OutputObjectScope parentScope, int fieldIndex) {
       _requestContext = requestContext;
       _parentScope = parentScope;
       _fieldIndex = fieldIndex;
@@ -94,7 +94,7 @@ namespace NGraphQL.Server.Execution {
       }
     }
 
-    private ObjectTypeDef GetMappedObjectTypeDef(ObjectScope scope) {
+    private ObjectTypeDef GetMappedObjectTypeDef(OutputObjectScope scope) {
       object entity = scope.Entity;
       var typeDef = _requestContext.ApiModel.GetMappedGraphQLType(entity.GetType());
       if(typeDef == null || typeDef.Kind != TypeKind.Object) {
@@ -103,7 +103,7 @@ namespace NGraphQL.Server.Execution {
       return (ObjectTypeDef)typeDef;
     }
 
-    private async Task ExecuteObjectsSelectionSubsetAsync(IList<ObjectScope> parentScopes,
+    private async Task ExecuteObjectsSelectionSubsetAsync(IList<OutputObjectScope> parentScopes,
                                                   ObjectTypeDef objTypeDef, SelectionSubset subSet) {
       var mappedFields = subSet.GetIncludedMappedFields(objTypeDef, _requestContext);
       // init scopes

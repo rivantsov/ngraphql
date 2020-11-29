@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using NGraphQL.CodeFirst;
-using NGraphQL.Introspection;
-using NGraphQL.Server.Execution;
 
-namespace NGraphQL.Model.Introspection {
+namespace NGraphQL.Introspection {
 
   public class IntrospectionResolvers {
 

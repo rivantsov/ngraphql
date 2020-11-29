@@ -1,58 +1,45 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Irony.Parsing;
-using NGraphQL.CodeFirst;
+﻿using NGraphQL.CodeFirst;
 using NGraphQL.Core.Scalars;
-using NGraphQL.Server;
-using NGraphQL.Server.Parsing;
 
 namespace NGraphQL.Core {
 
   /// <summary>Core module defines standard and custom scalars; @include and @skip directives.</summary>
   public class CoreModule : GraphQLModule {
-    public StringTypeDef String_;
-    public IntTypeDef Int_;
-    public LongTypeDef Long_;
-    public FloatTypeDef Float_;
-    public DoubleTypeDef Double_;
+    public StringScalar String_;
+    public IntScalar Int_;
+    public LongScalar Long_;
+    public FloatScalar Float_;
+    public DoubleScalar Double_;
     public BooleanScalar Boolean_;
-    public DateTimeTypeDef DateTime_;
-    public DateTypeDef Date_;
-    public TimeTypeDef Time_;
-    public UuidTypeDef Uuid_;
-    public DecimalTypeDef Decimal_; 
+    public DateTimeScalar DateTime_;
+    public DateScalar Date_;
+    public TimeScalar Time_;
+    public UuidScalar Uuid_;
+    public DecimalScalar Decimal_; 
 
-    public IdTypeDef Id_;
-
-    public DeprecatedDirDef DeprecatedDir;
-    public IncludeDirectiveDef IncludeDir;
-    public SkipDirectiveDef SkipDir; 
+    public IdScalar Id_;
 
     public CoreModule() {
       // Standard scalar types
-      this.String_ = new StringTypeDef();
-      this.Int_ = new IntTypeDef();
-      this.Long_ = new LongTypeDef();
-      this.Float_ = new FloatTypeDef();
-      this.Double_ = new DoubleTypeDef();
+      this.String_ = new StringScalar();
+      this.Int_ = new IntScalar();
+      this.Long_ = new LongScalar();
+      this.Float_ = new FloatScalar();
+      this.Double_ = new DoubleScalar();
       this.Boolean_ = new BooleanScalar();
-      this.Id_ = new IdTypeDef(); 
+      this.Id_ = new IdScalar(); 
       // custom scalars
-      this.DateTime_ = new DateTimeTypeDef();
-      this.Date_ = new DateTypeDef();
-      this.Time_ = new TimeTypeDef();
-      this.Uuid_ = new UuidTypeDef();
-      this.Decimal_ = new DecimalTypeDef();
+      this.DateTime_ = new DateTimeScalar();
+      this.Date_ = new DateScalar();
+      this.Time_ = new TimeScalar();
+      this.Uuid_ = new UuidScalar();
+      this.Decimal_ = new DecimalScalar();
       
       RegisterScalars(String_, Int_, Long_, Float_, Double_, Boolean_, Id_, 
                          DateTime_, Date_, Time_, Uuid_, Decimal_);
 
       // Directives 
-      DeprecatedDir = new DeprecatedDirective(this);
-      IncludeDir = new IncludeDirectiveDef(this);
-      SkipDir = new SkipDirectiveDef(this); 
-      RegisterDirectives(DeprecatedDir, IncludeDir, SkipDir);
+      RegisterDirectives(typeof(DeprecatedDirective), typeof(IncludeDirective), typeof(SkipDirective));
     }
   }
 }

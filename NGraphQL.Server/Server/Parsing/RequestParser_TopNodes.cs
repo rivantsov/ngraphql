@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Irony.Parsing;
+using NGraphQL.Introspection;
 using NGraphQL.Model;
-using NGraphQL.Model.Request;
-using NGraphQL.Server.Parsing;
+using NGraphQL.Server.RequestModel;
 
 namespace NGraphQL.Server.Parsing {
   using Node = Irony.Parsing.ParseTreeNode;

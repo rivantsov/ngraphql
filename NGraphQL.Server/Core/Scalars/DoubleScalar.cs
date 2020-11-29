@@ -1,34 +1,26 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-using Irony.Parsing;
-using NGraphQL.Server;
-using NGraphQL.Server.Parsing;
 using NGraphQL.Server.Execution;
-using NGraphQL.Model.Request;
-using NGraphQL.CodeFirst;
+using NGraphQL.Server.Parsing;
 
-namespace NGraphQL.Model.Core {
+namespace NGraphQL.Core.Scalars {
 
-  public class DoubleTypeDef : ScalarTypeDef {
+  public class DoubleScalar : Scalar {
 
-    public DoubleTypeDef() : base("Double", typeof(double), isCustom: true) {
+    public DoubleScalar() : base("Double", "Double scalar", typeof(double), isCustom: true) {
       CanConvertFrom = new[] { typeof(Single), typeof(int), typeof(long), typeof(Decimal) }; 
     }
 
-    public override object ParseToken(RequestContext context, TokenValueSource tokenInput) {
-      var tkn = tokenInput.TokenData;
-      switch(tkn.TermName) {
+    public override object ParseToken(IScalarContext context, TokenData token) {
+      switch(token.TermName) {
         case TermNames.NullValue:
           return null;
 
         case TermNames.Number:
-          if(double.TryParse(tkn.Text, out var value))
+          if(double.TryParse(token.Text, out var value))
             return value;
           break;
       }
-      context.ThrowScalarInput($"Invalid double value: '{tkn.Text}'", tokenInput);
+      context.ThrowScalarError($"Invalid double value: '{token.Text}'", token);
       return null; 
     }
 

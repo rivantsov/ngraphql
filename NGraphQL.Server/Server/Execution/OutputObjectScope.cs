@@ -5,9 +5,7 @@ using System.Linq;
 
 using NGraphQL.CodeFirst;
 using NGraphQL.Model;
-using NGraphQL.Model.Core;
-using NGraphQL.Model.Request;
-using NGraphQL.Server.Parsing;
+using NGraphQL.Server.RequestModel;
 using NGraphQL.Utilities;
 
 namespace NGraphQL.Server.Execution {
@@ -16,8 +14,8 @@ namespace NGraphQL.Server.Execution {
   ///   Slimmed down container for output object data (key/value pairs);
   ///   Serializer treats it as a dictionary (IDictionary[object,string]).
   /// </summary>
-  public class ObjectScope : IDictionary<string, object> {
-    public static readonly IList<ObjectScope> EmptyList = new ObjectScope[] { };
+  public class OutputObjectScope : IDictionary<string, object> {
+    public static readonly IList<OutputObjectScope> EmptyList = new OutputObjectScope[] { };
 
     public RequestPath Path; 
     public readonly IFieldContext SourceFieldContext;
@@ -29,11 +27,11 @@ namespace NGraphQL.Server.Execution {
     IBitSet _valuesMask; //indicates if there's a value
 
     // creates root scope
-    public ObjectScope() {
+    public OutputObjectScope() {
       Path = new RequestPath(); 
     }
 
-    public ObjectScope(IFieldContext sourceFieldContext, RequestPath path, object entity) {
+    public OutputObjectScope(IFieldContext sourceFieldContext, RequestPath path, object entity) {
       SourceFieldContext = sourceFieldContext;
       Path = path; 
       Entity = entity;

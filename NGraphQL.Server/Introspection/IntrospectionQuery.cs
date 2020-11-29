@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Text;
 using NGraphQL.CodeFirst;
 
-namespace NGraphQL.Model.Introspection {
-  [Query]
+namespace NGraphQL.Introspection {
+
   public class IntrospectionQuery {
 
     [GraphQLName("__schema"), Hidden]

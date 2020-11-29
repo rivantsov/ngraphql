@@ -1,9 +1,5 @@
-﻿using System;
-using NGraphQL.CodeFirst;
+﻿using NGraphQL.CodeFirst;
 using NGraphQL.Introspection;
-using NGraphQL.Model;
-using NGraphQL.Model.Request;
-using NGraphQL.Server.Execution;
 
 namespace NGraphQL.Core {
 

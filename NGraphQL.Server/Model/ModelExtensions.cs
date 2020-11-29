@@ -2,14 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-
-using NGraphQL.CodeFirst;
-using NGraphQL.Server.Parsing;
-using NGraphQL.Utilities;
-using NGraphQL.Server.Execution;
-using NGraphQL.Server;
-using NGraphQL.Model.Request;
-using NGraphQL.Core.Introspection;
+using NGraphQL.Introspection;
 
 namespace NGraphQL.Model {
 
@@ -29,7 +22,7 @@ namespace NGraphQL.Model {
       return (flags & flag) != 0; 
     }
 
-    public static bool IsSet(this __DirectiveLocation locs, __DirectiveLocation loc) {
+    public static bool IsSet(this DirectiveLocation locs, DirectiveLocation loc) {
       return (locs & loc) != 0;
     }
 

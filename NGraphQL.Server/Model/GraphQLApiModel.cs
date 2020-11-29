@@ -1,14 +1,7 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using Irony.Ast;
-using NGraphQL.Model.Introspection;
+using NGraphQL.Introspection;
 using NGraphQL.Server;
-using NGraphQL.CodeFirst;
-using NGraphQL.Model.Construction;
-using NGraphQL.Core.Introspection;
 
 namespace NGraphQL.Model {
 

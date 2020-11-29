@@ -1,28 +1,27 @@
 ﻿using System;
-using NGraphQL.Model.Request;
+
 using NGraphQL.Server.Execution;
 using NGraphQL.Server.Parsing;
 
-namespace NGraphQL.Model.Core {
+namespace NGraphQL.Core.Scalars {
 
-  public class TimeTypeDef : ScalarTypeDef {
+  public class TimeScalar : Scalar {
 
-    public TimeTypeDef() : base("Time", typeof(TimeSpan), isCustom: true) { }
+    public TimeScalar() : base("Time", "Time scalar", typeof(TimeSpan), isCustom: true) { }
 
-    public override object ParseToken(RequestContext context, TokenValueSource tokenInput) {
-      var tkn = tokenInput.TokenData;
-      switch(tkn.TermName) {
+    public override object ParseToken(IScalarContext context, TokenData token) {
+      switch(token.TermName) {
         case TermNames.NullValue:
           return null;
 
         case TermNames.StrSimple:
         case TermNames.Qstr:
-          var vstr = (string)tkn.ParsedValue; 
+          var vstr = (string)token.ParsedValue; 
           if(TimeSpan.TryParse(vstr, out var value))
             return value;
           break;
       }
-      context.ThrowScalarInput($"Invalid time value: '{tkn.ParsedValue}'", tokenInput);
+      context.ThrowScalarError($"Invalid time value: '{token.ParsedValue}'", token);
       return null; 
     }
 

@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using NGraphQL.Core.Introspection;
-using NGraphQL.Model.Introspection;
+using NGraphQL.Introspection;
 
 namespace NGraphQL.Model.Construction {
 
@@ -38,13 +37,14 @@ namespace NGraphQL.Model.Construction {
     }
 
     private void BuildDirectives() {
-      foreach(var dir in _model.Directives.Values) {
+      foreach(var dirDef in _model.Directives.Values) {
+        var mdata = dirDef.MetaData; 
         var dir_ = new __Directive() {
-           Name = dir.Name, Description = dir.Description, Locations = dir.Locations, 
-          IsDeprecated = dir.IsDeprecated, DeprecationReason = dir.DeprecationReason
+           Name = dirDef.Name, Description = dirDef.Description, Locations = mdata.Locations, 
+          IsDeprecated = mdata.IsDeprecated, DeprecationReason = mdata.DeprecationReason
         };
         dir_.Args =
-          dir.Args.Select(ivd => new __InputValue() {
+          dirDef.Args.Select(ivd => new __InputValue() {
             Name = ivd.Name, Description = ivd.Description,
             Type = ivd.TypeRef.Type_, DefaultValue = ivd.DefaultValue + string.Empty
           }).ToArray();

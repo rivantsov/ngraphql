@@ -40,12 +40,12 @@ namespace NGraphQL.Server.Execution {
 
       var op = _requestContext.Operation; 
       var opType = op.OperationType;
-      var topScope = new ObjectScope(); // we do not count it as an 'output object', so no incr of object count in metrics
+      var topScope = new OutputObjectScope(); // we do not count it as an 'output object', so no incr of object count in metrics
       _requestContext.Response.Data = topScope;
       await ExecuteOperationAsync(_requestContext.Operation, topScope);
     }
 
-    private async Task ExecuteOperationAsync(GraphQLOperation op, ObjectScope topScope) {
+    private async Task ExecuteOperationAsync(GraphQLOperation op, OutputObjectScope topScope) {
       var topFields = op.SelectionSubset.GetIncludedMappedFields(op.OperationTypeDef, _requestContext);
       topScope.Init(op.OperationTypeDef, topFields);
       var parallel = _parallelQuery && op.OperationType == OperationType.Query && topFields.Count > 1; 

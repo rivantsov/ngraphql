@@ -1,33 +1,26 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-using Irony.Parsing;
-using NGraphQL.Server;
-using NGraphQL.Server.Parsing;
 using NGraphQL.Server.Execution;
-using NGraphQL.Model.Request;
+using NGraphQL.Server.Parsing;
 
-namespace NGraphQL.Model.Core {
+namespace NGraphQL.Core.Scalars {
 
-  public class DecimalTypeDef : ScalarTypeDef {
+  public class DecimalScalar : Scalar {
 
-    public DecimalTypeDef() : base("Decimal", typeof(decimal)) {
+    public DecimalScalar() : base("Decimal", "Decimal scalar", typeof(decimal)) {
       CanConvertFrom = new[] { typeof(Single), typeof(double), typeof(int), typeof(long) };
     }
 
-    public override object ParseToken(RequestContext context, TokenValueSource tokenInput) {
-      var tkn = tokenInput.TokenData;
-      switch(tkn.TermName) {
+    public override object ParseToken(IScalarContext context, TokenData token) {
+      switch(token.TermName) {
         case TermNames.NullValue:
           return null;
 
         case TermNames.Number:
-          if(decimal.TryParse(tkn.Text, out var value))
+          if(decimal.TryParse(token.Text, out var value))
             return value;
           break;
       }
-      context.ThrowScalarInput($"Invalid int value: '{tkn.Text}'", tokenInput);
+      context.ThrowScalarError($"Invalid int value: '{token.Text}'", token);
       return null;
     }
 

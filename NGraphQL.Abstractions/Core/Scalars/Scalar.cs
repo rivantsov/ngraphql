@@ -9,15 +9,17 @@ namespace NGraphQL.Core {
     public readonly string Description;
     public Type DefaultClrType;
     public readonly bool IsCustom;
+    public bool IsDefaultForClrType { get; protected set; } = true;
+    public Type[] CanConvertFrom;
 
-    public Scalar(string name, string description, Type defaultClrType, bool isCustom = false) {
+    public Scalar(string name, string description, Type defaultClrType, bool isCustom = true) {
       Name = name;
       Description = description;
       DefaultClrType = defaultClrType;
       IsCustom = isCustom;
     }
 
-    public virtual object ParseToken(IRequestContext context, TokenData tokenData) {
+    public virtual object ParseToken(IScalarContext context, TokenData tokenData) {
       return tokenData.ParsedValue; // this is value converted by Irony parser
     }
     // from deserialized Json variable value
