@@ -17,8 +17,10 @@ namespace NGraphQL.Core {
     DirectiveMetaDataAttribute Info { get; }
   }
 
-  /// <summary>Base class for directives - classes implementing directives. </summary>
+  /// <summary>Base class for classes implementing directives. </summary>
   public abstract class Directive {
+    public static IList<Directive> EmptyList = new Directive[] { }; 
+
     public readonly IDirectiveContext Context; 
 
     public Directive(IDirectiveContext context) {

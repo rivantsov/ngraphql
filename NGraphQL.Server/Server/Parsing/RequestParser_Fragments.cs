@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using NGraphQL.Introspection;
 using NGraphQL.Server.RequestModel;
 
 namespace NGraphQL.Server.Parsing {

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Irony.Parsing;
+using NGraphQL.Introspection;
 using NGraphQL.Server.RequestModel;
 
 namespace NGraphQL.Server.Parsing {

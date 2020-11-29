@@ -47,6 +47,12 @@ namespace NGraphQL.Server.Execution {
         AllResultScopes = new List<OutputObjectScope>();
     }
 
+    public IList<Directive> GetDirectives() {
+      if (this.SelectionField.Directives.Count == 0 && this.FieldDef.Directives.Count == 0)
+        return Directive.EmptyList;
+      return Field.SelectionField.Directives.Union(FieldDef.Directives).ToList(); 
+    }
+
     public override string ToString() => Field.ToString();
 
     private static string[] _emptyStrings = new string[] { }; 

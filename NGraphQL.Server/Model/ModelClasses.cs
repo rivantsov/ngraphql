@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq.Expressions;
 using System.Reflection;
+
 using NGraphQL.CodeFirst;
 using NGraphQL.Core;
 using NGraphQL.Introspection;
-using NGraphQL.Model.Introspection;
 using NGraphQL.Server;
 using NGraphQL.Server.Execution;
-using NGraphQL.Server.Parsing;
 
 namespace NGraphQL.Model {
 
