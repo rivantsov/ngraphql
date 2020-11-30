@@ -46,20 +46,14 @@ namespace NGraphQL.Introspection {
 
     // Fields and EnumValues fields have includeDeprecated parameter, so they are implemented
     [GraphQLName("fields")]
-    public IList<__Field> GetFields(bool includeDeprecated = true) {
-      if (includeDeprecated)
-        return Fields;
-      else
-        return Fields.Where(f => !f.IsDeprecated).ToList();
+    internal IList<__Field> GetFields(bool includeDeprecated = true) {
+      throw new NotImplementedException("GetFields is a server-side method and should not be called directly.");
     }
 
     // enum only
     [GraphQLName("enumValues")]
-    public IList<__EnumValue> GetEnumValues(bool includeDeprecated = true) {
-      if (includeDeprecated)
-        return EnumValues;
-      else
-        return EnumValues.Where(f => !f.IsDeprecated).ToList();
+    internal IList<__EnumValue> GetEnumValues(bool includeDeprecated = true) {
+      throw new NotImplementedException("GetEnumValues is a server-side method and should not be called directly.");
     }
 
     /// <summary>Display name allowing to see the type full name/spec.  The current arrangement in GraphQL
@@ -68,7 +62,8 @@ namespace NGraphQL.Introspection {
     [Null, Hidden, GraphQLName("displayName")]
     public string DisplayName;
 
-    // The following two lists are for internal use only, they are containers that hold actual lists 
+    // these 2 properties will be ignored on the server. When used on the client, they will be receiving 
+    //  data from Fiels and Enum values received from the server (sent by GetFields and GetEnumValues fields/methods) 
     [Ignore]
     public IList<__Field> Fields = new List<__Field>();
     // enum only

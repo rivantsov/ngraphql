@@ -27,7 +27,7 @@ namespace NGraphQL.Model {
     public TypeKind Kind;
     public Type ClrType;
     public bool Hidden;
-    public IList<Directive> Directives = Directive.EmptyList;
+    public IList<DirectiveDef> Directives = new List<DirectiveDef>();
     public bool IsDefaultForClrType = true; // false for ID type, to skip registration
 
     public __Type Type_; // Introspection object

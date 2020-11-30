@@ -30,11 +30,11 @@ namespace NGraphQL.Model.Construction {
     }
 
     private void CompleteSchemaObject() {
-      _schema.QueryType = _schema.Types.FirstOrDefault(t__ => t__.TypeDef == _model.QueryType);
+      _schema.QueryType = _model.QueryType.Type_;
       if (_model.MutationType != null)
-        _schema.MutationType = _schema.Types.FirstOrDefault(t__ => t__.TypeDef == _model.MutationType);
+        _schema.MutationType = _model.MutationType.Type_;
       if (_model.SubscriptionType != null)
-        _schema.SubscriptionType = _schema.Types.FirstOrDefault(t__ => t__.TypeDef == _model.SubscriptionType);
+        _schema.SubscriptionType = _model.SubscriptionType.Type_;
     }
 
     private void BuildDirectives() {
@@ -55,8 +55,7 @@ namespace NGraphQL.Model.Construction {
 
     private void CreateTypeObject(TypeDefBase typeDef) {
       var type_ = typeDef.Type_ = new __Type() {
-        Name = typeDef.Name, Kind = typeDef.Kind, Description = typeDef.Description, TypeDef = typeDef,
-        DisplayName = typeDef.Name,
+        Name = typeDef.Name, Kind = typeDef.Kind, Description = typeDef.Description, DisplayName = typeDef.Name,
       };
       _schema.Types.Add(type_);
 
@@ -90,8 +89,8 @@ namespace NGraphQL.Model.Construction {
     }
 
     private void BuildTypeObjects() {
-      foreach(var type_ in _schema.Types) {
-        var typeDef = type_.TypeDef;
+      foreach(var typeDef in _model.Types) {
+        var type_ = typeDef.Type_;
         SetupDeprecatedFields(type_, typeDef.Directives);
 
         switch(typeDef) {
@@ -124,7 +123,7 @@ namespace NGraphQL.Model.Construction {
       }
     } //method
 
-    private void SetupDeprecatedFields(IntroObjectBase introObj, IList<Directive> directives) {
+    private void SetupDeprecatedFields(IntroObjectBase introObj, IList<DirectiveDef> directives) {
       if(directives == null || directives.Count == 0)
         return;
       var deprDir = directives.FirstOrDefault(d => d.Name == "@deprecated");
