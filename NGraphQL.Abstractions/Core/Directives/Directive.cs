@@ -5,11 +5,11 @@ using NGraphQL.CodeFirst;
 
 namespace NGraphQL.Core {
 
-  public class DirectiveAction {
-    public IDirectiveInfo Directive { get; }   
-    
-    public DirectiveAction(IDirectiveInfo directiveInfo) {
-      Directive = directiveInfo; 
+  public class Directive {
+    public IDirectiveInfo Info; 
+
+    public Directive(IDirectiveContext context) {
+      Info = context.DirectiveInfo; 
     }
 
     public virtual object ApplyInput(IRequestContext context, object value) => value; 

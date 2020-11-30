@@ -48,7 +48,7 @@ namespace NGraphQL.Server.Execution {
         AllResultScopes = new List<OutputObjectScope>();
     }
 
-    public IList<DirectiveAction> Directives { get; set; }
+    public IList<Directive> Directives { get; set; }
 
     public override string ToString() => Field.ToString();
 

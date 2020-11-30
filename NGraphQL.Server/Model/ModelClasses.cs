@@ -121,7 +121,7 @@ namespace NGraphQL.Model {
 
     public FieldFlags Flags;
     public IList<InputValueDef> Args = new List<InputValueDef>();
-    public IList<DirectiveAction> Directives;
+    public IList<Directive> Directives;
     public MemberInfo ClrMember;
     public ResolverMethodInfo Resolver;
     public Func<object, object> Reader;

@@ -17,6 +17,7 @@ namespace NGraphQL.CodeFirst {
     public readonly List<ModelAdjustment> Adjustments = new List<ModelAdjustment>();
 
     public GraphQLModule() {
+      DirectiveTypes.Add(typeof(DeprecatedDirective));
     }
 
     protected void RegisterModelTypes(

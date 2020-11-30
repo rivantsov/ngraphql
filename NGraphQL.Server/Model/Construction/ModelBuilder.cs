@@ -303,14 +303,14 @@ namespace NGraphQL.Model.Construction {
       }
     }
 
-    private IList<Directive> BuildDirectivesFromAttributes(ICustomAttributeProvider target) {
+    private IList<DirectiveDef> BuildDirectivesFromAttributes(ICustomAttributeProvider target) {
       var attrList = target.GetCustomAttributes(inherit: true);
       if(attrList.Length == 0)
-        return Directive.EmptyList;
+        return DirectiveDef.EmptyList;
 
-      var dirList = new List<Directive>();
+      var dirList = new List<DirectiveDef>();
       foreach(var attr in attrList) {
-        if(!(attr is DirectiveBaseAttribute dirAttr))
+        if(!(attr is DirectiveRefAttribute dirAttr))
           continue;
         var attrName = attr.GetType().Name;
         var dirDefType = dirAttr.DirectiveDefType;

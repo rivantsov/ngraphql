@@ -17,7 +17,7 @@ namespace NGraphQL.Server.RequestModel {
   }
 
   public abstract class SelectionItem : NamedRequestObject {
-    public IList<DirectiveAction> Directives { get; internal set; }
+    public IList<Directive> Directives { get; internal set; }
   }
 
   public class SelectionField : SelectionItem, ISelectionField {
