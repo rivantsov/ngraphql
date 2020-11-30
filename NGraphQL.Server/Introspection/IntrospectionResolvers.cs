@@ -19,7 +19,7 @@ namespace NGraphQL.Introspection {
 
     //[Field("fields", OnType = typeof(Type__)), Null]
     public IList<__Field> GetFields(IFieldContext context, __Type type_, bool includeDeprecated = true) {
-      return type_.FieldList; 
+      return type_.Fields; 
     }
 
     //[Field("enumValues", OnType = typeof(Type__)), Null]
@@ -27,8 +27,8 @@ namespace NGraphQL.Introspection {
       if (type_.Kind != TypeKind.Enum)
         return null;
       if (includeDeprecated)
-        return type_.EnumValueList.ToArray();
-      return type_.EnumValueList.Where(ev => !ev.IsDeprecated).ToArray();
+        return type_.EnumValues.ToArray();
+      return type_.EnumValues.Where(ev => !ev.IsDeprecated).ToArray();
     }
 
   }

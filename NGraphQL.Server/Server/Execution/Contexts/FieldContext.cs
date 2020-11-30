@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 
 using NGraphQL.CodeFirst;
+using NGraphQL.Core;
 using NGraphQL.Introspection;
 using NGraphQL.Model;
 using NGraphQL.Server.Parsing;
@@ -47,11 +48,7 @@ namespace NGraphQL.Server.Execution {
         AllResultScopes = new List<OutputObjectScope>();
     }
 
-    public IList<Directive> GetDirectives() {
-      if (this.SelectionField.Directives.Count == 0 && this.FieldDef.Directives.Count == 0)
-        return Directive.EmptyList;
-      return Field.SelectionField.Directives.Union(FieldDef.Directives).ToList(); 
-    }
+    public IList<DirectiveAction> Directives { get; set; }
 
     public override string ToString() => Field.ToString();
 

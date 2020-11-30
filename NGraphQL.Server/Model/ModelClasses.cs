@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -9,6 +10,7 @@ using NGraphQL.Core;
 using NGraphQL.Introspection;
 using NGraphQL.Server;
 using NGraphQL.Server.Execution;
+using NGraphQL.Server.RequestModel;
 
 namespace NGraphQL.Model {
 
@@ -119,7 +121,7 @@ namespace NGraphQL.Model {
 
     public FieldFlags Flags;
     public IList<InputValueDef> Args = new List<InputValueDef>();
-    public IList<Directive> Directives;
+    public IList<DirectiveAction> Directives;
     public MemberInfo ClrMember;
     public ResolverMethodInfo Resolver;
     public Func<object, object> Reader;
@@ -132,6 +134,13 @@ namespace NGraphQL.Model {
         Flags |= FieldFlags.ReturnsComplexType;
       }
     }
+  }
+
+  public class DirectiveDef : GraphQLModelObject {
+    public Type DirectiveType;
+    public DirectiveMetaDataAttribute MetaData;
+    public IList<InputValueDef> Args;
+    public DirectiveDef() { }
   }
 
   [DisplayName("{Method.Name}")]
@@ -226,19 +235,5 @@ namespace NGraphQL.Model {
 
     public override int GetHashCode() => Name.GetHashCode();
   }
-
-  public class DirectiveDef : GraphQLModelObject {
-    public IList<InputValueDef> Args;
-    public DirectiveMetaDataAttribute MetaData; 
-  }
-
-  public class Directive : GraphQLModelObject {
-    public static IList<Directive> EmptyList = new Directive[] { };
-    public DirectiveDef Def;
-    public object[] ArgValues;
-
-    public Directive() { }
-  }
-
 
 }

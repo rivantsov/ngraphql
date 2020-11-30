@@ -49,14 +49,4 @@ namespace NGraphQL.CodeFirst {
   public class HiddenAttribute : Attribute { }
 
 
-  [AttributeUsage(AttributeTargets.Method | AttributeTargets.Property | AttributeTargets.Field)]
-  public class ResolverAttribute : Attribute {
-    public Type ResolverClass;
-    public string MethodName;
-    public ResolverAttribute(string methodName, Type resolverClass = null) {
-      MethodName = methodName;
-      ResolverClass = resolverClass; 
-    }
-  }
-
 }

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using NGraphQL.CodeFirst;
+using NGraphQL.Core;
 using NGraphQL.Model;
 using NGraphQL.Runtime;
 
@@ -16,7 +17,7 @@ namespace NGraphQL.Server.RequestModel {
   }
 
   public abstract class SelectionItem : NamedRequestObject {
-    public IList<RequestDirective> Directives { get; internal set; }
+    public IList<DirectiveAction> Directives { get; internal set; }
   }
 
   public class SelectionField : SelectionItem, ISelectionField {

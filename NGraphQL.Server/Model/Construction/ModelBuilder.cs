@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 
 using NGraphQL.CodeFirst;
+using NGraphQL.Core;
 using NGraphQL.Introspection;
 using NGraphQL.Server;
 using NGraphQL.Utilities;

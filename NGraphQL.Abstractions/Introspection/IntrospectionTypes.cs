@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using NGraphQL.CodeFirst;
 
@@ -44,13 +45,22 @@ namespace NGraphQL.Introspection {
     public __Type OfType;
 
     // Fields and EnumValues fields have includeDeprecated parameter, so they are implemented
-    //  through GetFields and GetEnumValues resolver methods. 
     [GraphQLName("fields")]
-    public IList<__Field> GetFields(bool includeDeprecated = true) { return default; }
+    public IList<__Field> GetFields(bool includeDeprecated = true) {
+      if (includeDeprecated)
+        return Fields;
+      else
+        return Fields.Where(f => !f.IsDeprecated).ToList();
+    }
 
     // enum only
     [GraphQLName("enumValues")]
-    public IList<__EnumValue> GetEnumValues(bool includeDeprecated = true) { return default; }
+    public IList<__EnumValue> GetEnumValues(bool includeDeprecated = true) {
+      if (includeDeprecated)
+        return EnumValues;
+      else
+        return EnumValues.Where(f => !f.IsDeprecated).ToList();
+    }
 
     /// <summary>Display name allowing to see the type full name/spec.  The current arrangement in GraphQL
     /// requires unfolding of the entire chain of nested types (NotNull-s and List-s). 
@@ -58,14 +68,12 @@ namespace NGraphQL.Introspection {
     [Null, Hidden, GraphQLName("displayName")]
     public string DisplayName;
 
-    /*
     // The following two lists are for internal use only, they are containers that hold actual lists 
     [Ignore]
-    internal IList<__Field> FieldList = new List<__Field>();
+    public IList<__Field> Fields = new List<__Field>();
     // enum only
     [Ignore]
-    internal IList<__EnumValue> EnumValueList = new List<__EnumValue>();
-    */
+    public IList<__EnumValue> EnumValues = new List<__EnumValue>();
 
     public __Type() { }
   }

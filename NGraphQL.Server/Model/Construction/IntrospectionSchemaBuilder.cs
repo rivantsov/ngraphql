@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using NGraphQL.Core;
 using NGraphQL.Introspection;
 
 namespace NGraphQL.Model.Construction {
@@ -64,13 +65,13 @@ namespace NGraphQL.Model.Construction {
       //  to PossibleTypes list of each interface it implements
       switch(type_.Kind) {
 
-        case TypeKind.Object:
-          type_.FieldList = new List<__Field>();
+        case TypeKind.Object: 
+          type_.Fields = new List<__Field>();
           type_.Interfaces = new List<__Type>();
           break;
 
         case TypeKind.Interface:
-          type_.FieldList = new List<__Field>();
+          type_.Fields = new List<__Field>();
           type_.PossibleTypes = new List<__Type>();
           break;
 
@@ -79,7 +80,7 @@ namespace NGraphQL.Model.Construction {
           break;
 
         case TypeKind.Enum:
-          type_.EnumValueList = new List<__EnumValue>();
+          type_.EnumValues = new List<__EnumValue>();
           break; 
 
         case TypeKind.Union:
@@ -126,7 +127,7 @@ namespace NGraphQL.Model.Construction {
     private void SetupDeprecatedFields(IntroObjectBase introObj, IList<Directive> directives) {
       if(directives == null || directives.Count == 0)
         return;
-      var deprDir = directives.FirstOrDefault(d => d.Def.Name == "@deprecated");
+      var deprDir = directives.FirstOrDefault(d => d.Name == "@deprecated");
       if (deprDir != null) {
         introObj.IsDeprecated = true;
         introObj.DeprecationReason = (string) deprDir.ArgValues[0]; 
@@ -158,7 +159,7 @@ namespace NGraphQL.Model.Construction {
                         Type = ivd.TypeRef.Type_, DefaultValue = ivd.DefaultValue + string.Empty
                       })
                   .ToArray();
-        type_.FieldList.Add(fld_);
+        type_.Fields.Add(fld_);
       } //foreach fld
       // Interfaces
       foreach(var intfDef in objTypeDef.Implements) {
@@ -170,7 +171,7 @@ namespace NGraphQL.Model.Construction {
 
     private void BuildInterfaceType(InterfaceTypeDef intfTypeDef) {
       var type_ = intfTypeDef.Type_; 
-      type_.FieldList = new List<__Field>();
+      type_.Fields = new List<__Field>();
       type_.PossibleTypes = new List<__Type>();
 
       // build fields
@@ -186,7 +187,7 @@ namespace NGraphQL.Model.Construction {
             Type = ivd.TypeRef.Type_,  DefaultValue = ivd.DefaultValue + string.Empty
           })
           .ToArray();
-        type_.FieldList.Add(fld_);
+        type_.Fields.Add(fld_);
       } //foreach fld
       // PossibleTypes in each interface are taken care of by object types implementing the interface
     }
@@ -211,7 +212,7 @@ namespace NGraphQL.Model.Construction {
           Name = enumV.Name, Description = enumV.Description,
         };
         SetupDeprecatedFields(enumV_, enumV.Directives);
-        type_.EnumValueList.Add(enumV_);
+        type_.EnumValues.Add(enumV_);
       }
     }
 

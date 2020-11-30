@@ -11,21 +11,26 @@ namespace NGraphQL.CodeFirst {
   [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Method | AttributeTargets.Parameter)]
   public class DeprecatedDirAttribute : SchemaDirectiveAttribute {
     public readonly string Reason;
-    public DeprecatedDirAttribute(string reason) : base(typeof(DeprecatedDirective)) {
+    public DeprecatedDirAttribute(string reason)  {
       Reason = reason;
+    }
+
+    [ImplementsDirective(
+      name: "@deprecated",
+      description: "Marks element as deprecated.",
+      locations: DirectiveLocation.AllSchemaLocations,
+      listInSchema: false
+      )]
+    public DeprecatedDirectiveResult Invoke(IDirectiveContext context, string reason) {
+      return new DeprecatedDirectiveResult(context, reason); 
     }
   }
 
-  [DirectiveMetaData(
-    name: "deprecated",
-    description: "Marks element as deprecated.",
-    locations: DirectiveLocation.AllSchemaLocations,
-    listInSchema: false
-    )]
-  public class DeprecatedDirective: Directive {
+  public class DeprecatedDirectiveResult: DirectiveAction {
     public string Reason;
 
-    public DeprecatedDirective(IDirectiveContext context, string reason) : base(context) {
+
+    public DeprecatedDirectiveResult(IDirectiveContext context, string reason) : base(context.MetaData) {
       Reason = reason;
     }
   }
