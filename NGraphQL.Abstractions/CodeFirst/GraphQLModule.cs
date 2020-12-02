@@ -13,11 +13,10 @@ namespace NGraphQL.CodeFirst {
     public readonly List<Type> ResolverClasses = new List<Type>();
 
     public readonly List<Scalar> Scalars = new List<Scalar>();
-    public readonly List<Type> DirectiveTypes = new List<Type>();
+    public readonly List<Type> DirectiveAttributeTypes = new List<Type>(); 
     public readonly List<ModelAdjustment> Adjustments = new List<ModelAdjustment>();
 
     public GraphQLModule() {
-      DirectiveTypes.Add(typeof(DeprecatedDirective));
     }
 
     protected void RegisterModelTypes(
@@ -56,10 +55,10 @@ namespace NGraphQL.CodeFirst {
     protected void RegisterScalars(params Scalar[] scalars) {
       Scalars.AddRange(scalars);
     }
-
-    protected void RegisterDirectives(params Type[] directiveTypes) {
-      DirectiveTypes.AddRange(directiveTypes);
+    protected void RegisterDirectivAttributes(params Type[] attrTypes) {
+      DirectiveAttributeTypes.AddRange(attrTypes);
     }
+
 
     /// <summary>Adjusts model after construction. Use this method to modify GraphQL model for types that you
     /// use but do not have control of. For example, you can remove/hide a value from Enum.    /// 

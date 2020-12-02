@@ -27,8 +27,8 @@ namespace NGraphQL.Core {
       this.Float_ = new FloatScalar();
       this.Double_ = new DoubleScalar();
       this.Boolean_ = new BooleanScalar();
-      this.Id_ = new IdScalar(); 
       // custom scalars
+      this.Id_ = new IdScalar();
       this.DateTime_ = new DateTimeScalar();
       this.Date_ = new DateScalar();
       this.Time_ = new TimeScalar();
@@ -39,7 +39,7 @@ namespace NGraphQL.Core {
                          DateTime_, Date_, Time_, Uuid_, Decimal_);
 
       // Directives 
-      RegisterDirectives(typeof(DeprecatedDirective), typeof(IncludeDirective), typeof(SkipDirective));
+      RegisterResolvers(typeof(IncludeSkipResolvers));
     }
   }
 }

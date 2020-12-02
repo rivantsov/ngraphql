@@ -68,7 +68,7 @@ namespace NGraphQL.Model {
       return null;
     }
 
-    public static Directive CreateDirective(this DirectiveDef def, params object[] argValues) {
+    public static DirectiveAction CreateDirective(this DirectiveDef def, params object[] argValues) {
       var argVcount = argValues == null ? 0 : argValues.Length; 
       if(def.Args.Count != argVcount) 
         throw new Exception($"Arg count mismatch for directive {def.Name}. ");

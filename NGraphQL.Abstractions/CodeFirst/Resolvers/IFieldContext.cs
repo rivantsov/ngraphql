@@ -11,7 +11,7 @@ namespace NGraphQL.CodeFirst {
     IOperationFieldContext RootField { get; }
     CancellationToken CancellationToken { get; }
     IList<object> GetFullRequestPath();
-    IList<Directive> Directives { get; }
+    IList<DirectiveAction> Directives { get; }
 
     // to be used by resolver methods, to know in advance which fields  to load from db
     IList<string> GetAllSelectionSubsetFieldNames();

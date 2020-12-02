@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-using NGraphQL.CodeFirst;
-using NGraphQL.Introspection;
+﻿using NGraphQL.Introspection;
 using NGraphQL.Runtime;
 
 namespace NGraphQL.Core {

@@ -7,8 +7,8 @@ using NGraphQL.Introspection;
 namespace NGraphQL.Core {
 
   /// <summary> </summary>
-  [AttributeUsage(AttributeTargets.Class)]
-  public class DirectiveAttribute : Attribute, IDirectiveInfo {
+  [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
+  public class DefineDirectiveAttribute : Attribute, IDirectiveInfo {
     public string Name { get; }
     public string Description { get; }
     public DirectiveLocation Locations { get; }
@@ -16,7 +16,9 @@ namespace NGraphQL.Core {
     public bool IsDeprecated { get; set; }
     public string DeprecationReason { get; }
 
-    public DirectiveAttribute(string name, DirectiveLocation locations, string description = null,
+    public object[] ArgValuess; 
+
+    public DefineDirectiveAttribute(string name, DirectiveLocation locations, string description = null,
            bool listInSchema = true, bool isDeprecated = false, string deprecationReason = null) {
       Name = name;
       Locations = locations;
@@ -32,7 +34,7 @@ namespace NGraphQL.Core {
     string Description { get; }
     DirectiveLocation Locations { get; }
     bool ListInSchema { get; }
-    bool IsDeprecated { get; set; }
+    bool IsDeprecated { get; }
     string DeprecationReason { get; }
   }
 
