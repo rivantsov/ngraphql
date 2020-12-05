@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using NGraphQL.CodeFirst;
+using NGraphQL.Core;
 using NGraphQL.Model;
 using NGraphQL.Runtime;
 using NGraphQL.Server.RequestModel;
@@ -96,16 +97,18 @@ namespace NGraphQL.Server.Execution {
       if(field.FieldDef.Flags.IsSet(FieldFlags.HasParentArg))
         argValues.Add(fieldContext.CurrentScope.Entity); 
       //regular arguments
-      foreach(var outArg in field.Args) {
-        var argValue = SafeEvaluateArg(fieldContext, outArg); 
+      for(int i = 0; i < field.Args.Count; i++) {
+        var arg = field.Args[i];
+        var argDirActions = fieldContext.ArgDirectiveActions[i];
+        var argValue = SafeEvaluateArg(fieldContext, arg, argDirActions);
         argValues.Add(argValue);
       }
       fieldContext.ArgValues = argValues.ToArray();
     }
 
-    private object SafeEvaluateArg(FieldContext fieldContext, MappedArg arg) {
+    private object SafeEvaluateArg(FieldContext fieldContext, MappedArg arg, IList<Core.RequestDirective> actions) {
       try {
-        var value = arg.Evaluator.GetValue(_requestContext);
+        var value = arg.Evaluator.GetValue(_requestContext, actions);
         var convValue = _requestContext.ValidateConvert(value, arg.ArgDef.TypeRef, arg.Anchor);
         return convValue; 
       } catch (AbortRequestException) {

@@ -14,8 +14,8 @@ namespace NGraphQL.Server.Parsing {
 
   public partial class RequestParser {
 
-    private List<RequestDirective> BuildDirectives(Node dirListNode, DirectiveLocation atLocation, RequestObjectBase parent) {
-      var dirList = new List<RequestDirective>();
+    private List<RequestDirectiveRef> BuildDirectives(Node dirListNode, DirectiveLocation atLocation, RequestObjectBase parent) {
+      var dirList = new List<RequestDirectiveRef>();
       if(dirListNode == null)
         return dirList;
       foreach(var dirNode in dirListNode.ChildNodes) {
@@ -27,18 +27,18 @@ namespace NGraphQL.Server.Parsing {
       return dirList;
     }
 
-    private RequestDirective BuildDirective(Node dirNode, DirectiveLocation atLocation, RequestObjectBase parent) {
+    private RequestDirectiveRef BuildDirective(Node dirNode, DirectiveLocation atLocation, RequestObjectBase parent) {
       var dirName = dirNode.ChildNodes[0].GetText();
       _path.Push(dirName);
       try {
         var dirDef = LookupDirective(dirNode);
         if(dirDef == null) 
           return null; // error is already logged
-        if(!dirDef.MetaData.Locations.IsSet(atLocation)) {
-          AddError($"Directive {dirName} may not be placed at this location ({atLocation}). Valid locations: [{dirDef.Locations}].", dirNode);
+        if(!dirDef.DirInfo.Locations.IsSet(atLocation)) {
+          AddError($"Directive {dirName} may not be placed at this location ({atLocation}). Valid locations: [{dirDef.DirInfo.Locations}].", dirNode);
           return null;
         }
-        var dir = new RequestDirective() { Def = dirDef, Name = dirName, Location = dirNode.GetLocation(), Parent = parent };
+        var dir = new RequestDirectiveRef() { Def = dirDef, Name = dirName, Location = dirNode.GetLocation(), Parent = parent };
         var argListNode = dirNode.FindChild(TermNames.ArgListOpt);
         dir.Args = BuildArguments(argListNode.ChildNodes, dir);
         return dir;

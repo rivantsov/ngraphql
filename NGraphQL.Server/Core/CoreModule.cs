@@ -39,6 +39,7 @@ namespace NGraphQL.Core {
                          DateTime_, Date_, Time_, Uuid_, Decimal_);
 
       // Directives 
+      RegisterDirectivAttributes(typeof(DeprecatedDirAttribute));
       RegisterResolvers(typeof(IncludeSkipResolvers));
     }
   }

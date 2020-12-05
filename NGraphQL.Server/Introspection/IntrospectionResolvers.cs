@@ -1,19 +1,28 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using NGraphQL.CodeFirst;
+using NGraphQL.Server.Execution;
+using NGraphQL.Utilities;
 
 namespace NGraphQL.Introspection {
 
-  public class IntrospectionResolvers {
+  public class IntrospectionResolvers: IResolverClass {
+    private __Schema _schema; 
+
+    public void BeginRequest(IRequestContext request) {
+      _schema = request.GetModel().Schema_;
+    }
+
+    public void EndRequest(IRequestContext request) {
+    }
 
     // Query resolvers
     public __Schema GetSchema(IFieldContext context) {
-      return context.GetModel().Schema_;
+      return _schema;
     }
 
     public __Type GetType(IFieldContext context, string name) {
-      var schema = context.GetModel().Schema_;
-      var type = schema.Types.FirstOrDefault(t => t.Name == name);
+      var type = _schema.Types.FirstOrDefault(t => t.Name == name);
       return type; 
     }
 

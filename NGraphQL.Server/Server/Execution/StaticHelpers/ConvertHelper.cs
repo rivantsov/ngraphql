@@ -25,8 +25,8 @@ namespace NGraphQL.Server.Execution {
         return source.Rank == target.Rank && source.TypeDef == target.TypeDef;
       // by type kind
       switch(target.TypeDef) {
-        case ScalarTypeDef scalar:
-          return scalar.CanConvertFrom.Contains(source.TypeDef.ClrType);
+        case ScalarTypeDef sctd:
+          return sctd.Scalar.CanConvertFrom.Contains(source.TypeDef.ClrType);
         default:
           // all other cases - can convert only if exactly the same type.
           return target.TypeDef == source.TypeDef; 
@@ -49,9 +49,9 @@ namespace NGraphQL.Server.Execution {
         return value; 
 
       switch(typeRef.TypeDef) {
-        case ScalarTypeDef scalar:
+        case ScalarTypeDef sctdef:
           // most common case - let Scalar take care of it
-          var convValue = scalar.ConvertInputValue(value);
+          var convValue = sctdef.Scalar.ConvertInputValue(value);
           return convValue;
 
         case EnumTypeDef etd:

@@ -6,6 +6,8 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using NGraphQL.CodeFirst;
+using NGraphQL.Core;
+using NGraphQL.Introspection;
 using NGraphQL.Model;
 using NGraphQL.Model.Construction;
 using NGraphQL.Runtime;
@@ -18,6 +20,8 @@ namespace NGraphQL.Server {
   public class GraphQLServer {
     public readonly GraphQLServerSettings Settings;
     public readonly IList<GraphQLModule> Modules = new List<GraphQLModule>();
+    public readonly CoreModule CoreModule;
+    public readonly IntrospectionModule introspectionModule;
     public GraphQLGrammar Grammar { get; private set; }
     public readonly GraphQLServerEvents Events = new GraphQLServerEvents();
     public readonly RequestCache RequestCache;
@@ -28,7 +32,11 @@ namespace NGraphQL.Server {
 
     public GraphQLServer(GraphQLServerSettings settings = null) {
       Settings = settings ?? new GraphQLServerSettings();
+      CoreModule = new CoreModule();
+      introspectionModule = new IntrospectionModule();
+      RegisterModules(this.CoreModule, this.introspectionModule);
       RequestCache = new RequestCache(this.Settings);
+      
     }
 
     public void RegisterModules(params GraphQLModule[] modules) {

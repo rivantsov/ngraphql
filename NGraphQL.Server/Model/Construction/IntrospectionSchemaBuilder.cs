@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using NGraphQL.CodeFirst;
 using NGraphQL.Core;
 using NGraphQL.Introspection;
 
@@ -8,13 +9,15 @@ namespace NGraphQL.Model.Construction {
   public class IntrospectionSchemaBuilder {
     GraphQLApiModel _model;
     __Schema _schema;
+    TypeRef _stringNotNull;
 
     public __Schema Build(GraphQLApiModel model) {
       _model = model;
       _schema = _model.Schema_ = new __Schema();
+      var stringNotNull = _model.GetScalarTypeDef("String").TypeRefNotNull;
 
       // Create type objects without internal details; for typeDef and its typeRefs
-      foreach(var typeDef in _model.Types) {
+      foreach (var typeDef in _model.Types) {
         if (typeDef.Hidden)
           continue; 
         CreateTypeObject(typeDef);
@@ -39,10 +42,10 @@ namespace NGraphQL.Model.Construction {
 
     private void BuildDirectives() {
       foreach(var dirDef in _model.Directives.Values) {
-        var mdata = dirDef.MetaData; 
+        var dirInfo = dirDef.DirInfo; 
         var dir_ = new __Directive() {
-           Name = dirDef.Name, Description = dirDef.Description, Locations = mdata.Locations, 
-          IsDeprecated = mdata.IsDeprecated, DeprecationReason = mdata.DeprecationReason
+           Name = dirDef.Name, Description = dirDef.Description, Locations = dirInfo.Locations, 
+          IsDeprecated = dirInfo.IsDeprecated, DeprecationReason = dirInfo.DeprecationReason
         };
         dir_.Args =
           dirDef.Args.Select(ivd => new __InputValue() {
@@ -91,7 +94,7 @@ namespace NGraphQL.Model.Construction {
     private void BuildTypeObjects() {
       foreach(var typeDef in _model.Types) {
         var type_ = typeDef.Type_;
-        SetupDeprecatedFields(type_, typeDef.Directives);
+        SetupDeprecatedProperties(type_, typeDef.Directives);
 
         switch(typeDef) {
           case ScalarTypeDef std:
@@ -123,20 +126,20 @@ namespace NGraphQL.Model.Construction {
       }
     } //method
 
-    private void SetupDeprecatedFields(IntroObjectBase introObj, IList<DirectiveDef> directives) {
+    private void SetupDeprecatedProperties(IntroObjectBase introObj, IList<DirectiveDef> directives) {
       if(directives == null || directives.Count == 0)
         return;
-      var deprDir = directives.FirstOrDefault(d => d.Name == "@deprecated");
-      if (deprDir != null) {
+      var deprDirDef = directives.FirstOrDefault(d => d.Name == "@deprecated");
+      if (deprDirDef != null) {
         introObj.IsDeprecated = true;
-        introObj.DeprecationReason = (string) deprDir.ArgValues[0]; 
+        var deprAttr = (DeprecatedDirAttribute) deprDirDef.SchemaDirAttr ; 
+        introObj.DeprecationReason = deprAttr.Reason; 
       }
     }
 
     private void AddTypeNameField(ComplexTypeDef typeDef) {
-      var stringNotNull = _model.Api.CoreModule.String_.TypeRefNotNull;
       var fld = new 
-        FieldDef("__typename", stringNotNull) { Reader = t => typeDef.Name  };
+        FieldDef("__typename", _stringNotNull) { Reader = t => typeDef.Name  };
       fld.Flags |= FieldFlags.Hidden;
       typeDef.Fields.Add(fld); 
     }
@@ -150,7 +153,7 @@ namespace NGraphQL.Model.Construction {
       // build fields
       foreach(var fld in objTypeDef.Fields) {
         var fld_ = new __Field() { Name = fld.Name, Description = fld.Description, Type = fld.TypeRef.Type_ };
-        SetupDeprecatedFields(fld_, fld.Directives);
+        SetupDeprecatedProperties(fld_, fld.Directives);
         // convert args
         fld_.Args = 
           fld.Args.Select(ivd => new __InputValue() { 
@@ -178,7 +181,7 @@ namespace NGraphQL.Model.Construction {
         var fld_ = new __Field() {
           Name = fld.Name, Description = fld.Description, Type = fld.TypeRef.Type_
         };
-        SetupDeprecatedFields(fld_, fld.Directives);
+        SetupDeprecatedProperties(fld_, fld.Directives);
         // convert args
         fld_.Args =
           fld.Args.Select(ivd => new __InputValue() {
@@ -199,7 +202,7 @@ namespace NGraphQL.Model.Construction {
           DefaultValue = inpFldDef.HasDefaultValue ? inpFldDef.DefaultValue + string.Empty : null,
           Type = inpFldDef.TypeRef.Type_
         };
-        SetupDeprecatedFields(inp_, inpFldDef.Directives);
+        SetupDeprecatedProperties(inp_, inpFldDef.Directives);
         type_.InputFields.Add(inp_);
       }
     }
@@ -210,7 +213,7 @@ namespace NGraphQL.Model.Construction {
         var enumV_ = new __EnumValue() {
           Name = enumV.Name, Description = enumV.Description,
         };
-        SetupDeprecatedFields(enumV_, enumV.Directives);
+        SetupDeprecatedProperties(enumV_, enumV.Directives);
         type_.EnumValues.Add(enumV_);
       }
     }

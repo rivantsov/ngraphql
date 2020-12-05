@@ -310,7 +310,7 @@ namespace NGraphQL.Model.Construction {
 
       var dirList = new List<DirectiveDef>();
       foreach(var attr in attrList) {
-        if(!(attr is DirectiveRefAttribute dirAttr))
+        if(!(attr is DeclareDirectiveAttribute dirAttr))
           continue;
         var attrName = attr.GetType().Name;
         var dirDefType = dirAttr.DirectiveDefType;

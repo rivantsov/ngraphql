@@ -24,7 +24,7 @@ namespace NGraphQL.Server.Parsing {
     class PendingSelectionSet {
       public SelectionSubset SubSet;
       public TypeDefBase OverType;
-      public IList<RequestDirective> Directives;
+      public IList<RequestModel.RequestDirectiveRef> Directives;
     }
     #endregion
 
@@ -60,7 +60,7 @@ namespace NGraphQL.Server.Parsing {
           AddError($"Default value cannot reference variables.", varDef);
           continue;
         }
-        var value = eval.GetValue(_requestContext);
+        var value = eval.GetValue(_requestContext, op.Directives);
         if (value != null && value.GetType() != typeRef.TypeDef.ClrType) {
           // TODO: fix that, add type conversion, for now throwing exception; or maybe it's not needed, value will be converted at time of use
           // but spec also allows auto casting like  int => int[]
@@ -87,7 +87,7 @@ namespace NGraphQL.Server.Parsing {
       }// while
     }
 
-    private void MapSelectionSubSet(SelectionSubset selSubset, TypeDefBase typeDef, IList<RequestDirective> directives) {
+    private void MapSelectionSubSet(SelectionSubset selSubset, TypeDefBase typeDef, IList<RequestModel.RequestDirectiveRef> directives) {
       switch(typeDef) {
         case ScalarTypeDef _:
         case EnumTypeDef _:
@@ -112,14 +112,14 @@ namespace NGraphQL.Server.Parsing {
     }
 
     // Might be called for ObjectType or Interface (for intf - just to check fields exist)
-    private void MapObjectSelectionSubset(SelectionSubset selSubset, ObjectTypeDef objectTypeDef, IList<RequestDirective> directives, bool isForUnion = false) {
+    private void MapObjectSelectionSubset(SelectionSubset selSubset, ObjectTypeDef objectTypeDef, IList<RequestModel.RequestDirectiveRef> directives, bool isForUnion = false) {
       var mappedFields = MapSelectionItems(selSubset.Items, objectTypeDef, directives, isForUnion);
       selSubset.MappedFieldSets.Add(new MappedObjectFieldSet() { ObjectTypeDef = objectTypeDef, Fields = mappedFields });
     }
 
     // Might be called for ObjectType or Interface (for intf - just to check fields exist)
     private List<MappedField> MapSelectionItems(IList<SelectionItem> selItems, ObjectTypeDef objectTypeDef,
-              IList<RequestDirective> ownerDirectives = null, bool isForUnion = false) {
+              IList<RequestModel.RequestDirectiveRef> ownerDirectives = null, bool isForUnion = false) {
       var mappedFields = new List<MappedField>();
       foreach(var item in selItems) {
         if(item.Directives.HasAny()) {
@@ -141,7 +141,7 @@ namespace NGraphQL.Server.Parsing {
             var mappedArgs = MapArguments(selFld.Args, fldDef.Args, selFld);
             var mappedFld = new MappedField() {
               FieldDef = fldDef, SelectionField = selFld, Args = mappedArgs, 
-              IncludeSkipDirectives = SelectIncludeDirectives(allDirs)
+               DirectiveActions = CreateDirectiveActions(allDirs)
             };
             mappedFields.Add(mappedFld);
             ValidateMappedFieldAndProcessSubset(mappedFld);
@@ -158,7 +158,7 @@ namespace NGraphQL.Server.Parsing {
     }
 
     private IList<MappedField> MapFragmentSpread(FragmentSpread fs, ObjectTypeDef objectTypeDef, 
-                  IList<RequestDirective> ownerDirectives, bool isForUnion) {
+                  IList<RequestModel.RequestDirectiveRef> ownerDirectives, bool isForUnion) {
       // if it is not inline fragment, it might need to map to FragmentDef; inline fragments are auto-mapped at construction
       if (fs.Fragment == null)
         fs.Fragment = GetFragmentDef(fs.Name);
@@ -184,10 +184,10 @@ namespace NGraphQL.Server.Parsing {
       return mappedFragmFieldSet.Fields;
     }
 
-    private IList<RequestDirective> SelectIncludeDirectives(IList<RequestDirective> dirs) {
+    private IList<Core.RequestDirective> CreateDirectiveActions(IList<RequestModel.RequestDirectiveRef> dirs) {
       if(dirs == null || dirs.Count == 0)
-        return RequestDirective.EmptyList; 
-      var incDirs = dirs.Where(d => d.Def is IIncludeSkipDirective).ToArray();
+        return Core.RequestDirective.EmptyList; 
+      var incDirs = dirs.Select(d => d.Def.CreateAction(d.Args)).ToArray();
       return incDirs;
     }
 

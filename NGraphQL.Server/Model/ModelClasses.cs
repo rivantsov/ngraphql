@@ -106,7 +106,7 @@ namespace NGraphQL.Model {
     public TypeRef TypeRef;
     public bool HasDefaultValue;
     public object DefaultValue;
-    public IList<DirectiveAction> Directives;
+    public IList<DirectiveDef> Directives;
 
     public Type ParamType; // Arg only; exact resolver parameter type
     public MemberInfo InputObjectClrMember; // inputobject only
@@ -121,7 +121,7 @@ namespace NGraphQL.Model {
 
     public FieldFlags Flags;
     public IList<InputValueDef> Args = new List<InputValueDef>();
-    public IList<DirectiveAction> Directives;
+    public IList<DirectiveDef> Directives;
     public MemberInfo ClrMember;
     public ResolverMethodInfo Resolver;
     public Func<object, object> Reader;
@@ -137,8 +137,8 @@ namespace NGraphQL.Model {
   }
 
   public class DirectiveDef : GraphQLModelObject {
-    public Type DirectiveType;
-    //public DirectiveMetaDataAttribute MetaData;
+    public DirectiveMetadata DirInfo;
+    public DeclareDirectiveAttribute DeclaringAttr; //for schema directives
     public IList<InputValueDef> Args;
     public DirectiveDef() { }
   }

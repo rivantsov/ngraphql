@@ -71,7 +71,7 @@ namespace NGraphQL.Server.Execution {
     private async Task ExecuteFieldSelectionSubsetAsync(FieldContext fieldContext) {
       var scopes = fieldContext.AllResultScopes;
       var typeDef = fieldContext.FieldDef.TypeRef.TypeDef;
-      var selSubSet = fieldContext.SelectionField.SelectionSubset;
+      var selSubSet = fieldContext.Field.SelectionField.SelectionSubset;
       switch(typeDef.Kind) {
         case TypeKind.Object:
           await ExecuteObjectsSelectionSubsetAsync(scopes, (ObjectTypeDef)typeDef, selSubSet);

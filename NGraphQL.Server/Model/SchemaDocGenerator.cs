@@ -103,7 +103,7 @@ namespace NGraphQL.Model {
       return _builder.ToString(); 
     }
 
-    private void AppendDirs(IList<DirectiveAction> dirs) {
+    private void AppendDirs(IList<RequestDirective> dirs) {
       if(dirs == null || dirs.Count == 0)
         return; 
       foreach(var dir in dirs) {

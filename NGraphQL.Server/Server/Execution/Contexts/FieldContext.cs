@@ -23,6 +23,8 @@ namespace NGraphQL.Server.Execution {
     public CancellationToken CancellationToken => _requestContext.CancellationToken;
     public IOperationFieldContext RootField { get; }
     public IRequestContext RequestContext => _requestContext;
+    public IList<Directive> DirectiveActions { get; set; }
+    internal Directive[][] ArgDirectiveActions;
 
     public readonly MappedField Field;
     public readonly int FieldIndex;
@@ -47,8 +49,6 @@ namespace NGraphQL.Server.Execution {
       if (Flags.IsSet(FieldFlags.ReturnsComplexType))
         AllResultScopes = new List<OutputObjectScope>();
     }
-
-    public IList<DirectiveAction> Directives { get; set; }
 
     public override string ToString() => Field.ToString();
 

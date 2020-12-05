@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using NGraphQL.Core;
 using NGraphQL.Introspection;
 using NGraphQL.Model;
 using NGraphQL.Server.Execution;
@@ -21,9 +22,11 @@ namespace NGraphQL.Server.Parsing {
     protected abstract object Evaluate(RequestContext context);
     public abstract bool IsConst();
 
-    public object GetValue(RequestContext context) {
+    public object GetValue(RequestContext context, IList<Directive> directives) {
       try {
-        return Evaluate(context);
+        var value = Evaluate(context);
+        value = directives.ApplyDirectives<IArgDirectiveAction>((d, v) => d.CheckArgValue(context, v), value);
+        return value; 
       } catch(InvalidInputException) {
         throw; 
       } catch(Exception ex) {
@@ -80,7 +83,7 @@ namespace NGraphQL.Server.Parsing {
       var values = this.ElemTypeRef.ClrType.CreateTypedArray(ElemEvaluators.Length);
       for(int i = 0; i < ElemEvaluators.Length; i++) {
         var eval = ElemEvaluators[i];
-        var value = eval.GetValue(context);
+        var value = eval.GetValue(context, null);
         var convValue = context.ValidateConvert(value, ElemTypeRef, Anchor);
         values[i] = convValue; 
       }

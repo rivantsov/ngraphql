@@ -17,7 +17,7 @@ namespace NGraphQL.Server.RequestModel {
   }
 
   public abstract class SelectionItem : NamedRequestObject {
-    public IList<DirectiveAction> Directives { get; internal set; }
+    public IList<RequestDirectiveRef> RequestDirectives { get; internal set; }
   }
 
   public class SelectionField : SelectionItem, ISelectionField {
@@ -72,7 +72,7 @@ namespace NGraphQL.Server.RequestModel {
     public bool HasDefaultValue;
     public ValueSource ParsedDefaultValue;
     public object DefaultValue;
-    public IList<RequestDirective> Directives;
+    public IList<RequestDirectiveRef> Directives;
     public override string ToString() => $"{Name}/{TypeRef}";
     public VariableDef() { }
 
@@ -85,7 +85,7 @@ namespace NGraphQL.Server.RequestModel {
 
   public class FragmentDef : NamedRequestObject {
     public OnTypeRef OnTypeRef; 
-    public List<RequestDirective> Directives;
+    public List<RequestDirectiveRef> Directives;
     public SelectionSubset SelectionSubset;
     public bool IsInline;
     public int DependencyTreeLevel = -1;// index used in ordering fragments by dependency
@@ -104,14 +104,14 @@ namespace NGraphQL.Server.RequestModel {
     public override string ToString() => $"{Variable.Name}:{Value}";
   }
 
-  public class RequestDirective : NamedRequestObject {
-    public static IList<RequestDirective> EmptyList = new RequestDirective[] { };
+  public class RequestDirectiveRef : NamedRequestObject {
+    public static IList<RequestDirectiveRef> EmptyList = new RequestDirectiveRef[] { };
 
     public DirectiveDef Def;
     public IList<InputValue> Args;
     public IList<MappedArg> MappedArgs;
 
-    public RequestDirective() { }
+    public RequestDirectiveRef() { }
   }
 
   public class ParsedGraphQLRequest {

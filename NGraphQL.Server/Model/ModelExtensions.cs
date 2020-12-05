@@ -9,16 +9,6 @@ namespace NGraphQL.Model {
 
   public static partial class ModelExtensions {
 
-    /*
-    public static bool IsInterfaceBox(this Type type, out Type intType) {
-      intType = null; 
-      if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(InterfaceBox<>)) {
-        intType = type.GetGenericArguments()[0];
-        return true; 
-      }
-      return false; 
-    }
-    */
     public static bool IsSet(this FieldFlags flags, FieldFlags flag) {
       return (flags & flag) != 0; 
     }
@@ -66,14 +56,6 @@ namespace NGraphQL.Model {
       if(model.TypesByName.TryGetValue(name, out var typeDef))
         return (ScalarTypeDef)typeDef;
       return null;
-    }
-
-    public static DirectiveAction CreateDirective(this DirectiveDef def, params object[] argValues) {
-      var argVcount = argValues == null ? 0 : argValues.Length; 
-      if(def.Args.Count != argVcount) 
-        throw new Exception($"Arg count mismatch for directive {def.Name}. ");
-      var dir = new Directive() { Def = def, Name = def.Name, ArgValues = argValues };
-      return dir; 
     }
 
     public static bool IsEnumFlagArray(this TypeDefBase typeDef) {

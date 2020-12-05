@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using NGraphQL.Core;
 using NGraphQL.Model;
 using NGraphQL.Server.Execution;
 
@@ -13,7 +13,8 @@ namespace NGraphQL.Server.RequestModel {
     public SelectionField SelectionField;
     public FieldDef FieldDef;
     public IList<MappedArg> Args;
-    public IList<RequestDirective> IncludeSkipDirectives;
+    public IList<ISkipDirectiveAction> SkipDirectiveActions;
+    public IList<RequestDirectiveRef> Directives; 
 
     public MappedField() { }
 
@@ -34,7 +35,7 @@ namespace NGraphQL.Server.RequestModel {
   }
 
   public interface IInputValueEvaluator {
-    object GetValue(RequestContext context);
+    object GetValue(RequestContext context, IList<Directive> directives);
   }
 
   public class MappedObjectFieldSet {
