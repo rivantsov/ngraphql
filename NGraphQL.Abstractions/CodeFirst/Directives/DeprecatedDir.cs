@@ -10,7 +10,7 @@ namespace NGraphQL.CodeFirst {
   /// directive.</summary>
   [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Method | AttributeTargets.Parameter)]
   [DirectiveInfo(name: "@deprecated", description: "Marks schema element as deprecated.",
-                locations: DirectiveLocation.AllSchemaLocations, listInSchema: false)]
+                locations: DirectiveLocation.TypeSystemLocations, listInSchema: false)]
   public class DeprecatedDirAttribute : DeclareDirectiveAttribute {
     public readonly string Reason;
 

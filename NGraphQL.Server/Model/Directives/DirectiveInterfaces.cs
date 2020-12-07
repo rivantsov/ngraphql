@@ -21,11 +21,11 @@ namespace NGraphQL.Model {
   }
 
   public static class DirectiveExtensions { 
-    public static void ApplyPreviewArgValueSource(this IList<Directive> directives, RequestContext context, InputValue argDef, ValueSource source) {
+    public static void ApplyPreviewArgValueSource(this IList<RuntimeDirective> directives, RequestContext context, InputValue argDef, ValueSource source) {
       directives.ApplyDirectives<IArgDirectiveAction>(d => d.PreviewArgValueSource(context, argDef, source));
     }
 
-    public static void ApplyDirectives<T>(this IList<Directive> directives, Action<T> action) where T: class {
+    public static void ApplyDirectives<T>(this IList<RuntimeDirective> directives, Action<T> action) where T: class {
       if (directives == null || directives.Count == 0)
         return;
       foreach (var dir in directives) {
@@ -35,7 +35,7 @@ namespace NGraphQL.Model {
       }
     }
 
-    public static object ApplyDirectives<T>(this IList<Directive> directives, Func<T, object, object> func, object value) where T : class {
+    public static object ApplyDirectives<T>(this IList<RuntimeDirective> directives, Func<T, object, object> func, object value) where T : class {
       if (directives == null || directives.Count == 0)
         return value;
       foreach (var dir in directives) {

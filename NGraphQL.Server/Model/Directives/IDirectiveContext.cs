@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Text;
 using NGraphQL.Core;
+using NGraphQL.Introspection;
 using NGraphQL.Server.Execution;
 
 namespace NGraphQL.Model {
 
   public class DirectiveContext {
-    public DirectiveMetadata Info; 
-    public RequestContext RequestContext;
-    public FieldContext FieldContext; 
+    public DirectiveDef Def;
+    public DirectiveLocation Location; 
   }
 }

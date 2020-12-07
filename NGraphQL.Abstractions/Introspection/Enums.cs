@@ -5,11 +5,13 @@ using NGraphQL.CodeFirst;
 
 namespace NGraphQL.Introspection {
 
+  // https://spec.graphql.org/draft/#sec-Type-System.Directives
   [Flags, Hidden, GraphQLName("__DirectiveLocation")]
   public enum DirectiveLocation {
     [Ignore] //the value should not appear in any output, used internally only
     None = 0,
 
+    // Executable directive locations
     Query = 1,
     Mutation = 1 << 1,
     Subscription = 1 << 2,
@@ -18,6 +20,8 @@ namespace NGraphQL.Introspection {
     FragmentSpread = 1 << 5,
     InlineFragment = 1 << 6,
     VariableDefinition = 1 << 7, // added in spec v2020
+
+    // TypeSystemDirectiveLocations
     Schema = 1 << 8,
     Scalar = 1 << 9,
     Object = 1 << 10,
@@ -31,13 +35,12 @@ namespace NGraphQL.Introspection {
     InputFieldDefinition = 1 << 18,
 
     [Ignore]
-    AllSchemaLocations = ArgumentDefinition | Enum | EnumValue |
-         FieldDefinition | InputFieldDefinition | InputObject |
-         Interface | Mutation | Object | Scalar,
+    ExecutableLocations = Query | Mutation | Subscription | Field | FragmentDefinition | FragmentSpread
+                        | InlineFragment | VariableDefinition,
     [Ignore]
-    AllQueryLocations = Query | Mutation | Subscription | Field | FragmentDefinition | FragmentSpread | InlineFragment |
-         VariableDefinition
-
+    TypeSystemLocations = Schema | Scalar | Object | FieldDefinition | ArgumentDefinition
+                        | Interface | Union | Enum | EnumValue 
+                        | InputObject | InputFieldDefinition
   }
 
   // these enums are also exposed through introspection, so we use necessary attributes

@@ -37,12 +37,13 @@ namespace NGraphQL.Server.Execution {
     }
 
     private static bool ShouldInclude(MappedField field, RequestContext requestContext) {
-      var dirs = field.IncludeSkipDirectives;
+      var dirs = field.Directives; 
       if(dirs == null || dirs.Count == 0)
         return true;
-      foreach(var dir in dirs) {
-        var incDirDef = (IIncludeSkipDirectiveDef)dir.Def;
-        if(!incDirDef.IsIncluded(dir, requestContext))
+      foreach(var reqDir in dirs) {
+        var dir = reqDir.CreateDirective(requestContext);
+        var incDirDef = (ISkipFieldDirectiveAction)dir;
+        if(!incDirDef.SkipField(requestContext, field))
           return false;
       }
       return true;

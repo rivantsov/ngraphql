@@ -99,16 +99,15 @@ namespace NGraphQL.Server.Execution {
       //regular arguments
       for(int i = 0; i < field.Args.Count; i++) {
         var arg = field.Args[i];
-        var argDirActions = fieldContext.ArgDirectiveActions[i];
-        var argValue = SafeEvaluateArg(fieldContext, arg, argDirActions);
+        var argValue = SafeEvaluateArg(fieldContext, arg);
         argValues.Add(argValue);
       }
       fieldContext.ArgValues = argValues.ToArray();
     }
 
-    private object SafeEvaluateArg(FieldContext fieldContext, MappedArg arg, IList<Core.RequestDirective> actions) {
+    private object SafeEvaluateArg(FieldContext fieldContext, MappedArg arg) {
       try {
-        var value = arg.Evaluator.GetValue(_requestContext, actions);
+        var value = arg.Evaluator.GetValue(_requestContext);
         var convValue = _requestContext.ValidateConvert(value, arg.ArgDef.TypeRef, arg.Anchor);
         return convValue; 
       } catch (AbortRequestException) {

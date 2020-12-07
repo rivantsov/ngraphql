@@ -12,7 +12,7 @@ namespace NGraphQL.Core {
     locations: DirectiveLocation.Field | DirectiveLocation.FragmentSpread | DirectiveLocation.InlineFragment,
     listInSchema: false
     )]
-  public class IncludeDirective: Directive, ISkipFieldDirectiveAction {
+  public class IncludeDirective: RuntimeDirective, ISkipFieldDirectiveAction {
     bool _if;
     public IncludeDirective(DirectiveContext context, bool @if) : base(context, @if) {
       _if = @if;
@@ -27,7 +27,7 @@ namespace NGraphQL.Core {
     locations: DirectiveLocation.Field | DirectiveLocation.FragmentSpread | DirectiveLocation.InlineFragment,
     listInSchema: false
     )]
-  public class SkipDirective : Directive, ISkipFieldDirectiveAction {
+  public class SkipDirective : RuntimeDirective, ISkipFieldDirectiveAction {
     bool _if;
     public SkipDirective(DirectiveContext context, bool @if) : base(context, @if) {
       _if = @if;

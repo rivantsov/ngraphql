@@ -11,7 +11,7 @@ using NGraphQL.Server.RequestModel;
 
 namespace NGraphQL.Server.Execution {
   public static partial class ExecutionExtensions {
-
+    /*
     public static void AddInputError (this IRequestContext context, InvalidInputException exc) {
       var path = exc.Anchor.GetRequestObjectPath();
       var loc = exc.Anchor.Location; 
@@ -52,7 +52,7 @@ namespace NGraphQL.Server.Execution {
       lock (requestContext.Lock)
         return string.Join(Environment.NewLine, requestContext.Response.Errors);
     }
-
+    */
     public static string ToCommaText(this IList<object> path) {
       if (path == null)
         return string.Empty;

@@ -4,6 +4,7 @@ using System.Text;
 using NGraphQL.Core;
 using NGraphQL.Introspection;
 using NGraphQL.Model;
+using NGraphQL.Server.RequestModel;
 
 namespace NGraphQL.Model {
 
@@ -103,7 +104,7 @@ namespace NGraphQL.Model {
       return _builder.ToString(); 
     }
 
-    private void AppendDirs(IList<RequestDirective> dirs) {
+    private void AppendDirs(IList<RuntimeDirective> dirs) {
       if(dirs == null || dirs.Count == 0)
         return; 
       foreach(var dir in dirs) {
@@ -113,7 +114,7 @@ namespace NGraphQL.Model {
           var nvList = new List<string>(); 
           for(int i = 0; i < dir.Def.Args.Count; i++) {
             if (dir.ArgValues[i] == null)
-              continue; //just skipe it
+              continue; //just skip it
             var strArg = FormatArg(dir.Def.Args[i], dir.ArgValues[i]);
             nvList.Add(strArg); 
           }

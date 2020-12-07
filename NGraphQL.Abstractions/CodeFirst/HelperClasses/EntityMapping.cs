@@ -8,7 +8,7 @@ namespace NGraphQL.CodeFirst {
     public Type GraphQLType;
     public Type EntityType;
     public LambdaExpression Expression;
-    internal EntityMapping() { }
+    public EntityMapping() { }
   }
 
   public class EntityMapping<TEntity> : EntityMapping {

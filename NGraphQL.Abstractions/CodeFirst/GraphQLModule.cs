@@ -55,7 +55,7 @@ namespace NGraphQL.CodeFirst {
     protected void RegisterScalars(params Scalar[] scalars) {
       Scalars.AddRange(scalars);
     }
-    protected void RegisterDirectivAttributes(params Type[] attrTypes) {
+    protected void RegisterDirectiveAttributes(params Type[] attrTypes) {
       DirectiveAttributeTypes.AddRange(attrTypes);
     }
 
@@ -71,7 +71,7 @@ namespace NGraphQL.CodeFirst {
       this.Adjustments.Add(new ModelAdjustment() { Type = type, ModelType = modelType, Field = field, Value = value });
     }
 
-    protected internal T FromMap<T>(object value) {
+    public T FromMap<T>(object value) {
       return default(T);
     }
 

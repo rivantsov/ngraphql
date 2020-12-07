@@ -10,6 +10,7 @@ using NGraphQL.Core;
 using NGraphQL.Introspection;
 using NGraphQL.Server;
 using NGraphQL.Server.Execution;
+using NGraphQL.Server.Parsing;
 using NGraphQL.Server.RequestModel;
 
 namespace NGraphQL.Model {
@@ -102,14 +103,14 @@ namespace NGraphQL.Model {
   }
 
   // Arg or InputObject field
-  public class InputValueDef : GraphQLModelObject {
+  public class InputValueDef : GraphQLModelObject, IValueTarget {
     public TypeRef TypeRef;
     public bool HasDefaultValue;
     public object DefaultValue;
-    public IList<DirectiveDef> Directives;
+    public IList<RuntimeDirective> Directives { get; set; }
 
     public Type ParamType; // Arg only; exact resolver parameter type
-    public MemberInfo InputObjectClrMember; // inputobject only
+    public MemberInfo InputObjectClrMember; // InputObject only
 
     public InputValueDef() { }
     public override string ToString() => $"{Name}/{TypeRef}";
@@ -159,26 +160,6 @@ namespace NGraphQL.Model {
   public class ResolverClassInfo {
     public GraphQLModule Module;
     public Type Type; 
-  }
-
-  public class EntityMapping {
-    public Type GraphQLType;
-    public Type EntityType;
-    public LambdaExpression Expression;
-    internal EntityMapping() { }
-  }
-
-  public class EntityMapping<TEntity>: EntityMapping {
-    internal EntityMapping() {
-      base.EntityType = typeof(TEntity);
-    }
-    public void To<TGraphQL>(Expression<Func<TEntity, TGraphQL>> expression = null) where TGraphQL: class {
-      GraphQLType = typeof(TGraphQL);
-      Expression = expression;
-    }
-    public void ToUnion<TUnion>() where TUnion: UnionBase {
-      GraphQLType = typeof(TUnion);
-    }
   }
 
   [DisplayName("{Name}/{Kind}")]

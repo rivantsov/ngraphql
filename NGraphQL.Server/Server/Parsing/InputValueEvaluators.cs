@@ -12,9 +12,11 @@ using NGraphQL.Utilities;
 namespace NGraphQL.Server.Parsing {
 
   public abstract class InputValueEvaluator: IInputValueEvaluator {
+    public IValueTarget Target; 
     public TypeRef ResultTypeRef; 
     public RequestObjectBase Anchor;
-    public InputValueEvaluator(TypeRef resultTypeRef, RequestObjectBase anchor) {
+    public InputValueEvaluator(IValueTarget target, TypeRef resultTypeRef, RequestObjectBase anchor) {
+      Target = target; 
       ResultTypeRef = resultTypeRef; 
       Anchor = anchor; 
     }
@@ -22,10 +24,10 @@ namespace NGraphQL.Server.Parsing {
     protected abstract object Evaluate(RequestContext context);
     public abstract bool IsConst();
 
-    public object GetValue(RequestContext context, IList<Directive> directives) {
+    public object GetValue(RequestContext context) {
       try {
         var value = Evaluate(context);
-        value = directives.ApplyDirectives<IArgDirectiveAction>((d, v) => d.CheckArgValue(context, v), value);
+        value = this.Target.Directives.ApplyDirectives<IArgDirectiveAction>((d, v) => d.CheckArgValue(context, v), value);
         return value; 
       } catch(InvalidInputException) {
         throw; 
@@ -42,8 +44,8 @@ namespace NGraphQL.Server.Parsing {
     public override bool IsConst() => true;
     protected override object Evaluate(RequestContext context) => Value;
 
-    public ConstInputValue(TypeRef resultTypeRef, RequestObjectBase anchor, object value) 
-        : base(resultTypeRef, anchor) {
+    public ConstInputValue(IValueTarget target, TypeRef resultTypeRef, RequestObjectBase anchor, object value) 
+        : base(target, resultTypeRef, anchor) {
       Value = value;
     }
   }
@@ -52,7 +54,7 @@ namespace NGraphQL.Server.Parsing {
     public VariableDef Variable;
     public override bool IsConst() => false;
 
-    public VariableRefEvaluator(VariableDef varDecl) : base(varDecl.TypeRef, varDecl) {
+    public VariableRefEvaluator(IValueTarget target, VariableDef varDecl) : base(target, varDecl.TypeRef, varDecl) {
       Variable = varDecl;
     }
     
@@ -67,8 +69,8 @@ namespace NGraphQL.Server.Parsing {
     public TypeRef ElemTypeRef; 
     public InputValueEvaluator[] ElemEvaluators;
 
-    public InputListEvaluator(TypeRef resultTypeRef, RequestObjectBase anchor,
-                 InputValueEvaluator[] elemEvaluators) : base(resultTypeRef, anchor) {
+    public InputListEvaluator(IValueTarget target, TypeRef resultTypeRef, RequestObjectBase anchor,
+                 InputValueEvaluator[] elemEvaluators) : base(target, resultTypeRef, anchor) {
       ElemEvaluators = elemEvaluators;
       if (ResultTypeRef.Kind == TypeKind.NotNull)
         ElemTypeRef = ResultTypeRef.Parent.Parent;
@@ -83,7 +85,7 @@ namespace NGraphQL.Server.Parsing {
       var values = this.ElemTypeRef.ClrType.CreateTypedArray(ElemEvaluators.Length);
       for(int i = 0; i < ElemEvaluators.Length; i++) {
         var eval = ElemEvaluators[i];
-        var value = eval.GetValue(context, null);
+        var value = eval.GetValue(context);
         var convValue = context.ValidateConvert(value, ElemTypeRef, Anchor);
         values[i] = convValue; 
       }
@@ -98,8 +100,9 @@ namespace NGraphQL.Server.Parsing {
     public InputValueEvaluator[] ElemEvaluators;
     private TypeRef _stringTypeRef; 
 
-    public FlagSetInputEvaluator(TypeRef resultTypeRef, RequestObjectBase anchor, InputValueEvaluator[] valueEvals)
-            : base(resultTypeRef, anchor) {
+    public FlagSetInputEvaluator(IValueTarget target, TypeRef resultTypeRef, RequestObjectBase anchor, 
+                    InputValueEvaluator[] valueEvals)
+            : base(target, resultTypeRef, anchor) {
       ElemEvaluators = valueEvals;
       EnumTypeDef = (EnumTypeDef) ResultTypeRef.TypeDef;
     }
@@ -131,8 +134,8 @@ namespace NGraphQL.Server.Parsing {
   public class InputObjectEvaluator : InputValueEvaluator {
     public IList<InputFieldEvalInfo> Fields = new List<InputFieldEvalInfo>();
 
-    public InputObjectEvaluator (TypeRef resultTypeRef, RequestObjectBase anchor,
-        IList<InputFieldEvalInfo> fields)  : base(resultTypeRef, anchor) {
+    public InputObjectEvaluator (IValueTarget target, TypeRef resultTypeRef, RequestObjectBase anchor,
+        IList<InputFieldEvalInfo> fields)  : base(target, resultTypeRef, anchor) {
       Fields = fields;
     }
 

@@ -128,17 +128,18 @@ namespace NGraphQL.Server.Parsing {
           AddError($"Invalid variable type ( {name}: {typeRef.Name}). Only scalar, enum or input types are allowed.", vn);
           continue;
         }
-        var varDef = new VariableDef() { Name = name, TypeRef = typeRef, Location = vn.GetLocation() };
+        var inpDef = new InputValueDef() { Name = name, TypeRef = typeRef  };
+        var varDef = new VariableDef() { Name = name, InputDef = inpDef, Location = vn.GetLocation() };
         // check default value
         var dftValNode = vn.FindChild(TermNames.ConstValue);
         if (dftValNode != null) {
           varDef.ParsedDefaultValue = BuildInputValue(vn.ChildNodes[2], varDef);
-          varDef.HasDefaultValue = true;
+          inpDef.HasDefaultValue = true;
         }
         // directives
         var dirListNode = vn.FindChild(TermNames.DirListOpt);
         if (dirListNode != null)
-          varDef.Directives = BuildDirectives(dirListNode, DirectiveLocation.VariableDefinition, varDef);
+          varDef.DirectiveRefs = BuildDirectives(dirListNode, DirectiveLocation.VariableDefinition, varDef);
 
         varList.Add(varDef);
       }

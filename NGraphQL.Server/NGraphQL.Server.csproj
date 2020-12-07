@@ -28,4 +28,10 @@
     <ProjectReference Include="..\NGraphQL.Abstractions\NGraphQL.Abstractions.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="Server\Execution\StaticHelpers\ExecutionExtensions_Errors.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Compile>
+  </ItemGroup>
+
 </Project>

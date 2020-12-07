@@ -3,6 +3,7 @@ using NGraphQL.CodeFirst;
 using NGraphQL.Core;
 using NGraphQL.Model;
 using NGraphQL.Runtime;
+using NGraphQL.Server.Parsing;
 
 namespace NGraphQL.Server.RequestModel {
 
@@ -16,8 +17,13 @@ namespace NGraphQL.Server.RequestModel {
     public override string ToString() => Name; 
   }
 
+  public interface IValueTarget {
+    IList<RuntimeDirective> Directives { get; }
+  }
+
+
   public abstract class SelectionItem : NamedRequestObject {
-    public IList<RequestDirectiveRef> RequestDirectives { get; internal set; }
+    public IList<RequestDirectiveRef> DirectiveRefs { get; internal set; }
   }
 
   public class SelectionField : SelectionItem, ISelectionField {
@@ -68,13 +74,21 @@ namespace NGraphQL.Server.RequestModel {
   }
 
   public class VariableDef : NamedRequestObject {
+
+    public InputValueDef InputDef; 
+    /*
     public TypeRef TypeRef;
     public bool HasDefaultValue;
-    public ValueSource ParsedDefaultValue;
     public object DefaultValue;
-    public IList<RequestDirectiveRef> Directives;
-    public override string ToString() => $"{Name}/{TypeRef}";
+    public IList<Directive> Directives { get; set; }
+    */
+
+    public ValueSource ParsedDefaultValue;
+    public IList<RequestDirectiveRef> DirectiveRefs;
+
     public VariableDef() { }
+
+    public override string ToString() => $"{Name}/{TypeRef}";
 
     public static readonly VariableDef[] EmptyList = new VariableDef[] { };
   }
