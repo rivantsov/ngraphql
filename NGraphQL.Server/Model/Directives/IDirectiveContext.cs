@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using NGraphQL.Core;
+﻿using System; 
 using NGraphQL.Introspection;
-using NGraphQL.Server.Execution;
+using NGraphQL.Runtime;
 
 namespace NGraphQL.Model {
 
   public class DirectiveContext {
     public DirectiveDef Def;
-    public DirectiveLocation Location; 
+    public DirectiveLocation Location;
+    public object Owner;
+    public Location SourceLocation;
   }
 }
