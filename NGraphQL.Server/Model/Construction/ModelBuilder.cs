@@ -58,22 +58,13 @@ namespace NGraphQL.Model.Construction {
 
     private bool CollectRegisteredClrTypes() {
       foreach (var module in _server.Modules) {
-        var mName = module.GetType().Name;
-        foreach (var type in module.Types) {
-          if (_model.TypesByClrType.ContainsKey(type)) {
-            AddError($"Duplicate registration of type {type.Name}, module {mName}.");
+        var mName = module.Name;
+        foreach (var typeReg in module.RegisteredTypes) {
+          if (_model.TypesByClrType.ContainsKey(typeReg.Type)) {
+            AddError($"Duplicate registration of type {typeReg.Type.Name}, module {mName}.");
             continue;
           }
-          var roleAttrs = type.GetAttributes<GraphQLTypeRoleAttribute>();
-          if (roleAttrs.Count > 1) {
-            var strAttrs = string.Join(", ", roleAttrs.Select(a => a.GetType().Name));
-            AddError($"Duplicate/incompatible attributes on type {type.Name}, module {mName}: {strAttrs}");
-            continue;
-          }
-          var roleAttr = roleAttrs.FirstOrDefault();
-          if (!ValidateTypeRoleKind(type, module, roleAttr, out var typeRole, out var typeKind))
-            continue;
-          var typeDef = CreateTypeDef(type, module, typeRole, typeKind);
+          var typeDef = CreateTypeDef(typeReg.Type, module, typeReg.Role, typeKind);
           RegisterTypeDef(typeDef);
         } //foreach type
         // scalars and directives
@@ -81,12 +72,27 @@ namespace NGraphQL.Model.Construction {
           var sTypeDef = new ScalarTypeDef(scalar);
           RegisterTypeDef(sTypeDef); 
         }
-        foreach (var dirType in module.DirectiveTypes)
-          _model.Directives[dirDef.Name] = dirDef;
+        RegisterModuleDirectives(module); 
       } // foreach module
       return !_model.HasErrors;
     } //method
 
+    private void RegisterModuleDirectives(GraphQLModule module) {
+      foreach (var dirType in module.DirectiveAttributeTypes) {
+        var infoAttr = dirType.GetAttribute<DirectiveInfoAttribute>();
+        if (infoAttr == null) {
+          AddError($"Directive attribute {dirType} has no DirectiveInfo attribute.");
+          continue;
+        }
+        var info = infoAttr.Info;
+        if (_model.Directives.ContainsKey(info.Name)) {
+          AddError($"Module {module.Name}: directive {info.Name}, type {dirType} already registered.");
+          continue;
+        }
+        var dirDef = new DirectiveDef() { AttributeType = dirType, DirInfo = info, Name = info.Name, Description = info.Description };
+        _model.Directives[dirDef.Name] = dirDef;
+      }
+    }
     /*
     private bool ValidateTypeRoleKind(Type clrType, GraphQLModule module, GraphQLTypeRoleAttribute typeRoleAttr,
                                       out TypeRole typeRole, out TypeKind typeKind) {
@@ -310,7 +316,7 @@ namespace NGraphQL.Model.Construction {
 
       var dirList = new List<DirectiveDef>();
       foreach(var attr in attrList) {
-        if(!(attr is DeclareDirectiveAttribute dirAttr))
+        if(!(attr is DirectiveBaseAttribute dirAttr))
           continue;
         var attrName = attr.GetType().Name;
         var dirDefType = dirAttr.DirectiveDefType;

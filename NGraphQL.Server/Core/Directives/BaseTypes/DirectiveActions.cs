@@ -16,10 +16,10 @@ namespace NGraphQL.Model {
     void PreviewField(FieldContext context);
     object PreviewFieldResult(FieldContext context, object value);
   }
-  public interface ISkipFieldDirectiveAction {
-    bool SkipField(RequestContext context, MappedField field);
+  public interface ISkipDirectiveAction {
+    bool ShouldSkip(RequestContext context, MappedField field);
   }
-
+  /*
   public static class DirectiveExtensions { 
     public static void ApplyPreviewArgValueSource(this IList<RuntimeDirective> directives, RequestContext context, InputValue argDef, ValueSource source) {
       directives.ApplyDirectives<IArgDirectiveAction>(d => d.PreviewArgValueSource(context, argDef, source));
@@ -46,4 +46,5 @@ namespace NGraphQL.Model {
       return value; 
     }
   }
+  */
 }

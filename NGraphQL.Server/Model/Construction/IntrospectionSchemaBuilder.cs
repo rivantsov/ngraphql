@@ -126,13 +126,13 @@ namespace NGraphQL.Model.Construction {
       }
     } //method
 
-    private void SetupDeprecatedProperties(IntroObjectBase introObj, IList<DirectiveDef> directives) {
+    private void SetupDeprecatedProperties(IntroObjectBase introObj, IList<ModelDirectiveInfo> directives) {
       if(directives == null || directives.Count == 0)
         return;
-      var deprDirDef = directives.FirstOrDefault(d => d.Name == "@deprecated");
-      if (deprDirDef != null) {
+      var deprDirInfo = directives.FirstOrDefault(d => d.Def.Name == "@deprecated");
+      if (deprDirInfo != null) {
         introObj.IsDeprecated = true;
-        var deprAttr = (DeprecatedDirAttribute) deprDirDef.SchemaDirAttr ; 
+        var deprAttr = (DeprecatedDirAttribute) deprDirInfo.AttributeInstance ; 
         introObj.DeprecationReason = deprAttr.Reason; 
       }
     }

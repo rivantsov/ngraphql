@@ -155,10 +155,11 @@ namespace NGraphQL.Server.Execution {
       var varValues = _requestContext.RawRequest.Variables ?? _emptyVariableValues;
       var op = _requestContext.Operation;
       foreach(var varDecl in op.Variables) {
+        var inpDef = varDecl.InputDef; 
         if(!varValues.TryGetValue(varDecl.Name, out var rawValue)) {
-          var nullable = !varDecl.TypeRef.IsNotNull;
-          if(varDecl.HasDefaultValue || nullable)
-            rawValue = varDecl.DefaultValue;
+          var nullable = !inpDef.TypeRef.IsNotNull;
+          if(inpDef.HasDefaultValue || nullable)
+            rawValue = inpDef.DefaultValue;
           else { 
             AddVariableError($"Value for required variable {varDecl.Name} is not provided.");
             continue;
@@ -175,7 +176,7 @@ namespace NGraphQL.Server.Execution {
     private bool TryValidateConvertVarValue(VariableDef varDecl, object rawValue, out object convValue) {
       convValue = rawValue;
       try {
-        convValue = _requestContext.ValidateConvert(rawValue, varDecl.TypeRef, varDecl);
+        convValue = _requestContext.ValidateConvert(rawValue, varDecl.InputDef.TypeRef, varDecl);
         return true;
       } catch (AbortRequestException) {
         return false;
@@ -183,7 +184,8 @@ namespace NGraphQL.Server.Execution {
         _requestContext.AddInputError(bvEx);
         return false;
       } catch(Exception ex) {
-        var msg = $"Variable ${varDecl.Name}: failed to convert value '{rawValue}' to type {varDecl.TypeRef.Name}: " + ex.Message;
+        var msg = $"Variable ${varDecl.Name}: failed to convert value '{rawValue}' to type {varDecl.InputDef.TypeRef.Name}: " 
+                + ex.Message;
         _requestContext.AddInputError(msg, varDecl);
         return false; 
       }

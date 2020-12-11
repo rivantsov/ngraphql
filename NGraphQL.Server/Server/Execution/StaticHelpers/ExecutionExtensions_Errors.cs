@@ -11,7 +11,28 @@ using NGraphQL.Server.RequestModel;
 
 namespace NGraphQL.Server.Execution {
   public static partial class ExecutionExtensions {
-    /*
+
+    public static GraphQLError AddError(this RequestContext requestContext, Exception exc,
+                                               IList<object> path = null, Location location = null) {
+      var err = new GraphQLError(exc.Message, path, location, ErrorTypes.ServerError);
+      var withDet = requestContext.Server.Settings.Options.IsSet(GraphQLServerOptions.ReturnExceptionDetails);
+      if (withDet)
+        err.Extensions["Details"] = exc.ToText();
+      requestContext.AddError(err, exc);
+      return err;
+    }
+
+    public static void AddError(this FieldContext fieldContext, Exception exc, string errorType) {
+      var reqCtx = (RequestContext) fieldContext.RequestContext;
+      var path = fieldContext.GetFullRequestPath();
+      var err = new GraphQLError(exc.Message, path, fieldContext.SelectionField.Location, type: errorType);
+      var withDet = reqCtx.Server.Settings.Options.IsSet(GraphQLServerOptions.ReturnExceptionDetails);
+      if (withDet)
+        err.Extensions["Details"] = exc.ToText();
+      reqCtx.AddError(err, exc);
+    }
+
+
     public static void AddInputError (this IRequestContext context, InvalidInputException exc) {
       var path = exc.Anchor.GetRequestObjectPath();
       var loc = exc.Anchor.Location; 
@@ -26,33 +47,6 @@ namespace NGraphQL.Server.Execution {
       context.AddError(err);
     }
 
-    public static GraphQLError AddError(this RequestContext requestContext, Exception exc, 
-                                               IList<object> path = null, Location location = null) {
-      var err = new GraphQLError(exc.Message, path, location, ErrorTypes.ServerError);
-      var withDet = requestContext.Server.Settings.Options.IsSet(GraphQLServerOptions.ReturnExceptionDetails);
-      if (withDet)
-        err.Extensions["Details"] = exc.ToText();
-      requestContext.AddError(err, exc);
-      return err; 
-    }
-
-    public static void AddError(this FieldContext fieldContext, Exception exc, string errorType) {
-      var reqCtx = fieldContext.RequestContext;
-      var path = fieldContext.GetFullRequestPath();
-      var err = new GraphQLError(exc.Message, path, fieldContext.SelectionField.Location, type: errorType);
-      var withDet = reqCtx.Server.Settings.Options.IsSet(GraphQLServerOptions.ReturnExceptionDetails);
-      if (withDet)
-        err.Extensions["Details"] = exc.ToText();
-      reqCtx.AddError(err, exc);
-    }
-
-    public static string GetErrorsAsText(this RequestContext requestContext) {
-      if (!requestContext.Failed)
-        return string.Empty;
-      lock (requestContext.Lock)
-        return string.Join(Environment.NewLine, requestContext.Response.Errors);
-    }
-    */
     public static string ToCommaText(this IList<object> path) {
       if (path == null)
         return string.Empty;

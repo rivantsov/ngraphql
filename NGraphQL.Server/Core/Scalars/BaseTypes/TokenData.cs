@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using NGraphQL.Runtime;
 
-namespace NGraphQL.Core {
+namespace NGraphQL.Core.Scalars {
 
   public class TokenData {
     public string TermName;

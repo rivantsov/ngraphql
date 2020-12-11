@@ -23,8 +23,8 @@ namespace NGraphQL.Server.Execution {
     public CancellationToken CancellationToken => _requestContext.CancellationToken;
     public IOperationFieldContext RootField { get; }
     public IRequestContext RequestContext => _requestContext;
-    public IList<RuntimeDirective> DirectiveActions { get; set; }
-    internal RuntimeDirective[][] ArgDirectiveActions;
+    public IList<HandlesDirectiveAttribute> DirectiveActions { get; set; }
+    internal HandlesDirectiveAttribute[][] ArgDirectiveActions;
 
     public readonly MappedField Field;
     public readonly int FieldIndex;

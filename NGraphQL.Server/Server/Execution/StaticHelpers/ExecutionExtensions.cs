@@ -42,8 +42,8 @@ namespace NGraphQL.Server.Execution {
         return true;
       foreach(var reqDir in dirs) {
         var dir = reqDir.CreateDirective(requestContext);
-        var incDirDef = (ISkipFieldDirectiveAction)dir;
-        if(!incDirDef.SkipField(requestContext, field))
+        var incDirDef = (ISkipDirectiveAction)dir;
+        if(!incDirDef.ShouldSkip(requestContext, field))
           return false;
       }
       return true;

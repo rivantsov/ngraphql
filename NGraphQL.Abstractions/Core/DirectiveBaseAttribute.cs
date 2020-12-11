@@ -6,10 +6,10 @@ using NGraphQL.CodeFirst;
 namespace NGraphQL.Core {
 
   // base class for attibute-declared directives, ex: DeprecatedDir
-  // derived attribute should be decoreated with [AttributteInfo(..)] attribute
-  public abstract class DeclareDirectiveAttribute: Attribute {
+  // derived attribute should be decoreated with [DirectiveInfo(..)] attribute
+  public abstract class DirectiveBaseAttribute: Attribute {
     public readonly object[] ArgValues; 
-    public DeclareDirectiveAttribute(params object[] argValues) {
+    public DirectiveBaseAttribute(params object[] argValues) {
       ArgValues = argValues;
     }
   }

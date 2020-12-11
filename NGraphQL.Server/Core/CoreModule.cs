@@ -1,4 +1,5 @@
-﻿using NGraphQL.CodeFirst;
+﻿using System;
+using NGraphQL.CodeFirst;
 using NGraphQL.Core.Scalars;
 
 namespace NGraphQL.Core {
@@ -34,7 +35,10 @@ namespace NGraphQL.Core {
       this.Time_ = new TimeScalar();
       this.Uuid_ = new UuidScalar();
       this.Decimal_ = new DecimalScalar();
-      
+
+      this.ScalarTypes.AddRange(new Type[] {
+
+      });
       RegisterScalars(String_, Int_, Long_, Float_, Double_, Boolean_, Id_, 
                          DateTime_, Date_, Time_, Uuid_, Decimal_);
 

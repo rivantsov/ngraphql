@@ -18,7 +18,7 @@ namespace NGraphQL.Server.RequestModel {
   }
 
   public interface IValueTarget {
-    IList<RuntimeDirective> Directives { get; }
+    IList<HandlesDirectiveAttribute> Directives { get; }
   }
 
 

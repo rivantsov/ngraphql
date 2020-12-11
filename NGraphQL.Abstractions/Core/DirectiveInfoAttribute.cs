@@ -9,11 +9,11 @@ namespace NGraphQL.Core {
   /// <summary> </summary>
   [AttributeUsage(AttributeTargets.Class)]
   public class DirectiveInfoAttribute : Attribute {
-    public readonly DirectiveMetadata Info;
+    public readonly DirectiveInfo Info;
 
     public DirectiveInfoAttribute(string name, DirectiveLocation locations, string description = null,
            bool listInSchema = true, bool isDeprecated = false, string deprecationReason = null) {
-      Info = new DirectiveMetadata() {
+      Info = new DirectiveInfo() {
         Name = name,
         Locations = locations,
         Description = description,

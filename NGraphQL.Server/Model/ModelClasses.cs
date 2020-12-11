@@ -7,6 +7,7 @@ using System.Reflection;
 
 using NGraphQL.CodeFirst;
 using NGraphQL.Core;
+using NGraphQL.Core.Scalars;
 using NGraphQL.Introspection;
 using NGraphQL.Server;
 using NGraphQL.Server.Execution;
@@ -28,7 +29,7 @@ namespace NGraphQL.Model {
     public TypeKind Kind;
     public Type ClrType;
     public bool Hidden;
-    public IList<DirectiveDef> Directives = new List<DirectiveDef>();
+    public IList<ModelDirectiveInfo> Directives = new List<ModelDirectiveInfo>();
     public bool IsDefaultForClrType = true; // false for ID type, to skip registration
 
     public __Type Type_; // Introspection object
@@ -60,6 +61,12 @@ namespace NGraphQL.Model {
 
     public override string ToString() => $"{Name}/{Kind}";
     public virtual void Init(GraphQLServer server) { }
+  }
+
+  public class ModelDirectiveInfo {
+    public DirectiveDef Def;
+    public DirectiveBaseAttribute AttributeInstance;
+    public DirectiveHandler Handler; 
   }
 
   public class ScalarTypeDef : TypeDefBase {
@@ -107,7 +114,7 @@ namespace NGraphQL.Model {
     public TypeRef TypeRef;
     public bool HasDefaultValue;
     public object DefaultValue;
-    public IList<RuntimeDirective> Directives { get; set; }
+    public IList<HandlesDirectiveAttribute> Directives { get; set; }
 
     public Type ParamType; // Arg only; exact resolver parameter type
     public MemberInfo InputObjectClrMember; // InputObject only
@@ -122,7 +129,7 @@ namespace NGraphQL.Model {
 
     public FieldFlags Flags;
     public IList<InputValueDef> Args = new List<InputValueDef>();
-    public IList<DirectiveDef> Directives;
+    public IList<ModelDirectiveInfo> Directives;
     public MemberInfo ClrMember;
     public ResolverMethodInfo Resolver;
     public Func<object, object> Reader;
@@ -138,8 +145,8 @@ namespace NGraphQL.Model {
   }
 
   public class DirectiveDef : GraphQLModelObject {
-    public DirectiveMetadata DirInfo;
-    public DeclareDirectiveAttribute DeclaringAttr; //for schema directives
+    public DirectiveInfo DirInfo;
+    public Type AttributeType;
     public IList<InputValueDef> Args;
     public DirectiveDef() { }
   }

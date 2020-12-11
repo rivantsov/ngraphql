@@ -2,7 +2,7 @@
 using NGraphQL.CodeFirst;
 using NGraphQL.Runtime;
 
-namespace NGraphQL.Core {
+namespace NGraphQL.Core.Scalars {
 
   public class Scalar {
     public readonly string Name;
