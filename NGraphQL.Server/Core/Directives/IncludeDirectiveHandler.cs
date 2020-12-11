@@ -10,7 +10,7 @@ namespace NGraphQL.Core {
     bool _if; 
 
     public IncludeDirectiveHandler(DirectiveContext context, object[] args) 
-      : base(context, args, typeof(ISkipDirectiveAction)) {
+      : base(context, args) {
       _if = (bool)args[0];
     }
 

@@ -18,7 +18,7 @@ namespace NGraphQL.Server.RequestModel {
   }
 
   public interface IValueTarget {
-    IList<HandlesDirectiveAttribute> Directives { get; }
+    IList<DirectiveHandler> DirectiveHandlers { get; }
   }
 
 
@@ -88,7 +88,7 @@ namespace NGraphQL.Server.RequestModel {
 
     public VariableDef() { }
 
-    public override string ToString() => $"{Name}/{TypeRef}";
+    public override string ToString() => $"{Name}/{InputDef.TypeRef}";
 
     public static readonly VariableDef[] EmptyList = new VariableDef[] { };
   }

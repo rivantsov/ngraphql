@@ -124,7 +124,7 @@ namespace NGraphQL.Server.Parsing {
       if (varDecl == null)
         throw new InvalidInputException($"Variable {varRef.VariableName} not defined.", varRef);
       // check type compatibility 
-      if(!resultTypeRef.IsConvertibleFrom(varDecl.TypeRef)) 
+      if(!resultTypeRef.IsConvertibleFrom(varDecl.InputDef.TypeRef)) 
         throw new InvalidInputException(
           $"Incompatible types: variable ${varRef.VariableName} cannot be converted to type '{resultTypeRef.Name}'", varRef);
       return new VariableRefEvaluator(target, varDecl);

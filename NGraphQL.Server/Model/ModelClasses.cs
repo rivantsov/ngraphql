@@ -114,7 +114,8 @@ namespace NGraphQL.Model {
     public TypeRef TypeRef;
     public bool HasDefaultValue;
     public object DefaultValue;
-    public IList<HandlesDirectiveAttribute> Directives { get; set; }
+    public IList<Type> DirectiveHandlerTypes;
+    public IList<DirectiveHandler> DirectiveHandlers { get; set; }
 
     public Type ParamType; // Arg only; exact resolver parameter type
     public MemberInfo InputObjectClrMember; // InputObject only

@@ -11,7 +11,7 @@ namespace NGraphQL.Core.Scalars {
       CanConvertFrom = new[] { typeof(long) };
     }
 
-    public override object ParseToken(IScalarContext context, TokenData token) {
+    public override object ParseToken(RequestContext context, TokenData token) {
       switch(token.TermName) {
         case TermNames.NullValue:
           return null;

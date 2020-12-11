@@ -44,7 +44,6 @@ namespace NGraphQL.Introspection {
     [Null]
     public __Type OfType;
 
-    // Fields and EnumValues fields have includeDeprecated parameter, so they are implemented
     [GraphQLName("fields")]
     internal IList<__Field> GetFields(bool includeDeprecated = true) {
       throw new NotImplementedException("GetFields is a server-side method and should not be called directly.");
@@ -63,7 +62,7 @@ namespace NGraphQL.Introspection {
     public string DisplayName;
 
     // these 2 properties will be ignored on the server. When used on the client, they will be receiving 
-    //  data from Fiels and Enum values received from the server (sent by GetFields and GetEnumValues fields/methods) 
+    //  data from Fiels and Enum values received from the server-side GetFields and GetEnumValues fields/methods 
     [Ignore]
     public IList<__Field> Fields = new List<__Field>();
     // enum only

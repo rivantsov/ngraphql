@@ -8,9 +8,9 @@ namespace NGraphQL.Core {
     locations: DirectiveLocation.Field | DirectiveLocation.FragmentSpread | DirectiveLocation.InlineFragment,
     listInSchema: false
     )]
-  public class SkipDirectiveAttribute : DirectiveBaseAttribute {
+  public class SkipDirAttribute : DirectiveBaseAttribute {
     bool _if;
-    public SkipDirectiveAttribute(bool @if) : base(@if) {
+    public SkipDirAttribute(bool @if) : base(@if) {
       _if = @if;
     }
   }

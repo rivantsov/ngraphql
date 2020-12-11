@@ -9,8 +9,7 @@ namespace NGraphQL.Core {
   public class SkipDirectiveHandler: DirectiveHandler, ISkipDirectiveAction {
     bool _if; 
 
-    public SkipDirectiveHandler(DirectiveContext context, object[] args) 
-      : base(context, args, typeof(ISkipDirectiveAction)) {
+    public SkipDirectiveHandler(DirectiveContext context, object[] args) : base(context, args) {
       _if = (bool)args[0];
     }
 

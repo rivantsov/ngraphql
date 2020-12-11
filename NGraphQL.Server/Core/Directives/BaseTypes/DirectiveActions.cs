@@ -16,35 +16,12 @@ namespace NGraphQL.Model {
     void PreviewField(FieldContext context);
     object PreviewFieldResult(FieldContext context, object value);
   }
+
   public interface ISkipDirectiveAction {
     bool ShouldSkip(RequestContext context, MappedField field);
   }
-  /*
-  public static class DirectiveExtensions { 
-    public static void ApplyPreviewArgValueSource(this IList<RuntimeDirective> directives, RequestContext context, InputValue argDef, ValueSource source) {
-      directives.ApplyDirectives<IArgDirectiveAction>(d => d.PreviewArgValueSource(context, argDef, source));
-    }
 
-    public static void ApplyDirectives<T>(this IList<RuntimeDirective> directives, Action<T> action) where T: class {
-      if (directives == null || directives.Count == 0)
-        return;
-      foreach (var dir in directives) {
-        var dirT = dir as T;
-        if (dirT != null)
-          action(dirT); 
-      }
-    }
-
-    public static object ApplyDirectives<T>(this IList<RuntimeDirective> directives, Func<T, object, object> func, object value) where T : class {
-      if (directives == null || directives.Count == 0)
-        return value;
-      foreach (var dir in directives) {
-        var dirT = dir as T;
-        if (dirT != null)
-          value = func(dirT, value);
-      }
-      return value; 
-    }
+  public interface IModelDirectiveAction {
+    void Apply(GraphQLApiModel model, GraphQLModelObject owner);
   }
-  */
 }

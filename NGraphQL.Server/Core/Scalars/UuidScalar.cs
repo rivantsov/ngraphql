@@ -7,7 +7,7 @@ namespace NGraphQL.Core.Scalars {
 
     public UuidScalar() : base("Uuid", "Uuid scalar", typeof(Guid), isCustom: true) { }
 
-    public override object ParseToken(IScalarContext context, TokenData token) {
+    public override object ParseToken(RequestContext context, TokenData token) {
       switch(token.TermName) {
         case TermNames.NullValue:
           return null;

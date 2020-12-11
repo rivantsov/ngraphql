@@ -9,7 +9,7 @@ namespace NGraphQL.Core.Scalars {
 
     public BooleanScalar() : base("Boolean", null, typeof(bool)) { }
 
-    public override object ParseToken(IScalarContext context, TokenData tokenData) {
+    public override object ParseToken(RequestContext context, TokenData tokenData) {
       switch(tokenData.TermName) {
         case TermNames.NullValue:
           return null;

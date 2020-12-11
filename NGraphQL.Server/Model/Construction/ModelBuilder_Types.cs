@@ -46,7 +46,7 @@ namespace NGraphQL.Model.Construction {
     }
 
 
-    private TypeDefBase CreateTypeDef(Type type, GraphQLModule module, TypeRole typeRole, TypeKind typeKind) {
+    private TypeDefBase CreateTypeDef(Type type, GraphQLModule module, TypeRole typeRole) {
       var typeDef = CreateTypeDefImpl(type, typeKind);
       if (typeDef == null)
         return null;

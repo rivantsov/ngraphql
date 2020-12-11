@@ -11,7 +11,7 @@ namespace NGraphQL.Core.Scalars {
 
     // The string is actually already parsed by Irony parser (stripped quotes, unescaped, etc),
     //  so here we just return the same value
-    public override object ParseToken(IScalarContext context, TokenData token) {
+    public override object ParseToken(RequestContext context, TokenData token) {
       switch(token.TermName) {
         case TermNames.NullValue:
           return null;

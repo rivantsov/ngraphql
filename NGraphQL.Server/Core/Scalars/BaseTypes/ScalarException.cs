@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using NGraphQL.Runtime;
+using NGraphQL.Server.Execution;
 
 namespace NGraphQL.Core.Scalars {
 
@@ -14,7 +15,7 @@ namespace NGraphQL.Core.Scalars {
 
   public static class ScalarExtensions {
 
-    public static void ThrowScalarError(this IScalarContext requestContext, string message, TokenData token) {
+    public static void ThrowScalarError(this RequestContext requestContext, string message, TokenData token) {
       throw new ScalarException(message, token);
     }
 

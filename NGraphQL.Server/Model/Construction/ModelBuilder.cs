@@ -64,7 +64,7 @@ namespace NGraphQL.Model.Construction {
             AddError($"Duplicate registration of type {typeReg.Type.Name}, module {mName}.");
             continue;
           }
-          var typeDef = CreateTypeDef(typeReg.Type, module, typeReg.Role, typeKind);
+          var typeDef = CreateTypeDef(typeReg.Type, module, typeReg.Role);
           RegisterTypeDef(typeDef);
         } //foreach type
         // scalars and directives

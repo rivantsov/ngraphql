@@ -10,7 +10,7 @@ namespace NGraphQL.Core.Scalars {
       CanConvertFrom = new[] { typeof(Single), typeof(int), typeof(long), typeof(Decimal) }; 
     }
 
-    public override object ParseToken(IScalarContext context, TokenData token) {
+    public override object ParseToken(RequestContext context, TokenData token) {
       switch(token.TermName) {
         case TermNames.NullValue:
           return null;

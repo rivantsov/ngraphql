@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NGraphQL.Abstractions\NGraphQL.Abstractions.csproj" />
+    <ProjectReference Include="..\NGraphQL\NGraphQL.csproj" />
   </ItemGroup>
 
   <ItemGroup>

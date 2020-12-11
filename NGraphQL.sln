@@ -23,7 +23,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NGraphQL.Server", "NGraphQL
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NGraphQL.Server.Http", "NGraphQL.Server.Http\NGraphQL.Server.Http.csproj", "{53B7E281-B8C8-4A05-BA04-381CD9FEA89B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NGraphQL.Abstractions", "NGraphQL.Abstractions\NGraphQL.Abstractions.csproj", "{2745C286-688D-463B-84F1-A0525A6DE8DB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NGraphQL", "NGraphQL\NGraphQL.csproj", "{9ECD6905-EF78-4D72-9826-CF4F40108063}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -55,10 +55,10 @@ Global
 		{53B7E281-B8C8-4A05-BA04-381CD9FEA89B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{53B7E281-B8C8-4A05-BA04-381CD9FEA89B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{53B7E281-B8C8-4A05-BA04-381CD9FEA89B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2745C286-688D-463B-84F1-A0525A6DE8DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2745C286-688D-463B-84F1-A0525A6DE8DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2745C286-688D-463B-84F1-A0525A6DE8DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2745C286-688D-463B-84F1-A0525A6DE8DB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9ECD6905-EF78-4D72-9826-CF4F40108063}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9ECD6905-EF78-4D72-9826-CF4F40108063}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9ECD6905-EF78-4D72-9826-CF4F40108063}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9ECD6905-EF78-4D72-9826-CF4F40108063}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

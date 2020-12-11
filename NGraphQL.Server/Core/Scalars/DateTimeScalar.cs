@@ -9,7 +9,7 @@ namespace NGraphQL.Core.Scalars {
 
     public DateTimeScalar(string name = "DateTime") : base(name, "DateTime scalar", typeof(DateTime), isCustom: true) { }
 
-    public override object ParseToken(IScalarContext context, TokenData token) {
+    public override object ParseToken(RequestContext context, TokenData token) {
       switch(token.TermName) {
         case TermNames.NullValue:
           return null;

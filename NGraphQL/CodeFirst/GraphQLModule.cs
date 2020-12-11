@@ -13,7 +13,8 @@ namespace NGraphQL.CodeFirst {
     public readonly List<Type> ResolverClasses = new List<Type>();
 
     public readonly List<Type> ScalarTypes = new List<Type>();
-    public readonly List<Type> DirectiveAttributeTypes = new List<Type>(); 
+    public readonly List<Type> DirectiveAttributeTypes = new List<Type>();
+    public readonly List<Type> DirectiveHandlerTypes = new List<Type>();
     public readonly List<ModelAdjustment> Adjustments = new List<ModelAdjustment>();
 
     public GraphQLModule() {
