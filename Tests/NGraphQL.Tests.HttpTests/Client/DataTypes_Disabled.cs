@@ -23,7 +23,7 @@ namespace NGraphQL.Tests.HttpTests.Client {
     FlagThree = 1 << 2,
   }
 
-  public class Thing: ClientDataType {
+  public class Thing {
     public int Id { get; set; }
     public string Name { get; set; }
     public string Description;
@@ -43,7 +43,7 @@ namespace NGraphQL.Tests.HttpTests.Client {
     public int[] Randoms;
   }
 
-  public class OtherThing: ClientDataType {
+  public class OtherThing {
     public string IdStr;
     public string Name { get; set; }
     public DateTime DateValue;

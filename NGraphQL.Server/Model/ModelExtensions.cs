@@ -68,5 +68,17 @@ namespace NGraphQL.Model {
       return reqFNames; 
     }
 
+    public static IntroObjectBase GetIntroObject(this GraphQLModelObject modelObj) {
+      switch (modelObj) {
+        case TypeDefBase td: return td.Intro_;
+        case FieldDef fd: return fd.Intro_;
+        case InputValueDef iv: return iv.Intro_;
+        case EnumValue ev: return ev.Intro_;
+        case DirectiveDef dir: return dir.Intro_;
+        default: return null; 
+      }
+
+    }
+
   } //class
 }

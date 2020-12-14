@@ -6,6 +6,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Client\DataTypes_Disabled.cs" />
+    <Compile Remove="Client\TypedQueryExperiments.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Client\DataTypes_Disabled.cs" />
+    <None Include="Client\TypedQueryExperiments.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Arrest" Version="1.4.0" />
     <PackageReference Include="Microsoft.AspNetCore" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.2.7" />

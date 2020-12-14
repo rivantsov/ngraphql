@@ -5,6 +5,7 @@ using System.Reflection;
 
 using NGraphQL.CodeFirst;
 using NGraphQL.Core;
+using NGraphQL.Core.Scalars;
 using NGraphQL.Introspection;
 using NGraphQL.Server;
 using NGraphQL.Utilities;
@@ -68,7 +69,8 @@ namespace NGraphQL.Model.Construction {
           RegisterTypeDef(typeDef);
         } //foreach type
         // scalars and directives
-        foreach (var scalar in module.Scalars) {
+        foreach (var scalarType in module.ScalarTypes) {
+          var scalar = (Scalar) Activator.CreateInstance(scalarType); 
           var sTypeDef = new ScalarTypeDef(scalar);
           RegisterTypeDef(sTypeDef); 
         }

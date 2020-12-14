@@ -6,6 +6,7 @@ using NGraphQL.Runtime;
 namespace NGraphQL.CodeFirst {
 
   public interface IRequestContext {
+    object App { get; }
     ClaimsPrincipal User { get; set; }
     void AddError(GraphQLError error, Exception sourceException = null);
     bool Failed { get; }

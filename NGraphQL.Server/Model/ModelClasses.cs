@@ -19,6 +19,7 @@ namespace NGraphQL.Model {
   public class GraphQLModelObject {
     public string Name { get; set; }
     public string Description;
+    public IntroObjectBase Intro_; 
     public override string ToString() => Name;
   }
 
@@ -32,7 +33,7 @@ namespace NGraphQL.Model {
     public IList<ModelDirectiveInfo> Directives = new List<ModelDirectiveInfo>();
     public bool IsDefaultForClrType = true; // false for ID type, to skip registration
 
-    public __Type Type_; // Introspection object
+    public __Type Type_ => (__Type)Intro_; 
     // Default type refs
     public readonly TypeRef TypeRefNull;
     public readonly TypeRef TypeRefNotNull;
@@ -110,12 +111,12 @@ namespace NGraphQL.Model {
   }
 
   // Arg or InputObject field
-  public class InputValueDef : GraphQLModelObject, IValueTarget {
+  public class InputValueDef : GraphQLModelObject {
     public TypeRef TypeRef;
+
     public bool HasDefaultValue;
     public object DefaultValue;
-    public IList<Type> DirectiveHandlerTypes;
-    public IList<DirectiveHandler> DirectiveHandlers { get; set; }
+    public IList<DirectiveDef> Directives;
 
     public Type ParamType; // Arg only; exact resolver parameter type
     public MemberInfo InputObjectClrMember; // InputObject only
@@ -126,7 +127,7 @@ namespace NGraphQL.Model {
 
   [DisplayName("{Name}/{TypeRef.Name}")]
   public class FieldDef : GraphQLModelObject {
-    public TypeRef TypeRef; 
+    public TypeRef TypeRef;
 
     public FieldFlags Flags;
     public IList<InputValueDef> Args = new List<InputValueDef>();
@@ -175,10 +176,10 @@ namespace NGraphQL.Model {
     public readonly TypeDefBase TypeDef;
     public readonly TypeKind Kind;
     public readonly TypeRef Parent;
+    public __Type Type_; //note: not the same as this.TypeDef.Type_ 
     // list of all kinds in parents starting from original type def. 
     public readonly IList<TypeKind> KindsPath;
     public readonly string Name;
-    public __Type Type_;
     public readonly int Rank;
     public readonly bool IsList;
     public bool IsNotNull => Kind == TypeKind.NotNull;

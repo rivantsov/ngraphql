@@ -170,7 +170,7 @@ namespace NGraphQL.Model {
         var tdef = valueDef.TypeRef.TypeDef; 
         _builder.Append(tdef.ToSchemaDocString(valueDef.DefaultValue));
       }
-      AppendDirs(valueDef.Directives);
+      AppendDirs(valueDef.DirectiveHandlers .Directives);
     }
 
     private void AppendDescr(string descr, bool indent = false) {

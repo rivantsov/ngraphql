@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NGraphQL.Client;
-using NGraphQL.Client.Introspection;
+using NGraphQL.Introspection;
+using NGraphQL.TestApp;
 
 namespace NGraphQL.Tests.HttpTests.Client {
   using TDict = Dictionary<string, object>;
@@ -72,7 +73,7 @@ namespace NGraphQL.Tests.HttpTests.Client {
       var vars = new TDict() { { "id", 3 } };
 
       // Post requests
-      TestEnv.LogTestDescr("Basic test for returned strong-type");
+      TestEnv.LogTestDescr("Basic test for strongly-typed return value.");
       query = @"
 query ($id: Int) { 
   thing: getThing(id: $id) {
@@ -81,7 +82,7 @@ query ($id: Int) {
 }";
       resp = await TestEnv.Client.PostAsync(query, vars);
       resp.EnsureNoErrors();
-      var thing = resp.GetField<Thing>("thing");
+      var thing = resp.GetField<Thing_>("thing");
       Assert.IsNotNull(thing);
       Assert.AreEqual("Name3", thing.Name, "thing name mismatch");
       Assert.AreEqual(ThingKind.KindThree, thing.Kind, "Kind mismatch");
@@ -89,7 +90,8 @@ query ($id: Int) {
       Assert.IsNotNull(thing.Randoms, "Expected randoms array");
       Assert.AreEqual(5, thing.Randoms.Length, "expected 5 randoms");
       // Check introspection field
-      Assert.AreEqual("Thing", thing.__typename, "type name does not match");
+      string typeName = resp.GetResultField<string>(thing, "__typename");
+      Assert.AreEqual("Thing", typeName, "type name does not match");
     }
 
     [TestMethod]

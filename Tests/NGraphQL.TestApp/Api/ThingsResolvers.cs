@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using NGraphQL.CodeFirst;
-using NGraphQL.Server;
+using NGraphQL.Runtime;
 
 namespace NGraphQL.TestApp {
 
@@ -13,7 +13,7 @@ namespace NGraphQL.TestApp {
     ThingsApp _app;
 
     void IResolverClass.BeginRequest(IRequestContext context) {
-      _app = ((ThingsApi)context.Server.Api).App;
+      _app = (ThingsApp) context.App; 
     }
 
     public void EndRequest(IRequestContext context) {

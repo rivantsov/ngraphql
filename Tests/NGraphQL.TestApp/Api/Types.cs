@@ -7,7 +7,6 @@ using NGraphQL.CodeFirst;
 namespace NGraphQL.TestApp {
 
   /// <summary>A sample GraphQL output object.</summary>
-  [ObjectType] 
   public class Thing_ : INamedObj, IObjWithId {
     public int Id { get; set; }
     public string Name { get; set; }
@@ -30,12 +29,14 @@ namespace NGraphQL.TestApp {
     public IList<OtherThing_> otherThings;
 
     // example of method defined on type
-    [Resolver(nameof(ThingsResolvers.GetRandoms))]
-    public int[] GetRandoms(int count = 3) { return null; }
+    [GraphQLName("Randoms")]
+    internal int[] GetRandoms(int count = 3) { return null; }
+
+    [Ignore]
+    public int[] Randoms;
 
   }
 
-  [ObjectType]
   public class OtherThing_ : INamedObj {
     [Scalar("ID")]
     public string IdStr;
@@ -59,7 +60,6 @@ namespace NGraphQL.TestApp {
   }
 
 
-  [InputType]
   public class InputObj {
     public int Id;
     public string Name;
@@ -69,7 +69,6 @@ namespace NGraphQL.TestApp {
     public override string ToString() => $"id:{Id},name:{Name},num:{Num}";
   }
 
-  [InputType]
   public class InputObjWithEnums {
     public TheFlags Flags;
     public ThingKind Kind;
@@ -81,7 +80,6 @@ namespace NGraphQL.TestApp {
     }
   }
 
-  [InputType]
   public class InputObjParent {
     public int Id;
     public string Name;
@@ -90,7 +88,6 @@ namespace NGraphQL.TestApp {
     public override string ToString() => $"{Id},{Name}, child count: {ChildObjects?.Count}";
   }
 
-  [InputType]
   public class InputObjChild {
     public InputObjParent Parent;
     public int Id;
@@ -99,7 +96,6 @@ namespace NGraphQL.TestApp {
     public override string ToString() => $"{Id},{Name}";
   }
 
-  [InputType]
   public class InputObjWithList {
     public int[][] List;
   }
