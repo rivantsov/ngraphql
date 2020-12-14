@@ -151,6 +151,8 @@ namespace NGraphQL.Model {
     public Type AttributeType;
     public IList<InputValueDef> Args;
     public DirectiveDef() { }
+
+    public static IList<DirectiveDef> EmptyList = new DirectiveDef[] { }; 
   }
 
   [DisplayName("{Method.Name}")]

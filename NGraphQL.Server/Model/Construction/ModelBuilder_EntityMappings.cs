@@ -21,12 +21,10 @@ namespace NGraphQL.Model.Construction {
             continue;
           }
           
-          if (typeDef.TypeRole != TypeRole.DataType) { 
-            AddError($"Invalid mapping target type {mp.GraphQLType.Name}, expected data object type; module {mname}");
+          if (!(typeDef is ObjectTypeDef objTypeDef)) {
+            AddError($"Invalid mapping target type {mp.GraphQLType.Name}, must be Object type; module {mname}");
             continue;
           }
-          if (!(typeDef is ObjectTypeDef objTypeDef))
-            continue; 
           objTypeDef.Mapping = mp;
           _model.TypesByEntityType[mp.EntityType] = objTypeDef;
         }

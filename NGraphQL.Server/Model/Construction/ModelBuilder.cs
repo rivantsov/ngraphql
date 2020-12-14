@@ -26,8 +26,11 @@ namespace NGraphQL.Model.Construction {
       _model = _server.Model = new GraphQLApiModel(_server);
 
       // collect all data types, query/mutation types, resolvers
-      if (!CollectRegisteredClrTypes())
+      if (!RegisterGraphQLTypesAndScalars())
         return;
+
+      if (!BuildRegisteredDirectiveDefinitions())
+        return; 
 
       if (!AssignMappedEntitiesForObjectTypes())
         return;
@@ -57,7 +60,7 @@ namespace NGraphQL.Model.Construction {
 
     }
 
-    private bool CollectRegisteredClrTypes() {
+    private bool RegisterGraphQLTypesAndScalars() {
       foreach (var module in _server.Modules) {
         var mName = module.Name;
         foreach (var typeReg in module.RegisteredTypes) {
@@ -74,27 +77,12 @@ namespace NGraphQL.Model.Construction {
           var sTypeDef = new ScalarTypeDef(scalar);
           RegisterTypeDef(sTypeDef); 
         }
-        RegisterModuleDirectives(module); 
       } // foreach module
       return !_model.HasErrors;
     } //method
 
-    private void RegisterModuleDirectives(GraphQLModule module) {
-      foreach (var dirType in module.DirectiveAttributeTypes) {
-        var infoAttr = dirType.GetAttribute<DirectiveInfoAttribute>();
-        if (infoAttr == null) {
-          AddError($"Directive attribute {dirType} has no DirectiveInfo attribute.");
-          continue;
-        }
-        var info = infoAttr.Info;
-        if (_model.Directives.ContainsKey(info.Name)) {
-          AddError($"Module {module.Name}: directive {info.Name}, type {dirType} already registered.");
-          continue;
-        }
-        var dirDef = new DirectiveDef() { AttributeType = dirType, DirInfo = info, Name = info.Name, Description = info.Description };
-        _model.Directives[dirDef.Name] = dirDef;
-      }
-    }
+
+
     /*
     private bool ValidateTypeRoleKind(Type clrType, GraphQLModule module, GraphQLTypeRoleAttribute typeRoleAttr,
                                       out TypeRole typeRole, out TypeKind typeKind) {
@@ -310,33 +298,6 @@ namespace NGraphQL.Model.Construction {
         enumTypeDef.EnumValues.Add(enumV);
       }
     }
-
-    private IList<DirectiveDef> BuildDirectivesFromAttributes(ICustomAttributeProvider target) {
-      var attrList = target.GetCustomAttributes(inherit: true);
-      if(attrList.Length == 0)
-        return DirectiveDef.EmptyList;
-
-      var dirList = new List<DirectiveDef>();
-      foreach(var attr in attrList) {
-        if(!(attr is DirectiveBaseAttribute dirAttr))
-          continue;
-        var attrName = attr.GetType().Name;
-        var dirDefType = dirAttr.DirectiveDefType;
-        var dirDef = _model.Directives.Values.FirstOrDefault(def => def.GetType() == dirDefType);
-        if(dirDef == null) {
-          AddError($"{target}: directive definition {dirDefType.Name} referenced by [{attrName}] not registered..");
-          continue;
-        }
-        var attrDirDef = dirDef as AttributeBasedDirectiveDef;
-        if(attrDirDef == null) {
-          AddError($"{target}: directive {dirDefType.Name} cannot be created from attribute.");
-          continue;
-        }
-        var dir = attrDirDef.CreateDirective(_model, dirAttr, target);
-        dirList.Add(dir);
-      }
-      return dirList;
-    } //method
 
     private void BuildSchemaDef() {
       _model.QueryType = BuildRootSchemaObject("Query", TypeRole.Query);
