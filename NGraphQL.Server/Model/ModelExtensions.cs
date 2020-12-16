@@ -79,6 +79,5 @@ namespace NGraphQL.Model {
       }
 
     }
-
   } //class
 }

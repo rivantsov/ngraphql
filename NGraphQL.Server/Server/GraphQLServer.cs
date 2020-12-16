@@ -18,10 +18,11 @@ using NGraphQL.Utilities;
 namespace NGraphQL.Server {
 
   public class GraphQLServer {
+    public readonly object App; 
     public readonly GraphQLServerSettings Settings;
     public readonly IList<GraphQLModule> Modules = new List<GraphQLModule>();
     public readonly CoreModule CoreModule;
-    public readonly IntrospectionModule introspectionModule;
+    public readonly IntrospectionModule IntrospectionModule;
     public GraphQLGrammar Grammar { get; private set; }
     public readonly GraphQLServerEvents Events = new GraphQLServerEvents();
     public readonly RequestCache RequestCache;
@@ -30,11 +31,12 @@ namespace NGraphQL.Server {
 
     public GraphQLApiModel Model { get; internal set; }
 
-    public GraphQLServer(GraphQLServerSettings settings = null) {
+    public GraphQLServer(object app, GraphQLServerSettings settings = null) {
+      App = app; 
       Settings = settings ?? new GraphQLServerSettings();
       CoreModule = new CoreModule();
-      introspectionModule = new IntrospectionModule();
-      RegisterModules(this.CoreModule, this.introspectionModule);
+      IntrospectionModule = new IntrospectionModule();
+      RegisterModules(this.CoreModule, this.IntrospectionModule);
       RequestCache = new RequestCache(this.Settings);
       
     }

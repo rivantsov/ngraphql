@@ -137,21 +137,30 @@ namespace NGraphQL.Model.Construction {
     private void BuildTypesInternals() {
 
       foreach (var td in _model.Types) {
-        td.Directives = BuildDirectivesFromAttributes(td.ClrType);
+        DirectiveLocation loc = DirectiveLocation.None; 
         switch (td) {
-          case ComplexTypeDef complexTypeDef:
-            BuildObjectTypeFields(complexTypeDef);
+          case InterfaceTypeDef intfTypeDef:
+            loc = DirectiveLocation.Interface;
+            BuildObjectTypeFields(intfTypeDef);
             break;
-          case InputObjectTypeDef itd:
-            BuildInputObjectFields(itd);
+          case ObjectTypeDef objTypeDef:
+            loc = DirectiveLocation.Object;
+            BuildObjectTypeFields(objTypeDef);
+            break;
+          case InputObjectTypeDef inpTypeDef:
+            loc = DirectiveLocation.InputObject;
+            BuildInputObjectFields(inpTypeDef);
             break;
           case EnumTypeDef etd:
+            loc = DirectiveLocation.Enum;
             BuildEnumValues(etd);
             break;
           case UnionTypeDef utd:
+            loc = DirectiveLocation.Union;
             // we build union types in a separate loop after building other types
             break;
         } //switch
+        td.Directives = BuildDirectivesFromAttributes(td.ClrType, loc, td);
       } //foreach td
     }
 
@@ -167,13 +176,10 @@ namespace NGraphQL.Model.Construction {
         var typeRef = GetTypeRef(mtype, member, $"Field {clrType.Name}.{member.Name}");
         if (typeRef == null)
           continue; //error should be logged already
-        var dirs = BuildDirectivesFromAttributes(member);
         var name = GetGraphQLName(member);
         var descr = _docLoader.GetDocString(member, clrType);
-        var fld = new FieldDef(name, typeRef) {
-          ClrMember = member, Directives = dirs,
-          Description = descr,
-        };
+        var fld = new FieldDef(name, typeRef) { ClrMember = member, Description = descr  };
+        fld.Directives = BuildDirectivesFromAttributes(member, DirectiveLocation.FieldDefinition, fld);
         if (member.HasAttribute<HiddenAttribute>())
           fld.Flags |= FieldFlags.Hidden;
         typeDef.Fields.Add(fld);
@@ -200,13 +206,11 @@ namespace NGraphQL.Model.Construction {
           continue; 
         if (prmTypeRef.IsList && !prmTypeRef.TypeDef.IsEnumFlagArray())
           VerifyListParameterType(prm.ParameterType, resMethod, prm.Name);
-        var prmDirs = BuildDirectivesFromAttributes(prm);
         var dftValue = prm.DefaultValue == DBNull.Value ? null : prm.DefaultValue;
         var argDef = new InputValueDef() {
           Name = GetGraphQLName(prm), TypeRef = prmTypeRef,
-          ParamType = prm.ParameterType, HasDefaultValue = prm.HasDefaultValue,
-          DefaultValue = dftValue, Directives = prmDirs
-        };
+          ParamType = prm.ParameterType, HasDefaultValue = prm.HasDefaultValue, DefaultValue = dftValue};
+        argDef.Directives = BuildDirectivesFromAttributes(prm, DirectiveLocation.ArgumentDefinition, argDef);
         fieldDef.Args.Add(argDef);
       }
     }
@@ -252,11 +256,10 @@ namespace NGraphQL.Model.Construction {
             AddError($"Input type member {inpTypeDef.Name}.{member.Name}: type {mtype} is not scalar or input type.");
             continue; 
         }
-
-        var dirs = BuildDirectivesFromAttributes(member);
         var inpFldDef = new InputValueDef() { Name = member.Name.FirstLower(), TypeRef = typeRef, InputObjectClrMember = member,
-          Directives = dirs, Description = _docLoader.GetDocString(member, member.DeclaringType)
+          Description = _docLoader.GetDocString(member, member.DeclaringType)
         };
+        inpFldDef.Directives = BuildDirectivesFromAttributes(member, DirectiveLocation.InputFieldDefinition, inpFldDef);
         inpTypeDef.Fields.Add(inpFldDef);
       } //foreach
     }
@@ -290,11 +293,11 @@ namespace NGraphQL.Model.Construction {
         var longValue = Convert.ToInt64(fldValue);
         if(longValue == 0 && enumTypeDef.IsFlagSet)
           continue; // ignore 'None=0' member in Flags enum
-        var dirs = BuildDirectivesFromAttributes(fld); 
         var enumV = new EnumValue() {
           Name = GetEnumFieldGraphQLName(fld), ClrValue = fldValue, ClrName = fldValue.ToString(), LongValue = longValue, 
           Description = _docLoader.GetDocString(fld, enumTypeDef.ClrType)
         };
+        enumV.Directives = BuildDirectivesFromAttributes(fld, DirectiveLocation.EnumValue, enumV);
         enumTypeDef.EnumValues.Add(enumV);
       }
     }

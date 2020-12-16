@@ -30,7 +30,7 @@ namespace NGraphQL.Model {
     public TypeKind Kind;
     public Type ClrType;
     public bool Hidden;
-    public IList<ModelDirectiveInfo> Directives = new List<ModelDirectiveInfo>();
+    public IList<DirectiveInstance> Directives = new List<DirectiveInstance>();
     public bool IsDefaultForClrType = true; // false for ID type, to skip registration
 
     public __Type Type_ => (__Type)Intro_; 
@@ -64,10 +64,14 @@ namespace NGraphQL.Model {
     public virtual void Init(GraphQLServer server) { }
   }
 
-  public class ModelDirectiveInfo {
+  public class DirectiveInstance {
     public DirectiveDef Def;
-    public DirectiveBaseAttribute AttributeInstance;
-    public DirectiveHandler Handler; 
+    public DirectiveBaseAttribute ModelAttribute; // for model (type system) directives
+    public RequestDirectiveRef RequestDirective; // for request directives
+    public object[] StaticArgs; // for request directives not dependent on variables 
+    public DirectiveHandler StaticHandler;
+
+    public static IList<DirectiveInstance> EmptyList = new DirectiveInstance[] { }; 
   }
 
   public class ScalarTypeDef : TypeDefBase {
@@ -116,7 +120,7 @@ namespace NGraphQL.Model {
 
     public bool HasDefaultValue;
     public object DefaultValue;
-    public IList<DirectiveDef> Directives;
+    public IList<DirectiveInstance> Directives;
 
     public Type ParamType; // Arg only; exact resolver parameter type
     public MemberInfo InputObjectClrMember; // InputObject only
@@ -131,7 +135,7 @@ namespace NGraphQL.Model {
 
     public FieldFlags Flags;
     public IList<InputValueDef> Args = new List<InputValueDef>();
-    public IList<ModelDirectiveInfo> Directives;
+    public IList<DirectiveInstance> Directives;
     public MemberInfo ClrMember;
     public ResolverMethodInfo Resolver;
     public Func<object, object> Reader;
@@ -149,6 +153,7 @@ namespace NGraphQL.Model {
   public class DirectiveDef : GraphQLModelObject {
     public DirectiveInfo DirInfo;
     public Type AttributeType;
+    public Type DirectiveHandlerType; 
     public IList<InputValueDef> Args;
     public DirectiveDef() { }
 

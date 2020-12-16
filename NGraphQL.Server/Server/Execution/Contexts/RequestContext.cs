@@ -14,6 +14,7 @@ namespace NGraphQL.Server.Execution {
 
   public class RequestContext : IRequestContext {
     public GraphQLServer Server { get; }
+    public object App => Server.App;
     public ClaimsPrincipal User { get; set; } 
     public GraphQLApiModel ApiModel => Server.Model; 
 
