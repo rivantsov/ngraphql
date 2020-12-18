@@ -104,18 +104,18 @@ namespace NGraphQL.Model {
       return _builder.ToString(); 
     }
 
-    private void AppendDirs(IList<HandlesDirectiveAttribute> dirs) {
+    private void AppendDirs(IList<ModelDirective> dirs) {
       if(dirs == null || dirs.Count == 0)
         return; 
       foreach(var dir in dirs) {
         _builder.Append(" ");
-        _builder.Append(dir.Name);
+        _builder.Append(dir.Def.Name);
         if (dir.Def.Args.Count > 0) {
           var nvList = new List<string>(); 
           for(int i = 0; i < dir.Def.Args.Count; i++) {
-            if (dir.ArgValues[i] == null)
+            if (dir.Attribute.ArgValues[i] == null)
               continue; //just skip it
-            var strArg = FormatArg(dir.Def.Args[i], dir.ArgValues[i]);
+            var strArg = FormatArg(dir.Def.Args[i], dir.Attribute.ArgValues[i]);
             nvList.Add(strArg); 
           }
           if (nvList.Count > 0) {
@@ -170,7 +170,7 @@ namespace NGraphQL.Model {
         var tdef = valueDef.TypeRef.TypeDef; 
         _builder.Append(tdef.ToSchemaDocString(valueDef.DefaultValue));
       }
-      AppendDirs(valueDef.DirectiveHandlers .Directives);
+      AppendDirs(valueDef.Directives);
     }
 
     private void AppendDescr(string descr, bool indent = false) {

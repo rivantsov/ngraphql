@@ -18,7 +18,7 @@ namespace NGraphQL.Model {
   }
 
   public interface ISkipDirectiveAction {
-    bool ShouldSkip(RequestContext context, MappedField field);
+    bool ShouldSkip(RequestContext context, MappedSelectionItem item);
   }
 
   public interface IModelDirectiveAction {

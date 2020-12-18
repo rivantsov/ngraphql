@@ -20,7 +20,7 @@ namespace NGraphQL.Server.Parsing {
             var name = selNode.ChildNodes[1].GetText();
             selItem = new FragmentSpread() { Name = name, Location = selNode.GetLocation() };
             var dirListNode = selNode.FindChild(TermNames.DirListOpt);
-            selItem.DirectiveRefs = BuildDirectives(dirListNode, DirectiveLocation.Field, selItem);
+            selItem.Directives = BuildDirectives(dirListNode, DirectiveLocation.Field, selItem);
             break;
           case TermNames.InlineFragm:
             selItem = BuildInlineFragment(selNode);
@@ -47,7 +47,7 @@ namespace NGraphQL.Server.Parsing {
 
         // directives
         var dirListNode = selNode.FindChild(TermNames.DirListOpt);
-        selFld.DirectiveRefs = BuildDirectives(dirListNode, DirectiveLocation.Field, selFld);
+        selFld.Directives = BuildDirectives(dirListNode, DirectiveLocation.Field, selFld);
         // If the field is an object/interface itself, it should have it's own selection set
         var selSubSetNode = selNode.FindChild(TermNames.SelSet);
         if(selSubSetNode != null && selSubSetNode.ChildNodes.Count > 0) {

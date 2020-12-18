@@ -3,6 +3,7 @@ using NGraphQL.CodeFirst;
 using NGraphQL.Core;
 using NGraphQL.Model;
 using NGraphQL.Runtime;
+using NGraphQL.Server.Execution;
 using NGraphQL.Server.Parsing;
 
 namespace NGraphQL.Server.RequestModel {
@@ -17,13 +18,8 @@ namespace NGraphQL.Server.RequestModel {
     public override string ToString() => Name; 
   }
 
-  public interface IValueTarget {
-    IList<DirectiveHandler> DirectiveHandlers { get; }
-  }
-
-
   public abstract class SelectionItem : NamedRequestObject {
-    public IList<RequestDirectiveRef> DirectiveRefs { get; internal set; }
+    public IList<RequestDirective> Directives { get; internal set; }
   }
 
   public class SelectionField : SelectionItem, ISelectionField {
@@ -54,7 +50,7 @@ namespace NGraphQL.Server.RequestModel {
   public class SelectionSubset: RequestObjectBase {
     public List<SelectionItem> Items;
     // List of (ObjectDef, FieldCallInfo[]) pairs, 
-    public IList<MappedObjectFieldSet> MappedFieldSets = new List<MappedObjectFieldSet>(); 
+    public IList<MappedObjectItemSet> MappedItemSets = new List<MappedObjectItemSet>(); 
 
     public SelectionSubset(RequestObjectBase parent, List<SelectionItem> items, Location location) {
       Parent = parent; 
@@ -84,7 +80,7 @@ namespace NGraphQL.Server.RequestModel {
     */
 
     public ValueSource ParsedDefaultValue;
-    public IList<RequestDirectiveRef> DirectiveRefs;
+    public IList<RequestDirective> DirectiveRefs;
 
     public VariableDef() { }
 
@@ -99,7 +95,7 @@ namespace NGraphQL.Server.RequestModel {
 
   public class FragmentDef : NamedRequestObject {
     public OnTypeRef OnTypeRef; 
-    public List<RequestDirectiveRef> Directives;
+    public List<RequestDirective> Directives;
     public SelectionSubset SelectionSubset;
     public bool IsInline;
     public int DependencyTreeLevel = -1;// index used in ordering fragments by dependency
@@ -118,14 +114,22 @@ namespace NGraphQL.Server.RequestModel {
     public override string ToString() => $"{Variable.Name}:{Value}";
   }
 
-  public class RequestDirectiveRef : NamedRequestObject {
-    public static IList<RequestDirectiveRef> EmptyList = new RequestDirectiveRef[] { };
+  public interface IDirectiveHandlerFactory {
+    DirectiveHandler GetHandler(RequestContext context);
+  }
+
+  public class RequestDirective : NamedRequestObject, IDirectiveHandlerFactory {
+    public static IList<RequestDirective> EmptyList = new RequestDirective[] { };
 
     public DirectiveDef Def;
     public IList<InputValue> Args;
-    public IList<MappedArg> MappedArgs;
+    public IList<MappedArg> MappedArgs; 
+    public DirectiveHandler StaticHandler; // if not dependent on variables
+    public RequestDirective() { }
 
-    public RequestDirectiveRef() { }
+    public DirectiveHandler GetHandler(RequestContext context) {
+      return context.GetRequestDirectiveHandler(this); 
+    }
   }
 
   public class ParsedGraphQLRequest {

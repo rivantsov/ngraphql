@@ -62,43 +62,43 @@ namespace NGraphQL.Server.Parsing {
       return mappedArgs;
     }
 
-    internal InputValueEvaluator GetInputValueEvaluator(IValueTarget target, ValueSource valueSource, TypeRef valueTypeRef) {
+    internal InputValueEvaluator GetInputValueEvaluator(InputValueDef inputDef, ValueSource valueSource, TypeRef valueTypeRef) {
       if (valueSource.IsConstNull())
-        return CreateConstantInputValue(target, valueSource, valueTypeRef, null);
-      var eval = GetInputValueEvaluatorImpl(target, valueSource, valueTypeRef);
+        return CreateConstantInputValue(inputDef, valueSource, valueTypeRef, null);
+      var eval = GetInputValueEvaluatorImpl(inputDef, valueSource, valueTypeRef);
       // replace with constant if it does not depend on vars
       if (eval.IsConst()) {
         var value = eval.GetValue(_requestContext);
-        eval = CreateConstantInputValue(target, valueSource, valueTypeRef, value);
+        eval = CreateConstantInputValue(inputDef, valueSource, valueTypeRef, value);
       }
       return eval;
     }
 
-    private ConstInputValue CreateConstantInputValue(IValueTarget target, RequestObjectBase anchor, TypeRef resultTypeRef, object value) {
+    private ConstInputValue CreateConstantInputValue(InputValueDef inputDef, RequestObjectBase anchor, TypeRef resultTypeRef, object value) {
       // We convert const value upfront to target typeRef
       var  convValue = _requestContext.ValidateConvert(value, resultTypeRef, anchor);
-      var constEval = new ConstInputValue(target, resultTypeRef, anchor, convValue);
+      var constEval = new ConstInputValue(inputDef, resultTypeRef, anchor, convValue);
       return constEval; 
     }
 
-    private InputValueEvaluator GetInputValueEvaluatorImpl(IValueTarget target, ValueSource valueSource, TypeRef resultTypeRef) {
+    private InputValueEvaluator GetInputValueEvaluatorImpl(InputValueDef inputDef, ValueSource valueSource, TypeRef resultTypeRef) {
       if(valueSource is VariableValueSource vref)
-        return GetVariableRefEvaluator(target, resultTypeRef, vref);
+        return GetVariableRefEvaluator(inputDef, resultTypeRef, vref);
       if (resultTypeRef.IsList)
-        return GetInputListEvaluator(target, valueSource, resultTypeRef);
+        return GetInputListEvaluator(inputDef, valueSource, resultTypeRef);
       
       switch(resultTypeRef.TypeDef) {
         case ScalarTypeDef stdef:
           if(valueSource is TokenValueSource tknIv) {
             var constValue = stdef.Scalar.ParseToken(_requestContext, tknIv.TokenData);
-            return CreateConstantInputValue(target, valueSource, resultTypeRef, constValue); 
+            return CreateConstantInputValue(inputDef, valueSource, resultTypeRef, constValue); 
           } else {
             throw new InvalidInputException("invalid input value, expected scalar", valueSource); 
           }
         
         case EnumTypeDef etdef:
           if(etdef.IsFlagSet && valueSource is ListValueSource)
-            return GetInputListEvaluator(target, valueSource, resultTypeRef);
+            return GetInputListEvaluator(inputDef, valueSource, resultTypeRef);
           if(valueSource is TokenValueSource tknValueSrc) { 
             if(tknValueSrc.TokenData.TermName != TermNames.Name)
               throw new InvalidInputException($"Invalid value '{tknValueSrc.TokenData.Text}', expected Enum value.", valueSource);
@@ -106,20 +106,20 @@ namespace NGraphQL.Server.Parsing {
             var enumVal = etdef.EnumValues.FirstOrDefault(ev => ev.Name == vname);
             if (enumVal == null)
               throw new InvalidInputException($"Invalid value '{vname}' for enum '{etdef.ClrType.Name}'.", valueSource);
-            return CreateConstantInputValue(target, tknValueSrc, resultTypeRef, enumVal.ClrValue);
+            return CreateConstantInputValue(inputDef, tknValueSrc, resultTypeRef, enumVal.ClrValue);
           } else {
             throw new InvalidInputException($"Invalid input value, expected enum value.", valueSource); 
           }
 
         case InputObjectTypeDef inpObjDef:
-          return GetInputObjectEvaluator(target, valueSource, resultTypeRef);
+          return GetInputObjectEvaluator(inputDef, valueSource, resultTypeRef);
 
         default:
           return null; //never happens 
       }
     }
 
-    private VariableRefEvaluator GetVariableRefEvaluator(IValueTarget target, TypeRef resultTypeRef, VariableValueSource varRef) {
+    private VariableRefEvaluator GetVariableRefEvaluator(InputValueDef inputDef, TypeRef resultTypeRef, VariableValueSource varRef) {
       var varDecl = _currentOp.Variables.FirstOrDefault(vd => vd.Name == varRef.VariableName);
       if (varDecl == null)
         throw new InvalidInputException($"Variable {varRef.VariableName} not defined.", varRef);
@@ -127,10 +127,10 @@ namespace NGraphQL.Server.Parsing {
       if(!resultTypeRef.IsConvertibleFrom(varDecl.InputDef.TypeRef)) 
         throw new InvalidInputException(
           $"Incompatible types: variable ${varRef.VariableName} cannot be converted to type '{resultTypeRef.Name}'", varRef);
-      return new VariableRefEvaluator(target, varDecl);
+      return new VariableRefEvaluator(inputDef, varDecl);
     }
 
-    private InputObjectEvaluator GetInputObjectEvaluator(IValueTarget target, ValueSource valueSource, TypeRef typeRef) {
+    private InputObjectEvaluator GetInputObjectEvaluator(InputValueDef inputDef, ValueSource valueSource, TypeRef typeRef) {
       var inpObjTypeDef = (InputObjectTypeDef)typeRef.TypeDef;
       // valueSource is not null (its value), we already checked it before coming here
       if (!(valueSource is ObjectValueSource parsedInputObj))
@@ -150,11 +150,11 @@ namespace NGraphQL.Server.Parsing {
         fields.Add(new InputFieldEvalInfo() { FieldDef = fldDef, ValueEvaluator = fldEval });
         // TODO: add check that there are no 'extra' members in parsed object
       }
-      var result = new InputObjectEvaluator(target, typeRef, valueSource, fields);
+      var result = new InputObjectEvaluator(inputDef, typeRef, valueSource, fields);
       return result;
     }
 
-    private InputValueEvaluator GetInputListEvaluator(IValueTarget target, ValueSource valueSource, TypeRef listTypeRef) {
+    private InputValueEvaluator GetInputListEvaluator(InputValueDef inputDef, ValueSource valueSource, TypeRef listTypeRef) {
       if(valueSource.IsConstNull()) {
         if (listTypeRef.IsNotNull)
           throw new InvalidInputException("Input type '{valueTypeRef.Name}' is not-null type, but null was encountered.", 
@@ -165,12 +165,12 @@ namespace NGraphQL.Server.Parsing {
       var elemTypeRef = listTypeRef.GetListElementTypeRef();
       if (elemTypeRef == null) 
         throw new InvalidInputException($"Invalid input value for type {listTypeRef.Name}, expected list", valueSource);
-      var elemEvalList =  arrValue.Values.Select(v => GetInputValueEvaluator(target, v, elemTypeRef)).ToArray();
+      var elemEvalList =  arrValue.Values.Select(v => GetInputValueEvaluator(inputDef, v, elemTypeRef)).ToArray();
       // it can be regular array or enum flag set (which is special)
       if (elemTypeRef.TypeDef.IsEnumFlagArray()) {
-        return new FlagSetInputEvaluator(target, listTypeRef, valueSource, elemEvalList);
+        return new FlagSetInputEvaluator(inputDef, listTypeRef, valueSource, elemEvalList);
       } else {
-        return new InputListEvaluator(target, listTypeRef, valueSource, elemEvalList);
+        return new InputListEvaluator(inputDef, listTypeRef, valueSource, elemEvalList);
       }
     }
 

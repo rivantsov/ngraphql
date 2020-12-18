@@ -24,7 +24,7 @@ namespace NGraphQL.Server.Parsing {
     class PendingSelectionSet {
       public SelectionSubset SubSet;
       public TypeDefBase OverType;
-      public IList<RequestDirectiveRef> Directives;
+      public IList<RequestDirective> Directives;
     }
     #endregion
 
@@ -50,11 +50,12 @@ namespace NGraphQL.Server.Parsing {
 
     private void CalcVariableDefaultValues(GraphQLOperation op) {
       foreach (var varDef in op.Variables) {
-        if (!varDef.HasDefaultValue)
+        var inpDef = varDef.InputDef;
+        if (!inpDef.HasDefaultValue)
           continue;
 
-        var typeRef = varDef.TypeRef;
-        var eval = GetInputValueEvaluator(varDef, varDef.ParsedDefaultValue, typeRef);
+        var typeRef = inpDef.TypeRef;
+        var eval = GetInputValueEvaluator(varDef.InputDef, varDef.ParsedDefaultValue, typeRef);
         if (!eval.IsConst()) {
           // somewhere inside there's reference to variable, this is not allowed
           AddError($"Default value cannot reference variables.", varDef);
@@ -66,12 +67,12 @@ namespace NGraphQL.Server.Parsing {
           // but spec also allows auto casting like  int => int[]
           AddError($"Detected type mismatch for default value '{value}' of variable {varDef.Name} of type {typeRef.Name}", varDef);
         }
-        varDef.DefaultValue = value;
+        varDef.InputDef.DefaultValue = value;
       } // foreach varDef
     }
 
     private void MapOperation(GraphQLOperation op) {
-      MapSelectionSubSet(op.SelectionSubset, op.OperationTypeDef, op.DirectiveRefs);
+      MapSelectionSubSet(op.SelectionSubset, op.OperationTypeDef, op.Directives);
       if (_pendingSelectionSets.Count > 0)
         MapPendingSelectionSubsets(); 
     }
@@ -87,7 +88,7 @@ namespace NGraphQL.Server.Parsing {
       }// while
     }
 
-    private void MapSelectionSubSet(SelectionSubset selSubset, TypeDefBase typeDef, IList<RequestDirectiveRef> directives) {
+    private void MapSelectionSubSet(SelectionSubset selSubset, TypeDefBase typeDef, IList<RequestDirective> directives) {
       switch(typeDef) {
         case ScalarTypeDef _:
         case EnumTypeDef _:
@@ -112,22 +113,21 @@ namespace NGraphQL.Server.Parsing {
     }
 
     // Might be called for ObjectType or Interface (for intf - just to check fields exist)
-    private void MapObjectSelectionSubset(SelectionSubset selSubset, ObjectTypeDef objectTypeDef, IList<RequestDirectiveRef> directives, bool isForUnion = false) {
+    private void MapObjectSelectionSubset(SelectionSubset selSubset, ObjectTypeDef objectTypeDef, IList<RequestDirective> directives, bool isForUnion = false) {
       var mappedFields = MapSelectionItems(selSubset.Items, objectTypeDef, directives, isForUnion);
-      selSubset.MappedFieldSets.Add(new MappedObjectFieldSet() { ObjectTypeDef = objectTypeDef, Fields = mappedFields });
+      selSubset.MappedItemSets.Add(new MappedObjectItemSet() { ObjectTypeDef = objectTypeDef, Items = mappedFields });
     }
 
     // Might be called for ObjectType or Interface (for intf - just to check fields exist)
-    private List<MappedField> MapSelectionItems(IList<SelectionItem> selItems, ObjectTypeDef objectTypeDef,
-              IList<RequestModel.RequestDirectiveRef> ownerDirectives = null, bool isForUnion = false) {
-      var mappedFields = new List<MappedField>();
+    private List<MappedSelectionItem> MapSelectionItems(IList<SelectionItem> selItems, ObjectTypeDef objectTypeDef,
+              IList<RequestModel.RequestDirective> ownerDirectives = null, bool isForUnion = false) {
+      var mappedItems = new List<MappedSelectionItem>();
       foreach(var item in selItems) {
-        if(item.DirectiveRefs != null) {
-          foreach(var dir in item.DirectiveRefs)
-            if(dir.MappedArgs == null)
-              dir.MappedArgs = MapArguments(dir.Args, dir.Def.Args, dir);
+        if(item.Directives != null) {
+          foreach(var dir in item.Directives)
+            dir.MappedArgs = MapArguments(dir.Args, dir.Def.Args, dir);
         }
-        var allDirs = ownerDirectives.MergeLists(item.DirectiveRefs);
+        var allDirs = ownerDirectives.MergeLists(item.Directives);
 
         switch(item) {
           case SelectionField selFld:
@@ -139,26 +139,22 @@ namespace NGraphQL.Server.Parsing {
               continue; 
             }
             var mappedArgs = MapArguments(selFld.Args, fldDef.Args, selFld);
-            var mappedFld = new MappedField() {
-              FieldDef = fldDef, SelectionField = selFld, Args = mappedArgs, 
-               Directives = allDirs
-            };
-            mappedFields.Add(mappedFld);
+            var mappedFld = new MappedField(selFld, fldDef, mappedArgs);
+            mappedItems.Add(mappedFld);
             ValidateMappedFieldAndProcessSubset(mappedFld);
             break;
 
           case FragmentSpread fs:
-            var mappedFragmFields = MapFragmentSpread(fs, objectTypeDef, allDirs, isForUnion);
-            if (mappedFragmFields != null) // null is indicator of error
-              mappedFields.AddRange(mappedFragmFields);
+            var mappedSpread = MapFragmentSpread(fs, objectTypeDef, isForUnion);
+            if (mappedSpread != null) // null is indicator of error
+              mappedItems.Add(mappedSpread);
             break;
         }//switch
       }
-      return mappedFields; 
+      return mappedItems; 
     }
 
-    private IList<MappedField> MapFragmentSpread(FragmentSpread fs, ObjectTypeDef objectTypeDef, 
-                  IList<RequestModel.RequestDirectiveRef> ownerDirectives, bool isForUnion) {
+    private MappedFragmentSpread MapFragmentSpread(FragmentSpread fs, ObjectTypeDef objectTypeDef, bool isForUnion) {
       // if it is not inline fragment, it might need to map to FragmentDef; inline fragments are auto-mapped at construction
       if (fs.Fragment == null)
         fs.Fragment = GetFragmentDef(fs.Name);
@@ -172,21 +168,22 @@ namespace NGraphQL.Server.Parsing {
         var onTypeRef = fs.Fragment.OnTypeRef;
         var skip = onTypeRef != null && onTypeRef.TypeDef != objectTypeDef;
         if (skip)
-          return MappedField.EmptyList; 
-        MapObjectSelectionSubset(fs.Fragment.SelectionSubset, objectTypeDef, fs.DirectiveRefs, isForUnion);
+          return null; 
+        MapObjectSelectionSubset(fs.Fragment.SelectionSubset, objectTypeDef, fs.Directives, isForUnion);
       }
       // there must be mapped field set now
-      var mappedFragmFieldSet = fs.Fragment.SelectionSubset.MappedFieldSets.FirstOrDefault(fset => fset.ObjectTypeDef == objectTypeDef);
-      if (mappedFragmFieldSet == null) {
-        AddError($"FATAL: Could not retrieve mapped field list for fragment spread {fs.Name}", fs, ErrorTypes.ServerError);
+      var mappedFragmItemSet = fs.Fragment.SelectionSubset.MappedItemSets.FirstOrDefault(fset => fset.ObjectTypeDef == objectTypeDef);
+      if (mappedFragmItemSet == null) {
+        AddError($"FATAL: Could not retrieve mapped item list for fragment spread {fs.Name}", fs, ErrorTypes.ServerError);
         return null;
       }
-      return mappedFragmFieldSet.Fields;
+      var mappedSpread = new MappedFragmentSpread(fs, mappedFragmItemSet.Items);
+      return mappedSpread;
     }
 
     private void ValidateMappedFieldAndProcessSubset(MappedField mappedField) {
       var typeDef = mappedField.FieldDef.TypeRef.TypeDef;
-      var selField = mappedField.SelectionField;
+      var selField = mappedField.Field;
       var selSubset = selField.SelectionSubset;
       var typeName = typeDef.Name; 
       switch(typeDef) {
@@ -202,7 +199,7 @@ namespace NGraphQL.Server.Parsing {
             return; 
           }
           _pendingSelectionSets.Add(new PendingSelectionSet() {
-            SubSet = selSubset, OverType = typeDef, Directives = selField.DirectiveRefs
+            SubSet = selSubset, OverType = typeDef, Directives = selField.Directives
           });
           break;
       }

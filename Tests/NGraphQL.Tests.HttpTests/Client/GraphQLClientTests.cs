@@ -90,7 +90,7 @@ query ($id: Int) {
       Assert.IsNotNull(thing.Randoms, "Expected randoms array");
       Assert.AreEqual(5, thing.Randoms.Length, "expected 5 randoms");
       // Check introspection field
-      string typeName = resp.GetResultField<string>(thing, "__typename");
+      string typeName = resp.GetUnmappedFieldValue<string>(thing, "__typename");
       Assert.AreEqual("Thing", typeName, "type name does not match");
     }
 

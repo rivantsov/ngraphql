@@ -14,7 +14,7 @@ namespace NGraphQL.Core {
       _if = (bool)args[0];
     }
 
-    public bool ShouldSkip(RequestContext context, MappedField field) => !_if; 
+    public bool ShouldSkip(RequestContext context, MappedSelectionItem item) => !_if; 
   }
 
 }

@@ -14,17 +14,14 @@ namespace NGraphQL.Model.Construction {
     private void RegisterTypeDef(TypeDefBase typeDef, bool isSchema = false) {
       try {
         _model.Types.Add(typeDef);
-        if (typeDef.TypeRole == TypeRole.DataType)
-          if(!TryRegisterTypeDefByName(typeDef, isSchema))
-            return;
+        if(!TryRegisterTypeDefByName(typeDef, isSchema))
+          return;
         if (typeDef.ClrType != null) {
           if (typeDef.Kind != TypeKind.Scalar)
             typeDef.Description = _docLoader.GetDocString(typeDef.ClrType, typeDef.ClrType);
           if (typeDef.IsDefaultForClrType)
             _model.TypesByClrType.Add(typeDef.ClrType, typeDef);
         }
-        if (typeDef.TypeRole != TypeRole.DataType)
-          typeDef.Hidden = true;
       } catch (Exception ex) {
         AddError($"FATAL: Failed to register type {typeDef}, name '{typeDef.Name}', error: " + ex.Message);
       }

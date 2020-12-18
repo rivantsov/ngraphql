@@ -12,11 +12,11 @@ using NGraphQL.Utilities;
 namespace NGraphQL.Server.Parsing {
 
   public abstract class InputValueEvaluator: IInputValueEvaluator {
-    public IValueTarget Target; 
+    public InputValueDef InputDef; 
     public TypeRef ResultTypeRef; 
     public RequestObjectBase Anchor;
-    public InputValueEvaluator(IValueTarget target, TypeRef resultTypeRef, RequestObjectBase anchor) {
-      Target = target; 
+    public InputValueEvaluator(InputValueDef inputDef, TypeRef resultTypeRef, RequestObjectBase anchor) {
+      InputDef = inputDef; 
       ResultTypeRef = resultTypeRef; 
       Anchor = anchor; 
     }
@@ -27,13 +27,19 @@ namespace NGraphQL.Server.Parsing {
     public object GetValue(RequestContext context) {
       try {
         var value = Evaluate(context);
-        value = this.Target.Directives.ApplyDirectives<IArgDirectiveAction>((d, v) => d.CheckArgValue(context, v), value);
+        value = ApplyDirectives(context, value);
         return value; 
       } catch(InvalidInputException) {
         throw; 
       } catch(Exception ex) {
         throw new InvalidInputException(ex.Message, Anchor, ex);
       }
+    }
+
+    private object ApplyDirectives(RequestContext context, object value) {
+      if (this.InputDef.Directives.Count == 0)
+        return value;
+      throw new NotImplementedException("Args/input value directives not implemented.");
     }
   }
 
@@ -44,8 +50,8 @@ namespace NGraphQL.Server.Parsing {
     public override bool IsConst() => true;
     protected override object Evaluate(RequestContext context) => Value;
 
-    public ConstInputValue(IValueTarget target, TypeRef resultTypeRef, RequestObjectBase anchor, object value) 
-        : base(target, resultTypeRef, anchor) {
+    public ConstInputValue(InputValueDef inputDef, TypeRef resultTypeRef, RequestObjectBase anchor, object value) 
+        : base(inputDef, resultTypeRef, anchor) {
       Value = value;
     }
   }
@@ -54,7 +60,7 @@ namespace NGraphQL.Server.Parsing {
     public VariableDef Variable;
     public override bool IsConst() => false;
 
-    public VariableRefEvaluator(IValueTarget target, VariableDef varDecl) : base(target, varDecl.TypeRef, varDecl) {
+    public VariableRefEvaluator(InputValueDef inputDef, VariableDef varDecl) : base(inputDef, varDecl.InputDef.TypeRef, varDecl) {
       Variable = varDecl;
     }
     
@@ -69,8 +75,8 @@ namespace NGraphQL.Server.Parsing {
     public TypeRef ElemTypeRef; 
     public InputValueEvaluator[] ElemEvaluators;
 
-    public InputListEvaluator(IValueTarget target, TypeRef resultTypeRef, RequestObjectBase anchor,
-                 InputValueEvaluator[] elemEvaluators) : base(target, resultTypeRef, anchor) {
+    public InputListEvaluator(InputValueDef inputDef, TypeRef resultTypeRef, RequestObjectBase anchor,
+                 InputValueEvaluator[] elemEvaluators) : base(inputDef, resultTypeRef, anchor) {
       ElemEvaluators = elemEvaluators;
       if (ResultTypeRef.Kind == TypeKind.NotNull)
         ElemTypeRef = ResultTypeRef.Parent.Parent;
@@ -100,9 +106,9 @@ namespace NGraphQL.Server.Parsing {
     public InputValueEvaluator[] ElemEvaluators;
     private TypeRef _stringTypeRef; 
 
-    public FlagSetInputEvaluator(IValueTarget target, TypeRef resultTypeRef, RequestObjectBase anchor, 
+    public FlagSetInputEvaluator(InputValueDef inputDef, TypeRef resultTypeRef, RequestObjectBase anchor, 
                     InputValueEvaluator[] valueEvals)
-            : base(target, resultTypeRef, anchor) {
+            : base(inputDef, resultTypeRef, anchor) {
       ElemEvaluators = valueEvals;
       EnumTypeDef = (EnumTypeDef) ResultTypeRef.TypeDef;
     }
@@ -113,8 +119,7 @@ namespace NGraphQL.Server.Parsing {
       for (int i = 0; i < ElemEvaluators.Length; i++) {
         var eval = ElemEvaluators[i]; 
         var value = eval.GetValue(context);
-        var convValue = context.ValidateConvert(value, _stringTypeRef, Anchor); 
-        values[i] = convValue; 
+        values[i] = value; 
       }
       var result = EnumTypeDef.CombineFlags(values);
       return result;
@@ -134,8 +139,8 @@ namespace NGraphQL.Server.Parsing {
   public class InputObjectEvaluator : InputValueEvaluator {
     public IList<InputFieldEvalInfo> Fields = new List<InputFieldEvalInfo>();
 
-    public InputObjectEvaluator (IValueTarget target, TypeRef resultTypeRef, RequestObjectBase anchor,
-        IList<InputFieldEvalInfo> fields)  : base(target, resultTypeRef, anchor) {
+    public InputObjectEvaluator (InputValueDef inputDef, TypeRef resultTypeRef, RequestObjectBase anchor,
+        IList<InputFieldEvalInfo> fields)  : base(inputDef, resultTypeRef, anchor) {
       Fields = fields;
     }
 

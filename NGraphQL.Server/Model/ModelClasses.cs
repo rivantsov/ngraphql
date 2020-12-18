@@ -30,7 +30,7 @@ namespace NGraphQL.Model {
     public TypeKind Kind;
     public Type ClrType;
     public bool Hidden;
-    public IList<DirectiveInstance> Directives = new List<DirectiveInstance>();
+    public IList<ModelDirective> Directives = new List<ModelDirective>();
     public bool IsDefaultForClrType = true; // false for ID type, to skip registration
 
     public __Type Type_ => (__Type)Intro_; 
@@ -64,14 +64,17 @@ namespace NGraphQL.Model {
     public virtual void Init(GraphQLServer server) { }
   }
 
-  public class DirectiveInstance {
-    public DirectiveDef Def;
-    public DirectiveBaseAttribute ModelAttribute; // for model (type system) directives
-    public RequestDirectiveRef RequestDirective; // for request directives
-    public object[] StaticArgs; // for request directives not dependent on variables 
-    public DirectiveHandler StaticHandler;
+  public class ModelDirective: IDirectiveHandlerFactory {
+    public static IList<ModelDirective> EmptyList = new ModelDirective[] { };
 
-    public static IList<DirectiveInstance> EmptyList = new DirectiveInstance[] { }; 
+    public DirectiveDef Def;
+    public DirectiveLocation Location; 
+    public DirectiveBaseAttribute Attribute; // for model (type system) directives
+    public DirectiveHandler Handler;
+
+    public DirectiveHandler GetHandler(RequestContext context) {
+      return Handler; 
+    }
   }
 
   public class ScalarTypeDef : TypeDefBase {
@@ -120,7 +123,7 @@ namespace NGraphQL.Model {
 
     public bool HasDefaultValue;
     public object DefaultValue;
-    public IList<DirectiveInstance> Directives;
+    public IList<ModelDirective> Directives;
 
     public Type ParamType; // Arg only; exact resolver parameter type
     public MemberInfo InputObjectClrMember; // InputObject only
@@ -135,7 +138,7 @@ namespace NGraphQL.Model {
 
     public FieldFlags Flags;
     public IList<InputValueDef> Args = new List<InputValueDef>();
-    public IList<DirectiveInstance> Directives;
+    public IList<ModelDirective> Directives;
     public MemberInfo ClrMember;
     public ResolverMethodInfo Resolver;
     public Func<object, object> Reader;
@@ -155,6 +158,7 @@ namespace NGraphQL.Model {
     public Type AttributeType;
     public Type DirectiveHandlerType; 
     public IList<InputValueDef> Args;
+    public DirectiveHandler StaticHandler; 
     public DirectiveDef() { }
 
     public static IList<DirectiveDef> EmptyList = new DirectiveDef[] { }; 

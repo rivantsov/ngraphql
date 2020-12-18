@@ -66,13 +66,13 @@ namespace NGraphQL.Model.Construction {
       }
     }
 
-    private IList<DirectiveInstance> BuildDirectivesFromAttributes(ICustomAttributeProvider clrObjectInfo, 
+    private IList<ModelDirective> BuildDirectivesFromAttributes(ICustomAttributeProvider clrObjectInfo, 
                           DirectiveLocation location, GraphQLModelObject owner) {
       var attrList = clrObjectInfo.GetCustomAttributes(inherit: true);
       if (attrList.Length == 0)
-        return DirectiveInstance.EmptyList;
+        return ModelDirective.EmptyList;
 
-      var dirList = new List<DirectiveInstance>();
+      var dirList = new List<ModelDirective>();
       foreach (var attr in attrList) {
         if (!(attr is DirectiveBaseAttribute dirAttr))
           continue;
@@ -86,10 +86,7 @@ namespace NGraphQL.Model.Construction {
         var dirCtx = new DirectiveContext() { Def = dirDef, Location = location, Owner = owner };
         var constrArgs = new object[] { dirCtx, dirAttr.ArgValues };
         var handler = (DirectiveHandler)Activator.CreateInstance(dirDef.DirectiveHandlerType, constrArgs);
-        var dir = new DirectiveInstance() {
-          Def = dirDef, ModelAttribute = dirAttr,
-          StaticArgs = dirAttr.ArgValues, StaticHandler = handler
-        };
+        var dir = new ModelDirective() { Def = dirDef, Attribute = dirAttr, Handler = handler, Location = location };
         dirList.Add(dir);
       }
       return dirList;

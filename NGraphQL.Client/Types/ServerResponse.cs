@@ -55,6 +55,9 @@ namespace NGraphQL.Client {
       return res; 
     }
 
+    public T GetUnmappedFieldValue<T>(object parent, string name) {
+      throw new NotImplementedException(); 
+    }
   }
 }
 

@@ -5,20 +5,44 @@ using NGraphQL.Model;
 using NGraphQL.Server.Execution;
 
 namespace NGraphQL.Server.RequestModel {
+
+  public abstract class MappedSelectionItem {
+    public SelectionItem Item; 
+    public MappedSelectionItem(SelectionItem item) { Item = item; }
+  }
+
   // Mapped field is runtime representation of a selection field in a query.
   // Mapped field set is a 'flattened' list of fields (with all fragments expanded)
   // for a specific output object type (when parent field returns union or interface)
   // It is also prepared for resolver invocation with mapped args.  
-  public class MappedField {
-    public SelectionField SelectionField;
-    public FieldDef FieldDef;
-    public IList<MappedArg> Args;
-    public IList<RequestDirectiveRef> Directives; 
+  public class MappedField: MappedSelectionItem {
+    public readonly SelectionField Field;
+    public readonly FieldDef FieldDef;
+    public readonly IList<MappedArg> Args;
 
-    public MappedField() { }
+    public MappedField(SelectionField field, FieldDef fieldDef, IList<MappedArg> args): base(field) {
+      Field = field;
+      FieldDef = fieldDef;
+      Args = args; 
+    }
 
-    public override string ToString() => $"{SelectionField.Key}";
+    public override string ToString() => $"{Field.Key}";
     public static readonly IList<MappedField> EmptyList = new MappedField[] { };
+  }
+
+  public class MappedFragmentSpread: MappedSelectionItem {
+    public readonly FragmentSpread Spread;
+    public readonly IList<MappedSelectionItem> Items; 
+    public MappedFragmentSpread(FragmentSpread spread, IList<MappedSelectionItem> items): base(spread) {
+      Spread = spread;
+      Items = items; 
+    }
+  }
+
+  public class MappedDirectiveSet {
+    public SelectionItem Item; 
+    public IList<DirectiveHandler> AllHandlers;
+
   }
 
   // used as MappedField args and request directive args
@@ -37,9 +61,9 @@ namespace NGraphQL.Server.RequestModel {
     object GetValue(RequestContext context);
   }
 
-  public class MappedObjectFieldSet {
+  public class MappedObjectItemSet {
     public ObjectTypeDef ObjectTypeDef;
-    public IList<MappedField> Fields = new List<MappedField>();
+    public IList<MappedSelectionItem> Items = new List<MappedSelectionItem>();
   }
 
 }

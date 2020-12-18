@@ -13,7 +13,7 @@ namespace NGraphQL.CodeFirst {
     IList<object> GetFullRequestPath();
 
     // to be used by resolver methods, to know in advance which fields  to load from db
-    IList<string> GetAllSelectionSubsetFieldNames();
+    // IList<string> GetAllSelectionSubsetFieldNames();
     
     // Batching (aka DataLoader functionality)
     IList<TEntity> GetAllParentEntities<TEntity>();

@@ -13,8 +13,8 @@ namespace NGraphQL.Model.Construction {
 
     public __Schema Build(GraphQLApiModel model) {
       _model = model;
+      _stringNotNull = _model.GetScalarTypeDef("String").TypeRefNotNull;
       _schema = _model.Schema_ = new __Schema();
-      var stringNotNull = _model.GetScalarTypeDef("String").TypeRefNotNull;
 
       // Create type objects without internal details; for typeDef and its typeRefs
       foreach (var typeDef in _model.Types) {

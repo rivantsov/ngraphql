@@ -63,7 +63,7 @@ namespace NGraphQL.Server.Execution {
     public IEnumerator<KeyValuePair<string, object>> GetEnumerator() {
       for(int i = 0; i < Fields.Count; i++) {
         if (_valuesMask.GetValue(i))
-          yield return new KeyValuePair<string, object>(Fields[i].SelectionField.Key, _values[i]);
+          yield return new KeyValuePair<string, object>(Fields[i].Field.Key, _values[i]);
       }
     }
 
@@ -101,7 +101,7 @@ namespace NGraphQL.Server.Execution {
 
     private int IndexOf(string key) {
       for(int i = 0; i < Fields.Count; i++) {
-        if (Fields[i].SelectionField.Key == key)
+        if (Fields[i].Field.Key == key)
           return i; 
       }
       return -1; 
@@ -112,7 +112,7 @@ namespace NGraphQL.Server.Execution {
     }
 
     // we don't care about efficiency in Keys and Values methods
-    public ICollection<string> Keys => Fields.Select(f => f.SelectionField.Key).ToList();
+    public ICollection<string> Keys => Fields.Select(f => f.Field.Key).ToList();
 
     public ICollection<object> Values => _values;
 
@@ -133,7 +133,7 @@ namespace NGraphQL.Server.Execution {
     }
 
     public bool ContainsKey(string key) {
-      return Fields.Any(f => f.SelectionField.Key == key);
+      return Fields.Any(f => f.Field.Key == key);
     }
 
     public void CopyTo(KeyValuePair<string, object>[] array, int arrayIndex) {
