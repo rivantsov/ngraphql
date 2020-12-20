@@ -5,7 +5,6 @@ using NGraphQL.CodeFirst;
 
 namespace NGraphQL.TestApp {
 
-  [Subscription]
   public interface IThingsSubscription {
 
     bool Subscribe(string childName);

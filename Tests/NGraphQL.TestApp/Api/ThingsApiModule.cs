@@ -9,16 +9,18 @@ namespace NGraphQL.TestApp {
   // modules then  assembled into a GraphQLApi
   
   public class ThingsGraphQLModule : GraphQLModule {
-    public ThingsGraphQLModule(GraphQLApi api): base(api) {
+    public ThingsGraphQLModule() {
       // 1. Register all types
-      RegisterTypes(
-        typeof(IThingsQuery), typeof(IThingsMutation), typeof(IThingsSubscription),
-        typeof(ThingKind), typeof(TheFlags),
-        typeof(INamedObj), typeof(IObjWithId),
-        typeof(Thing_), typeof(OtherThing_),
-        typeof(InputObj), typeof(InputObjWithEnums), typeof(InputObjParent), typeof(InputObjChild),
-        typeof(InputObjWithList),  typeof(ThingsUnion) 
-        );
+      base.EnumTypes.AddRange(new[] { typeof(ThingKind), typeof(TheFlags) });
+      base.ObjectTypes.AddRange(new[] { typeof(Thing_), typeof(OtherThing_) });
+      base.InputTypes.AddRange(new[] { typeof(InputObj), typeof(InputObjWithEnums), typeof(InputObjParent),         
+        typeof(InputObjChild),  typeof(InputObjWithList) });
+      base.InterfaceTypes.AddRange(new[] { typeof(INamedObj), typeof(IObjWithId) });
+      base.UnionTypes.Add(typeof(ThingsUnion));
+
+      base.QueryType = typeof(IThingsQuery);
+      base.MutationType = typeof(IThingsMutation);
+      base.SubscriptionType = typeof(IThingsSubscription);
 
       // Define mappings of entities (biz app objects) to API Object Types 
       MapEntity<Thing>().To<Thing_>(bt => new Thing_() {
@@ -36,7 +38,7 @@ namespace NGraphQL.TestApp {
       });
       MapEntity<OtherThing>().To<OtherThing_>(); // engine will automatically map all matching fields
 
-      RegisterResolvers(typeof(ThingsResolvers));
+      this.ResolverTypes.Add(typeof(ThingsResolvers));
 
       // testing hide-enum-value feature. Use this if you have no control over enum declaration, but you want to 
       //  remove/hide some members; for ex, some flag enums declare extra flag combinations as enum members (I do this often),
@@ -44,10 +46,6 @@ namespace NGraphQL.TestApp {
       this.HideMember(typeof(ThingKind), nameof(ThingKind.KindFour_Hidden));
     }// constructor
 
-    public override void OnModelConstructed() {
-      base.OnModelConstructed();
-      this.Api.Model.RemoveEnumValue(ThingKind.KindFour_Hidden);
-    }
   } // class
 
 }

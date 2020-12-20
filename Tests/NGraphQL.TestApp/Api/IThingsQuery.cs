@@ -5,7 +5,6 @@ using NGraphQL.CodeFirst;
 
 namespace NGraphQL.TestApp {
 
-  [Query]
   public interface IThingsQuery {
     [Resolver(nameof(ThingsResolvers.GetThings))]
     List<Thing_> Things { get; }
