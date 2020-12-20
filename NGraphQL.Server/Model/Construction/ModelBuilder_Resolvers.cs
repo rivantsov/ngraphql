@@ -21,7 +21,7 @@ namespace NGraphQL.Model.Construction {
       List<MethodInfo> methods = null; 
       var targetResolver = resAttr?.ResolverClass;
       if (targetResolver != null) {
-        if (!typeDef.Module.ResolverClasses.Contains(targetResolver)) {
+        if (!typeDef.Module.ResolverTypes.Contains(targetResolver)) {
           AddError($"Field {typeDef.Name}.{field.Name}: target resolver class {targetResolver.Name} is not registered with module. ");
           return false;
         }
@@ -34,7 +34,7 @@ namespace NGraphQL.Model.Construction {
       } else {
         // targetResolver is null
         methods = new List<MethodInfo>();
-        foreach (var resType in typeDef.Module.ResolverClasses) {
+        foreach (var resType in typeDef.Module.ResolverTypes) {
           var mlist = resType.GetResolverMethods(methName);
           methods.AddRange(mlist);  
         }

@@ -9,14 +9,13 @@ namespace NGraphQL.Introspection {
   public class IntrospectionModule: GraphQLModule {
 
     public IntrospectionModule(): base() {
-      this.RegisterModelTypes(
-        query: typeof(IntrospectionQuery),
-        enums: new[] { typeof(TypeKind), typeof(DirectiveLocation) },
-        objectTypes: new[] { typeof(__Schema),
-        typeof(__Type), typeof(__Field), typeof(__InputValue),
+      this.QueryType = typeof(IntrospectionQuery);
+      this.EnumTypes.AddRange(new[] { typeof(TypeKind), typeof(DirectiveLocation) });
+      this.ObjectTypes.AddRange( new[] { 
+        typeof(__Schema), typeof(__Type), typeof(__Field), typeof(__InputValue),
         typeof(__EnumValue), typeof(__Directive)}
       );
-      this.RegisterResolvers(typeof(IntrospectionResolvers));
+      this.ResolverTypes.Add(typeof(IntrospectionResolvers));
     }
 
   }

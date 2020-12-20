@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using NGraphQL.CodeFirst;
+using NGraphQL.Core.Scalars;
 using NGraphQL.Introspection;
 using NGraphQL.Utilities;
 
@@ -11,58 +12,79 @@ namespace NGraphQL.Model.Construction {
 
   public partial class ModelBuilder {
 
-    private void RegisterTypeDef(TypeDefBase typeDef, bool isSchema = false) {
+    private bool RegisterGraphQLTypesAndScalars() {
+      foreach (var module in _server.Modules) {
+        var mName = module.Name;
+        // scalars
+        foreach (var scalarType in module.ScalarTypes) {
+          var scalar = (Scalar)Activator.CreateInstance(scalarType);
+          var sTypeDef = new ScalarTypeDef(scalar);
+          RegisterTypeDef(sTypeDef);
+        }
+        // other types
+        foreach (var type in module.EnumTypes)
+          CreateRegisterTypeDef(type, module, TypeKind.Enum);
+        foreach (var type in module.ObjectTypes)
+          CreateRegisterTypeDef(type, module, TypeKind.Object);
+        foreach (var type in module.InputTypes)
+          CreateRegisterTypeDef(type, module, TypeKind.InputObject);
+        foreach (var type in module.InterfaceTypes)
+          CreateRegisterTypeDef(type, module, TypeKind.Interface);
+        foreach (var type in module.UnionTypes)
+          CreateRegisterTypeDef(type, module, TypeKind.Union);
+      } // foreach module
+
+      return !_model.HasErrors;
+    } //method
+
+
+    private void CreateRegisterTypeDef(Type type, GraphQLModule module, TypeKind typeKind) {
       try {
-        _model.Types.Add(typeDef);
-        if(!TryRegisterTypeDefByName(typeDef, isSchema))
+        if (_model.TypesByClrType.ContainsKey(type)) {
+          AddError($"Duplicate registration of type {type.Name}, module {module.Name}.");
           return;
-        if (typeDef.ClrType != null) {
+        }
+        var typeName = GetGraphQLName(type);
+        if (_model.TypesByName.ContainsKey(typeName)) {
+          AddError($"GraphQL type {typeName} already registered; CLR type: {type}, module: {module.Name}.");
+          return;
+        }
+        var typeDef = CreateTypeDef(type, typeName, typeKind, module.Name);
+        if (typeDef == null)
+          return;
+        typeDef.Module = module;
+        typeDef.TypeRole = TypeRole.DataType;
+        var hideAttr = type.GetAttribute<HiddenAttribute>();
+        if (hideAttr != null)
+          typeDef.Hidden = true;
+        RegisterTypeDef(typeDef); 
+      } catch (Exception ex) {
+        AddError($"FATAL: Failed to register type {type}, error: {ex}. ");
+      }
+    }
+
+    private void RegisterTypeDef(TypeDefBase typeDef) {
+        _model.Types.Add(typeDef);
+        _model.TypesByName.Add(typeDef.Name, typeDef);
+        if (typeDef.ClrType != null) { //schema has no CLR type
           if (typeDef.Kind != TypeKind.Scalar)
             typeDef.Description = _docLoader.GetDocString(typeDef.ClrType, typeDef.ClrType);
           if (typeDef.IsDefaultForClrType)
             _model.TypesByClrType.Add(typeDef.ClrType, typeDef);
         }
-      } catch (Exception ex) {
-        AddError($"FATAL: Failed to register type {typeDef}, name '{typeDef.Name}', error: " + ex.Message);
-      }
     }
 
-    private bool TryRegisterTypeDefByName(TypeDefBase typeDef, bool isSchema) {
-      var name = typeDef.Name;
-      if (name == "Schema" && !isSchema) {
-        AddError($"Invalid type name Schema for custom object type; module: {typeDef.Module.Name} ");
-        return false; 
-      }
-      if (_model.TypesByName.ContainsKey(name)) {
-        var mName = typeDef.Module.Name;
-        AddError($"Duplication type name, type '{name}' is already registered, possibly by another module; module: {mName} ");
-        return false;
-      }
-      _model.TypesByName.Add(typeDef.Name, typeDef);
-      return true; 
-    }
-
-
-    private TypeDefBase CreateTypeDef(Type type, GraphQLModule module, TypeRole typeRole) {
-      var typeDef = CreateTypeDefImpl(type, typeKind);
-      if (typeDef == null)
-        return null;
-      typeDef.Module = module;
-      typeDef.TypeRole = typeRole; 
-      var hideAttr = type.GetAttribute<HiddenAttribute>();
-      if (hideAttr != null)
-        typeDef.Hidden = true;
-      return typeDef; 
-    }
-
-    private TypeDefBase CreateTypeDefImpl(Type type, TypeKind typeKind) {
-      var typeName = GetGraphQLName(type);
+    private TypeDefBase CreateTypeDef (Type type, string typeName, TypeKind typeKind, string moduleName) {
       // Enum
-      if (type.IsEnum) {
-        var flagsAttr = type.GetAttribute<FlagsAttribute>();
-        return new EnumTypeDef(typeName, type, isFlagSet: flagsAttr != null);
-      }
       switch (typeKind) {
+        case TypeKind.Enum:
+          if (!type.IsEnum) {
+            AddError($"Type {type} cannot be registered as Enum GraphQL type, must be enum; module: {moduleName}");
+            return null; 
+          }
+          var flagsAttr = type.GetAttribute<FlagsAttribute>();
+          return new EnumTypeDef(typeName, type, isFlagSet: flagsAttr != null);
+
         case TypeKind.Object:
           return new ObjectTypeDef(typeName, type);
         case TypeKind.Interface:

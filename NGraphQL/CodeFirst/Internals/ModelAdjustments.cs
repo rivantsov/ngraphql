@@ -9,10 +9,10 @@ namespace NGraphQL.CodeFirst {
     GraphQLName,
   }
 
-  public class ModelAdjustment {
-    public AdjustmentType Type;
-    public Type ModelType; 
-    public string Field;
-    public object Value; 
+  public class AddedAttributeInfo {
+    public Type Type; 
+    public string MemberName;
+    public string ArgName;
+    public Attribute Attribute; 
   }
 }

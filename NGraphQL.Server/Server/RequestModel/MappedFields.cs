@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using NGraphQL.Core;
 using NGraphQL.Model;
 using NGraphQL.Server.Execution;
+using NGraphQL.Server.Parsing;
 
 namespace NGraphQL.Server.RequestModel {
 
@@ -51,19 +52,16 @@ namespace NGraphQL.Server.RequestModel {
 
     public RequestObjectBase Anchor; 
     public InputValueDef ArgDef; 
-    public IInputValueEvaluator Evaluator;
+    public InputValueEvaluator Evaluator;
 
     public MappedArg() { }
     public override string ToString() => $"{ArgDef.Name}/{ArgDef.TypeRef.Name}";
   }
 
-  public interface IInputValueEvaluator {
-    object GetValue(RequestContext context);
-  }
-
   public class MappedObjectItemSet {
     public ObjectTypeDef ObjectTypeDef;
     public IList<MappedSelectionItem> Items = new List<MappedSelectionItem>();
+    public IList<MappedField> StaticMappedFields; //when there's no @include/@skip directives
   }
 
 }

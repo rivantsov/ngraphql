@@ -21,8 +21,8 @@ namespace NGraphQL.TestApp {
     KindTwo,
     KindThree,
 
-    // this value will be hidden by initialization code - an example how to hide a enum value
-    // using code, when you do not control enum definition
+    // this value will be hidden by model builder - it will not show up in schema doc. 
+    // an example how to hide a enum value using code, when you do not control enum definition
     KindFour_Hidden,
   }
 

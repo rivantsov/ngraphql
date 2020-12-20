@@ -11,7 +11,7 @@ using NGraphQL.Utilities;
 
 namespace NGraphQL.Server.Parsing {
 
-  public abstract class InputValueEvaluator: IInputValueEvaluator {
+  public abstract class InputValueEvaluator {
     public InputValueDef InputDef; 
     public TypeRef ResultTypeRef; 
     public RequestObjectBase Anchor;
@@ -104,7 +104,6 @@ namespace NGraphQL.Server.Parsing {
   public class FlagSetInputEvaluator : InputValueEvaluator {
     public readonly EnumTypeDef EnumTypeDef;
     public InputValueEvaluator[] ElemEvaluators;
-    private TypeRef _stringTypeRef; 
 
     public FlagSetInputEvaluator(InputValueDef inputDef, TypeRef resultTypeRef, RequestObjectBase anchor, 
                     InputValueEvaluator[] valueEvals)
@@ -114,7 +113,6 @@ namespace NGraphQL.Server.Parsing {
     }
 
     protected override object Evaluate(RequestContext context) {
-      _stringTypeRef = _stringTypeRef ?? context.Server.CoreModule.String_.TypeRefNotNull;
       var values = new object[ElemEvaluators.Length];
       for (int i = 0; i < ElemEvaluators.Length; i++) {
         var eval = ElemEvaluators[i]; 

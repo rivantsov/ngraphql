@@ -5,6 +5,16 @@ using NGraphQL.CodeFirst;
 
 namespace NGraphQL.Model {
 
+
+  public enum TypeRole {
+    DataType,
+    Query,
+    Mutation,
+    Subscription,
+    Schema,
+  }
+
+
   public enum OperationType {
     Query,
     Mutation,

@@ -107,13 +107,13 @@ namespace NGraphQL.Server.Execution {
     private async Task ExecuteObjectsSelectionSubsetAsync(IList<OutputObjectScope> parentScopes,
                                                   ObjectTypeDef objTypeDef, SelectionSubset subSet) {
       var outItemSet = subSet.MappedItemSets.FirstOrDefault(fi => fi.ObjectTypeDef == objTypeDef);
-      var mappedOutItems = outItemSet.Items.Where(f => f.ShouldInclude(_requestContext)).ToList();
+      var mappedFields = GetIncludedMappedFields(outItemSet);
       // init scopes
       foreach (var scope in parentScopes)
-        scope.Init(objTypeDef, mappedOutItems);
+        scope.Init(objTypeDef, mappedFields);
 
-      for(int fldIndex = 0; fldIndex < mappedOutItems.Count; fldIndex++) {
-        var mappedField = mappedOutItems[fldIndex];
+      for(int fldIndex = 0; fldIndex < mappedFields.Count; fldIndex++) {
+        var mappedField = mappedFields[fldIndex];
         var fieldContext = new FieldContext(_requestContext, this, mappedField, fldIndex, parentScopes);
         foreach (var scope in fieldContext.AllParentScopes) {
           if (fieldContext.BatchResultWasSet && scope.HasValue(fldIndex))
@@ -139,26 +139,6 @@ namespace NGraphQL.Server.Execution {
         } //foreach scope
       }
     } //method
-
-    private bool ShouldInclude(MappedSelectionItem mappedItem) {
-      var reqDirs = mappedItem.Item.Directives;
-      // var modelDirs = field.FieldDef.Directives; // model dirs are not involved in include/skip
-      if (reqDirs == null || reqDirs.Count == 0)
-        return true;
-      foreach (var reqDir in reqDirs) {
-        var action =  GetRequestDirectiveAction<ISkipDirectiveAction>(reqDir);
-        if (action == null)
-          continue;
-        if (action.ShouldSkip(_requestContext, mappedItem))
-          return false;
-      }
-      return true;
-    }
-
-    public TAction GetRequestDirectiveAction<TAction>(RequestDirective dir) where TAction : class {
-      throw new NotImplementedException(); 
-    }
-
 
 
     private void Fail() {
