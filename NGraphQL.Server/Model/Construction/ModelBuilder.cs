@@ -25,8 +25,9 @@ namespace NGraphQL.Model.Construction {
     public void BuildModel() {
       _model = _server.Model = new GraphQLApiModel(_server);
 
-      // collect all data types, query/mutation types, resolvers
-      if (!RegisterGraphQLTypesAndScalars())
+      // collect,register scalar, data types, query/mutation types, resolvers
+      RegisterScalars(); 
+      if (!RegisterGraphQLTypes())
         return;
 
       if (!BuildRegisteredDirectiveDefinitions())
@@ -35,7 +36,7 @@ namespace NGraphQL.Model.Construction {
       if (!AssignMappedEntitiesForObjectTypes())
         return;
 
-      BuildTypesInternals();
+      BuildTypesInternalsFromClrType();
       if (_model.HasErrors)
         return;
 
@@ -57,14 +58,12 @@ namespace NGraphQL.Model.Construction {
       _model.SchemaDoc = schemaGen.GenerateSchema(_model);
 
       VerifyModel();
-
     }
 
-
-
-    private void BuildTypesInternals() {
-
+    private void BuildTypesInternalsFromClrType() {
       foreach (var td in _model.Types) {
+        if (td.ClrType == null)
+          continue; // Introspection types and special types (Query, Mutation etc) do not have Clr types
         DirectiveLocation loc = DirectiveLocation.None; 
         switch (td) {
           case InterfaceTypeDef intfTypeDef:
@@ -150,6 +149,8 @@ namespace NGraphQL.Model.Construction {
     private void LinkImplementedInterfaces() {
       var objTypes = _model.GetTypeDefs<ObjectTypeDef>(TypeKind.Object);
       foreach(var typeDef in objTypes) {
+        if (typeDef.ClrType == null) //exclude Intro objects and special types
+          continue;
         var intTypes = typeDef.ClrType.GetInterfaces();
         foreach(var iType in intTypes) {
           var iTypeDef = (InterfaceTypeDef) _model.LookupTypeDef(iType);
@@ -231,10 +232,14 @@ namespace NGraphQL.Model.Construction {
     }
 
     private void BuildSchemaDef() {
-      _model.QueryType = BuildRootSchemaObject("Query", TypeRole.Query);
-      _model.MutationType = BuildRootSchemaObject("Mutation", TypeRole.Mutation);
-      _model.SubscriptionType = BuildRootSchemaObject("Subscription", TypeRole.Subscription);
+      _model.QueryType = BuildRootSchemaObject("Query", TypeRole.ModuleQuery);
+      _model.MutationType = BuildRootSchemaObject("Mutation", TypeRole.ModuleMutation);
+      _model.SubscriptionType = BuildRootSchemaObject("Subscription", TypeRole.ModuleSubscription);
 
+      if (_model.QueryType == null) {
+        AddError("No fields are registered for Query root type; must have at least one query field.");
+        return; 
+      }
       var schemaDef = _model.Schema = new ObjectTypeDef("Schema", null, _model.Server.CoreModule);
       RegisterTypeDef(schemaDef);
       schemaDef.Hidden = false; // RegisterTypeDef hides it unhide it
@@ -246,13 +251,13 @@ namespace NGraphQL.Model.Construction {
         schemaDef.Fields.Add(new FieldDef("subscription", _model.SubscriptionType.TypeRefNull));
     }
 
-    private ObjectTypeDef BuildRootSchemaObject(string name, TypeRole typeRole) {
-      var allFields = _model.Types.Where(t => t.TypeRole == typeRole)
+    private ObjectTypeDef BuildRootSchemaObject(string name, TypeRole fromModuleTypeRole) {
+      var allFields = _model.Types.Where(t => t.TypeRole == fromModuleTypeRole)
           .Select(t => (ComplexTypeDef)t).SelectMany(t => t.Fields).ToList();
       if (allFields.Count == 0)
         return null;
       // TODO: add check for name duplicates
-      var rootObj = new ObjectTypeDef(name, null, _model.Server.CoreModule) { TypeRole = typeRole };
+      var rootObj = new ObjectTypeDef(name, null, TypeRole.SpecialSchemaObject);
       rootObj.Fields.AddRange(allFields);
       RegisterTypeDef(rootObj);
       rootObj.Hidden = false; 

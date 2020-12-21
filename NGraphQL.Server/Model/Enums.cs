@@ -8,10 +8,12 @@ namespace NGraphQL.Model {
 
   public enum TypeRole {
     DataType,
-    Query,
-    Mutation,
-    Subscription,
-    Schema,
+    // special types registered at module level
+    ModuleQuery,
+    ModuleMutation,
+    ModuleSubscription,
+    // final root Query, Mutation, Subscr, Schema objects constructed for entire app/api
+    SpecialSchemaObject,
   }
 
 

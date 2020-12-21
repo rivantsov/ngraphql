@@ -12,7 +12,7 @@ namespace NGraphQL.Model.Construction {
 
   public partial class ModelBuilder {
 
-    private bool RegisterGraphQLTypesAndScalars() {
+    private bool RegisterScalars() {
       foreach (var module in _server.Modules) {
         var mName = module.Name;
         // scalars
@@ -21,6 +21,13 @@ namespace NGraphQL.Model.Construction {
           var sTypeDef = new ScalarTypeDef(scalar, module);
           RegisterTypeDef(sTypeDef);
         }
+      }
+      return !_model.HasErrors;
+    }
+
+    private bool RegisterGraphQLTypes() {
+      foreach (var module in _server.Modules) {
+        var mName = module.Name;
         // other types
         foreach (var type in module.EnumTypes)
           CreateRegisterTypeDef(type, module, TypeKind.Enum);
@@ -32,11 +39,22 @@ namespace NGraphQL.Model.Construction {
           CreateRegisterTypeDef(type, module, TypeKind.Interface);
         foreach (var type in module.UnionTypes)
           CreateRegisterTypeDef(type, module, TypeKind.Union);
+        // Query, Mutation, Subscription
+        RegisterSpecialObjectTypeIfProvided(module.QueryType, TypeRole.ModuleQuery, module);
+        RegisterSpecialObjectTypeIfProvided(module.MutationType, TypeRole.ModuleMutation, module);
+        RegisterSpecialObjectTypeIfProvided(module.SubscriptionType, TypeRole.ModuleSubscription, module);
       } // foreach module
 
       return !_model.HasErrors;
     } //method
 
+    private void RegisterSpecialObjectTypeIfProvided(Type type, TypeRole typeRole, GraphQLModule module) {
+      if (type == null)
+        return;
+      var typeName = $"{module.Name}_{type.Name}";
+      var typeDef = new ObjectTypeDef(typeName, type, typeRole);
+      _model.Types.Add(typeDef);
+    }
 
     private void CreateRegisterTypeDef(Type type, GraphQLModule module, TypeKind typeKind) {
       try {
@@ -44,7 +62,6 @@ namespace NGraphQL.Model.Construction {
         var typeDef = CreateTypeDef(type, typeName, typeKind, module);
         if (typeDef == null)
           return;
-        typeDef.TypeRole = TypeRole.DataType;
         var hideAttr = type.GetAttribute<HiddenAttribute>();
         if (hideAttr != null)
           typeDef.Hidden = true;
@@ -58,8 +75,12 @@ namespace NGraphQL.Model.Construction {
     }
 
     private void RegisterTypeDef(TypeDefBase typeDef) {
+      _model.Types.Add(typeDef);
+      if (typeDef.TypeRole != TypeRole.DataType)
+        return; 
+      // data types - we register them by name and CLR type; they always have module and CLR type
       var modName = typeDef.Module.Name;
-      if (typeDef.ClrType != null && typeDef.IsDefaultForClrType) {
+      if (typeDef.IsDefaultForClrType) {
         if (_model.TypesByClrType.ContainsKey(typeDef.ClrType)) {
           AddError($"Duplicate registration of type {typeDef.Name} as default for CLR type {typeDef.ClrType}, module {modName}.");
           return;
@@ -72,7 +93,6 @@ namespace NGraphQL.Model.Construction {
       }
       _model.TypesByName.Add(typeDef.Name, typeDef);
 
-      _model.Types.Add(typeDef);
     }
 
     private TypeDefBase CreateTypeDef (Type type, string typeName, TypeKind typeKind, GraphQLModule module) {

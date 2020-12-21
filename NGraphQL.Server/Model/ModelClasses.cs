@@ -83,6 +83,7 @@ namespace NGraphQL.Model {
     public ScalarTypeDef(Scalar scalar, GraphQLModule module) 
       : base (scalar.Name, TypeKind.Scalar, scalar.DefaultClrType, module) {
       Scalar = scalar;
+      base.IsDefaultForClrType = Scalar.IsDefaultForClrType; 
     }
   }
 
@@ -97,7 +98,13 @@ namespace NGraphQL.Model {
     public List<InterfaceTypeDef> Implements = new List<InterfaceTypeDef>();
     public EntityMapping Mapping;
 
-    public ObjectTypeDef(string name, Type clrType, GraphQLModule module) : base(name, TypeKind.Object, clrType, module) { }
+    // constructor for special root objects (Query, Mutation, Schema, Subscription)
+    public ObjectTypeDef(string name, Type clrType, TypeRole typeRole): this(name, clrType, null) {
+      base.TypeRole = typeRole; 
+    }
+
+    public ObjectTypeDef(string name, Type clrType, GraphQLModule module) 
+      : base(name, TypeKind.Object, clrType, module) { }
   }
 
   public class InterfaceTypeDef : ComplexTypeDef {
