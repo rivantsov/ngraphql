@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using NGraphQL.Runtime;
 using NGraphQL.Server;
 using NGraphQL.Server.Execution;
 using NGraphQL.Utilities;
@@ -79,7 +80,7 @@ namespace NGraphQL.Http {
 
     private async Task HandleSchemaDocRequestAsync(HttpContext context) {
       context.Response.ContentType = "application/text";
-      await context.Response.WriteAsync(Server.Api.Model.SchemaDoc);
+      await context.Response.WriteAsync(Server.Model.SchemaDoc);
     }
 
     // request is parsed; now we know input variable types, we can deserialize them. 

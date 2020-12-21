@@ -22,4 +22,10 @@
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\NGraphQL.Server\NGraphQL.Server.csproj" />
+    <ProjectReference Include="..\NGraphQL\NGraphQL.csproj" />
+    <ProjectReference Include="..\Tests\NGraphQL.TestApp\NGraphQL.TestApp.csproj" />
+  </ItemGroup>
+
 </Project>

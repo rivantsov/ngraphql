@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using NGraphQL.CodeFirst;
+using NGraphQL.Introspection;
 using NGraphQL.Utilities;
 
 namespace NGraphQL.Model.Construction {
@@ -74,7 +75,7 @@ namespace NGraphQL.Model.Construction {
           ReturnsTask = returnsTask, TaskResultReader = taskResultReader };
       if (returnsTask)
         field.Flags |= FieldFlags.ReturnsTask;
-      if (typeDef.TypeRole == TypeRole.Object)
+      if (typeDef.TypeRole == TypeRole.DataType && typeDef.Kind == TypeKind.Object)
         field.Flags |= FieldFlags.HasParentArg; 
       ValidateResolverMethodArguments(typeDef, field); 
       return !_model.HasErrors;

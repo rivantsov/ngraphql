@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-
+using NGraphQL.Runtime;
 using NGraphQL.Server;
 
 namespace NGraphQL.Tests {

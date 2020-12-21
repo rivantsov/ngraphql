@@ -107,7 +107,7 @@ namespace NGraphQL.Server.Execution {
     private async Task ExecuteObjectsSelectionSubsetAsync(IList<OutputObjectScope> parentScopes,
                                                   ObjectTypeDef objTypeDef, SelectionSubset subSet) {
       var outItemSet = subSet.MappedItemSets.FirstOrDefault(fi => fi.ObjectTypeDef == objTypeDef);
-      var mappedFields = GetIncludedMappedFields(outItemSet);
+      var mappedFields = _requestContext.GetIncludedMappedFields(outItemSet);
       // init scopes
       foreach (var scope in parentScopes)
         scope.Init(objTypeDef, mappedFields);

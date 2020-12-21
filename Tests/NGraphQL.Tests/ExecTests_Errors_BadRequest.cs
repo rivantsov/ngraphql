@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using NGraphQL.Model;
@@ -9,8 +10,7 @@ using NGraphQL.Server;
 using NGraphQL.Server.Parsing;
 using NGraphQL.Server.Execution;
 using NGraphQL.TestApp;
-using System.Threading.Tasks;
-using NGraphQL.Model.Request;
+using NGraphQL.Runtime;
 
 namespace NGraphQL.Tests {
 

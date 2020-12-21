@@ -46,7 +46,8 @@ namespace NGraphQL.Server.Execution {
     }
 
     private async Task ExecuteOperationAsync(GraphQLOperation op, OutputObjectScope topScope) {
-      var topFields = op.SelectionSubset.GetIncludedMappedFields(op.OperationTypeDef, _requestContext);
+      var opOutItemSet = op.SelectionSubset.MappedItemSets.FirstOrDefault(fi => fi.ObjectTypeDef == op.OperationTypeDef);
+      var topFields = _requestContext.GetIncludedMappedFields(opOutItemSet);
       topScope.Init(op.OperationTypeDef, topFields);
       var parallel = _parallelQuery && op.OperationType == OperationType.Query && topFields.Count > 1; 
       

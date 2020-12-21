@@ -9,6 +9,7 @@ using Newtonsoft.Json.Serialization;
 
 using NGraphQL.CodeFirst;
 using NGraphQL.Model;
+using NGraphQL.Runtime;
 using NGraphQL.Server;
 using NGraphQL.Server.Execution;
 using NGraphQL.TestApp;
@@ -30,14 +31,15 @@ namespace NGraphQL.Tests {
       if(File.Exists(LogFilePath))
         File.Delete(LogFilePath);
       var thingsBizApp = new ThingsApp();
-      var thingsGraphQLApi = new ThingsApi(thingsBizApp);
-      ThingsServer = new GraphQLServer(thingsGraphQLApi);
+      var thingsModule = new ThingsGraphQLModule(); 
+      ThingsServer = new GraphQLServer(thingsBizApp);
+      ThingsServer.RegisterModules(thingsModule);
       ThingsServer.Initialize(); 
       ThingsServer.Events.RequestCompleted += ThingsServer_RequestCompleted;
 
       // Printout
       var schemaGen = new SchemaDocGenerator();
-      var schemaDoc = schemaGen.GenerateSchema(thingsGraphQLApi.Model);
+      var schemaDoc = schemaGen.GenerateSchema(ThingsServer.Model);
       File.WriteAllText("_thingsApiSchema.txt", schemaDoc);
 
       _serializerSettings = new JsonSerializerSettings() {

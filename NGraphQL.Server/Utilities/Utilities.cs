@@ -6,9 +6,9 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace NGraphQL {
+namespace NGraphQL.Server {
 
-  public static class Util {
+  public static class Utilities {
 
     // not used, and probably should NOT be used
     public static void Check(bool cond, string template, params object[] args) {

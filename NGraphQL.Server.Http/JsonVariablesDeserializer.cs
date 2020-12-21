@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json.Linq;
-
+using NGraphQL.Core.Scalars;
+using NGraphQL.Introspection;
 using NGraphQL.Model;
 using NGraphQL.Server;
-using NGraphQL.Model.Request;
 using NGraphQL.Server.Execution;
 using NGraphQL.Utilities;
 
@@ -26,8 +26,8 @@ namespace NGraphQL.Http {
         if (!httpRequest.RawVariables.TryGetValue(varDef.Name, out var rawValue))
           continue; //it might have default, or might be nullable; if not, it will be handled later
         path.Add(varDef.Name); 
-        var clrValue = ReadValue(context, varDef.TypeRef, rawValue, path);
-        if (clrValue == null && varDef.TypeRef.Kind == TypeKind.NotNull)
+        var clrValue = ReadValue(context, varDef.InputDef.TypeRef, rawValue, path);
+        if (clrValue == null && varDef.InputDef.TypeRef.Kind == TypeKind.NotNull)
           AddError(context, $"Variable {varDef.Name}: null value not allowed.", path);
         // contex
         context.RawRequest.Variables[varDef.Name] = clrValue;
@@ -53,7 +53,8 @@ namespace NGraphQL.Http {
             return ReadList(context, typeRef, jsonValue, path);
 
         case TypeKind.Scalar:
-          return ReadScalar(context, (ScalarTypeDef) typeRef.TypeDef, jsonValue, path);
+          var scalarDef = (ScalarTypeDef)typeRef.TypeDef;
+          return ReadScalar(context, scalarDef.Scalar, jsonValue, path);
           
         case TypeKind.Enum:
           return ReadEnum(context, (EnumTypeDef) typeRef.TypeDef, jsonValue, path);
@@ -91,7 +92,7 @@ namespace NGraphQL.Http {
       return arr1;
     }
 
-    private object ReadScalar(RequestContext context, ScalarTypeDef scalar, object jsonValue, IList<object> path) {
+    private object ReadScalar(RequestContext context, Scalar scalar, object jsonValue, IList<object> path) {
       var value = UnwrapSimpleValue(context, jsonValue, path);
       var res = scalar.ConvertInputValue(value);
       return res; 

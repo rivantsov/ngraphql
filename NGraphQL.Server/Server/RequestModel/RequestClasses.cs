@@ -127,6 +127,9 @@ namespace NGraphQL.Server.RequestModel {
     public DirectiveHandler StaticHandler; // if not dependent on variables
     public RequestDirective() { }
 
+    public DirectiveHandler GetHandler(RequestContext context) {
+      throw new System.NotImplementedException();
+    }
   }
 
   public class ParsedGraphQLRequest {
