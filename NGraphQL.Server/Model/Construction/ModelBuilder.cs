@@ -235,7 +235,7 @@ namespace NGraphQL.Model.Construction {
       _model.MutationType = BuildRootSchemaObject("Mutation", TypeRole.Mutation);
       _model.SubscriptionType = BuildRootSchemaObject("Subscription", TypeRole.Subscription);
 
-      var schemaDef = _model.Schema = new ObjectTypeDef("Schema", null);
+      var schemaDef = _model.Schema = new ObjectTypeDef("Schema", null, _model.Server.CoreModule);
       RegisterTypeDef(schemaDef);
       schemaDef.Hidden = false; // RegisterTypeDef hides it unhide it
       // schemaDef.Hidden = false; // - leave it hidden; RegisterTypeDef sets it to true
@@ -252,10 +252,10 @@ namespace NGraphQL.Model.Construction {
       if (allFields.Count == 0)
         return null;
       // TODO: add check for name duplicates
-      var rootObj = new ObjectTypeDef(name, null) { TypeRole = typeRole };
+      var rootObj = new ObjectTypeDef(name, null, _model.Server.CoreModule) { TypeRole = typeRole };
       rootObj.Fields.AddRange(allFields);
       RegisterTypeDef(rootObj);
-      rootObj.Hidden = false; // by default Hidden is true for module's Query, Mutation objects
+      rootObj.Hidden = false; 
       return rootObj;
     }
 

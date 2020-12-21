@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using NGraphQL.CodeFirst;
 using NGraphQL.Core;
 using NGraphQL.Introspection;
 using NGraphQL.Server;
@@ -27,7 +28,8 @@ namespace NGraphQL.Model {
     public readonly Type EnumBaseType;
     public Func<object, long> ToLong; 
 
-    public EnumTypeDef(string name, Type enumType, bool isFlagSet) : base(name, TypeKind.Enum, enumType) {
+    public EnumTypeDef(string name, Type enumType, bool isFlagSet, GraphQLModule module) 
+          : base(name, TypeKind.Enum, enumType, module) {
       base.ClrType = enumType;
       IsFlagSet = isFlagSet; 
       EnumBaseType = Enum.GetUnderlyingType(enumType);

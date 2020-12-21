@@ -8,8 +8,8 @@ namespace NGraphQL.CodeFirst {
   public class GraphQLModule {
     public string Name => GetType().Name;
 
-    public readonly List<Type> EnumTypes = new List<Type>();
     public readonly List<Type> ScalarTypes = new List<Type>();
+    public readonly List<Type> EnumTypes = new List<Type>();
     public readonly List<Type> ObjectTypes = new List<Type>();
     public readonly List<Type> InputTypes = new List<Type>();
     public readonly List<Type> InterfaceTypes = new List<Type>();

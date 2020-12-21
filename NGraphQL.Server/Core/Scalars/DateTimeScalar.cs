@@ -7,7 +7,10 @@ namespace NGraphQL.Core.Scalars {
 
   public class DateTimeScalar : Scalar {
 
-    public DateTimeScalar(string name = "DateTime") : base(name, "DateTime scalar", typeof(DateTime), isCustom: true) { }
+    public DateTimeScalar() : this("DateTime") {
+      IsDefaultForClrType = true;
+    }
+    public DateTimeScalar(string name) : base(name, "DateTime scalar", typeof(DateTime), isCustom: true) { }
 
     public override object ParseToken(RequestContext context, TokenData token) {
       switch(token.TermName) {

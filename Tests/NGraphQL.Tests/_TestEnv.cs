@@ -31,13 +31,18 @@ namespace NGraphQL.Tests {
         return;
       if(File.Exists(LogFilePath))
         File.Delete(LogFilePath);
-      var thingsBizApp = new ThingsApp();
-      var thingsModule = new ThingsGraphQLModule(); 
-      ThingsServer = new GraphQLServer(thingsBizApp);
-      ThingsServer.RegisterModules(thingsModule);
-      ThingsServer.Initialize(); 
-      ThingsServer.Events.RequestCompleted += ThingsServer_RequestCompleted;
-
+      try {
+        var thingsBizApp = new ThingsApp();
+        var thingsModule = new ThingsGraphQLModule();
+        ThingsServer = new GraphQLServer(thingsBizApp);
+        ThingsServer.RegisterModules(thingsModule);
+        ThingsServer.Initialize();
+        ThingsServer.Events.RequestCompleted += ThingsServer_RequestCompleted;
+      } catch (ServerStartupException sEx) {
+        LogText(sEx.ToText() + Environment.NewLine);
+        LogText(sEx.GetErrorsAsText());
+        throw;
+      }
       // Printout
       var schemaGen = new SchemaDocGenerator();
       var schemaDoc = schemaGen.GenerateSchema(ThingsServer.Model);

@@ -6,7 +6,9 @@ namespace NGraphQL.Core.Scalars {
 
   public class StringScalar : Scalar {
 
-    public StringScalar(string name = "String", string description = "String scalar", bool isCustom = false) 
+    public StringScalar() : this("String", "String sclar", false) { }
+
+    public StringScalar(string name, string description, bool isCustom) 
         : base(name, description, typeof(string), isCustom) { }
 
     // The string is actually already parsed by Irony parser (stripped quotes, unescaped, etc),

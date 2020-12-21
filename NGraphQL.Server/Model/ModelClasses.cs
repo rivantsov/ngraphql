@@ -24,7 +24,7 @@ namespace NGraphQL.Model {
   }
 
   public class TypeDefBase : GraphQLModelObject {
-    public GraphQLModule Module;
+    public readonly GraphQLModule Module;
     public TypeRole TypeRole;
 
     public TypeKind Kind;
@@ -39,10 +39,11 @@ namespace NGraphQL.Model {
     public readonly TypeRef TypeRefNotNull;
     public readonly IList<TypeRef> TypeRefs = new List<TypeRef>(); 
 
-    public TypeDefBase(string name, TypeKind kind, Type clrType) {
+    public TypeDefBase(string name, TypeKind kind, Type clrType, GraphQLModule module) {
       Name = name;
       Kind = kind;
       ClrType = clrType;
+      Module = module; 
       TypeRefNull = new TypeRef(this);
       TypeRefNotNull = new TypeRef(TypeRefNull, TypeKind.NotNull);
       TypeRefs.Add(TypeRefNull);
@@ -79,41 +80,46 @@ namespace NGraphQL.Model {
 
   public class ScalarTypeDef : TypeDefBase {
     public readonly Scalar Scalar;
-    public ScalarTypeDef(Scalar scalar) : base (scalar.Name, TypeKind.Scalar, scalar.DefaultClrType) {
-      Scalar = scalar; 
+    public ScalarTypeDef(Scalar scalar, GraphQLModule module) 
+      : base (scalar.Name, TypeKind.Scalar, scalar.DefaultClrType, module) {
+      Scalar = scalar;
     }
   }
 
   // base for Interface and Object types
   public abstract class ComplexTypeDef : TypeDefBase {
     public List<FieldDef> Fields = new List<FieldDef>();
-    public ComplexTypeDef(string name, TypeKind kind, Type clrType) : base(name, kind, clrType) { }
+    public ComplexTypeDef(string name, TypeKind kind, Type clrType, GraphQLModule module) 
+       : base(name, kind, clrType, module) { }
   }
 
   public class ObjectTypeDef : ComplexTypeDef {
     public List<InterfaceTypeDef> Implements = new List<InterfaceTypeDef>();
     public EntityMapping Mapping;
 
-    public ObjectTypeDef(string name, Type clrType) : base(name, TypeKind.Object, clrType) { }
+    public ObjectTypeDef(string name, Type clrType, GraphQLModule module) : base(name, TypeKind.Object, clrType, module) { }
   }
 
   public class InterfaceTypeDef : ComplexTypeDef {
     public List<ObjectTypeDef> PossibleTypes = new List<ObjectTypeDef>();
 
-    public InterfaceTypeDef(string name, Type clrType) : base(name, TypeKind.Interface, clrType) { }
+    public InterfaceTypeDef(string name, Type clrType, GraphQLModule module) 
+      : base(name, TypeKind.Interface, clrType, module) { }
     
   }
 
   public class UnionTypeDef : TypeDefBase {
     public List<ObjectTypeDef> PossibleTypes = new List<ObjectTypeDef>();
 
-    public UnionTypeDef(string name, Type clrType) : base(name, TypeKind.Union, clrType) { }
+    public UnionTypeDef(string name, Type clrType, GraphQLModule module) 
+        : base(name, TypeKind.Union, clrType, module) { }
   }
 
   public class InputObjectTypeDef : TypeDefBase {
     public List<InputValueDef> Fields = new List<InputValueDef>();
 
-    public InputObjectTypeDef(string name, Type clrType) : base(name, TypeKind.InputObject, clrType) { }
+    public InputObjectTypeDef(string name, Type clrType, GraphQLModule module) 
+        : base(name, TypeKind.InputObject, clrType, module) { }
 
   }
 

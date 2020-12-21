@@ -18,7 +18,7 @@ namespace NGraphQL.Model.Construction {
         // scalars
         foreach (var scalarType in module.ScalarTypes) {
           var scalar = (Scalar)Activator.CreateInstance(scalarType);
-          var sTypeDef = new ScalarTypeDef(scalar);
+          var sTypeDef = new ScalarTypeDef(scalar, module);
           RegisterTypeDef(sTypeDef);
         }
         // other types
@@ -40,23 +40,17 @@ namespace NGraphQL.Model.Construction {
 
     private void CreateRegisterTypeDef(Type type, GraphQLModule module, TypeKind typeKind) {
       try {
-        if (_model.TypesByClrType.ContainsKey(type)) {
-          AddError($"Duplicate registration of type {type.Name}, module {module.Name}.");
-          return;
-        }
         var typeName = GetGraphQLName(type);
-        if (_model.TypesByName.ContainsKey(typeName)) {
-          AddError($"GraphQL type {typeName} already registered; CLR type: {type}, module: {module.Name}.");
-          return;
-        }
-        var typeDef = CreateTypeDef(type, typeName, typeKind, module.Name);
+        var typeDef = CreateTypeDef(type, typeName, typeKind, module);
         if (typeDef == null)
           return;
-        typeDef.Module = module;
         typeDef.TypeRole = TypeRole.DataType;
         var hideAttr = type.GetAttribute<HiddenAttribute>();
         if (hideAttr != null)
           typeDef.Hidden = true;
+        if (typeDef.ClrType != null && typeDef.Kind != TypeKind.Scalar) { //schema has no CLR type
+          typeDef.Description = _docLoader.GetDocString(typeDef.ClrType, typeDef.ClrType);
+        }
         RegisterTypeDef(typeDef); 
       } catch (Exception ex) {
         AddError($"FATAL: Failed to register type {type}, error: {ex}. ");
@@ -64,18 +58,25 @@ namespace NGraphQL.Model.Construction {
     }
 
     private void RegisterTypeDef(TypeDefBase typeDef) {
-        _model.Types.Add(typeDef);
-        _model.TypesByName.Add(typeDef.Name, typeDef);
-        if (typeDef.ClrType != null) { //schema has no CLR type
-          if (typeDef.Kind != TypeKind.Scalar)
-            typeDef.Description = _docLoader.GetDocString(typeDef.ClrType, typeDef.ClrType);
-          if (typeDef.IsDefaultForClrType)
-            _model.TypesByClrType.Add(typeDef.ClrType, typeDef);
+      var modName = typeDef.Module.Name;
+      if (typeDef.ClrType != null && typeDef.IsDefaultForClrType) {
+        if (_model.TypesByClrType.ContainsKey(typeDef.ClrType)) {
+          AddError($"Duplicate registration of type {typeDef.Name} as default for CLR type {typeDef.ClrType}, module {modName}.");
+          return;
         }
+        _model.TypesByClrType.Add(typeDef.ClrType, typeDef);
+      }
+      if (_model.TypesByName.ContainsKey(typeDef.Name)) {
+        AddError($"GraphQL type {typeDef.Name} already registered; module: {modName}.");
+        return;
+      }
+      _model.TypesByName.Add(typeDef.Name, typeDef);
+
+      _model.Types.Add(typeDef);
     }
 
-    private TypeDefBase CreateTypeDef (Type type, string typeName, TypeKind typeKind, string moduleName) {
-      // Enum
+    private TypeDefBase CreateTypeDef (Type type, string typeName, TypeKind typeKind, GraphQLModule module) {
+      var moduleName = module.Name;
       switch (typeKind) {
         case TypeKind.Enum:
           if (!type.IsEnum) {
@@ -83,16 +84,16 @@ namespace NGraphQL.Model.Construction {
             return null; 
           }
           var flagsAttr = type.GetAttribute<FlagsAttribute>();
-          return new EnumTypeDef(typeName, type, isFlagSet: flagsAttr != null);
+          return new EnumTypeDef(typeName, type, isFlagSet: flagsAttr != null, module);
 
         case TypeKind.Object:
-          return new ObjectTypeDef(typeName, type);
+          return new ObjectTypeDef(typeName, type, module);
         case TypeKind.Interface:
-          return new InterfaceTypeDef(typeName, type);
+          return new InterfaceTypeDef(typeName, type, module);
         case TypeKind.InputObject:
-          return new InputObjectTypeDef(typeName, type);
+          return new InputObjectTypeDef(typeName, type, module);
         case TypeKind.Union:
-          return new UnionTypeDef(typeName, type);
+          return new UnionTypeDef(typeName, type, module);
       }
       // should never happen
       return null;

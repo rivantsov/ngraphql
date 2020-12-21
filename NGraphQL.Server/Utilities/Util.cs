@@ -73,8 +73,7 @@ namespace NGraphQL.Utilities {
       foreach(var key in ex.Data.Keys) 
         sList.Add($"{key} = {ex.Data[key]}");
       var sData = string.Join(Environment.NewLine, sList);
-      return exStr + Environment.NewLine + sData; 
-        
+      return exStr + Environment.NewLine + sData;         
     }
 
 

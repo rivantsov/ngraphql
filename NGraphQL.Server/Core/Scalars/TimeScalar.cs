@@ -7,7 +7,9 @@ namespace NGraphQL.Core.Scalars {
 
   public class TimeScalar : Scalar {
 
-    public TimeScalar() : base("Time", "Time scalar", typeof(TimeSpan), isCustom: true) { }
+    public TimeScalar() : base("Time", "Time scalar", typeof(TimeSpan), isCustom: true) {
+      IsDefaultForClrType = false; 
+    }
 
     public override object ParseToken(RequestContext context, TokenData token) {
       switch(token.TermName) {
