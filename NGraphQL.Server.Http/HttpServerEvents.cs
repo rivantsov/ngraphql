@@ -4,7 +4,7 @@ using System.Text;
 using Microsoft.AspNetCore.Http;
 using NGraphQL.Server.Execution;
 
-namespace NGraphQL.Http {
+namespace NGraphQL.Server.Http {
 
   public class HttpRequestEventArgs : EventArgs {
     public readonly GraphQLHttpRequest Request;

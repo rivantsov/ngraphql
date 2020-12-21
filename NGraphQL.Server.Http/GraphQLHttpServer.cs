@@ -10,11 +10,10 @@ using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using NGraphQL.Runtime;
-using NGraphQL.Server;
 using NGraphQL.Server.Execution;
 using NGraphQL.Utilities;
 
-namespace NGraphQL.Http {
+namespace NGraphQL.Server.Http {
 
   public class GraphQLHttpServer {
     public const string ContentTypeJson = "application/json";

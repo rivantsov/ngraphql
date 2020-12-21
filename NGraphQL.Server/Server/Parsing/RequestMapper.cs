@@ -5,6 +5,7 @@ using NGraphQL.Model;
 using NGraphQL.Runtime;
 using NGraphQL.Server.Execution;
 using NGraphQL.Server.RequestModel;
+using NGraphQL.Utilities;
 
 namespace NGraphQL.Server.Parsing {
 

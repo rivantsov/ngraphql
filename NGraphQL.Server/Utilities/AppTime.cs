@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Diagnostics;
 
 namespace NGraphQL.Utilities {
-  using System;
-  using System.Diagnostics;
 
   /// <summary>
   ///     A static utility class provides DateTime-related functions.

@@ -2,14 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json.Linq;
+
 using NGraphQL.Core.Scalars;
 using NGraphQL.Introspection;
 using NGraphQL.Model;
-using NGraphQL.Server;
+using NGraphQL.Runtime;
 using NGraphQL.Server.Execution;
 using NGraphQL.Utilities;
 
-namespace NGraphQL.Http {
+namespace NGraphQL.Server.Http {
 
   public class JsonVariablesDeserializer {
 

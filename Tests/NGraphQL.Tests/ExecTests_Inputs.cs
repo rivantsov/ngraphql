@@ -11,6 +11,7 @@ using NGraphQL.Server;
 using NGraphQL.Server.Execution;
 using System.Collections;
 using NGraphQL.TestApp;
+using NGraphQL.Runtime;
 
 namespace NGraphQL.Tests {
   using TDict = Dictionary<string, object>;

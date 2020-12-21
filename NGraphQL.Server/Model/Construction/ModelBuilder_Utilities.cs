@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 
 using NGraphQL.CodeFirst;
+using NGraphQL.Utilities;
 
 namespace NGraphQL.Model.Construction {
   public partial class ModelBuilder {

@@ -15,7 +15,7 @@ namespace NGraphQL.Tests {
       TestEnv.LogTestMethodStart();
 
       TestEnv.LogTestDescr(@" schema doc generator; generating schema and parsing it, verifying syntactic correctness. See schema saved in the _thingsApiSchema.txt file in bin folder. ");
-      var schemaDoc = TestEnv.ThingsServer.Api.Model.SchemaDoc;
+      var schemaDoc = TestEnv.ThingsServer.Model.SchemaDoc;
       // Try parsing the schema doc
       var parser = TestEnv.ThingsServer.Grammar.CreateSchemaParser();
       var schemaParseTree = parser.Parse(schemaDoc);

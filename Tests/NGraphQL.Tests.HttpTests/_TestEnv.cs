@@ -10,12 +10,12 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 
-using NGraphQL.Http;
 using NGraphQL.Server;
 using NGraphQL.TestApp;
 using NGraphQL.Utilities;
 using Arrest;
 using NGraphQL.Client;
+using NGraphQL.Server.Http;
 
 namespace NGraphQL.Tests.HttpTests {
   using TDict = IDictionary<string, object>;
@@ -24,7 +24,6 @@ namespace NGraphQL.Tests.HttpTests {
     public static string ServiceUrl = "http://127.0.0.1:55000";
     public static string GraphQLEndPointUrl = ServiceUrl + "/graphql";
     public static GraphQLHttpServer ThingsHttpServer;
-    public static ThingsApi ThingsApi;
     public static RestClient RestClient;
     public static GraphQLClient Client; 
 
@@ -48,8 +47,9 @@ namespace NGraphQL.Tests.HttpTests {
 
       // create server and Http graphQL server 
       var thingsBizApp = new ThingsApp();
-      ThingsApi = new ThingsApi(thingsBizApp);
-      var thingsServer = new GraphQLServer(ThingsApi);
+      var thingsServer = new GraphQLServer(thingsBizApp);
+      var thingsModule = new ThingsGraphQLModule();
+      thingsServer.RegisterModules(thingsModule); 
       thingsServer.Initialize();
       ThingsHttpServer = new GraphQLHttpServer(thingsServer);
 

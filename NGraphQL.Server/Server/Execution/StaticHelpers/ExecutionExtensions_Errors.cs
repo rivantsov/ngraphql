@@ -8,6 +8,7 @@ using NGraphQL.Model;
 using NGraphQL.Runtime;
 using NGraphQL.Server.Parsing;
 using NGraphQL.Server.RequestModel;
+using NGraphQL.Utilities;
 
 namespace NGraphQL.Server.Execution {
   public static partial class ExecutionExtensions {

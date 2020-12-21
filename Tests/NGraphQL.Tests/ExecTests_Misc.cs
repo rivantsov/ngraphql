@@ -9,10 +9,12 @@ using NGraphQL.Server.Execution;
 using NGraphQL.Utilities;
 using NGraphQL.TestApp;
 using System.Linq;
+using NGraphQL.Runtime;
 
 namespace NGraphQL.Tests {
 
   using TDict = Dictionary<string, object>;
+  using IDict = IDictionary<string, object>;
 
   public partial class ExecTests {
 
@@ -196,7 +198,7 @@ query myQuery ($all: Boolean!) {
 }";
       vars = new TDict() { { "all", true } };
       resp = await ExecuteAsync(query, vars);
-      var thingScope = resp.GetValue<ObjectScope>("thing");
+      var thingScope = resp.GetValue<IDict>("thing");
       var hasKind = thingScope.ContainsKey("kind");
       Assert.IsTrue(hasKind, "Expected kind field.");
 
@@ -204,7 +206,7 @@ query myQuery ($all: Boolean!) {
       // Now $all=false
       vars["all"] = false;
       resp = await ExecuteAsync(query, vars);
-      thingScope = resp.GetValue<ObjectScope>("thing");
+      thingScope = resp.GetValue<IDict>("thing");
       hasKind = thingScope.ContainsKey("kind");
       Assert.IsFalse(hasKind, "Expected no kind field.");
     }

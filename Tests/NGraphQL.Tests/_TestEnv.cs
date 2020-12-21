@@ -12,6 +12,7 @@ using NGraphQL.Model;
 using NGraphQL.Runtime;
 using NGraphQL.Server;
 using NGraphQL.Server.Execution;
+using NGraphQL.Utilities;
 using NGraphQL.TestApp;
 
 namespace NGraphQL.Tests {

@@ -9,7 +9,7 @@ namespace NGraphQL.Runtime {
     public string Message;
     public IList<Location> Locations = new List<Location>();
     public IList<object> Path;
-    public IDictionary<string, object> Extensions = new Dictionary<string, object>();
+    public IDictionary<string, object> Extensions = new Dictionary<string, object>(); 
 
     public GraphQLError() { }
 
