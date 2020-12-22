@@ -9,11 +9,16 @@ namespace NGraphQL.Model {
   public enum ObjectTypeRole {
     // all types defining data (Object type, input type, enum, etc)
     Data,
-    // special types registered at module level
+    // Query, Mutation, Subscription types registered at module level; their role is to define fields that will end up corresponding 
+    //  root types for the entire API. So final schema Query type will include all fields from Query types defined at module level. 
     ModuleQuery,
     ModuleMutation,
     ModuleSubscription,
-    // final root Query, Mutation, Subscr, Schema objects constructed for entire app/api
+
+    // Root schema objects constructed for the entire app/api
+    Query,
+    Mutation,
+    Subscription,
     Schema,
   }
 
