@@ -40,19 +40,19 @@ namespace NGraphQL.Model.Construction {
         foreach (var type in module.UnionTypes)
           CreateRegisterTypeDef(type, module, TypeKind.Union);
         // Query, Mutation, Subscription
-        RegisterSpecialObjectTypeIfProvided(module.QueryType, TypeRole.ModuleQuery, module);
-        RegisterSpecialObjectTypeIfProvided(module.MutationType, TypeRole.ModuleMutation, module);
-        RegisterSpecialObjectTypeIfProvided(module.SubscriptionType, TypeRole.ModuleSubscription, module);
+        RegisterSpecialObjectTypeIfProvided(module.QueryType, ObjectTypeRole.ModuleQuery, module);
+        RegisterSpecialObjectTypeIfProvided(module.MutationType, ObjectTypeRole.ModuleMutation, module);
+        RegisterSpecialObjectTypeIfProvided(module.SubscriptionType, ObjectTypeRole.ModuleSubscription, module);
       } // foreach module
 
       return !_model.HasErrors;
     } //method
 
-    private void RegisterSpecialObjectTypeIfProvided(Type type, TypeRole typeRole, GraphQLModule module) {
+    private void RegisterSpecialObjectTypeIfProvided(Type type, ObjectTypeRole typeRole, GraphQLModule module) {
       if (type == null)
         return;
       var typeName = $"{module.Name}_{type.Name}";
-      var typeDef = new ObjectTypeDef(typeName, type, typeRole);
+      var typeDef = new ObjectTypeDef(typeName, type, module, typeRole);
       _model.Types.Add(typeDef);
     }
 
@@ -76,7 +76,8 @@ namespace NGraphQL.Model.Construction {
 
     private void RegisterTypeDef(TypeDefBase typeDef) {
       _model.Types.Add(typeDef);
-      if (typeDef.TypeRole != TypeRole.DataType)
+      // do not register further (by name or CLR type) the special objects
+      if (typeDef is ObjectTypeDef otd && otd.TypeRole != ObjectTypeRole.Data)
         return; 
       // data types - we register them by name and CLR type; they always have module and CLR type
       var modName = typeDef.Module.Name;

@@ -36,7 +36,7 @@ namespace NGraphQL.Model.Construction {
       //  Add this mappings explicitly, this will allow building field readers on each
       //  field definition. 
       foreach (var typeDef in _model.Types) {
-        if (typeDef.TypeRole == TypeRole.DataType && typeDef is ObjectTypeDef otd && otd.Mapping == null) {
+        if (typeDef is ObjectTypeDef otd && otd.TypeRole == ObjectTypeRole.Data && otd.Mapping == null) {
           otd.Mapping = new EntityMapping() { EntityType = typeDef.ClrType, GraphQLType = typeDef.ClrType };
           _model.TypesByEntityType[typeDef.ClrType] = otd;
         }

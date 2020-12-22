@@ -232,18 +232,19 @@ namespace NGraphQL.Model.Construction {
     }
 
     private void BuildSchemaDef() {
-      _model.QueryType = BuildRootSchemaObject("Query", TypeRole.ModuleQuery);
-      _model.MutationType = BuildRootSchemaObject("Mutation", TypeRole.ModuleMutation);
-      _model.SubscriptionType = BuildRootSchemaObject("Subscription", TypeRole.ModuleSubscription);
+      var specialObjTypeDefs = _model.Types.Where(td => td.Kind == TypeKind.Object).OfType<ObjectTypeDef>()
+           .Where(otd => otd.TypeRole != ObjectTypeRole.Data).ToList();
+      _model.QueryType = BuildRootSchemaObject(specialObjTypeDefs, "Query", ObjectTypeRole.ModuleQuery);
+      _model.MutationType = BuildRootSchemaObject(specialObjTypeDefs, "Mutation", ObjectTypeRole.ModuleMutation);
+      _model.SubscriptionType = BuildRootSchemaObject(specialObjTypeDefs, "Subscription", ObjectTypeRole.ModuleSubscription);
 
       if (_model.QueryType == null) {
         AddError("No fields are registered for Query root type; must have at least one query field.");
         return; 
       }
-      var schemaDef = _model.Schema = new ObjectTypeDef("Schema", null, _model.Server.CoreModule);
+      var schemaDef = _model.Schema = new ObjectTypeDef("Schema", null, null, ObjectTypeRole.Schema);
       RegisterTypeDef(schemaDef);
-      schemaDef.Hidden = false; // RegisterTypeDef hides it unhide it
-      // schemaDef.Hidden = false; // - leave it hidden; RegisterTypeDef sets it to true
+      schemaDef.Hidden = false; 
       schemaDef.Fields.Add(new FieldDef("query", _model.QueryType.TypeRefNull));
       if (_model.MutationType != null)
         schemaDef.Fields.Add(new FieldDef("mutation", _model.MutationType.TypeRefNull));
@@ -251,13 +252,13 @@ namespace NGraphQL.Model.Construction {
         schemaDef.Fields.Add(new FieldDef("subscription", _model.SubscriptionType.TypeRefNull));
     }
 
-    private ObjectTypeDef BuildRootSchemaObject(string name, TypeRole fromModuleTypeRole) {
-      var allFields = _model.Types.Where(t => t.TypeRole == fromModuleTypeRole)
+    private ObjectTypeDef BuildRootSchemaObject(IList<ObjectTypeDef> specialTypeDefs, string name, ObjectTypeRole fromModuleTypeRole) {
+      var allFields = specialTypeDefs.Where(t => t.TypeRole == fromModuleTypeRole)
           .Select(t => (ComplexTypeDef)t).SelectMany(t => t.Fields).ToList();
       if (allFields.Count == 0)
         return null;
       // TODO: add check for name duplicates
-      var rootObj = new ObjectTypeDef(name, null, TypeRole.SpecialSchemaObject);
+      var rootObj = new ObjectTypeDef(name, null, null, ObjectTypeRole.Schema);
       rootObj.Fields.AddRange(allFields);
       RegisterTypeDef(rootObj);
       rootObj.Hidden = false; 

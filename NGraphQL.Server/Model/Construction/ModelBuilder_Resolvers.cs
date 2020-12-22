@@ -75,7 +75,7 @@ namespace NGraphQL.Model.Construction {
           ReturnsTask = returnsTask, TaskResultReader = taskResultReader };
       if (returnsTask)
         field.Flags |= FieldFlags.ReturnsTask;
-      if (typeDef.TypeRole == TypeRole.DataType && typeDef.Kind == TypeKind.Object)
+      if (typeDef is ObjectTypeDef otd && otd.TypeRole == ObjectTypeRole.Data)
         field.Flags |= FieldFlags.HasParentArg; 
       ValidateResolverMethodArguments(typeDef, field); 
       return !_model.HasErrors;

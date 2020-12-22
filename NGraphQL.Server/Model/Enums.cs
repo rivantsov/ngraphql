@@ -6,14 +6,15 @@ using NGraphQL.CodeFirst;
 namespace NGraphQL.Model {
 
 
-  public enum TypeRole {
-    DataType,
+  public enum ObjectTypeRole {
+    // all types defining data (Object type, input type, enum, etc)
+    Data,
     // special types registered at module level
     ModuleQuery,
     ModuleMutation,
     ModuleSubscription,
     // final root Query, Mutation, Subscr, Schema objects constructed for entire app/api
-    SpecialSchemaObject,
+    Schema,
   }
 
 

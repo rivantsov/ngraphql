@@ -18,7 +18,7 @@ namespace NGraphQL.Model.Construction {
 
       // Create type objects without internal details; for typeDef and its typeRefs
       foreach (var typeDef in _model.Types) {
-        if (typeDef.Hidden)
+        if (typeDef.TypeRole != ObjectTypeRole.Data)
           continue; 
         CreateTypeObject(typeDef);
         foreach(var typeRef in typeDef.TypeRefs)
@@ -26,7 +26,7 @@ namespace NGraphQL.Model.Construction {
       }
 
       // Build types internals - fields, etc
-      BuildTypeObjects();
+      BuildTypeObjectsInternals();
       BuildDirectives(); 
       CompleteSchemaObject(); 
       return _schema;
@@ -47,11 +47,12 @@ namespace NGraphQL.Model.Construction {
            Name = dirDef.Name, Description = dirDef.Description, Locations = dirInfo.Locations, 
           IsDeprecated = dirInfo.IsDeprecated, DeprecationReason = dirInfo.DeprecationReason
         };
-        dir_.Args =
-          dirDef.Args.Select(ivd => new __InputValue() {
-            Name = ivd.Name, Description = ivd.Description,
-            Type = ivd.TypeRef.Type_, DefaultValue = ivd.DefaultValue + string.Empty
-          }).ToArray();
+        if (dirDef.Args != null)
+          dir_.Args =
+            dirDef.Args.Select(ivd => new __InputValue() {
+              Name = ivd.Name, Description = ivd.Description,
+              Type = ivd.TypeRef.Type_, DefaultValue = ivd.DefaultValue + string.Empty
+            }).ToArray();
         _schema.Directives.Add(dir_); 
       }
     }
@@ -92,8 +93,10 @@ namespace NGraphQL.Model.Construction {
       }
     }
 
-    private void BuildTypeObjects() {
+    private void BuildTypeObjectsInternals() {
       foreach(var typeDef in _model.Types) {
+        if (typeDef.Type_ == null)
+          continue; 
         switch(typeDef) {
           case ScalarTypeDef std:
             BuildScalarType(std);

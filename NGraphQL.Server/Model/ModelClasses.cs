@@ -25,8 +25,7 @@ namespace NGraphQL.Model {
 
   public class TypeDefBase : GraphQLModelObject {
     public readonly GraphQLModule Module;
-    public TypeRole TypeRole;
-
+    public ObjectTypeRole TypeRole = ObjectTypeRole.Data;
     public TypeKind Kind;
     public Type ClrType;
     public bool Hidden;
@@ -98,13 +97,10 @@ namespace NGraphQL.Model {
     public List<InterfaceTypeDef> Implements = new List<InterfaceTypeDef>();
     public EntityMapping Mapping;
 
-    // constructor for special root objects (Query, Mutation, Schema, Subscription)
-    public ObjectTypeDef(string name, Type clrType, TypeRole typeRole): this(name, clrType, null) {
-      base.TypeRole = typeRole; 
+    public ObjectTypeDef(string name, Type clrType, GraphQLModule module, ObjectTypeRole typeRole = ObjectTypeRole.Data) 
+      : base(name, TypeKind.Object, clrType, module) {
+      this.TypeRole = typeRole;
     }
-
-    public ObjectTypeDef(string name, Type clrType, GraphQLModule module) 
-      : base(name, TypeKind.Object, clrType, module) { }
   }
 
   public class InterfaceTypeDef : ComplexTypeDef {
@@ -143,6 +139,7 @@ namespace NGraphQL.Model {
 
     public InputValueDef() { }
     public override string ToString() => $"{Name}/{TypeRef}";
+    public static IList<InputValueDef> EmptyList = new InputValueDef[] { };
   }
 
   [DisplayName("{Name}/{TypeRef.Name}")]
@@ -170,7 +167,7 @@ namespace NGraphQL.Model {
     public DirectiveInfo DirInfo;
     public Type AttributeType;
     public Type DirectiveHandlerType; 
-    public IList<InputValueDef> Args;
+    public IList<InputValueDef> Args = InputValueDef.EmptyList;
     public DirectiveHandler StaticHandler; 
     public DirectiveDef() { }
 
