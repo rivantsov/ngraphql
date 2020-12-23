@@ -81,7 +81,7 @@ namespace NGraphQL.Model {
       }
 
       // types
-      var objTypes = SelectTypes<ObjectTypeDef>(TypeKind.Object);
+      var objTypes = SelectTypes<ObjectTypeDef>(TypeKind.Object).Where(td => td.IsSchemaType()).ToList();
       foreach(var tDef in objTypes) {
         AppendDescr(tDef.Description);
         _builder.Append("type " + tDef.Name);

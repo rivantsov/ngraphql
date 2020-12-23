@@ -77,7 +77,20 @@ namespace NGraphQL.Model {
         case DirectiveDef dir: return dir.Intro_;
         default: return null; 
       }
+    }
+
+    public static bool IsSchemaType(this TypeDefBase typeDef) {
+      switch(typeDef.TypeRole) {
+        case ObjectTypeRole.ModuleMutation:
+        case ObjectTypeRole.ModuleQuery:
+        case ObjectTypeRole.ModuleSubscription:
+          return false;
+        default:
+          return true; 
+      }
 
     }
+
+
   } //class
 }

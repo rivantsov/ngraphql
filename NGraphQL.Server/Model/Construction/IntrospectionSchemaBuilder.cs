@@ -8,6 +8,7 @@ namespace NGraphQL.Model.Construction {
 
   public class IntrospectionSchemaBuilder {
     GraphQLApiModel _model;
+    IList<TypeDefBase> _schemaTypes;
     __Schema _schema;
     TypeRef _stringNotNull;
 
@@ -18,7 +19,7 @@ namespace NGraphQL.Model.Construction {
 
       // Create type objects without internal details; for typeDef and its typeRefs
       foreach (var typeDef in _model.Types) {
-        if (typeDef.TypeRole != ObjectTypeRole.Data)
+        if (!typeDef.IsSchemaType())
           continue; 
         CreateTypeObject(typeDef);
         foreach(var typeRef in typeDef.TypeRefs)
@@ -95,7 +96,7 @@ namespace NGraphQL.Model.Construction {
 
     private void BuildTypeObjectsInternals() {
       foreach(var typeDef in _model.Types) {
-        if (typeDef.Type_ == null)
+        if (typeDef.Type_ == null) //not schema type
           continue; 
         switch(typeDef) {
           case ScalarTypeDef std:
