@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using NGraphQL.Core;
 using NGraphQL.Runtime;
 
 namespace NGraphQL.CodeFirst {

@@ -4,6 +4,7 @@ using System.Linq.Expressions;
 using System.Text;
 
 namespace NGraphQL.CodeFirst {
+
   public class EntityMapping {
     public Type GraphQLType;
     public Type EntityType;

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using NGraphQL.CodeFirst;
+using NGraphQL.Directives;
 
 namespace NGraphQL.TestApp {
 

@@ -1,16 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using NGraphQL.Introspection;
 
 namespace NGraphQL.CodeFirst {
   
-  public static class ModuleExtensions {
+  public static class GraphQLModuleExtensions {
 
     public static void HideMember(this GraphQLModule module, Type type, string memberName) {
       module.Adjustments.Add(new AddedAttributeInfo() { 
         Type = type, MemberName = memberName, Attribute = new HiddenAttribute() 
       });
     }
+
     public static void IgnoreMember(this GraphQLModule module, Type type, string memberName) {
       module.Adjustments.Add(new AddedAttributeInfo() {
         Type = type, MemberName = memberName, Attribute = new IgnoreAttribute()
@@ -27,6 +29,16 @@ namespace NGraphQL.CodeFirst {
       module.Adjustments.Add(new AddedAttributeInfo() {
         Type = type, MemberName = memberName, Attribute = new GraphQLNameAttribute(name)
       });
+    }
+
+    public static DirectiveRegistration RegisterDirective(this GraphQLModule module, string name, Type directiveType, 
+           DirectiveLocation locations, string description = null, bool listInSchema = true) {
+      var reg = new DirectiveRegistration() {
+        Name = name, DirectiveType = directiveType, Locations = locations, Description = description,
+        ListInSchema = listInSchema,
+      };
+      module.RegisteredDirectives.Add(reg);
+      return reg; 
     }
 
 

@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using NGraphQL.CodeFirst;
+using NGraphQL.Directives;
 
 namespace NGraphQL.TestApp {
 

@@ -90,6 +90,7 @@ namespace NGraphQL.Model {
           var intfList = string.Join(" & ", tDef.Implements.Select(iDef => iDef.Name));
           _builder.Append(intfList);
         }
+        AppendDirs(tDef.Directives);
         _builder.AppendLine(" {");
         foreach(var fld in tDef.Fields) {
           if(fld.Flags.IsSet(FieldFlags.Hidden))

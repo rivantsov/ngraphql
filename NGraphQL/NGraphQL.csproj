@@ -5,12 +5,4 @@
     <RootNamespace>NGraphQL</RootNamespace>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="CodeFirst\Internals\TypeRegistration_Disabled.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="CodeFirst\Internals\TypeRegistration_Disabled.cs" />
-  </ItemGroup>
-
 </Project>

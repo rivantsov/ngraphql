@@ -8,6 +8,7 @@ using System.Reflection;
 using NGraphQL.CodeFirst;
 using NGraphQL.Core;
 using NGraphQL.Core.Scalars;
+using NGraphQL.Directives;
 using NGraphQL.Introspection;
 using NGraphQL.Server;
 using NGraphQL.Server.Execution;
@@ -69,11 +70,14 @@ namespace NGraphQL.Model {
 
     public DirectiveDef Def;
     public DirectiveLocation Location; 
-    public DirectiveBaseAttribute Attribute; // for model (type system) directives
+    public IDirectiveInstance Attribute; // for model (type system) directives
     public DirectiveHandler Handler;
 
     public DirectiveHandler GetHandler(RequestContext context) {
       return Handler; 
+    }
+    public override string ToString() {
+      return Def?.ToString(); 
     }
   }
 
@@ -164,8 +168,8 @@ namespace NGraphQL.Model {
   }
 
   public class DirectiveDef : GraphQLModelObject {
-    public DirectiveInfo DirInfo;
-    public Type AttributeType;
+    public DirectiveRegistration DirInfo;
+    public DeprecatedDirAttribute DeprecatedAttribute; //if marked
     public Type DirectiveHandlerType; 
     public IList<InputValueDef> Args = InputValueDef.EmptyList;
     public DirectiveHandler StaticHandler; 

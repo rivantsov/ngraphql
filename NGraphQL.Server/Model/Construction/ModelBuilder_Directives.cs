@@ -6,6 +6,7 @@ using System.Text;
 
 using NGraphQL.CodeFirst;
 using NGraphQL.Core;
+using NGraphQL.Directives;
 using NGraphQL.Introspection;
 using NGraphQL.Utilities;
 
@@ -26,21 +27,16 @@ namespace NGraphQL.Model.Construction {
     }
 
     private void RegisterModuleDirectives(GraphQLModule module) { 
-      foreach (var dirType in module.DirectiveAttributeTypes) {
-        if (!typeof(DirectiveBaseAttribute).IsAssignableFrom(dirType)) {
+      foreach (var dirReg in module.RegisteredDirectives) {
+        var dirType = dirReg.DirectiveType;
+        if (!typeof(IDirectiveInstance).IsAssignableFrom(dirType)) {
           AddError($"Directive attribute {dirType} is not .");
         }
-        var infoAttr = dirType.GetAttribute<DirectiveInfoAttribute>();
-        if (infoAttr == null) {
-          AddError($"Directive attribute {dirType} has no DirectiveInfo attribute.");
+        if (_model.Directives.ContainsKey(dirReg.Name)) {
+          AddError($"Module {module.Name}: directive {dirReg.Name}, type {dirType} already registered.");
           continue;
         }
-        var info = infoAttr.Info;
-        if (_model.Directives.ContainsKey(info.Name)) {
-          AddError($"Module {module.Name}: directive {info.Name}, type {dirType} already registered.");
-          continue;
-        }
-        var dirDef = new DirectiveDef() { AttributeType = dirType, DirInfo = info, Name = info.Name, Description = info.Description };
+        var dirDef = new DirectiveDef() { DirInfo = dirReg, Name = dirReg.Name, Description = dirReg.Description };
         _model.Directives[dirDef.Name] = dirDef;
       }
     }
@@ -74,10 +70,10 @@ namespace NGraphQL.Model.Construction {
 
       var dirList = new List<ModelDirective>();
       foreach (var attr in attrList) {
-        if (!(attr is DirectiveBaseAttribute dirAttr))
+        if (!(attr is IDirectiveInstance dirAttr))
           continue;
         var dirAttrType = dirAttr.GetType(); 
-        var dirDef = _model.Directives.Values.FirstOrDefault(def => def.AttributeType == dirAttrType);
+        var dirDef = _model.Directives.Values.FirstOrDefault(def => def.DirInfo.DirectiveType == dirAttrType);
         if (dirDef == null) {
           AddError($"{clrObjectInfo}: directive attribute {dirAttrType} not registered.");
           continue;
