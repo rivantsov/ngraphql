@@ -1,7 +1,6 @@
 ﻿using System;
 using Irony.Parsing;
 using NGraphQL.Introspection;
-using NGraphQL.Runtime;
 
 namespace NGraphQL.Model {
 

@@ -131,20 +131,28 @@ namespace NGraphQL.Model.Construction {
       var prms = resMethod.GetParameters();
       if (prms == null || prms.Length == 0)
         return;
-      foreach (var prm in prms) {
-        var attrs = GetAllAttributes(prm, resMethod); 
-        var prmTypeRef = GetTypeRef(prm.ParameterType, prm, $"Method {resMethod.Name}, parameter {prm.Name}", resMethod);
+      fieldDef.Args = BuildArgDefs(prms, resMethod); 
+    }
+
+    private IList<InputValueDef> BuildArgDefs(IList<ParameterInfo> parameters, MethodBase method) {
+      ConstructorInfo ci; 
+      var argDefs = new List<InputValueDef>();
+      foreach (var prm in parameters) {
+        var attrs = GetAllAttributes(prm, method);
+        var prmTypeRef = GetTypeRef(prm.ParameterType, prm, $"Method {method.Name}, parameter {prm.Name}", method);
         if (prmTypeRef == null)
-          continue; 
+          continue;
         if (prmTypeRef.IsList && !prmTypeRef.TypeDef.IsEnumFlagArray())
-          VerifyListParameterType(prm.ParameterType, resMethod, prm.Name);
+          VerifyListParameterType(prm.ParameterType, method, prm.Name);
         var dftValue = prm.DefaultValue == DBNull.Value ? null : prm.DefaultValue;
         var argDef = new InputValueDef() {
           Name = GetGraphQLName(prm), TypeRef = prmTypeRef, Attributes = attrs,
-          ParamType = prm.ParameterType, HasDefaultValue = prm.HasDefaultValue, DefaultValue = dftValue};
+          ParamType = prm.ParameterType, HasDefaultValue = prm.HasDefaultValue, DefaultValue = dftValue
+        };
         argDef.Directives = BuildDirectivesFromAttributes(prm, DirectiveLocation.ArgumentDefinition, argDef);
-        fieldDef.Args.Add(argDef);
+        argDefs.Add(argDef);
       }
+      return argDefs; 
     }
 
     public void AddError(string message) {

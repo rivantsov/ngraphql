@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace NGraphQL.Runtime {
+namespace NGraphQL.Server {
 
   public class GraphQLException : Exception {
     public GraphQLException(string message, Exception inner = null) : base(message, inner) { }

@@ -9,7 +9,6 @@ using Newtonsoft.Json.Serialization;
 
 using NGraphQL.CodeFirst;
 using NGraphQL.Model;
-using NGraphQL.Runtime;
 using NGraphQL.Server;
 using NGraphQL.Server.Execution;
 using NGraphQL.Utilities;

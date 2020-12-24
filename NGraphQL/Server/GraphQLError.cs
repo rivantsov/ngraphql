@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using NGraphQL.CodeFirst;
 
-namespace NGraphQL {
+namespace NGraphQL.Server {
 
   // see https://spec.graphql.org/June2018/#sec-Errors
   public class GraphQLError {

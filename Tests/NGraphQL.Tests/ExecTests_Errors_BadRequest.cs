@@ -10,7 +10,6 @@ using NGraphQL.Server;
 using NGraphQL.Server.Parsing;
 using NGraphQL.Server.Execution;
 using NGraphQL.TestApp;
-using NGraphQL.Runtime;
 
 namespace NGraphQL.Tests {
 

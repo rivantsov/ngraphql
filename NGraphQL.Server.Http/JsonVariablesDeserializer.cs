@@ -6,7 +6,6 @@ using Newtonsoft.Json.Linq;
 using NGraphQL.Core.Scalars;
 using NGraphQL.Introspection;
 using NGraphQL.Model;
-using NGraphQL.Runtime;
 using NGraphQL.Server.Execution;
 using NGraphQL.Utilities;
 

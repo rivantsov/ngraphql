@@ -55,7 +55,7 @@ namespace NGraphQL.Model.Construction {
       return enumField.Name.ToUnderscoreCase().ToUpperInvariant();
     }
 
-    public IList<Attribute> GetAllAttributes(ICustomAttributeProvider provider, MethodInfo paramOwner = null) {
+    public IList<Attribute> GetAllAttributes(ICustomAttributeProvider provider, MethodBase paramOwner = null) {
       var attrs = provider.GetCustomAttributes(inherit: true).Select(a => a as Attribute).ToList();
       IList<Attribute> added = null; 
       switch(provider) {

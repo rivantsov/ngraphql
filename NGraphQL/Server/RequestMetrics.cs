@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using NGraphQL.Utilities;
 
-namespace NGraphQL.Server.Execution {
+namespace NGraphQL.Server {
 
   /// <summary>Request processing metrics data.</summary>
   public class RequestMetrics {
     /// <summary>Request processing start.</summary>
-    public readonly DateTime StartedOn = AppTime.UtcNow;
+    public DateTime StartedOn;
 
     /// <summary>Request processing duration.</summary>
     public TimeSpan Duration;

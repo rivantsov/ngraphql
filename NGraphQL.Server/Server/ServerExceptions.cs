@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-
+using NGraphQL.CodeFirst;
 using NGraphQL.Model;
-using NGraphQL.Runtime;
 using NGraphQL.Server.Parsing;
 using NGraphQL.Server.RequestModel;
 

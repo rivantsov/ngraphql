@@ -3,7 +3,6 @@ using System.Linq;
 using NGraphQL.CodeFirst;
 using NGraphQL.Core;
 using NGraphQL.Model;
-using NGraphQL.Runtime;
 using NGraphQL.Server.Execution;
 using NGraphQL.Server.RequestModel;
 using NGraphQL.Utilities;

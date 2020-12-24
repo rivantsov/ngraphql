@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-
+using NGraphQL.CodeFirst;
 using NGraphQL.Model;
-using NGraphQL.Runtime;
 using NGraphQL.Server.RequestModel;
 
 namespace NGraphQL.Server.Execution {

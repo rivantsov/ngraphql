@@ -39,6 +39,16 @@ namespace NGraphQL.Model.Construction {
         var deprAttr = dirType.GetAttribute<DeprecatedDirAttribute>(); 
         var dirDef = new DirectiveDef() { DirInfo = dirReg, Name = dirReg.Name, Description = dirReg.Description, 
                                           DeprecatedAttribute = deprAttr};
+        // build parameters
+        var constrList = dirType.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
+        if (constrList.Length != 1) {
+          AddError($"Module {module.Name}: directive type {dirReg.Name} - must have a single public constructor.");
+          continue;
+        }
+        var constr = constrList[0];
+        var prms = constr.GetParameters();
+        dirDef.Args = BuildArgDefs(prms, constr);
+
         _model.Directives[dirReg.Name] = dirDef;
       }
     }

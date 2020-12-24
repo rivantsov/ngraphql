@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Http;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using NGraphQL.Runtime;
 using NGraphQL.Server.Execution;
 using NGraphQL.Utilities;
 

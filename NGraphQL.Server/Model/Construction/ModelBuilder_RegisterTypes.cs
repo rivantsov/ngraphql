@@ -123,7 +123,7 @@ namespace NGraphQL.Model.Construction {
       return null;
     }
 
-    private TypeRef GetTypeRef(Type type, ICustomAttributeProvider attributeSource, string location, MethodInfo paramOwner = null) {
+    private TypeRef GetTypeRef(Type type, ICustomAttributeProvider attributeSource, string location, MethodBase paramOwner = null) {
       var scalarAttr = attributeSource.GetAttribute<ScalarAttribute>();
 
       UnwrapClrType(type, attributeSource, out var baseType, out var kinds, paramOwner);
@@ -157,7 +157,8 @@ namespace NGraphQL.Model.Construction {
       return typeRef;
     }
 
-    private void UnwrapClrType(Type type, ICustomAttributeProvider attributeSource, out Type baseType, out List<TypeKind> kinds, MethodInfo paramOwner) {
+    private void UnwrapClrType(Type type, ICustomAttributeProvider attributeSource, out Type baseType, out List<TypeKind> kinds, 
+                                  MethodBase paramOwner) {
       kinds = new List<TypeKind>();
       var attrs = GetAllAttributes(attributeSource, paramOwner);
       bool notNull = attrs.Find<NullAttribute>() == null;

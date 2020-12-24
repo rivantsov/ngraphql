@@ -92,6 +92,10 @@ namespace NGraphQL.Model {
       Scalar = scalar;
       base.IsDefaultForClrType = Scalar.IsDefaultForClrType; 
     }
+
+    public override string ToSchemaDocString(object value) {
+      return this.Scalar.ToSchemaDocString(value); 
+    }
   }
 
   // base for Interface and Object types

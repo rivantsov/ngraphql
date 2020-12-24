@@ -6,7 +6,6 @@ using Irony.Parsing;
 using NGraphQL.Server.Execution;
 using NGraphQL.Model;
 using NGraphQL.Server.RequestModel;
-using NGraphQL.Runtime;
 using NGraphQL.CodeFirst;
 
 namespace NGraphQL.Server.Parsing {

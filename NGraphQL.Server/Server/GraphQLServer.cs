@@ -10,7 +10,6 @@ using NGraphQL.Core;
 using NGraphQL.Introspection;
 using NGraphQL.Model;
 using NGraphQL.Model.Construction;
-using NGraphQL.Runtime;
 using NGraphQL.Server.Execution;
 using NGraphQL.Server.Parsing;
 using NGraphQL.Utilities;

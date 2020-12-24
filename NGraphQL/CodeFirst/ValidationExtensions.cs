@@ -1,5 +1,5 @@
 ﻿using System;
-using NGraphQL.Runtime;
+using NGraphQL.Server;
 
 namespace NGraphQL.CodeFirst {
 

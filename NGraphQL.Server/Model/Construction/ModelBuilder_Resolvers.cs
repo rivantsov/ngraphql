@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading.Tasks;
 using NGraphQL.CodeFirst;
-using NGraphQL.Introspection;
 using NGraphQL.Utilities;
 
 namespace NGraphQL.Model.Construction {
@@ -113,7 +109,7 @@ namespace NGraphQL.Model.Construction {
       return true;
     }
 
-    private void VerifyListParameterType(Type type, MethodInfo method, string paramName) {
+    private void VerifyListParameterType(Type type, MethodBase method, string paramName) {
       if (!type.IsArray && !type.IsInterface)
         AddError($"Method {method.GetFullRef()}: Invalid list parameter type - must be array or IList<T>; parameter {paramName}. ");
     }

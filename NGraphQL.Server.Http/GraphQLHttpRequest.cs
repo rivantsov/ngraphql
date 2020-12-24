@@ -5,7 +5,6 @@ using System.Text;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json.Linq;
 
-using NGraphQL.Runtime;
 using NGraphQL.Server.Execution;
 
 namespace NGraphQL.Server.Http {

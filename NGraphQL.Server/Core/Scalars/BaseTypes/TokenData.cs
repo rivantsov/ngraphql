@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using NGraphQL.CodeFirst;
-using NGraphQL.Runtime;
+using NGraphQL.Server;
 
 namespace NGraphQL.Core.Scalars {
 

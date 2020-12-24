@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace NGraphQL {
+namespace NGraphQL.Server {
 
   public class GraphQLRequest {
     public string OperationName;
