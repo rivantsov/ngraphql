@@ -22,9 +22,9 @@ namespace NGraphQL.TestApp {
     KindTwo,
     KindThree,
 
-    // this value will be hidden by model builder - it will not show up in schema doc. 
+    // this value will be ignored by model builder - it will not show up in schema doc. 
     // an example how to hide a enum value using code, when you do not control enum definition
-    KindFour_Hidden,
+    KindFour_Ignored,
   }
 
   /// <summary>Thing flags enumeration.</summary>  

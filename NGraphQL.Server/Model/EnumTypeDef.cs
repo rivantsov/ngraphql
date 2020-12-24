@@ -13,7 +13,8 @@ namespace NGraphQL.Model {
 
   public class EnumValue : GraphQLModelObject {
     public object ClrValue;
-    public string ClrName; 
+    public string ClrName;
+    public IList<Attribute> Attributes;
     public long LongValue;  // enum value converted to int
     public IList<ModelDirective> Directives;
   }
@@ -28,8 +29,8 @@ namespace NGraphQL.Model {
     public readonly Type EnumBaseType;
     public Func<object, long> ToLong; 
 
-    public EnumTypeDef(string name, Type enumType, bool isFlagSet, GraphQLModule module) 
-          : base(name, TypeKind.Enum, enumType, module) {
+    public EnumTypeDef(string name, Type enumType, bool isFlagSet, IList<Attribute> attrs, GraphQLModule module) 
+          : base(name, TypeKind.Enum, enumType, attrs, module) {
       base.ClrType = enumType;
       IsFlagSet = isFlagSet; 
       EnumBaseType = Enum.GetUnderlyingType(enumType);

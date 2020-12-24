@@ -16,6 +16,7 @@ namespace NGraphQL.Model.Construction {
     GraphQLServer _server; 
     GraphQLApiModel _model;
     XmlDocumentationLoader _docLoader;
+    IList<AddedAttributeInfo> _modelAdjustments; 
 
     public ModelBuilder(GraphQLServer server) {
       _server = server;
@@ -24,6 +25,7 @@ namespace NGraphQL.Model.Construction {
 
     public void BuildModel() {
       _model = _server.Model = new GraphQLApiModel(_server);
+      _modelAdjustments = _server.Modules.SelectMany(m => m.Adjustments).ToList();
 
       // collect,register scalar, data types, query/mutation types, resolvers
       RegisterScalars(); 
@@ -96,7 +98,8 @@ namespace NGraphQL.Model.Construction {
       var clrType = typeDef.ClrType;
       var members = clrType.GetFieldsPropsMethods();
       foreach (var member in members) {
-        var ignoreAttr = member.GetCustomAttribute<IgnoreAttribute>();
+        var attrs = GetAllAttributes(member);
+        var ignoreAttr = attrs.Find<IgnoreAttribute>();
         if (ignoreAttr != null)
           continue;
         var mtype = member.GetMemberReturnType();
@@ -105,9 +108,9 @@ namespace NGraphQL.Model.Construction {
           continue; //error should be logged already
         var name = GetGraphQLName(member);
         var descr = _docLoader.GetDocString(member, clrType);
-        var fld = new FieldDef(name, typeRef) { ClrMember = member, Description = descr  };
+        var fld = new FieldDef(name, typeRef) { ClrMember = member, Description = descr, Attributes = attrs };
         fld.Directives = BuildDirectivesFromAttributes(member, DirectiveLocation.FieldDefinition, fld);
-        if (member.HasAttribute<HiddenAttribute>())
+        if (attrs.Find<HiddenAttribute>() != null)
           fld.Flags |= FieldFlags.Hidden;
         typeDef.Fields.Add(fld);
         if (member is MethodInfo method)
@@ -128,14 +131,15 @@ namespace NGraphQL.Model.Construction {
       if (prms == null || prms.Length == 0)
         return;
       foreach (var prm in prms) {
-        var prmTypeRef = GetTypeRef(prm.ParameterType, prm, $"Method {resMethod.Name}, parameter {prm.Name}");
+        var attrs = GetAllAttributes(prm, resMethod); 
+        var prmTypeRef = GetTypeRef(prm.ParameterType, prm, $"Method {resMethod.Name}, parameter {prm.Name}", resMethod);
         if (prmTypeRef == null)
           continue; 
         if (prmTypeRef.IsList && !prmTypeRef.TypeDef.IsEnumFlagArray())
           VerifyListParameterType(prm.ParameterType, resMethod, prm.Name);
         var dftValue = prm.DefaultValue == DBNull.Value ? null : prm.DefaultValue;
         var argDef = new InputValueDef() {
-          Name = GetGraphQLName(prm), TypeRef = prmTypeRef,
+          Name = GetGraphQLName(prm), TypeRef = prmTypeRef, Attributes = attrs,
           ParamType = prm.ParameterType, HasDefaultValue = prm.HasDefaultValue, DefaultValue = dftValue};
         argDef.Directives = BuildDirectivesFromAttributes(prm, DirectiveLocation.ArgumentDefinition, argDef);
         fieldDef.Args.Add(argDef);
@@ -165,6 +169,7 @@ namespace NGraphQL.Model.Construction {
     private void BuildInputObjectFields(InputObjectTypeDef inpTypeDef) {
       var members = inpTypeDef.ClrType.GetFieldsProps();
       foreach(var member in members) {
+        var attrs = GetAllAttributes(member); 
         var mtype = member.GetMemberReturnType();
         var typeRef = GetTypeRef(mtype, member, $"Field {inpTypeDef.Name}.{member.Name}");
         if (typeRef == null)
@@ -185,7 +190,8 @@ namespace NGraphQL.Model.Construction {
             AddError($"Input type member {inpTypeDef.Name}.{member.Name}: type {mtype} is not scalar or input type.");
             continue; 
         }
-        var inpFldDef = new InputValueDef() { Name = member.Name.FirstLower(), TypeRef = typeRef, InputObjectClrMember = member,
+        var inpFldDef = new InputValueDef() { Name = member.Name.FirstLower(), TypeRef = typeRef, Attributes = attrs,
+          InputObjectClrMember = member,
           Description = _docLoader.GetDocString(member, member.DeclaringType)
         };
         inpFldDef.Directives = BuildDirectivesFromAttributes(member, DirectiveLocation.InputFieldDefinition, inpFldDef);
@@ -215,7 +221,8 @@ namespace NGraphQL.Model.Construction {
       // enum values are static public fields of enum type
       var fields = enumTypeDef.ClrType.GetFields(BindingFlags.Public | BindingFlags.Static); 
       foreach(var fld in fields) {
-        var ignoreAttr = fld.GetCustomAttribute<IgnoreAttribute>();
+        var attrs = GetAllAttributes(fld);
+        var ignoreAttr = attrs.Find<IgnoreAttribute>();
         if(ignoreAttr != null)
           continue; 
         var fldValue = fld.GetValue(null);
@@ -224,6 +231,7 @@ namespace NGraphQL.Model.Construction {
           continue; // ignore 'None=0' member in Flags enum
         var enumV = new EnumValue() {
           Name = GetEnumFieldGraphQLName(fld), ClrValue = fldValue, ClrName = fldValue.ToString(), LongValue = longValue, 
+          Attributes = attrs, 
           Description = _docLoader.GetDocString(fld, enumTypeDef.ClrType)
         };
         enumV.Directives = BuildDirectivesFromAttributes(fld, DirectiveLocation.EnumValue, enumV);
@@ -240,7 +248,8 @@ namespace NGraphQL.Model.Construction {
         AddError("No fields are registered for Query root type; must have at least one query field.");
         return; 
       }
-      var schemaDef = _model.Schema = new ObjectTypeDef("Schema", null, null, ObjectTypeRole.Schema);
+      var noAttrs = GraphQLModelObject.EmptyAttributeList;
+      var schemaDef = _model.Schema = new ObjectTypeDef("Schema", null, noAttrs, null, ObjectTypeRole.Schema);
       RegisterTypeDef(schemaDef);
       schemaDef.Hidden = false; 
       schemaDef.Fields.Add(new FieldDef("query", _model.QueryType.TypeRefNull));
@@ -257,7 +266,7 @@ namespace NGraphQL.Model.Construction {
       if (allFields.Count == 0)
         return null;
       // TODO: add check for name duplicates
-      var rootObj = new ObjectTypeDef(name, null, null, typeRole);
+      var rootObj = new ObjectTypeDef(name, null, GraphQLModelObject.EmptyAttributeList, null, typeRole);
       rootObj.Fields.AddRange(allFields);
       RegisterTypeDef(rootObj);
       rootObj.Hidden = false; 

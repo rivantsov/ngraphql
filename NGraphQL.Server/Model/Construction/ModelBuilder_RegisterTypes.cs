@@ -52,17 +52,16 @@ namespace NGraphQL.Model.Construction {
       if (type == null)
         return;
       var typeName = $"{module.Name}_{type.Name}";
-      var typeDef = new ObjectTypeDef(typeName, type, module, typeRole);
+      var typeDef = new ObjectTypeDef(typeName, type, GraphQLModelObject.EmptyAttributeList, module, typeRole);
       _model.Types.Add(typeDef);
     }
 
     private void CreateRegisterTypeDef(Type type, GraphQLModule module, TypeKind typeKind) {
       try {
-        var typeName = GetGraphQLName(type);
-        var typeDef = CreateTypeDef(type, typeName, typeKind, module);
+        var typeDef = CreateTypeDef(type, typeKind, module);
         if (typeDef == null)
           return;
-        var hideAttr = type.GetAttribute<HiddenAttribute>();
+        var hideAttr = typeDef.Attributes.Find<HiddenAttribute>();
         if (hideAttr != null)
           typeDef.Hidden = true;
         if (typeDef.ClrType != null && typeDef.Kind != TypeKind.Scalar) { //schema has no CLR type
@@ -96,8 +95,12 @@ namespace NGraphQL.Model.Construction {
 
     }
 
-    private TypeDefBase CreateTypeDef (Type type, string typeName, TypeKind typeKind, GraphQLModule module) {
+    private TypeDefBase CreateTypeDef (Type type, TypeKind typeKind, GraphQLModule module) {
+      var allAttrs = GetAllAttributes(type);
+      var nameAttr = allAttrs.Find<GraphQLNameAttribute>();
+      var typeName = nameAttr?.Name ?? GetGraphQLName(type);
       var moduleName = module.Name;
+
       switch (typeKind) {
         case TypeKind.Enum:
           if (!type.IsEnum) {
@@ -105,25 +108,25 @@ namespace NGraphQL.Model.Construction {
             return null; 
           }
           var flagsAttr = type.GetAttribute<FlagsAttribute>();
-          return new EnumTypeDef(typeName, type, isFlagSet: flagsAttr != null, module);
+          return new EnumTypeDef(typeName, type, isFlagSet: flagsAttr != null, allAttrs, module);
 
         case TypeKind.Object:
-          return new ObjectTypeDef(typeName, type, module);
+          return new ObjectTypeDef(typeName, type, allAttrs, module);
         case TypeKind.Interface:
-          return new InterfaceTypeDef(typeName, type, module);
+          return new InterfaceTypeDef(typeName, type, allAttrs, module);
         case TypeKind.InputObject:
-          return new InputObjectTypeDef(typeName, type, module);
+          return new InputObjectTypeDef(typeName, type, allAttrs, module);
         case TypeKind.Union:
-          return new UnionTypeDef(typeName, type, module);
+          return new UnionTypeDef(typeName, type, allAttrs, module);
       }
       // should never happen
       return null;
     }
 
-    private TypeRef GetTypeRef(Type type, ICustomAttributeProvider attributeSource, string location) {
+    private TypeRef GetTypeRef(Type type, ICustomAttributeProvider attributeSource, string location, MethodInfo paramOwner = null) {
       var scalarAttr = attributeSource.GetAttribute<ScalarAttribute>();
 
-      UnwrapClrType(type, attributeSource, out var baseType, out var kinds);
+      UnwrapClrType(type, attributeSource, out var baseType, out var kinds, paramOwner);
 
       TypeDefBase typeDef;
       if (scalarAttr != null) {
@@ -154,15 +157,16 @@ namespace NGraphQL.Model.Construction {
       return typeRef;
     }
 
-    private void UnwrapClrType(Type type, ICustomAttributeProvider attributeSource, out Type baseType, out List<TypeKind> kinds) {
+    private void UnwrapClrType(Type type, ICustomAttributeProvider attributeSource, out Type baseType, out List<TypeKind> kinds, MethodInfo paramOwner) {
       kinds = new List<TypeKind>();
-      bool notNull = attributeSource.GetAttribute<NullAttribute>() == null;
+      var attrs = GetAllAttributes(attributeSource, paramOwner);
+      bool notNull = attrs.Find<NullAttribute>() == null;
       Type valueTypeUnder;
 
       if (type.IsGenericListOrArray(out baseType, out var rank)) {
         valueTypeUnder = Nullable.GetUnderlyingType(baseType);
         baseType = valueTypeUnder ?? baseType;
-        var withNulls = attributeSource.GetAttribute<WithNullsAttribute>() != null || valueTypeUnder != null;
+        var withNulls = attrs.Find<WithNullsAttribute>() != null || valueTypeUnder != null;
         if (!withNulls)
           kinds.Add(TypeKind.NotNull);
         for (int i = 0; i < rank; i++)

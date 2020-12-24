@@ -30,14 +30,16 @@ namespace NGraphQL.Model.Construction {
       foreach (var dirReg in module.RegisteredDirectives) {
         var dirType = dirReg.DirectiveType;
         if (!typeof(IDirectiveInstance).IsAssignableFrom(dirType)) {
-          AddError($"Directive attribute {dirType} is not .");
+          AddError($"Directive {dirType} should implement {nameof(IDirectiveInstance)} interface.");
         }
         if (_model.Directives.ContainsKey(dirReg.Name)) {
           AddError($"Module {module.Name}: directive {dirReg.Name}, type {dirType} already registered.");
           continue;
         }
-        var dirDef = new DirectiveDef() { DirInfo = dirReg, Name = dirReg.Name, Description = dirReg.Description };
-        _model.Directives[dirDef.Name] = dirDef;
+        var deprAttr = dirType.GetAttribute<DeprecatedDirAttribute>(); 
+        var dirDef = new DirectiveDef() { DirInfo = dirReg, Name = dirReg.Name, Description = dirReg.Description, 
+                                          DeprecatedAttribute = deprAttr};
+        _model.Directives[dirReg.Name] = dirDef;
       }
     }
 

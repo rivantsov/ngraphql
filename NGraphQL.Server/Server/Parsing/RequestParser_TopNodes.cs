@@ -128,7 +128,7 @@ namespace NGraphQL.Server.Parsing {
           AddError($"Invalid variable type ( {name}: {typeRef.Name}). Only scalar, enum or input types are allowed.", vn);
           continue;
         }
-        var inpDef = new InputValueDef() { Name = name, TypeRef = typeRef  };
+        var inpDef = new InputValueDef() { Name = name, TypeRef = typeRef };
         var varDef = new VariableDef() { Name = name, InputDef = inpDef, Location = vn.GetLocation() };
         // check default value
         var dftValNode = vn.FindChild(TermNames.ConstValue);

@@ -22,11 +22,13 @@ namespace NGraphQL.Model {
     public string Description;
     public IntroObjectBase Intro_; 
     public override string ToString() => Name;
+    public static readonly IList<Attribute> EmptyAttributeList = new Attribute[] { };
   }
 
   public class TypeDefBase : GraphQLModelObject {
     public readonly GraphQLModule Module;
     public ObjectTypeRole TypeRole = ObjectTypeRole.Data;
+    public IList<Attribute> Attributes; 
     public TypeKind Kind;
     public Type ClrType;
     public bool Hidden;
@@ -37,12 +39,13 @@ namespace NGraphQL.Model {
     // Default type refs
     public readonly TypeRef TypeRefNull;
     public readonly TypeRef TypeRefNotNull;
-    public readonly IList<TypeRef> TypeRefs = new List<TypeRef>(); 
+    public readonly IList<TypeRef> TypeRefs = new List<TypeRef>();
 
-    public TypeDefBase(string name, TypeKind kind, Type clrType, GraphQLModule module) {
+    public TypeDefBase(string name, TypeKind kind, Type clrType, IList<Attribute> attributes, GraphQLModule module) {
       Name = name;
       Kind = kind;
       ClrType = clrType;
+      Attributes = attributes; 
       Module = module; 
       TypeRefNull = new TypeRef(this);
       TypeRefNotNull = new TypeRef(TypeRefNull, TypeKind.NotNull);
@@ -84,7 +87,7 @@ namespace NGraphQL.Model {
   public class ScalarTypeDef : TypeDefBase {
     public readonly Scalar Scalar;
     public ScalarTypeDef(Scalar scalar, GraphQLModule module) 
-      : base (scalar.Name, TypeKind.Scalar, scalar.DefaultClrType, module) {
+      : base (scalar.Name, TypeKind.Scalar, scalar.DefaultClrType, EmptyAttributeList, module) {
       Scalar = scalar;
       base.IsDefaultForClrType = Scalar.IsDefaultForClrType; 
     }
@@ -93,16 +96,16 @@ namespace NGraphQL.Model {
   // base for Interface and Object types
   public abstract class ComplexTypeDef : TypeDefBase {
     public List<FieldDef> Fields = new List<FieldDef>();
-    public ComplexTypeDef(string name, TypeKind kind, Type clrType, GraphQLModule module) 
-       : base(name, kind, clrType, module) { }
+    public ComplexTypeDef(string name, TypeKind kind, Type clrType, IList<Attribute> attrs, GraphQLModule module) 
+       : base(name, kind, clrType, attrs, module) { }
   }
 
   public class ObjectTypeDef : ComplexTypeDef {
     public List<InterfaceTypeDef> Implements = new List<InterfaceTypeDef>();
     public EntityMapping Mapping;
 
-    public ObjectTypeDef(string name, Type clrType, GraphQLModule module, ObjectTypeRole typeRole = ObjectTypeRole.Data) 
-      : base(name, TypeKind.Object, clrType, module) {
+    public ObjectTypeDef(string name, Type clrType, IList<Attribute> attrs, GraphQLModule module, ObjectTypeRole typeRole = ObjectTypeRole.Data) 
+      : base(name, TypeKind.Object, clrType, attrs, module) {
       this.TypeRole = typeRole;
     }
   }
@@ -110,29 +113,30 @@ namespace NGraphQL.Model {
   public class InterfaceTypeDef : ComplexTypeDef {
     public List<ObjectTypeDef> PossibleTypes = new List<ObjectTypeDef>();
 
-    public InterfaceTypeDef(string name, Type clrType, GraphQLModule module) 
-      : base(name, TypeKind.Interface, clrType, module) { }
+    public InterfaceTypeDef(string name, Type clrType, IList<Attribute> attrs, GraphQLModule module) 
+      : base(name, TypeKind.Interface, clrType, attrs, module) { }
     
   }
 
   public class UnionTypeDef : TypeDefBase {
     public List<ObjectTypeDef> PossibleTypes = new List<ObjectTypeDef>();
 
-    public UnionTypeDef(string name, Type clrType, GraphQLModule module) 
-        : base(name, TypeKind.Union, clrType, module) { }
+    public UnionTypeDef(string name, Type clrType, IList<Attribute> attrs, GraphQLModule module) 
+        : base(name, TypeKind.Union, clrType, attrs, module) { }
   }
 
   public class InputObjectTypeDef : TypeDefBase {
     public List<InputValueDef> Fields = new List<InputValueDef>();
 
-    public InputObjectTypeDef(string name, Type clrType, GraphQLModule module) 
-        : base(name, TypeKind.InputObject, clrType, module) { }
+    public InputObjectTypeDef(string name, Type clrType, IList<Attribute> attrs, GraphQLModule module) 
+        : base(name, TypeKind.InputObject, clrType, attrs, module) { }
 
   }
 
   // Arg or InputObject field
   public class InputValueDef : GraphQLModelObject {
     public TypeRef TypeRef;
+    public IList<Attribute> Attributes = EmptyAttributeList; 
 
     public bool HasDefaultValue;
     public object DefaultValue;
@@ -149,6 +153,7 @@ namespace NGraphQL.Model {
   [DisplayName("{Name}/{TypeRef.Name}")]
   public class FieldDef : GraphQLModelObject {
     public TypeRef TypeRef;
+    public IList<Attribute> Attributes;
 
     public FieldFlags Flags;
     public IList<InputValueDef> Args = new List<InputValueDef>();

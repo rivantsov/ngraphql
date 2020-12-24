@@ -43,7 +43,7 @@ namespace NGraphQL.TestApp {
       // testing hide-enum-value feature. Use this if you have no control over enum declaration, but you want to 
       //  remove/hide some members; for ex, some flag enums declare extra flag combinations as enum members (I do this often),
       //  this practice does not fit with GraphQL semantics, so these values should be removed from the GraphQL enum declaration/schema. 
-      this.HideMember(typeof(ThingKind), nameof(ThingKind.KindFour_Hidden));
+      this.IgnoreMember(typeof(ThingKind), nameof(ThingKind.KindFour_Ignored));
     }// constructor
 
   } // class

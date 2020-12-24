@@ -23,15 +23,15 @@ namespace NGraphQL.Client.Utilities {
       return provider.GetAttribute<TAttr>() != null;
     }
 
-    public static IList<TAttr> GetAttributes<TAttr>(this ICustomAttributeProvider provider) where TAttr : Attribute {
-      var attrs = provider.GetCustomAttributes(inherit: true).Where(a => a is TAttr).OfType<TAttr>().ToList();
-      return attrs;
-    }
     public static TAttr GetAttribute<TAttr>(this ICustomAttributeProvider provider) where TAttr : Attribute {
       var attr = provider.GetAttributes<TAttr>().FirstOrDefault();
       return attr;
     }
 
+    public static IList<TAttr> GetAttributes<TAttr>(this ICustomAttributeProvider provider) where TAttr : Attribute {
+      var attrs = provider.GetCustomAttributes(inherit: true).Where(a => a is TAttr).OfType<TAttr>().ToList();
+      return attrs;
+    }
 
   }
 }

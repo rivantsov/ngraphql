@@ -55,6 +55,28 @@ namespace NGraphQL.Model.Construction {
       return enumField.Name.ToUnderscoreCase().ToUpperInvariant();
     }
 
+    public IList<Attribute> GetAllAttributes(ICustomAttributeProvider provider, MethodInfo paramOwner = null) {
+      var attrs = provider.GetCustomAttributes(inherit: true).Select(a => a as Attribute).ToList();
+      IList<Attribute> added = null; 
+      switch(provider) {
+        case Type t:
+          added = _modelAdjustments.Where(a => a.Type == t && a.MemberName == null && a.ArgName == null)
+                         .Select(a => a.Attribute).ToList();
+          break;
+        
+        case MemberInfo m:
+          added = _modelAdjustments.Where(a => a.Type == m.DeclaringType && a.MemberName == m.Name && a.ArgName == null)
+                         .Select(a => a.Attribute).ToList();
+          break;
+        
+        case ParameterInfo p:
+          added = _modelAdjustments.Where(a => a.Type == paramOwner.DeclaringType && a.MemberName == paramOwner.Name 
+                     && a.ArgName == p.Name).Select(a => a.Attribute).ToList();
+          break; 
+      }
+      attrs.AddRange(added);
+      return attrs; 
+    }
 
   } //class
 }

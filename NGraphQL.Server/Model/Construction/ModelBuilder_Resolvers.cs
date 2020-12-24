@@ -119,7 +119,7 @@ namespace NGraphQL.Model.Construction {
     }
 
     private bool CheckReturnTypeCompatible(Type returnType, FieldDef field, MethodInfo method) {
-      UnwrapClrType(returnType, method, out var retBaseType, out var kinds);
+      UnwrapClrType(returnType, method, out var retBaseType, out var kinds, null);
       var retTypeRank = kinds.GetListRank();
       var fldTypeRef = field.TypeRef; 
       var fldTypeRank = fldTypeRef.Rank;

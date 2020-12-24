@@ -74,17 +74,18 @@ namespace NGraphQL.Utilities {
       }
     }
 
-    public static bool HasAttribute<TAttr>(this ICustomAttributeProvider provider) where TAttr : Attribute {
-      return provider.GetAttribute<TAttr>() != null; 
+    public static TAttr GetAttribute<TAttr>(this ICustomAttributeProvider provider) where TAttr : Attribute {
+      var attr = provider.GetAttributes<TAttr>().FirstOrDefault();
+      return attr;
     }
 
     public static IList<TAttr> GetAttributes<TAttr>(this ICustomAttributeProvider provider) where TAttr : Attribute {
       var attrs = provider.GetCustomAttributes(inherit: true).Where(a => a is TAttr).OfType<TAttr>().ToList();
       return attrs;
     }
-    public static TAttr GetAttribute<TAttr>(this ICustomAttributeProvider provider) where TAttr : Attribute {
-      var attr = provider.GetAttributes<TAttr>().FirstOrDefault();
-      return attr;
+
+    public static TAttr Find<TAttr>(this IList<Attribute> attrs) where TAttr : Attribute {
+      return attrs.FirstOrDefault(a => a.GetType() == typeof(TAttr)) as TAttr;
     }
 
 
