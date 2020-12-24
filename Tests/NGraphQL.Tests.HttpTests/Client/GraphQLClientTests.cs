@@ -77,7 +77,7 @@ namespace NGraphQL.Tests.HttpTests.Client {
       query = @"
 query ($id: Int) { 
   thing: getThing(id: $id) {
-    id, name, kind, theFlags, getRandoms(count: 5), __typename
+    id, name, kind, theFlags, randoms(count: 5), __typename
   } 
 }";
       resp = await TestEnv.Client.PostAsync(query, vars);

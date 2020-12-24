@@ -30,8 +30,8 @@ namespace NGraphQL.TestApp {
     public IList<OtherThing_> otherThings;
 
     // example of method defined on type
-    [GraphQLName("Randoms")]
-    internal int[] GetRandoms(int count = 3) { return null; }
+    [GraphQLName("randoms")]
+    public int[] GetRandoms(int count = 3) { return null; }
 
     [Ignore]
     public int[] Randoms;

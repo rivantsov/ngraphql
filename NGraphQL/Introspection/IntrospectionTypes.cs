@@ -45,13 +45,13 @@ namespace NGraphQL.Introspection {
     public __Type OfType;
 
     [GraphQLName("fields")]
-    internal IList<__Field> GetFields(bool includeDeprecated = true) {
+    public IList<__Field> GetFields(bool includeDeprecated = true) {
       throw new NotImplementedException("GetFields is a server-side method and should not be called directly.");
     }
 
     // enum only
     [GraphQLName("enumValues")]
-    internal IList<__EnumValue> GetEnumValues(bool includeDeprecated = true) {
+    public IList<__EnumValue> GetEnumValues(bool includeDeprecated = true) {
       throw new NotImplementedException("GetEnumValues is a server-side method and should not be called directly.");
     }
 
