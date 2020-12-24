@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using NGraphQL.CodeFirst;
 using NGraphQL.Introspection;
 
-namespace NGraphQL.CodeFirst {
+namespace NGraphQL.CodeFirst.Internals {
 
   public class DirectiveRegistration {
     public Type DirectiveType; 

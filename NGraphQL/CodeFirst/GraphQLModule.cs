@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using NGraphQL.Introspection;
+using NGraphQL.CodeFirst.Internals;
 
 namespace NGraphQL.CodeFirst {
 
@@ -15,7 +16,7 @@ namespace NGraphQL.CodeFirst {
     public readonly List<Type> InterfaceTypes = new List<Type>();
     public readonly List<Type> UnionTypes = new List<Type>();
     public readonly List<DirectiveRegistration> RegisteredDirectives = new List<DirectiveRegistration>(); 
-    public readonly List<AddedAttributeInfo> Adjustments = new List<AddedAttributeInfo>();
+    public readonly List<ModelAdjustment> Adjustments = new List<ModelAdjustment>();
     public Type QueryType;
     public Type MutationType;
     public Type SubscriptionType;

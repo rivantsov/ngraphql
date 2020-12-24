@@ -2,14 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace NGraphQL.CodeFirst {
+namespace NGraphQL.CodeFirst.Internals {
 
-  public enum AdjustmentType {
-    IgnoreMember,
-    GraphQLName,
-  }
-
-  public class AddedAttributeInfo {
+  public class ModelAdjustment {
     public Type Type; 
     public string MemberName;
     public string ArgName;

@@ -178,7 +178,7 @@ namespace NGraphQL.TestApp {
       // and will be returned in response
       context.AbortIfErrors(); // throw abort exc if there were errors detected
       var thing = _app.Things.FirstOrDefault(t => t.Id == id);
-      context.AbortIf(thing == null, $"Thing with Id={id} not found.", ErrorTypes.ObjectNotFound); //custom type, will be placed in error.Extensions
+      context.AbortIf(thing == null, $"Thing with Id={id} not found.", ErrorCodes.ObjectNotFound); //custom type, will be placed in error.Extensions
       // actually modify 
       thing.Name = newName;
       return thing;

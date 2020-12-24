@@ -1,10 +1,10 @@
 ﻿using System;
 
-namespace NGraphQL.Runtime {
+namespace NGraphQL.CodeFirst {
 
   /// <summary>Defines values for error type. The error type is reported 
-  /// in the error.Extensions dictionary under the key "type". </summary>
-  public static class ErrorTypes {
+  /// in the error.Extensions dictionary under the key "code". </summary>
+  public static class ErrorCodes {
     public const string BadRequest = "BAD_REQUEST";
     public const string Syntax = "SYNTAX_ERROR";
     public const string InputError = "INPUT_ERROR";

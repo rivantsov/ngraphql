@@ -10,7 +10,7 @@ namespace NGraphQL.Server.RequestModel {
 
   public abstract class RequestObjectBase {
     public RequestObjectBase Parent; 
-    public Location Location { get; internal set; } 
+    public TextLocation Location { get; internal set; } 
   }
 
   public abstract class NamedRequestObject: RequestObjectBase {
@@ -52,7 +52,7 @@ namespace NGraphQL.Server.RequestModel {
     // List of (ObjectDef, FieldCallInfo[]) pairs, 
     public IList<MappedObjectItemSet> MappedItemSets = new List<MappedObjectItemSet>(); 
 
-    public SelectionSubset(RequestObjectBase parent, List<SelectionItem> items, Location location) {
+    public SelectionSubset(RequestObjectBase parent, List<SelectionItem> items, TextLocation location) {
       Parent = parent; 
       Items = items;
       this.Location = location; 

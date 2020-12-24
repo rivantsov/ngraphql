@@ -7,6 +7,7 @@ using NGraphQL.Server.Execution;
 using NGraphQL.Model;
 using NGraphQL.Server.RequestModel;
 using NGraphQL.Runtime;
+using NGraphQL.CodeFirst;
 
 namespace NGraphQL.Server.Parsing {
   using Node = Irony.Parsing.ParseTreeNode;
@@ -23,7 +24,7 @@ namespace NGraphQL.Server.Parsing {
   /// <summary>RequestBuilder builds the request object (tree of request elements) from the syntax tree produced by Irony parser.
   /// This tree is not mapped yet to API model (types, fields to field defs), this is the job of the RequestMapper. </summary>
   public partial class RequestParser {
-    public static readonly SourceLocation StartSourceLocation = new SourceLocation() { Line = 1, Column = 1 };
+    public static readonly Irony.Parsing.SourceLocation StartSourceLocation = new Irony.Parsing.SourceLocation() { Line = 1, Column = 1 };
 
     RequestContext _requestContext;
     Stack<string> _path = new Stack<string>();
@@ -80,8 +81,8 @@ namespace NGraphQL.Server.Parsing {
 
     private void AddError(string message, ParseTreeNode node) {
       var path = _path.ToArray().Reverse().ToArray();
-      var loc = node?.GetLocation() ?? Location.StartLocation;
-      var err = new GraphQLError(message, path, loc, ErrorTypes.BadRequest);
+      var loc = node?.GetLocation() ?? TextLocation.StartLocation;
+      var err = new GraphQLError(message, path, loc, ErrorCodes.BadRequest);
       _requestContext.AddError(err);
     }
 

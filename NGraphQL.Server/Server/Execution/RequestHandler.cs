@@ -116,7 +116,7 @@ namespace NGraphQL.Server.Execution {
           var loc = errMsg.Location.ToLocation();
           // we cannot retrieve path here, parser failed early, so no parse tree - this is Irony's limitation, to be fixed
           IList<object> noPath = null;
-          var err = new GraphQLError("Query parsing failed: " + errMsg.Message, noPath, loc, ErrorTypes.Syntax);
+          var err = new GraphQLError("Query parsing failed: " + errMsg.Message, noPath, loc, ErrorCodes.Syntax);
           _requestContext.AddError(err);
         }
       }
@@ -193,13 +193,13 @@ namespace NGraphQL.Server.Execution {
     }
 
     private GraphQLError AddBadRequestError(string message) {
-      var err = new GraphQLError(message, null, Location.StartLocation, ErrorTypes.BadRequest);
+      var err = new GraphQLError(message, null, TextLocation.StartLocation, ErrorCodes.BadRequest);
       _requestContext.AddError(err);
       return err;
     }
 
     private GraphQLError AddVariableError(string message) {
-      var err = new GraphQLError(message, null, Location.StartLocation, ErrorTypes.InputError);
+      var err = new GraphQLError(message, null, TextLocation.StartLocation, ErrorCodes.InputError);
       _requestContext.AddError(err);
       return err;
     }

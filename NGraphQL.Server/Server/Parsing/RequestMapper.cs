@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using NGraphQL.CodeFirst;
 using NGraphQL.Core;
 using NGraphQL.Model;
 using NGraphQL.Runtime;
@@ -175,7 +176,7 @@ namespace NGraphQL.Server.Parsing {
       // there must be mapped field set now
       var mappedFragmItemSet = fs.Fragment.SelectionSubset.MappedItemSets.FirstOrDefault(fset => fset.ObjectTypeDef == objectTypeDef);
       if (mappedFragmItemSet == null) {
-        AddError($"FATAL: Could not retrieve mapped item list for fragment spread {fs.Name}", fs, ErrorTypes.ServerError);
+        AddError($"FATAL: Could not retrieve mapped item list for fragment spread {fs.Name}", fs, ErrorCodes.ServerError);
         return null;
       }
       var mappedSpread = new MappedFragmentSpread(fs, mappedFragmItemSet.Items);
@@ -206,7 +207,7 @@ namespace NGraphQL.Server.Parsing {
       }
     }
 
-    private void AddError(string message, RequestObjectBase item, string errorType = ErrorTypes.BadRequest) {
+    private void AddError(string message, RequestObjectBase item, string errorType = ErrorCodes.BadRequest) {
       var path = item.GetRequestObjectPath();
       var err = new GraphQLError(message, path, item.Location, errorType);
       _requestContext.AddError(err);

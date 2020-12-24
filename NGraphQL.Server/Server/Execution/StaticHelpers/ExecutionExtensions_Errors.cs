@@ -14,8 +14,8 @@ namespace NGraphQL.Server.Execution {
   public static partial class ExecutionExtensions {
 
     public static GraphQLError AddError(this RequestContext requestContext, Exception exc,
-                                               IList<object> path = null, Location location = null) {
-      var err = new GraphQLError(exc.Message, path, location, ErrorTypes.ServerError);
+                                               IList<object> path = null, TextLocation location = null) {
+      var err = new GraphQLError(exc.Message, path, location, ErrorCodes.ServerError);
       var withDet = requestContext.Server.Settings.Options.IsSet(GraphQLServerOptions.ReturnExceptionDetails);
       if (withDet)
         err.Extensions["Details"] = exc.ToText();
@@ -37,14 +37,14 @@ namespace NGraphQL.Server.Execution {
     public static void AddInputError (this IRequestContext context, InvalidInputException exc) {
       var path = exc.Anchor.GetRequestObjectPath();
       var loc = exc.Anchor.Location; 
-      var err = new GraphQLError(exc.Message, path, loc, ErrorTypes.InputError);
+      var err = new GraphQLError(exc.Message, path, loc, ErrorCodes.InputError);
       context.AddError(err);
     }
 
     public static void AddInputError(this RequestContext context, string message, RequestObjectBase anchor) {
       var path = anchor.GetRequestObjectPath();
       var loc = anchor.Location;
-      var err = new GraphQLError(message, path, loc, ErrorTypes.InputError);
+      var err = new GraphQLError(message, path, loc, ErrorCodes.InputError);
       context.AddError(err);
     }
 

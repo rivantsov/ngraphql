@@ -38,13 +38,13 @@ namespace NGraphQL.Server.Execution {
         var origExc = tex.InnerException;
         if (origExc is AbortRequestException)
           throw origExc; 
-        fieldContext.AddError(origExc, ErrorTypes.ResolverError);
+        fieldContext.AddError(origExc, ErrorCodes.ResolverError);
         Fail();
         return null; //never happens
       } catch(AbortRequestException) {
         throw;
       } catch(Exception ex) {
-        fieldContext.AddError(ex, ErrorTypes.ResolverError);
+        fieldContext.AddError(ex, ErrorCodes.ResolverError);
         Fail();
         return null; //never happens
       }
@@ -59,7 +59,7 @@ namespace NGraphQL.Server.Execution {
           Exception origExc = task.Exception;
           if(origExc is AggregateException aex)
             origExc = aex.InnerException; //we expect just one exc (we ignore exc.InnerExceptions list)
-          fieldContext.AddError(origExc, ErrorTypes.ResolverError);
+          fieldContext.AddError(origExc, ErrorCodes.ResolverError);
           Fail();
           return null; 
         
@@ -70,7 +70,7 @@ namespace NGraphQL.Server.Execution {
         case TaskStatus.Canceled:
         default:
           var msg = "Resolver execution canceled.";
-          fieldContext.AddError(msg, ErrorTypes.Cancelled);
+          fieldContext.AddError(msg, ErrorCodes.Cancelled);
           throw new ResolverException(msg); 
       }
     }
@@ -83,7 +83,7 @@ namespace NGraphQL.Server.Execution {
       } catch(TargetInvocationException tex) {
         // sync call goes here
         var origExc = tex.InnerException ?? tex;
-        fieldContext.AddError(origExc, ErrorTypes.ResolverError);
+        fieldContext.AddError(origExc, ErrorCodes.ResolverError);
         throw new AbortRequestException();
       } 
     }

@@ -1,4 +1,5 @@
-﻿using System; 
+﻿using System;
+using Irony.Parsing;
 using NGraphQL.Introspection;
 using NGraphQL.Runtime;
 
@@ -8,6 +9,6 @@ namespace NGraphQL.Model {
     public DirectiveDef Def;
     public DirectiveLocation Location;
     public object Owner;
-    public Location SourceLocation;
+    public SourceLocation SourceLocation;
   }
 }

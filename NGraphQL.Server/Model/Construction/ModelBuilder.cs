@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 
 using NGraphQL.CodeFirst;
+using NGraphQL.CodeFirst.Internals;
 using NGraphQL.Core;
 using NGraphQL.Core.Scalars;
 using NGraphQL.Introspection;
@@ -16,7 +17,7 @@ namespace NGraphQL.Model.Construction {
     GraphQLServer _server; 
     GraphQLApiModel _model;
     XmlDocumentationLoader _docLoader;
-    IList<AddedAttributeInfo> _modelAdjustments; 
+    IList<ModelAdjustment> _modelAdjustments; 
 
     public ModelBuilder(GraphQLServer server) {
       _server = server;

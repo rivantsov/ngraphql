@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Text;
 
-namespace NGraphQL.CodeFirst {
+namespace NGraphQL.CodeFirst.Internals {
 
   public class EntityMapping {
     public Type GraphQLType;

@@ -2,6 +2,7 @@
 using System.Linq;
 
 using Irony.Parsing;
+using NGraphQL.CodeFirst;
 using NGraphQL.Introspection;
 using NGraphQL.Model;
 using NGraphQL.Runtime;
@@ -47,14 +48,15 @@ namespace NGraphQL.Server.Parsing {
     }
 
 
-    public static Location GetLocation(this Node node) {
+    public static TextLocation GetLocation(this Node node) {
       if(node == null)
-        return Location.StartLocation;
+        return TextLocation.StartLocation;
       return node.Span.Location.ToLocation();
     }
-    public static Location ToLocation(this SourceLocation srcLoc) {
+
+    public static TextLocation ToLocation(this Irony.Parsing.SourceLocation srcLoc) {
       // somehow Irony's location line and column are zero based
-      return new Location() { Line = srcLoc.Line + 1, Column = srcLoc.Column + 1 };
+      return new TextLocation() { Line = srcLoc.Line + 1, Column = srcLoc.Column + 1 };
     }
 
     public static int ComputeDependencyTreeLevel(this FragmentDef fragment) {

@@ -6,7 +6,7 @@ namespace NGraphQL.CodeFirst {
   public static class ValidationExtensions {
 
     public static GraphQLError AddError(this IFieldContext fieldContext, string message,
-                                             string type = ErrorTypes.InputError) {
+                                             string type = ErrorCodes.InputError) {
       var loc = fieldContext.SelectionField.Location;
       var path = fieldContext.GetFullRequestPath();
       var err = new GraphQLError(message, path, loc, type);
@@ -15,14 +15,14 @@ namespace NGraphQL.CodeFirst {
     }
 
     public static GraphQLError AddErrorIf(this IFieldContext fieldContext, bool condition, string message, 
-                                              string type = ErrorTypes.InputError) {
+                                              string type = ErrorCodes.InputError) {
       if (!condition)
         return null;
       return AddError(fieldContext, message, type); 
     }
 
     public static void AbortIf(this IFieldContext fieldContext, bool condition, string message, 
-                                string type = ErrorTypes.InputError) {
+                                string type = ErrorCodes.InputError) {
       if (condition) {
         AddError(fieldContext, message, type);
         throw new AbortRequestException();
