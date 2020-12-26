@@ -47,15 +47,15 @@ namespace NGraphQL.Server.Parsing {
     }
 
 
-    public static TextLocation GetLocation(this Node node) {
+    public static QueryLocation GetLocation(this Node node) {
       if(node == null)
-        return TextLocation.StartLocation;
+        return QueryLocation.StartLocation;
       return node.Span.Location.ToLocation();
     }
 
-    public static TextLocation ToLocation(this Irony.Parsing.SourceLocation srcLoc) {
+    public static QueryLocation ToLocation(this Irony.Parsing.SourceLocation srcLoc) {
       // somehow Irony's location line and column are zero based
-      return new TextLocation() { Line = srcLoc.Line + 1, Column = srcLoc.Column + 1 };
+      return new QueryLocation() { Line = srcLoc.Line + 1, Column = srcLoc.Column + 1 };
     }
 
     public static int ComputeDependencyTreeLevel(this FragmentDef fragment) {

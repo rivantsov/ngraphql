@@ -44,10 +44,11 @@ namespace NGraphQL.Model.Construction {
     private void BuildDirectives() {
       foreach(var dirDef in _model.Directives.Values) {
         var dirInfo = dirDef.DirInfo;
-        var dirAttr = dirDef.DeprecatedAttribute; 
+        var dirAttr = dirDef.DeprecatedAttribute;
+        var deprDescr = dirAttr?.ArgValues[0] as string; 
         var dir_ = new __Directive() {
            Name = dirDef.Name, Description = dirDef.Description, Locations = dirInfo.Locations, 
-          IsDeprecated = dirAttr != null, DeprecationReason = dirAttr?.Reason
+          IsDeprecated = dirAttr != null, DeprecationReason = deprDescr
         };
         if (dirDef.Args != null)
           dir_.Args =

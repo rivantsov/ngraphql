@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
 using NGraphQL.CodeFirst.Internals;
+using NGraphQL.Core;
 using NGraphQL.Introspection;
 
 namespace NGraphQL.CodeFirst {
@@ -31,16 +34,6 @@ namespace NGraphQL.CodeFirst {
         Type = type, MemberName = memberName, Attribute = new GraphQLNameAttribute(name)
       });
     }
-
-    public static void RegisterDirective(this GraphQLModule module, string name, Type directiveType, 
-           DirectiveLocation locations, string description = null, bool listInSchema = true) {
-      var reg = new DirectiveRegistration() {
-        Name = name, DirectiveType = directiveType, Locations = locations, Description = description,
-        ListInSchema = listInSchema,
-      };
-      module.RegisteredDirectives.Add(reg);
-    }
-
 
   }
 }

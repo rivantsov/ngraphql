@@ -18,10 +18,10 @@ namespace NGraphQL.Model {
   }
 
   public interface ISkipDirectiveAction {
-    bool ShouldSkip(RequestContext context, MappedSelectionItem item);
+    bool ShouldSkip(RequestContext context, MappedSelectionItem item, object[] argValues);
   }
 
   public interface IModelDirectiveAction {
-    void Apply(GraphQLApiModel model, GraphQLModelObject owner);
+    void Apply(GraphQLApiModel model, GraphQLModelObject element, object[] argValues);
   }
 }

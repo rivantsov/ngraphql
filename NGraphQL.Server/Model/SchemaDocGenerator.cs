@@ -115,7 +115,7 @@ namespace NGraphQL.Model {
           var nvList = new List<string>(); 
           for(int i = 0; i < dir.Def.Args.Count; i++) {
             // if (dir.Attribute.ArgValues[i] == null) continue; //just skip it
-            var strArg = FormatArg(dir.Def.Args[i], dir.Attribute.ArgValues[i]);
+            var strArg = FormatArg(dir.Def.Args[i], dir.ModelAttribute.ArgValues[i]);
             nvList.Add(strArg); 
           }
           if (nvList.Count > 0) {

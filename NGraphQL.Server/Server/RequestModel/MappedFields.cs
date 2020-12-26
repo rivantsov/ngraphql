@@ -42,7 +42,7 @@ namespace NGraphQL.Server.RequestModel {
 
   public class MappedDirectiveSet {
     public SelectionItem Item; 
-    public IList<DirectiveHandler> AllHandlers;
+    public IList<IDirectiveHandler> AllHandlers;
 
   }
 

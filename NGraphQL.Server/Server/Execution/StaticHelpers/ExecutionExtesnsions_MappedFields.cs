@@ -44,25 +44,25 @@ namespace NGraphQL.Server.Execution {
       if (reqDirs == null || reqDirs.Count == 0)
         return true;
       foreach (var reqDir in reqDirs) {
-        var action = requestContext.GetRequestDirectiveAction<ISkipDirectiveAction>(reqDir);
+        var action = reqDir.Def.Handler as ISkipDirectiveAction;
         if (action == null)
-          continue;
-        hasIncludeSkip = true; 
-        if (action.ShouldSkip(requestContext, mappedItem)) 
+          continue; 
+        var argValues = requestContext.GetRequestDirectiveArgValues(reqDir);
+        if (action.ShouldSkip(requestContext, mappedItem, argValues)) 
           return false;
       }
       return true;
     }
 
-    internal static TAction GetRequestDirectiveAction<TAction>(this RequestContext requestContext, RequestDirective dir) where TAction : class {
-      if (dir.StaticHandler != null)
-        return dir.StaticHandler as TAction; 
+    private static object[] _emptyArgValues = new object[] { };
+
+    internal static object[] GetRequestDirectiveArgValues(this RequestContext requestContext, RequestDirective dir) {
+      if (dir.StaticArgValues != null)
+        return dir.StaticArgValues; 
       // fast path - parameterless directive
-      DirectiveHandler handler; 
-      if (dir.Args.Count > 0) {
-        handler = (DirectiveHandler) Activator.CreateInstance(dir.Def.DirectiveHandlerType);
-        dir.StaticHandler = handler;
-        return handler as TAction;
+      if (dir.Args.Count == 0) {
+        dir.StaticArgValues = _emptyArgValues;
+        return dir.StaticArgValues;
       }
       // dir with args
       bool hasVars = false; 
@@ -73,10 +73,9 @@ namespace NGraphQL.Server.Execution {
         if (!eval.IsConst())
           hasVars = true; 
       }
-      handler = (DirectiveHandler) Activator.CreateInstance(dir.Def.DirectiveHandlerType, argValues);
       if (!hasVars)
-        dir.StaticHandler = handler;
-      return handler as TAction;
+        dir.StaticArgValues = argValues;
+      return argValues;
     }
   }
 }

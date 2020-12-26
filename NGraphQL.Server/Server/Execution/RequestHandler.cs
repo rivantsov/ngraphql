@@ -192,13 +192,13 @@ namespace NGraphQL.Server.Execution {
     }
 
     private GraphQLError AddBadRequestError(string message) {
-      var err = new GraphQLError(message, null, TextLocation.StartLocation, ErrorCodes.BadRequest);
+      var err = new GraphQLError(message, null, QueryLocation.StartLocation, ErrorCodes.BadRequest);
       _requestContext.AddError(err);
       return err;
     }
 
     private GraphQLError AddVariableError(string message) {
-      var err = new GraphQLError(message, null, TextLocation.StartLocation, ErrorCodes.InputError);
+      var err = new GraphQLError(message, null, QueryLocation.StartLocation, ErrorCodes.InputError);
       _requestContext.AddError(err);
       return err;
     }

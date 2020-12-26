@@ -13,7 +13,7 @@ namespace NGraphQL.Server.Execution {
   public static partial class ExecutionExtensions {
 
     public static GraphQLError AddError(this RequestContext requestContext, Exception exc,
-                                               IList<object> path = null, TextLocation location = null) {
+                                               IList<object> path = null, QueryLocation location = null) {
       var err = new GraphQLError(exc.Message, path, location, ErrorCodes.ServerError);
       var withDet = requestContext.Server.Settings.Options.IsSet(GraphQLServerOptions.ReturnExceptionDetails);
       if (withDet)

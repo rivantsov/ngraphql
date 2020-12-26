@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using NGraphQL.Introspection;
 using NGraphQL.CodeFirst.Internals;
+using NGraphQL.Core;
 
 namespace NGraphQL.CodeFirst {
 
@@ -24,7 +25,6 @@ namespace NGraphQL.CodeFirst {
     // Server-bound entities
     public readonly List<EntityMapping> Mappings = new List<EntityMapping>();
     public readonly List<Type> ResolverTypes = new List<Type>();
-    public readonly List<Type> DirectiveHandlerTypes = new List<Type>();
 
     public GraphQLModule() {
     }

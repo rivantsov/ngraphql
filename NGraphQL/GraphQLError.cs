@@ -2,19 +2,19 @@
 using System.Collections.Generic;
 using NGraphQL.CodeFirst;
 
-namespace NGraphQL.Server {
+namespace NGraphQL {
 
   // see https://spec.graphql.org/June2018/#sec-Errors
   public class GraphQLError {
     public const string ErrorCodeKey = "code";
     public string Message;
-    public IList<TextLocation> Locations = new List<TextLocation>();
+    public IList<QueryLocation> Locations = new List<QueryLocation>();
     public IList<object> Path;
     public IDictionary<string, object> Extensions = new Dictionary<string, object>(); 
 
     public GraphQLError() { }
 
-    public GraphQLError(string message, IList<object> path = null, TextLocation location = null, string type = null) {
+    public GraphQLError(string message, IList<object> path = null, QueryLocation location = null, string type = null) {
       Message = message;
       Path = path ?? Array.Empty<object>();
       if (location != null)
@@ -33,11 +33,11 @@ namespace NGraphQL.Server {
     }
   }
 
-  public class TextLocation {
+  public class QueryLocation {
     public int Line;
     public int Column;
 
-    public static readonly TextLocation StartLocation = new TextLocation() { Line = 1, Column = 1 };
+    public static readonly QueryLocation StartLocation = new QueryLocation() { Line = 1, Column = 1 };
     public override string ToString() => $"({Line}, {Column})";
   }
 

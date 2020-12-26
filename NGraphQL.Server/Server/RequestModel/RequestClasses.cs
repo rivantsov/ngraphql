@@ -9,7 +9,7 @@ namespace NGraphQL.Server.RequestModel {
 
   public abstract class RequestObjectBase {
     public RequestObjectBase Parent; 
-    public TextLocation Location { get; internal set; } 
+    public QueryLocation Location { get; internal set; } 
   }
 
   public abstract class NamedRequestObject: RequestObjectBase {
@@ -51,7 +51,7 @@ namespace NGraphQL.Server.RequestModel {
     // List of (ObjectDef, FieldCallInfo[]) pairs, 
     public IList<MappedObjectItemSet> MappedItemSets = new List<MappedObjectItemSet>(); 
 
-    public SelectionSubset(RequestObjectBase parent, List<SelectionItem> items, TextLocation location) {
+    public SelectionSubset(RequestObjectBase parent, List<SelectionItem> items, QueryLocation location) {
       Parent = parent; 
       Items = items;
       this.Location = location; 
@@ -113,22 +113,14 @@ namespace NGraphQL.Server.RequestModel {
     public override string ToString() => $"{Variable.Name}:{Value}";
   }
 
-  public interface IDirectiveHandlerFactory {
-    DirectiveHandler GetHandler(RequestContext context);
-  }
-
-  public class RequestDirective : NamedRequestObject, IDirectiveHandlerFactory {
+  public class RequestDirective : NamedRequestObject {
     public static IList<RequestDirective> EmptyList = new RequestDirective[] { };
 
     public DirectiveDef Def;
     public IList<InputValue> Args;
-    public IList<MappedArg> MappedArgs; 
-    public DirectiveHandler StaticHandler; // if not dependent on variables
+    public IList<MappedArg> MappedArgs;
+    public object[] StaticArgValues;
     public RequestDirective() { }
-
-    public DirectiveHandler GetHandler(RequestContext context) {
-      throw new System.NotImplementedException();
-    }
   }
 
   public class ParsedGraphQLRequest {
