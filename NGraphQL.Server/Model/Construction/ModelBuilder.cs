@@ -150,6 +150,7 @@ namespace NGraphQL.Model.Construction {
           ParamType = prm.ParameterType, HasDefaultValue = prm.HasDefaultValue, DefaultValue = dftValue
         };
         argDef.Directives = BuildDirectivesFromAttributes(prm, DirectiveLocation.ArgumentDefinition, argDef);
+        argDef.InputValueDirectives = GetActionDirectives<IInputValueDirectiveAction>(argDef.Directives);
         argDefs.Add(argDef);
       }
       return argDefs; 
@@ -204,6 +205,7 @@ namespace NGraphQL.Model.Construction {
           Description = _docLoader.GetDocString(member, member.DeclaringType)
         };
         inpFldDef.Directives = BuildDirectivesFromAttributes(member, DirectiveLocation.InputFieldDefinition, inpFldDef);
+        inpFldDef.InputValueDirectives = GetActionDirectives<IInputValueDirectiveAction>(inpFldDef.Directives);
         inpTypeDef.Fields.Add(inpFldDef);
       } //foreach
     }

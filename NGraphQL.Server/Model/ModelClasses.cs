@@ -142,6 +142,7 @@ namespace NGraphQL.Model {
     public bool HasDefaultValue;
     public object DefaultValue;
     public IList<ModelDirective> Directives;
+    public IList<ModelDirective> InputValueDirectives; 
 
     public Type ParamType; // Arg only; exact resolver parameter type
     public MemberInfo InputObjectClrMember; // InputObject only

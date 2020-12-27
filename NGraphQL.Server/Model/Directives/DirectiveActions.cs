@@ -7,9 +7,10 @@ using NGraphQL.Server.RequestModel;
 
 namespace NGraphQL.Model {
   
-  public interface IArgDirectiveAction {
-    void PreviewArgValueSource(RequestContext context, InputValue argDef, ValueSource source);
-    object CheckArgValue(RequestContext context, object value);
+  public interface IInputValueDirectiveAction {
+    void PreviewInputValueDef(GraphQLApiModel model, InputValueDef valueDef, object[] argValues);
+    void PreviewVariable(RequestContext context, VariableDef varDef, object[] argValues);
+    object ProcessValue(RequestContext context, object[] argValues, object value);
   }
   
   public interface IFieldDirectiveAction {

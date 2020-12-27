@@ -37,9 +37,15 @@ namespace NGraphQL.Server.Parsing {
     }
 
     private object ApplyDirectives(RequestContext context, object value) {
-      if (this.InputDef.Directives.Count == 0)
+      var inpDirs = InputDef.InputValueDirectives;
+      if (inpDirs == null && inpDirs.Count == 0)
         return value;
-      throw new NotImplementedException("Args/input value directives not implemented.");
+      object result = value; 
+      foreach(var dir in inpDirs) {
+        var action = dir as IInputValueDirectiveAction;
+        result = action.ProcessValue(context, dir.ModelAttribute.ArgValues, result);
+      }
+      return result; 
     }
   }
 
