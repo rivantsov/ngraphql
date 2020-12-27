@@ -19,7 +19,7 @@ namespace NGraphQL.Core {
       this.RegisterDirective("@deprecated", typeof(DeprecatedDirAttribute),
           DirectiveLocation.TypeSystemLocations, "Marks type system element as deprecated",
           handler: new DeprecatedDirectiveHandler(), listInSchema: false);
-      this.RegisterDirective("@include", nameof(DeprecatedSignature),
+      this.RegisterDirective("@include", nameof(IncludeSkipSignature),
           DirectiveLocation.Field | DirectiveLocation.FragmentSpread | DirectiveLocation.InlineFragment, 
           "Conditional field include.", 
           handler: new IncludeDirectiveHandler() , listInSchema: false);

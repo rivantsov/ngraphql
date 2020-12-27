@@ -14,7 +14,7 @@ namespace NGraphQL.Core.Scalars {
 
         case TermNames.StrSimple:
         case TermNames.Qstr: //single quote string
-          if(Guid.TryParse( token.Text.Trim(), out var value))
+          if(Guid.TryParse( (string) token.ParsedValue, out var value))
             return value;
           break;
       }

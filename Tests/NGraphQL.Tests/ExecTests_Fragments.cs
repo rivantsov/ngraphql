@@ -172,7 +172,7 @@ query myQuery ($inc: Boolean) {
       resp = await ExecuteAsync(query, vars);
       // check that id does not appear in the output; GetValue should return 0 (default int)
       id = resp.Data.GetValue<int>("getThing/id");
-      Assert.IsTrue(id == 0, "id expected == 0");
+      Assert.AreEqual(0, id, "id expected == 0");
 
 
       TestEnv.LogTestDescr("query on union with fragment with conditional-on-type inline fragments ");

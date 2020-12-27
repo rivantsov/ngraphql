@@ -46,7 +46,8 @@ namespace NGraphQL.Server.Execution {
       foreach (var reqDir in reqDirs) {
         var action = reqDir.Def.Handler as ISkipDirectiveAction;
         if (action == null)
-          continue; 
+          continue;
+        hasIncludeSkip = true; 
         var argValues = requestContext.GetRequestDirectiveArgValues(reqDir);
         if (action.ShouldSkip(requestContext, mappedItem, argValues)) 
           return false;

@@ -51,7 +51,7 @@ query {
     }
 
     [TestMethod]
-    public async Task Test_Input_InpObjects() {
+    public async Task Test_Input_InputObjects() {
       string query;
       GraphQLResponse resp;
       string result;
