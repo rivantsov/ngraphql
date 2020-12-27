@@ -131,16 +131,12 @@ namespace NGraphQL.Server.Parsing {
         var inpDef = new InputValueDef() { Name = name, TypeRef = typeRef };
         var varDef = new VariableDef() { Name = name, InputDef = inpDef, Location = vn.GetLocation() };
         // check default value
-        var dftValNode = vn.FindChild(TermNames.ConstValue);
-        if (dftValNode != null) {
+        if (vn.ChildNodes.Count > 2)
           varDef.ParsedDefaultValue = BuildInputValue(vn.ChildNodes[2], varDef);
-          inpDef.HasDefaultValue = true;
-        }
         // directives
         var dirListNode = vn.FindChild(TermNames.DirListOpt);
         if (dirListNode != null)
           varDef.DirectiveRefs = BuildDirectives(dirListNode, DirectiveLocation.VariableDefinition, varDef);
-
         varList.Add(varDef);
       }
       return varList;

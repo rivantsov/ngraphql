@@ -38,7 +38,7 @@ namespace NGraphQL.Server.Parsing {
 
     private object ApplyDirectives(RequestContext context, object value) {
       var inpDirs = InputDef.InputValueDirectives;
-      if (inpDirs == null && inpDirs.Count == 0)
+      if (inpDirs == null || inpDirs.Count == 0)
         return value;
       object result = value; 
       foreach(var dir in inpDirs) {

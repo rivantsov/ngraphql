@@ -51,12 +51,11 @@ namespace NGraphQL.Server.Parsing {
 
     private void CalcVariableDefaultValues(GraphQLOperation op) {
       foreach (var varDef in op.Variables) {
-        var inpDef = varDef.InputDef;
-        if (!inpDef.HasDefaultValue)
+        if (varDef.ParsedDefaultValue == null)
           continue;
-
+        var inpDef = varDef.InputDef;        
         var typeRef = inpDef.TypeRef;
-        var eval = GetInputValueEvaluator(varDef.InputDef, varDef.ParsedDefaultValue, typeRef);
+        var eval = GetInputValueEvaluator(inpDef, varDef.ParsedDefaultValue, typeRef);
         if (!eval.IsConst()) {
           // somewhere inside there's reference to variable, this is not allowed
           AddError($"Default value cannot reference variables.", varDef);
@@ -68,7 +67,8 @@ namespace NGraphQL.Server.Parsing {
           // but spec also allows auto casting like  int => int[]
           AddError($"Detected type mismatch for default value '{value}' of variable {varDef.Name} of type {typeRef.Name}", varDef);
         }
-        varDef.InputDef.DefaultValue = value;
+        inpDef.DefaultValue = value;
+        inpDef.HasDefaultValue = true; 
       } // foreach varDef
     }
 
