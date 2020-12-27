@@ -238,7 +238,8 @@ query myQuery($longVal: Long, $doubleVal: Double) {
       TestEnv.LogTestDescr("error - passing wrong value types to field args, using variables; test multiple errors.");
       query = @"
 query myQuery($boolVal: Boolean, $longVal: Long, $doubleVal: Double, $strVal: String, $kindVal: ThingKind, $flags: [TheFlags!]) { 
-  echo: echoInputValuesWithNulls (boolVal: $longVal, longVal: $doubleVal, doubleVal: $strVal )
+  # totally wrong match of args, expected 3 errors
+  echo: echoInputValuesWithNulls (boolVal: $longVal, longVal: $doubleVal, doubleVal: $strVal ) 
 }";
       vars = new TDict() {
         { "boolVal", true }, { "longVal", 654321 }, { "doubleVal", 543.21 },

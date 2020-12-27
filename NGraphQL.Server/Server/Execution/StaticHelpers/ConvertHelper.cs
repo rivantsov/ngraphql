@@ -26,6 +26,8 @@ namespace NGraphQL.Server.Execution {
       // by type kind
       switch(target.TypeDef) {
         case ScalarTypeDef sctd:
+          if (sctd.Scalar.CanConvertFrom == null)
+            return false; 
           return sctd.Scalar.CanConvertFrom.Contains(source.TypeDef.ClrType);
         default:
           // all other cases - can convert only if exactly the same type.
