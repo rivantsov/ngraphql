@@ -4,7 +4,7 @@ using System.Text;
 using NGraphQL.CodeFirst;
 using NGraphQL.Model;
 using NGraphQL.Server.Parsing;
-using NGraphQL.Server.RequestModel;
+using NGraphQL.Model.Request;
 
 namespace NGraphQL.Server {
 

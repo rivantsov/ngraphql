@@ -3,7 +3,7 @@ using System.Linq;
 
 using NGraphQL.Introspection;
 using NGraphQL.Model;
-using NGraphQL.Server.RequestModel;
+using NGraphQL.Model.Request;
 
 namespace NGraphQL.Server.Execution {
 

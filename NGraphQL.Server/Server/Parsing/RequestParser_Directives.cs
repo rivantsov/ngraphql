@@ -7,7 +7,7 @@ using NGraphQL.Server;
 using System.Linq;
 
 using NGraphQL.Introspection;
-using NGraphQL.Server.RequestModel;
+using NGraphQL.Model.Request;
 
 namespace NGraphQL.Server.Parsing {
   using Node = Irony.Parsing.ParseTreeNode;

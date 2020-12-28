@@ -4,7 +4,7 @@ using System.Linq;
 
 using NGraphQL.Core;
 using NGraphQL.Core.Scalars;
-using NGraphQL.Server.RequestModel;
+using NGraphQL.Model.Request;
 
 namespace NGraphQL.Server.Parsing {
 

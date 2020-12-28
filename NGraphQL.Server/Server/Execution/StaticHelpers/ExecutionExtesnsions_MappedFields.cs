@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using NGraphQL.Model;
-using NGraphQL.Server.RequestModel;
+using NGraphQL.Model.Request;
 
 namespace NGraphQL.Server.Execution {
 
@@ -21,7 +21,8 @@ namespace NGraphQL.Server.Execution {
       return mappedFields; 
     }
 
-    private static void AddIncludedMappedFieldsRec(RequestContext requestContext, IList<MappedSelectionItem> items, IList<MappedField> result, ref bool hasIncludeSkip) {
+    private static void AddIncludedMappedFieldsRec(RequestContext requestContext, IList<MappedSelectionItem> items,
+                IList<MappedField> result, ref bool hasIncludeSkip) {
       foreach(var item in items) {
         var dirs = item.Item.Directives;
         if (dirs != null && dirs.Count > 0) {

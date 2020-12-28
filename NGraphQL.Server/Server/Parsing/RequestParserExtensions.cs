@@ -5,7 +5,7 @@ using Irony.Parsing;
 using NGraphQL.CodeFirst;
 using NGraphQL.Introspection;
 using NGraphQL.Model;
-using NGraphQL.Server.RequestModel;
+using NGraphQL.Model.Request;
 
 namespace NGraphQL.Server.Parsing {
   using Node = Irony.Parsing.ParseTreeNode;

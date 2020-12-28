@@ -1,10 +1,8 @@
-﻿using System; 
-using System.Collections.Generic;
-using NGraphQL.Core;
+﻿using System.Collections.Generic;
 using NGraphQL.Core.Scalars;
 using NGraphQL.Server.Parsing;
 
-namespace NGraphQL.Server.RequestModel {
+namespace NGraphQL.Model.Request {
 
   // equiv of Value in Gql spec
   public abstract class ValueSource : RequestObjectBase {

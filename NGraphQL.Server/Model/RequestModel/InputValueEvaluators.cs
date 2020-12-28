@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using NGraphQL.Core;
+
 using NGraphQL.Introspection;
-using NGraphQL.Model;
+using NGraphQL.Server;
 using NGraphQL.Server.Execution;
-using NGraphQL.Server.RequestModel;
 using NGraphQL.Utilities;
 
-namespace NGraphQL.Server.Parsing {
+namespace NGraphQL.Model.Request {
 
   public abstract class InputValueEvaluator {
     public InputValueDef InputDef; 
@@ -20,6 +18,7 @@ namespace NGraphQL.Server.Parsing {
       ResultTypeRef = resultTypeRef; 
       Anchor = anchor; 
     }
+    public override string ToString() => InputDef.ToString();
 
     protected abstract object Evaluate(RequestContext context);
     public abstract bool IsConst();
@@ -74,7 +73,7 @@ namespace NGraphQL.Server.Parsing {
       var opVar = context.OperationVariables.First(v => v.Variable == this.Variable);
       return opVar.Value;
     }
-    public override string ToString() => $"Variable";
+    public override string ToString() => $"${Variable}";
   }
 
   public class InputListEvaluator : InputValueEvaluator {
@@ -128,7 +127,6 @@ namespace NGraphQL.Server.Parsing {
       var result = EnumTypeDef.CombineFlags(values);
       return result;
     }
-    public override string ToString() => $"Enum({EnumTypeDef.Name})";
 
     public override bool IsConst() {
       return ElemEvaluators.All(v => v.IsConst());
@@ -137,7 +135,8 @@ namespace NGraphQL.Server.Parsing {
 
   public class InputFieldEvalInfo {
     public InputValueDef FieldDef;
-    public InputValueEvaluator ValueEvaluator; 
+    public InputValueEvaluator ValueEvaluator;
+    public override string ToString() => $"{FieldDef}={ValueEvaluator}";
   }
 
   public class InputObjectEvaluator : InputValueEvaluator {

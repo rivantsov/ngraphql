@@ -5,7 +5,7 @@ using System.Linq;
 using Irony.Parsing;
 using NGraphQL.Server.Execution;
 using NGraphQL.Model;
-using NGraphQL.Server.RequestModel;
+using NGraphQL.Model.Request;
 using NGraphQL.CodeFirst;
 
 namespace NGraphQL.Server.Parsing {

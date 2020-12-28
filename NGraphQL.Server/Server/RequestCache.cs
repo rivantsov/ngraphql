@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading;
-using NGraphQL.Server.RequestModel;
+using NGraphQL.Model.Request;
 using NGraphQL.Server;
 using NGraphQL.Utilities;
 using NGraphQL.Server.Execution;

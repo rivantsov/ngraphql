@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using NGraphQL.CodeFirst;
 using NGraphQL.Core;
 using NGraphQL.Model;
-using NGraphQL.Server.RequestModel;
+using NGraphQL.Model.Request;
 
 namespace NGraphQL.Server.Execution {
 

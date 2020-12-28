@@ -1,11 +1,8 @@
 ﻿using System.Collections.Generic;
-using NGraphQL.CodeFirst;
-using NGraphQL.Core;
-using NGraphQL.Model;
-using NGraphQL.Server.Execution;
-using NGraphQL.Server.Parsing;
 
-namespace NGraphQL.Server.RequestModel {
+using NGraphQL.CodeFirst;
+
+namespace NGraphQL.Model.Request {
 
   public abstract class RequestObjectBase {
     public RequestObjectBase Parent; 

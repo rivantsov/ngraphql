@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using NGraphQL.Core;
-using NGraphQL.Model;
-using NGraphQL.Server.Execution;
-using NGraphQL.Server.Parsing;
+﻿using System.Collections.Generic;
 
-namespace NGraphQL.Server.RequestModel {
+namespace NGraphQL.Model.Request {
 
   public abstract class MappedSelectionItem {
     public SelectionItem Item; 
     public MappedSelectionItem(SelectionItem item) { Item = item; }
+    
+    public override string ToString() => Item.ToString();
   }
 
   // Mapped field is runtime representation of a selection field in a query.
@@ -38,12 +35,6 @@ namespace NGraphQL.Server.RequestModel {
       Spread = spread;
       Items = items; 
     }
-  }
-
-  public class MappedDirectiveSet {
-    public SelectionItem Item; 
-    public IList<IDirectiveHandler> AllHandlers;
-
   }
 
   // used as MappedField args and request directive args

@@ -6,7 +6,7 @@ using NGraphQL.Core;
 using NGraphQL.Introspection;
 using NGraphQL.Server;
 using NGraphQL.Server.Execution;
-using NGraphQL.Server.RequestModel;
+using NGraphQL.Model.Request;
 using NGraphQL.Utilities;
 
 namespace NGraphQL.Model {

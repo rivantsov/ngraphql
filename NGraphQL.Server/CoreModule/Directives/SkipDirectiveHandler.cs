@@ -1,6 +1,6 @@
 ﻿using NGraphQL.Model;
 using NGraphQL.Server.Execution;
-using NGraphQL.Server.RequestModel;
+using NGraphQL.Model.Request;
 
 namespace NGraphQL.Core {
 

@@ -6,7 +6,7 @@ using System.Threading;
 
 using NGraphQL.CodeFirst;
 using NGraphQL.Model;
-using NGraphQL.Server.RequestModel;
+using NGraphQL.Model.Request;
 using NGraphQL.Utilities;
 
 namespace NGraphQL.Server.Execution {

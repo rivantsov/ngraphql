@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using NGraphQL.Introspection;
-using NGraphQL.Server.RequestModel;
+using NGraphQL.Model.Request;
 
 namespace NGraphQL.Server.Parsing {
   using Node = Irony.Parsing.ParseTreeNode;

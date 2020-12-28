@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using NGraphQL.CodeFirst;
 using NGraphQL.Server.Execution;
-using NGraphQL.Server.RequestModel;
+using NGraphQL.Model.Request;
 
 namespace NGraphQL.Model {
   
