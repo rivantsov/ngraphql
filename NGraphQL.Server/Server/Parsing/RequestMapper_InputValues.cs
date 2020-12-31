@@ -12,7 +12,7 @@ namespace NGraphQL.Server.Parsing {
   partial class RequestMapper {
 
     private IList<MappedArg> MapArguments(IList<InputValue> args, IList<InputValueDef> argDefs, NamedRequestObject owner) {
-      args = args ?? InputValue.EmptyList; 
+      args ??= InputValue.EmptyList; 
       var hasArgs = args.Count > 0; 
       var hasArgDefs = argDefs.Count > 0; // argDefs are never null
       // some corner cases first

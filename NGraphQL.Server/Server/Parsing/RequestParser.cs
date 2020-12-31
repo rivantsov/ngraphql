@@ -80,7 +80,7 @@ namespace NGraphQL.Server.Parsing {
 
     private void AddError(string message, ParseTreeNode node) {
       var path = _path.ToArray().Reverse().ToArray();
-      var loc = node?.GetLocation() ?? QueryLocation.StartLocation;
+      var loc = node?.GetLocation() ?? SourceLocation.StartLocation;
       var err = new GraphQLError(message, path, loc, ErrorCodes.BadRequest);
       _requestContext.AddError(err);
     }

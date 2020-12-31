@@ -24,7 +24,7 @@ namespace NGraphQL.Utilities {
         result = GetByKeyOrIndex(result, key);
       }
       if (result == null)
-        return default(T); 
+        return default; 
       return (T)result; 
     }
 

@@ -26,7 +26,7 @@ namespace NGraphQL.Server.Execution {
       foreach(var item in items) {
         var dirs = item.Item.Directives;
         if (dirs != null && dirs.Count > 0) {
-          if (!requestContext.ShouldInclude(item, ref hasIncludeSkip))
+          if (item.HasDirectives && !requestContext.ShouldInclude(item, ref hasIncludeSkip))
             continue; 
         }
         switch (item) {
@@ -41,43 +41,19 @@ namespace NGraphQL.Server.Execution {
     }
 
     private static bool ShouldInclude(this RequestContext requestContext, MappedSelectionItem mappedItem, ref bool hasIncludeSkip) {
-      var reqDirs = mappedItem.Item.Directives;
-      if (reqDirs == null || reqDirs.Count == 0)
+      if (!mappedItem.HasDirectives)
         return true;
-      foreach (var reqDir in reqDirs) {
-        var action = reqDir.Def.Handler as ISkipDirectiveAction;
+      foreach (var dir in mappedItem.Directives) {
+        var action = dir.Def.Handler as ISkipDirectiveAction;
         if (action == null)
           continue;
         hasIncludeSkip = true; 
-        var argValues = requestContext.GetRequestDirectiveArgValues(reqDir);
+        var argValues = dir.GetArgValues(requestContext);
         if (action.ShouldSkip(requestContext, mappedItem, argValues)) 
           return false;
       }
       return true;
     }
 
-    private static object[] _emptyArgValues = new object[] { };
-
-    internal static object[] GetRequestDirectiveArgValues(this RequestContext requestContext, RequestDirective dir) {
-      if (dir.StaticArgValues != null)
-        return dir.StaticArgValues; 
-      // fast path - parameterless directive
-      if (dir.Args.Count == 0) {
-        dir.StaticArgValues = _emptyArgValues;
-        return dir.StaticArgValues;
-      }
-      // dir with args
-      bool hasVars = false; 
-      var argValues = new object[dir.MappedArgs.Count];
-      for(int i = 0; i < argValues.Length; i++) {
-        var eval = dir.MappedArgs[i].Evaluator;
-        argValues[i] = eval.GetValue(requestContext);
-        if (!eval.IsConst())
-          hasVars = true; 
-      }
-      if (!hasVars)
-        dir.StaticArgValues = argValues;
-      return argValues;
-    }
   }
 }

@@ -13,12 +13,12 @@ namespace NGraphQL.Server.Parsing {
       foreach(var fn in fragmentNodes) {
         var nameNd = fn.FindChild(TermNames.Name);
         var name = nameNd.GetText();
-        var fragmDef = new FragmentDef() { Name = name, Location = fn.GetLocation()};
+        var fragmDef = new FragmentDef() { Name = name, SourceLocation = fn.GetLocation()};
         parsedReq.Fragments.Add(fragmDef);
         // OnType spec
         var typeCondNode = fn.FindChild(TermNames.TypeCond);
         var onTypeNameNode = typeCondNode.ChildNodes[1];
-        fragmDef.OnTypeRef = new OnTypeRef() { Location = onTypeNameNode.GetLocation(), Name = onTypeNameNode.GetText(), Parent = fragmDef };
+        fragmDef.OnTypeRef = new OnTypeRef() { SourceLocation = onTypeNameNode.GetLocation(), Name = onTypeNameNode.GetText(), Parent = fragmDef };
         // selection items
         var selSetNode = fn.FindChild(TermNames.SelSet);
         var items = BuildSelectionItemsList(selSetNode, fragmDef);
@@ -39,7 +39,7 @@ namespace NGraphQL.Server.Parsing {
       var typeNameNode = selNode.FindChild(TermNames.TypeCondOpt)?.FindChild(TermNames.Name);
       if (typeNameNode != null) {
         var onTypeName = typeNameNode.GetText();
-        fragmDef.OnTypeRef = new OnTypeRef() { Name = onTypeName, Location = typeNameNode.GetLocation(), Parent = fragmDef };
+        fragmDef.OnTypeRef = new OnTypeRef() { Name = onTypeName, SourceLocation = typeNameNode.GetLocation(), Parent = fragmDef };
       } //if
       // Selection set
       var selSetNode = selNode.FindChild(TermNames.SelSet);
@@ -47,7 +47,7 @@ namespace NGraphQL.Server.Parsing {
       fragmDef.SelectionSubset = new SelectionSubset(fragmDef, items, selSetNode.GetLocation());
       // fragment spread
       var fragm = new FragmentSpread() {
-        Fragment = fragmDef, Name = fragmDef.Name, IsInline = true, Location = selNode.GetLocation()
+        Fragment = fragmDef, Name = fragmDef.Name, IsInline = true, SourceLocation = selNode.GetLocation()
       };
       //Directives
       var dirListNode = selNode.FindChild(TermNames.DirListOpt);

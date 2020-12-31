@@ -10,7 +10,7 @@ namespace NGraphQL.Core.Scalars {
     public string TermName;
     public string Text;
     public object ParsedValue;
-    public QueryLocation Location; 
+    public SourceLocation Location; 
   }
 
 }

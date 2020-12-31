@@ -50,7 +50,6 @@ namespace NGraphQL.Server.Execution {
 
     public override string ToString() => Field.ToString();
 
-    private static string[] _emptyStrings = new string[] { }; 
 
     public object ConvertToOuputValue(object result) {
       // validate result value
@@ -125,6 +124,7 @@ namespace NGraphQL.Server.Execution {
     public void SetBatchedResults<TEntity, TResult>(IDictionary<TEntity, TResult> results) {
       // TODO: add validation of types: TEntity -> typeof(Entity), TResult==fieldType
       /*
+      var returnsObj = this.Flags.IsSet(FieldFlags.ReturnsComplexType);
       var fldType = this.Field.FieldDef.TypeRef.TypeDef.ClrType; 
       if (!fldType.IsAssignableFrom(typeof(TResult))) {
         throw new ResolverException($"Resolver error: SetBatchResults is called with arg of invalid type. " + 
@@ -132,8 +132,6 @@ namespace NGraphQL.Server.Execution {
                                     this.GetCodePath());
       }
       */
-      //BatchedResultsLookup = results.ToDictionary(kv => (object) kv.Key, kv => (object) kv.Value);
-      var returnsObj = this.Flags.IsSet(FieldFlags.ReturnsComplexType);
       foreach (var scope in this.AllParentScopes) {
         if (results.TryGetValue((TEntity)scope.Entity, out var result)) {
           var outValue = this.ConvertToOuputValue(result);

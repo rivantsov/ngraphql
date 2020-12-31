@@ -15,7 +15,7 @@ namespace NGraphQL.Model.Construction {
       var resAttr = field.ClrMember.GetAttribute<ResolverAttribute>();
       if (resAttr != null)
         methName = resAttr.MethodName;
-      List<MethodInfo> methods = null; 
+      List<MethodInfo> methods; 
       var targetResolver = resAttr?.ResolverClass;
       if (targetResolver != null) {
         if (!typeDef.Module.ResolverTypes.Contains(targetResolver)) {

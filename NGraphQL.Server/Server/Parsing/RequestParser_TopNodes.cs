@@ -129,7 +129,7 @@ namespace NGraphQL.Server.Parsing {
           continue;
         }
         var inpDef = new InputValueDef() { Name = name, TypeRef = typeRef };
-        var varDef = new VariableDef() { Name = name, InputDef = inpDef, Location = vn.GetLocation() };
+        var varDef = new VariableDef() { Name = name, InputDef = inpDef, SourceLocation = vn.GetLocation() };
         // check default value
         if (vn.ChildNodes.Count > 2)
           varDef.ParsedDefaultValue = BuildInputValue(vn.ChildNodes[2], varDef);

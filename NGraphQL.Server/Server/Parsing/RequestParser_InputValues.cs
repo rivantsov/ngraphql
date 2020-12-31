@@ -16,18 +16,18 @@ namespace NGraphQL.Server.Parsing {
       if (valueNode.Token != null) {
         if(valueNode.Term.Name == TermNames.VarName) {
           var varName = valueNode.Token.Text.Substring(1); //cut off $ prefix
-          return new VariableValueSource() { VariableName = varName, Location = valueNode.GetLocation(), Parent = parent };
+          return new VariableValueSource() { VariableName = varName, SourceLocation = valueNode.GetLocation(), Parent = parent };
 
         } else {
           var tkn = valueNode.Token;
           var tknData = new TokenData() { TermName = tkn.Terminal.Name, Text = tkn.Text, ParsedValue = tkn.Value };
-          return new TokenValueSource() { TokenData = tknData, Location = valueNode.GetLocation(), Parent = parent };
+          return new TokenValueSource() { TokenData = tknData, SourceLocation = valueNode.GetLocation(), Parent = parent };
         }
       }
       switch(valueNode.Term.Name) {
         case TermNames.ConstList:
           var values = valueNode.ChildNodes.Select(n => BuildInputValue(n, parent)).ToArray();
-          return new ListValueSource() { Values = values, Location = valueNode.GetLocation(), Parent = parent };
+          return new ListValueSource() { Values = values, SourceLocation = valueNode.GetLocation(), Parent = parent };
 
         case TermNames.ConstInpObj:
           return BuildInputObject(valueNode.ChildNodes[0], parent);
@@ -51,7 +51,7 @@ namespace NGraphQL.Server.Parsing {
           fields.Add(name, fldValue);
         _path.Pop(); 
       }
-      return new ObjectValueSource() { Location = fieldsNode.GetLocation(), Fields = fields, Parent = parent };
+      return new ObjectValueSource() { SourceLocation = fieldsNode.GetLocation(), Fields = fields, Parent = parent };
     }
 
 

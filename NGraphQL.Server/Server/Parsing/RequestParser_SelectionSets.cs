@@ -18,7 +18,7 @@ namespace NGraphQL.Server.Parsing {
             break;
           case TermNames.FragmSpread:
             var name = selNode.ChildNodes[1].GetText();
-            selItem = new FragmentSpread() { Name = name, Location = selNode.GetLocation() };
+            selItem = new FragmentSpread() { Name = name, SourceLocation = selNode.GetLocation() };
             var dirListNode = selNode.FindChild(TermNames.DirListOpt);
             selItem.Directives = BuildDirectives(dirListNode, DirectiveLocation.Field, selItem);
             break;
@@ -33,7 +33,7 @@ namespace NGraphQL.Server.Parsing {
     }
 
     private SelectionField BuildSelectionField(Node selNode, NamedRequestObject parentItem) {
-      var selFld = new SelectionField() { Parent = parentItem, Location = selNode.GetLocation() };
+      var selFld = new SelectionField() { Parent = parentItem, SourceLocation = selNode.GetLocation() };
       var nameNode = selNode.FindChild(TermNames.AliasedName);
       AssignNameAlias(selFld, nameNode);
       try {
@@ -71,7 +71,7 @@ namespace NGraphQL.Server.Parsing {
           continue; 
         }
         allNames.Add(argName);
-        var arg = new InputValue() { Name = argName, Parent = owner, Location = argNode.GetLocation() };
+        var arg = new InputValue() { Name = argName, Parent = owner, SourceLocation = argNode.GetLocation() };
         arg.ValueSource = BuildInputValue(argNode.ChildNodes[1], arg);
         args.Add(arg);
         _path.Pop(); 

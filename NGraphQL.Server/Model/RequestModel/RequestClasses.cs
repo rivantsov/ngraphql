@@ -1,12 +1,13 @@
 ﻿using System.Collections.Generic;
 
 using NGraphQL.CodeFirst;
+using NGraphQL.Introspection;
 
 namespace NGraphQL.Model.Request {
 
   public abstract class RequestObjectBase {
     public RequestObjectBase Parent; 
-    public QueryLocation Location { get; internal set; } 
+    public SourceLocation SourceLocation { get; internal set; } 
   }
 
   public abstract class NamedRequestObject: RequestObjectBase {
@@ -48,10 +49,10 @@ namespace NGraphQL.Model.Request {
     // List of (ObjectDef, FieldCallInfo[]) pairs, 
     public IList<MappedObjectItemSet> MappedItemSets = new List<MappedObjectItemSet>(); 
 
-    public SelectionSubset(RequestObjectBase parent, List<SelectionItem> items, QueryLocation location) {
+    public SelectionSubset(RequestObjectBase parent, List<SelectionItem> items, SourceLocation location) {
       Parent = parent; 
       Items = items;
-      this.Location = location; 
+      this.SourceLocation = location; 
     }
   }
 
@@ -114,9 +115,9 @@ namespace NGraphQL.Model.Request {
     public static IList<RequestDirective> EmptyList = new RequestDirective[] { };
 
     public DirectiveDef Def;
+    public DirectiveLocation Location; 
     public IList<InputValue> Args;
     public IList<MappedArg> MappedArgs;
-    public object[] StaticArgValues;
     public RequestDirective() { }
   }
 

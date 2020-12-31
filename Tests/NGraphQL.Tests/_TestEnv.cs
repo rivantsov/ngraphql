@@ -105,7 +105,7 @@ $@" resolver calls: {mx.ResolverCallCount}, output objects: {mx.OutputObjectCoun
       var text = $@"
 
 !!! Exception !!! ----------------------------------------------------------------      
-{ex.ToString()}
+{ex}
 
 Failed request:
 {query}

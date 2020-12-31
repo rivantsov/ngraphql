@@ -3,10 +3,17 @@
 namespace NGraphQL.Model.Request {
 
   public abstract class MappedSelectionItem {
-    public SelectionItem Item; 
+    public SelectionItem Item;
+    public List<RuntimeDirectiveBase> Directives; 
     public MappedSelectionItem(SelectionItem item) { Item = item; }
     
     public override string ToString() => Item.ToString();
+
+    public void AddDirective(RuntimeDirectiveBase dir) {
+      Directives ??= new List<RuntimeDirectiveBase>();
+      Directives.Add(dir); 
+    }
+    public bool HasDirectives => Directives != null && Directives.Count > 0; 
   }
 
   // Mapped field is runtime representation of a selection field in a query.

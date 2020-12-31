@@ -36,7 +36,7 @@ namespace NGraphQL.CodeFirst {
     }
 
     public T FromMap<T>(object value) {
-      return default(T);
+      return default;
     }
 
   }

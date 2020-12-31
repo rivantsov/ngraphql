@@ -37,8 +37,6 @@ namespace NGraphQL.Server.Execution {
       if(_requestContext.Failed)
         return;
 
-      var op = _requestContext.Operation; 
-      var opType = op.OperationType;
       var topScope = new OutputObjectScope(); // we do not count it as an 'output object', so no incr of object count in metrics
       _requestContext.Response.Data = topScope;
       await ExecuteOperationAsync(_requestContext.Operation, topScope);
@@ -192,13 +190,13 @@ namespace NGraphQL.Server.Execution {
     }
 
     private GraphQLError AddBadRequestError(string message) {
-      var err = new GraphQLError(message, null, QueryLocation.StartLocation, ErrorCodes.BadRequest);
+      var err = new GraphQLError(message, null, SourceLocation.StartLocation, ErrorCodes.BadRequest);
       _requestContext.AddError(err);
       return err;
     }
 
     private GraphQLError AddVariableError(string message) {
-      var err = new GraphQLError(message, null, QueryLocation.StartLocation, ErrorCodes.InputError);
+      var err = new GraphQLError(message, null, SourceLocation.StartLocation, ErrorCodes.InputError);
       _requestContext.AddError(err);
       return err;
     }

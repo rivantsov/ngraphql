@@ -6,7 +6,6 @@ using System.Text;
 
 using NGraphQL.CodeFirst;
 using NGraphQL.Core;
-using NGraphQL.Core;
 using NGraphQL.Introspection;
 using NGraphQL.Utilities;
 
@@ -101,11 +100,5 @@ namespace NGraphQL.Model.Construction {
       return dirList;
     } //method
 
-    private IList<ModelDirective> GetActionDirectives<TAction>(IList<ModelDirective> dirs) where TAction: class {
-      if (dirs == null || dirs.Count == 0)
-        return ModelDirective.EmptyList;
-      var actions = dirs.Where(d => d is TAction).ToArray();
-      return actions;
-    }
   } //class
 }

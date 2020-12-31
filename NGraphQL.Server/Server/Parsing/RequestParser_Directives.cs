@@ -38,7 +38,7 @@ namespace NGraphQL.Server.Parsing {
           AddError($"Directive {dirName} may not be placed at this location ({atLocation}). Valid locations: [{dirDef.DirInfo.Locations}].", dirNode);
           return null;
         }
-        var dir = new RequestDirective() { Def = dirDef, Name = dirName, Location = dirNode.GetLocation(), Parent = parent };
+        var dir = new RequestDirective() { Def = dirDef, Location = atLocation, Name = dirName, SourceLocation = dirNode.GetLocation(), Parent = parent };
         var argListNode = dirNode.FindChild(TermNames.ArgListOpt);
         dir.Args = BuildArguments(argListNode.ChildNodes, dir);
         return dir;

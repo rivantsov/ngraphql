@@ -8,7 +8,6 @@ namespace NGraphQL.Model.Construction {
 
   public class IntrospectionSchemaBuilder {
     GraphQLApiModel _model;
-    IList<TypeDefBase> _schemaTypes;
     __Schema _schema;
     TypeRef _stringNotNull;
 

@@ -63,7 +63,6 @@ namespace NGraphQL.Server.Http {
           return ReadInputObject(context, (InputObjectTypeDef) typeRef.TypeDef, jsonValue, path);
 
         default:
-          var pathStr = path.ToCommaText();
           AddError(context, $"Invalid input value type: only scalar, enum or input object are allowed.", path);
           return null; 
       }

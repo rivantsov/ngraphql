@@ -7,6 +7,6 @@ namespace NGraphQL.CodeFirst {
 
   public interface ISelectionField {
     string Name { get; }
-    QueryLocation Location { get; }
+    SourceLocation SourceLocation { get; }
   }
 }

@@ -13,10 +13,17 @@ namespace NGraphQL.Model.Request {
     public InputValueDef InputDef; 
     public TypeRef ResultTypeRef; 
     public RequestObjectBase Anchor;
+    public IList<RuntimeModelDirective> Directives = _emptyDirs;
+    private static readonly IList<RuntimeModelDirective> _emptyDirs = new RuntimeModelDirective[] { };
+    
     public InputValueEvaluator(InputValueDef inputDef, TypeRef resultTypeRef, RequestObjectBase anchor) {
       InputDef = inputDef; 
       ResultTypeRef = resultTypeRef; 
-      Anchor = anchor; 
+      Anchor = anchor;
+      // prepare directives
+      if (inputDef.Directives != null)
+        Directives = inputDef.Directives.Where(d => d.Def.Handler is IInputValueDirectiveAction)
+          .Select(d => new RuntimeModelDirective(d)).ToList(); 
     }
     public override string ToString() => InputDef.ToString();
 
@@ -26,7 +33,8 @@ namespace NGraphQL.Model.Request {
     public object GetValue(RequestContext context) {
       try {
         var value = Evaluate(context);
-        value = ApplyDirectives(context, value);
+        if (Directives.Count > 0)
+          value = ApplyDirectives(context, value);
         return value; 
       } catch(InvalidInputException) {
         throw; 
@@ -36,13 +44,10 @@ namespace NGraphQL.Model.Request {
     }
 
     private object ApplyDirectives(RequestContext context, object value) {
-      var inpDirs = InputDef.InputValueDirectives;
-      if (inpDirs == null || inpDirs.Count == 0)
-        return value;
       object result = value; 
-      foreach(var dir in inpDirs) {
-        var action = dir as IInputValueDirectiveAction;
-        result = action.ProcessValue(context, dir.ModelAttribute.ArgValues, result);
+      foreach(var dir in this.Directives) {
+        var action = dir.Def.Handler as IInputValueDirectiveAction;
+        result = action.ProcessValue(context, dir.GetArgValues(context), result);
       }
       return result; 
     }

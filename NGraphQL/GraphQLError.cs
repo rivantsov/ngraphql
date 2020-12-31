@@ -8,13 +8,13 @@ namespace NGraphQL {
   public class GraphQLError {
     public const string ErrorCodeKey = "code";
     public string Message;
-    public IList<QueryLocation> Locations = new List<QueryLocation>();
+    public IList<SourceLocation> Locations = new List<SourceLocation>();
     public IList<object> Path;
     public IDictionary<string, object> Extensions = new Dictionary<string, object>(); 
 
     public GraphQLError() { }
 
-    public GraphQLError(string message, IList<object> path = null, QueryLocation location = null, string type = null) {
+    public GraphQLError(string message, IList<object> path = null, SourceLocation location = null, string type = null) {
       Message = message;
       Path = path ?? Array.Empty<object>();
       if (location != null)
@@ -33,11 +33,11 @@ namespace NGraphQL {
     }
   }
 
-  public class QueryLocation {
+  public class SourceLocation {
     public int Line;
     public int Column;
 
-    public static readonly QueryLocation StartLocation = new QueryLocation() { Line = 1, Column = 1 };
+    public static readonly SourceLocation StartLocation = new SourceLocation() { Line = 1, Column = 1 };
     public override string ToString() => $"({Line}, {Column})";
   }
 

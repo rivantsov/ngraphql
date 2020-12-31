@@ -124,11 +124,6 @@ namespace NGraphQL.Server.Parsing {
               IList<RequestDirective> ownerDirectives = null, bool isForUnion = false) {
       var mappedItems = new List<MappedSelectionItem>();
       foreach(var item in selItems) {
-        if(item.Directives != null) {
-          foreach(var dir in item.Directives)
-            dir.MappedArgs = MapArguments(dir.Args, dir.Def.Args, dir);
-        }
-        var allDirs = ownerDirectives.MergeLists(item.Directives);
 
         switch(item) {
           case SelectionField selFld:
@@ -141,18 +136,48 @@ namespace NGraphQL.Server.Parsing {
             }
             var mappedArgs = MapArguments(selFld.Args, fldDef.Args, selFld);
             var mappedFld = new MappedField(selFld, fldDef, mappedArgs);
+            AddRuntimeModelDirectives(mappedFld);
+            AddRuntimeRequestDirectives(mappedFld); 
             mappedItems.Add(mappedFld);
             ValidateMappedFieldAndProcessSubset(mappedFld);
             break;
 
           case FragmentSpread fs:
             var mappedSpread = MapFragmentSpread(fs, objectTypeDef, isForUnion);
-            if (mappedSpread != null) // null is indicator of error
+            if (mappedSpread != null) {// null is indicator of error
+              AddRuntimeRequestDirectives(mappedSpread);
               mappedItems.Add(mappedSpread);
+            }
             break;
         }//switch
-      }
+
+        var allDirs = ownerDirectives.MergeLists(item.Directives);
+
+
+      } //foreach item
       return mappedItems; 
+    }
+
+    private void AddRuntimeRequestDirectives(MappedSelectionItem mappedItem) {
+      var selItem = mappedItem.Item;
+      // request directives first; map dir args
+      if (selItem.Directives != null) {
+        foreach (var dir in selItem.Directives) {
+          dir.MappedArgs = MapArguments(dir.Args, dir.Def.Args, dir);
+          mappedItem.AddDirective(new RuntimeRequestDirective(dir));
+        }
+      }
+    }
+
+    private void AddRuntimeModelDirectives(MappedField mappedField) {
+      var fldDef = mappedField.FieldDef;
+      if (fldDef.Directives != null)
+        foreach (var fldDir in fldDef.Directives)
+          mappedField.AddDirective(new RuntimeModelDirective(fldDir));
+      var typeDefDirs = fldDef.TypeRef.TypeDef.Directives;
+      if (typeDefDirs != null)
+        foreach (var tdir in typeDefDirs)
+          mappedField.AddDirective(new RuntimeModelDirective(tdir));
     }
 
     private MappedFragmentSpread MapFragmentSpread(FragmentSpread fs, ObjectTypeDef objectTypeDef, bool isForUnion) {
@@ -208,7 +233,7 @@ namespace NGraphQL.Server.Parsing {
 
     private void AddError(string message, RequestObjectBase item, string errorType = ErrorCodes.BadRequest) {
       var path = item.GetRequestObjectPath();
-      var err = new GraphQLError(message, path, item.Location, errorType);
+      var err = new GraphQLError(message, path, item.SourceLocation, errorType);
       _requestContext.AddError(err);
     }
 

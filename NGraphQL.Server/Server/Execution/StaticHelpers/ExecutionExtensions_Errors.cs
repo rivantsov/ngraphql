@@ -13,7 +13,7 @@ namespace NGraphQL.Server.Execution {
   public static partial class ExecutionExtensions {
 
     public static GraphQLError AddError(this RequestContext requestContext, Exception exc,
-                                               IList<object> path = null, QueryLocation location = null) {
+                                               IList<object> path = null, SourceLocation location = null) {
       var err = new GraphQLError(exc.Message, path, location, ErrorCodes.ServerError);
       var withDet = requestContext.Server.Settings.Options.IsSet(GraphQLServerOptions.ReturnExceptionDetails);
       if (withDet)
@@ -25,7 +25,7 @@ namespace NGraphQL.Server.Execution {
     public static void AddError(this FieldContext fieldContext, Exception exc, string errorType) {
       var reqCtx = (RequestContext) fieldContext.RequestContext;
       var path = fieldContext.GetFullRequestPath();
-      var err = new GraphQLError(exc.Message, path, fieldContext.SelectionField.Location, type: errorType);
+      var err = new GraphQLError(exc.Message, path, fieldContext.SelectionField.SourceLocation, type: errorType);
       var withDet = reqCtx.Server.Settings.Options.IsSet(GraphQLServerOptions.ReturnExceptionDetails);
       if (withDet)
         err.Extensions["Details"] = exc.ToText();
@@ -35,14 +35,14 @@ namespace NGraphQL.Server.Execution {
 
     public static void AddInputError (this IRequestContext context, InvalidInputException exc) {
       var path = exc.Anchor.GetRequestObjectPath();
-      var loc = exc.Anchor.Location; 
+      var loc = exc.Anchor.SourceLocation; 
       var err = new GraphQLError(exc.Message, path, loc, ErrorCodes.InputError);
       context.AddError(err);
     }
 
     public static void AddInputError(this RequestContext context, string message, RequestObjectBase anchor) {
       var path = anchor.GetRequestObjectPath();
-      var loc = anchor.Location;
+      var loc = anchor.SourceLocation;
       var err = new GraphQLError(message, path, loc, ErrorCodes.InputError);
       context.AddError(err);
     }
@@ -64,7 +64,7 @@ namespace NGraphQL.Server.Execution {
       var reqCtx = (RequestContext) fieldContext.RequestContext;
       var quota = reqCtx.Quota;
       var err = new GraphQLError($"Query depth exceeded maximum ({quota.MaxDepth}) allowed by quota.",
-        fieldContext.GetFullRequestPath(), fieldContext.SelectionField.Location, type: "Quota");
+        fieldContext.GetFullRequestPath(), fieldContext.SelectionField.SourceLocation, type: "Quota");
       reqCtx.AddError(err);
       throw new AbortRequestException();
     }
@@ -73,7 +73,7 @@ namespace NGraphQL.Server.Execution {
       var reqCtx = (RequestContext)fieldContext.RequestContext;
       var quota = reqCtx.Quota;
       var err = new GraphQLError($"Output object count exceeded maximum ({quota.MaxOutputObjects}) allowed by quota.",
-        fieldContext.GetFullRequestPath(), fieldContext.SelectionField.Location, type: "Quota");
+        fieldContext.GetFullRequestPath(), fieldContext.SelectionField.SourceLocation, type: "Quota");
       reqCtx.AddError(err);
       throw new AbortRequestException();
     }
@@ -81,7 +81,7 @@ namespace NGraphQL.Server.Execution {
     internal static void ThrowRequestCancelled(this FieldContext fieldContext) {
       var reqCtx = (RequestContext)fieldContext.RequestContext;
       var err = new GraphQLError($"Request cancelled",
-        fieldContext.GetFullRequestPath(), fieldContext.SelectionField.Location, type: "Cancel");
+        fieldContext.GetFullRequestPath(), fieldContext.SelectionField.SourceLocation, type: "Cancel");
       reqCtx.AddError(err);
       throw new AbortRequestException();
     }

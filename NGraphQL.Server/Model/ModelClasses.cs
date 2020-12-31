@@ -1,20 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 
 using NGraphQL.CodeFirst;
 using NGraphQL.CodeFirst.Internals;
 using NGraphQL.Core;
 using NGraphQL.Core.Scalars;
-using NGraphQL.Core;
 using NGraphQL.Introspection;
 using NGraphQL.Server;
 using NGraphQL.Server.Execution;
-using NGraphQL.Server.Parsing;
-using NGraphQL.Model.Request;
 
 namespace NGraphQL.Model {
 
@@ -142,7 +137,6 @@ namespace NGraphQL.Model {
     public bool HasDefaultValue;
     public object DefaultValue;
     public IList<ModelDirective> Directives;
-    public IList<ModelDirective> InputValueDirectives; 
 
     public Type ParamType; // Arg only; exact resolver parameter type
     public MemberInfo InputObjectClrMember; // InputObject only
