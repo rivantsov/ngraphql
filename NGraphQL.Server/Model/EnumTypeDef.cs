@@ -16,7 +16,6 @@ namespace NGraphQL.Model {
     public string ClrName;
     public IList<Attribute> Attributes;
     public long LongValue;  // enum value converted to int
-    public IList<ModelDirective> Directives;
   }
 
 

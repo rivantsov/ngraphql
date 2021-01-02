@@ -43,11 +43,8 @@ namespace NGraphQL.Model.Construction {
     private void BuildDirectives() {
       foreach(var dirDef in _model.Directives.Values) {
         var dirInfo = dirDef.DirInfo;
-        var dirAttr = dirDef.DeprecatedAttribute;
-        var deprDescr = dirAttr?.ArgValues[0] as string; 
         var dir_ = new __Directive() {
            Name = dirDef.Name, Description = dirDef.Description, Locations = dirInfo.Locations, 
-          IsDeprecated = dirAttr != null, DeprecationReason = deprDescr
         };
         if (dirDef.Args != null)
           dir_.Args =
@@ -104,14 +101,9 @@ namespace NGraphQL.Model.Construction {
             BuildScalarType(std);
             break;
 
-          case ObjectTypeDef otd:
-            BuildObjectType(otd);
-            AddTypeNameField(otd); 
-            break;
-
-          case InterfaceTypeDef intDef:
-            BuildInterfaceType(intDef);
-            AddTypeNameField(intDef); 
+          case ComplexTypeDef ctd:  // object types and interfaces
+            BuildComplexObjectType(ctd);
+            AddTypeNameField(ctd); 
             break;
 
           case InputObjectTypeDef inpDef:
@@ -140,48 +132,32 @@ namespace NGraphQL.Model.Construction {
       // nothing to do, everything is assigned already.
     }
 
-    private void BuildObjectType(ObjectTypeDef objTypeDef) {
-      var type_ = objTypeDef.Type_; 
+    // Object types and interface types
+    private void BuildComplexObjectType(ComplexTypeDef typeDef) {
+      var type_ = typeDef.Type_; 
       // build fields
-      foreach(var fld in objTypeDef.Fields) {
+      foreach(var fld in typeDef.Fields) {
         var fld_ = new __Field() { Name = fld.Name, Description = fld.Description, Type = fld.TypeRef.Type_ };
+        fld.Intro_ = fld_; 
         // convert args
-        fld_.Args = 
-          fld.Args.Select(ivd => new __InputValue() { 
-                        Name = ivd.Name, Description = ivd.Description, 
-                        Type = ivd.TypeRef.Type_, DefaultValue = ivd.DefaultValue + string.Empty
-                      })
-                  .ToArray();
+        foreach(var inpV in fld.Args) {
+          var inpV_ = new __InputValue() {
+            Name = inpV.Name, Description = inpV.Description,
+            Type = inpV.TypeRef.Type_, DefaultValue = inpV.DefaultValue + string.Empty
+          };
+          inpV.Intro_ = inpV_;
+          fld_.Args.Add(inpV_);
+        }
         type_.Fields.Add(fld_);
       } //foreach fld
-      // Interfaces
-      foreach(var intfDef in objTypeDef.Implements) {
-        var intf_ = intfDef.Type_;
-        type_.Interfaces.Add( intf_);
-        intf_.PossibleTypes.Add(type_);
-      }
-    }
-
-    private void BuildInterfaceType(InterfaceTypeDef intfTypeDef) {
-      var type_ = intfTypeDef.Type_; 
-      type_.Fields = new List<__Field>();
-      type_.PossibleTypes = new List<__Type>();
-
-      // build fields
-      foreach(var fld in intfTypeDef.Fields) {
-        var fld_ = new __Field() {
-          Name = fld.Name, Description = fld.Description, Type = fld.TypeRef.Type_
-        };
-        // convert args
-        fld_.Args =
-          fld.Args.Select(ivd => new __InputValue() {
-            Name = ivd.Name, Description = ivd.Description,
-            Type = ivd.TypeRef.Type_,  DefaultValue = ivd.DefaultValue + string.Empty
-          })
-          .ToArray();
-        type_.Fields.Add(fld_);
-      } //foreach fld
-      // PossibleTypes in each interface are taken care of by object types implementing the interface
+      
+      // Interfaces - for ObjectTypes only
+      if (typeDef is ObjectTypeDef objTypeDef)
+        foreach(var intfDef in objTypeDef.Implements) {
+          var intf_ = intfDef.Type_;
+          type_.Interfaces.Add( intf_);
+          intf_.PossibleTypes.Add(type_);
+        }
     }
 
     private void BuildInputType(InputObjectTypeDef inpTypeDef) {
@@ -192,6 +168,7 @@ namespace NGraphQL.Model.Construction {
           DefaultValue = inpFldDef.HasDefaultValue ? inpFldDef.DefaultValue + string.Empty : null,
           Type = inpFldDef.TypeRef.Type_
         };
+        inpFldDef.Intro_ = inp_;
         type_.InputFields.Add(inp_);
       }
     }
@@ -202,6 +179,7 @@ namespace NGraphQL.Model.Construction {
         var enumV_ = new __EnumValue() {
           Name = enumV.Name, Description = enumV.Description,
         };
+        enumV.Intro_ = enumV_;
         type_.EnumValues.Add(enumV_);
       }
     }

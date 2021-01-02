@@ -29,7 +29,12 @@ namespace NGraphQL.TestApp {
     [Resolver(nameof(ThingsResolvers.GetOtherThings))]
     public IList<OtherThing_> otherThings;
 
-    // example of method defined on type
+    // An example of handling a field with parameters, with intent to use it in strongly-typed client
+    // We define 2 members: GetRandoms method that defines the parameters of the field; we set its
+    // name is schema using GraphQLName attribute. So it will appear in schema as 'randoms(count: Int!): [Int]'
+    // This is the field that 'works' on the server. 
+    // We also define Randoms c# field that will be completely ignored by the server, but will be used to receive
+    //  the actual value on the client, from JSon matching key-value pair 'randoms' produced by the server-side field
     [GraphQLName("randoms")]
     public int[] GetRandoms(int count = 3) { return null; }
 

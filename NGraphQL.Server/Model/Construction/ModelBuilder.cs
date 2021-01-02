@@ -57,10 +57,26 @@ namespace NGraphQL.Model.Construction {
       if (_model.HasErrors)
         return;
 
+      // apply directives to all model objects in the model
+      _model.ForEachModelObject(this.ApplyDirectives);
+      if (_model.HasErrors)
+        return;
+
       var schemaGen = new SchemaDocGenerator();
       _model.SchemaDoc = schemaGen.GenerateSchema(_model);
 
       VerifyModel();
+    }
+
+    private void ApplyDirectives(GraphQLModelObject obj) {
+      if (obj.Directives == null || obj.Directives.Count == 0)
+        return;
+      foreach (var dir in obj.Directives) {
+        var action = dir.Def.Handler as IModelDirectiveAction;
+        if (action == null)
+          continue;
+        action.Apply(_model, obj, dir.ModelAttribute.ArgValues);
+      }
     }
 
     private void BuildTypesInternalsFromClrType() {

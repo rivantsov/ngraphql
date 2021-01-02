@@ -68,17 +68,6 @@ namespace NGraphQL.Model {
       return reqFNames; 
     }
 
-    public static IntroObjectBase GetIntroObject(this GraphQLModelObject modelObj) {
-      switch (modelObj) {
-        case TypeDefBase td: return td.Intro_;
-        case FieldDef fd: return fd.Intro_;
-        case InputValueDef iv: return iv.Intro_;
-        case EnumValue ev: return ev.Intro_;
-        case DirectiveDef dir: return dir.Intro_;
-        default: return null; 
-      }
-    }
-
     public static bool IsSchemaType(this TypeDefBase typeDef) {
       switch(typeDef.TypeRole) {
         case ObjectTypeRole.ModuleMutation:
@@ -88,7 +77,52 @@ namespace NGraphQL.Model {
         default:
           return true; 
       }
+    }
 
+    public static void ForEachModelObject(this GraphQLApiModel model, Action<GraphQLModelObject> action) {
+      foreach (var typeDef in model.Types) 
+        if (typeDef.IsSchemaType()) // skip Module-Level transient types (ModuleQuery, ModuleMutation etc) 
+          typeDef.ApplyDeep(action);
+      foreach (var dirDef in model.Directives.Values)
+        dirDef.ApplyDeep(action); 
+    } //method
+
+    public static void ApplyDeep(this GraphQLModelObject modelObj, Action<GraphQLModelObject> action) {
+      action(modelObj);
+      switch (modelObj) {
+        case ComplexTypeDef ctd: // object type and interface type
+          foreach (var fld in ctd.Fields)
+            ApplyDeep(fld, action);
+          break;
+
+        case InputObjectTypeDef itd:
+          foreach (var f in itd.Fields)
+            ApplyDeep(f, action);
+          break;
+
+        case EnumTypeDef etd:
+          foreach (var ev in etd.EnumValues)
+            ApplyDeep(ev, action);
+          break;
+
+        case ScalarTypeDef _:
+        case UnionTypeDef _:
+        case InputValueDef _:
+          // nothing to do
+          break;
+
+        case FieldDef fd:
+          if (fd.Args != null)
+            foreach (var a in fd.Args)
+              ApplyDeep(a, action);
+          break;
+
+        case DirectiveDef dirDef:
+          if (dirDef.Args != null)
+            foreach (var a in dirDef.Args)
+              ApplyDeep(a, action); 
+          break; 
+      } //switch
     }
 
 

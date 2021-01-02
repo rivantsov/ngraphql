@@ -74,7 +74,7 @@ namespace NGraphQL.Introspection {
 
   [Hidden]
   public class __Field: IntroObjectBase {
-    public IList<__InputValue> Args;
+    public IList<__InputValue> Args = new List<__InputValue>();
     public __Type Type; 
   }
 
@@ -93,7 +93,7 @@ namespace NGraphQL.Introspection {
   [Hidden]
   public class __Directive: IntroObjectBase {
     public DirectiveLocation Locations; 
-    public IList<__InputValue> Args;
+    public IList<__InputValue> Args = new List<__InputValue>();
   }
 
 }

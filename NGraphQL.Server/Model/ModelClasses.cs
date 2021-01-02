@@ -16,6 +16,7 @@ namespace NGraphQL.Model {
   public class GraphQLModelObject {
     public string Name { get; set; }
     public string Description;
+    public IList<ModelDirective> Directives = new List<ModelDirective>();
     public IntroObjectBase Intro_; 
     public override string ToString() => Name;
     public static readonly IList<Attribute> EmptyAttributeList = new Attribute[] { };
@@ -28,7 +29,6 @@ namespace NGraphQL.Model {
     public TypeKind Kind;
     public Type ClrType;
     public bool Hidden;
-    public IList<ModelDirective> Directives = new List<ModelDirective>();
     public bool IsDefaultForClrType = true; // false for ID type, to skip registration
 
     public __Type Type_ => (__Type)Intro_; 
@@ -136,7 +136,6 @@ namespace NGraphQL.Model {
 
     public bool HasDefaultValue;
     public object DefaultValue;
-    public IList<ModelDirective> Directives;
 
     public Type ParamType; // Arg only; exact resolver parameter type
     public MemberInfo InputObjectClrMember; // InputObject only
@@ -153,7 +152,6 @@ namespace NGraphQL.Model {
 
     public FieldFlags Flags;
     public IList<InputValueDef> Args = new List<InputValueDef>();
-    public IList<ModelDirective> Directives;
     public MemberInfo ClrMember;
     public ResolverMethodInfo Resolver;
     public Func<object, object> Reader;
