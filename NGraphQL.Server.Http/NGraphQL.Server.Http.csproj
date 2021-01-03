@@ -7,13 +7,7 @@
     <Description>GraphQL Http server</Description>
   </PropertyGroup>
 
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-        <NoWarn>1701;1702;1591</NoWarn>
-        <DocumentationFile>bin\Release\netstandard2.0\NGraphQL.Http.xml</DocumentationFile>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <PropertyGroup>
     <NoWarn>1701;1702;1591</NoWarn>
   </PropertyGroup>
 
@@ -27,5 +21,10 @@
     <ProjectReference Include="..\NGraphQL\NGraphQL.csproj" />
     <ProjectReference Include="..\Tests\NGraphQL.TestApp\NGraphQL.TestApp.csproj" />
   </ItemGroup>
+
+    <PropertyGroup>
+        <DocumentationFile>bin\NGraphQL.Server.Http.xml</DocumentationFile>
+    </PropertyGroup>
+
 
 </Project>

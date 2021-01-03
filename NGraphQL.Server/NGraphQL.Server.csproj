@@ -9,12 +9,6 @@
     <RootNamespace>NGraphQL</RootNamespace>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-      <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-      <DocumentationFile>bin\Release\netstandard2.0\NGraphQL.xml</DocumentationFile>
-    <NoWarn>1701;1702;1591</NoWarn>
-  </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
       <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
       <NoWarn>1701;1702;1591</NoWarn>
@@ -28,10 +22,8 @@
     <ProjectReference Include="..\NGraphQL\NGraphQL.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Update="Server\Execution\StaticHelpers\ExecutionExtensions_Errors.cs">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Compile>
-  </ItemGroup>
+    <PropertyGroup>
+        <DocumentationFile>bin\NGraphQL.Server.xml</DocumentationFile>
+    </PropertyGroup>
 
 </Project>

@@ -14,4 +14,9 @@
     <ProjectReference Include="..\NGraphQL\NGraphQL.csproj" />
   </ItemGroup>
 
+    <PropertyGroup>
+        <DocumentationFile>bin\NGraphQL.Client.xml</DocumentationFile>
+    </PropertyGroup>
+
+
 </Project>

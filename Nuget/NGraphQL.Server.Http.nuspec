@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package > 
   <metadata>
-    <id>NGraphQL.Http</id>
+    <id>NGraphQL.Server.Http</id>
     <version>$version$</version>
     <authors>Roman Ivantsov</authors>
     <owners>Roman Ivantsov</owners>
@@ -14,7 +14,8 @@
     <tags>GraphQL .NET c# Http</tags>
     <dependencies>
        <group>
-         <dependency id="NGraphQL" version="0.9.1"/>
+         <dependency id="NGraphQL" version="$version$"/>
+         <dependency id="NGraphQL.Server" version="$version$"/>
          <dependency id="Microsoft.AspNetCore.Http.Abstractions" version="2.2.0"/>
          <dependency id="Newtonsoft.Json" version="12.0.3"/>
        </group>	
@@ -22,8 +23,8 @@
   </metadata>
   
   <files>
-	 <file src="..\NGraphQL.Http\bin\Release\netstandard2.0\NGraphQL.Http.dll" target="lib\netstandard2.0" />
-	 <file src="..\NGraphQL.Http\bin\Release\netstandard2.0\NGraphQL.Http.pdb" target="lib\netstandard2.0" />
-	 <file src="..\NGraphQL.Http\bin\Release\netstandard2.0\NGraphQL.Http.xml" target="lib\netstandard2.0" />
+	 <file src="..\NGraphQL.Server.Http\bin\Release\netstandard2.0\NGraphQL.Server.Http.dll" target="lib\netstandard2.0" />
+	 <file src="..\NGraphQL.Server.Http\bin\Release\netstandard2.0\NGraphQL.Server.Http.pdb" target="lib\netstandard2.0" />
+	 <file src="..\NGraphQL.Server.Http\bin\NGraphQL.Server.Http.xml" target="lib\netstandard2.0" />
   </files>
 </package>
