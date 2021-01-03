@@ -45,47 +45,55 @@ namespace NGraphQL.Model.Construction {
       return !_model.HasErrors;
     }
 
-    private void ProcessEntityMappingExpression(ObjectTypeDef typeDef) {
-      var mapping = typeDef.Mapping; 
-      var entityPrm = mapping.Expression.Parameters[0];
-      var memberInit = mapping.Expression.Body as MemberInitExpression;
-      if(memberInit == null) {
-        AddError($"Invalid mapping expression for type {mapping.EntityType}->{mapping.GraphQLType.Name}");
-        return;
-      }
-      foreach(var bnd in memberInit.Bindings) {
-        var asmtBnd = bnd as MemberAssignment;
-        var fieldDef = typeDef.Fields.FirstOrDefault(fld => fld.ClrMember == bnd.Member);
-        if(asmtBnd == null || fieldDef == null)
-          continue; //should never happen, but just in case
-        // create lambda reading the source property
-        fieldDef.Reader = CompileFieldReader(entityPrm, asmtBnd.Expression);
+    private void ProcessEntityMappingExpressions() {
+      foreach (var typeDef in _typesToMapFields) {
+        var mapping = typeDef.Mapping;
+        if (mapping?.Expression == null)
+          continue; 
+        var entityPrm = mapping.Expression.Parameters[0];
+        var memberInit = mapping.Expression.Body as MemberInitExpression;
+        if (memberInit == null) {
+          AddError($"Invalid mapping expression for type {mapping.EntityType}->{mapping.GraphQLType.Name}");
+          return;
+        }
+        foreach (var bnd in memberInit.Bindings) {
+          var asmtBnd = bnd as MemberAssignment;
+          var fieldDef = typeDef.Fields.FirstOrDefault(fld => fld.ClrMember == bnd.Member);
+          if (asmtBnd == null || fieldDef == null)
+            continue; //should never happen, but just in case
+                      // create lambda reading the source property
+          fieldDef.Reader = CompileFieldReader(entityPrm, asmtBnd.Expression);
+        }
       }
     }
 
     // those members that do not have binding expressions, try mapping props with the same name
-    private void ProcessMappingForMatchingMembers(ObjectTypeDef typeDef) {
-      var mapping = typeDef.Mapping;
-      var entityType = mapping.EntityType; 
-      foreach(var fldDef in typeDef.Fields) {
-        if(fldDef.Resolver != null || fldDef.Reader != null)
-          continue;
-        var memberName = fldDef.ClrMember.Name;
-        MemberInfo entMember = entityType.GetFieldsProps()
-          .Where(m => m.Name.Equals(memberName, StringComparison.OrdinalIgnoreCase))
-          .FirstOrDefault();
-        if(entMember == null)
-          continue;
-        // TODO: maybe change reading to use compiled lambda 
-        switch(entMember) {
-          case FieldInfo fi:
-            fldDef.Reader = (ent) => fi.GetValue(ent);
-            break;
-          case PropertyInfo pi:
-            fldDef.Reader = (ent) => pi.GetValue(ent);
-            break; 
-        }
-      } //foreach fldDef
+    private void ProcessMappingForMatchingMembers() {
+      foreach (var typeDef in _typesToMapFields) {
+        var mapping = typeDef.Mapping;
+        if (mapping == null)
+          continue; 
+        var entityType = mapping.EntityType;
+        foreach (var fldDef in typeDef.Fields) {
+          if (fldDef.Resolver != null || fldDef.Reader != null)
+            continue;
+          var memberName = fldDef.ClrMember.Name;
+          MemberInfo entMember = entityType.GetFieldsProps()
+            .Where(m => m.Name.Equals(memberName, StringComparison.OrdinalIgnoreCase))
+            .FirstOrDefault();
+          if (entMember == null)
+            continue;
+          // TODO: maybe change reading to use compiled lambda 
+          switch (entMember) {
+            case FieldInfo fi:
+              fldDef.Reader = (ent) => fi.GetValue(ent);
+              break;
+            case PropertyInfo pi:
+              fldDef.Reader = (ent) => pi.GetValue(ent);
+              break;
+          }
+        } //foreach fldDef
+      }
     }
 
     private Func<object, object> CompileFieldReader( ParameterExpression entityParam, Expression body) {

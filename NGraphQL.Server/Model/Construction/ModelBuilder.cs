@@ -32,6 +32,7 @@ namespace NGraphQL.Model.Construction {
       RegisterScalars(); 
       if (!RegisterGraphQLTypes())
         return;
+      RegisterResolverClasses();
 
       if (!BuildRegisteredDirectiveDefinitions())
         return; 
@@ -59,6 +60,10 @@ namespace NGraphQL.Model.Construction {
 
       // apply directives to all model objects in the model
       _model.ForEachModelObject(this.ApplyDirectives);
+      if (_model.HasErrors)
+        return;
+
+      MapObjectFields();
       if (_model.HasErrors)
         return;
 
@@ -291,82 +296,8 @@ namespace NGraphQL.Model.Construction {
     }
 
     private void VerifyModel() {
-      foreach(var typeDef in _model.Types) {
-        switch(typeDef) {
-          case ObjectTypeDef otd:
-              VerifyObjectType(otd); 
-            break;
-          case InputObjectTypeDef itd:
-            break; 
-        }
-      }
     }
 
-    private void VerifyObjectType(ObjectTypeDef typeDef) {
-      if (typeDef.Name == "Schema")
-        return; // this is pseudo object
-      foreach(var field in typeDef.Fields) {
-        // so far we have only exec type to set, or post error
-        if (field.Reader != null)
-          field.ExecutionType = FieldExecutionType.Reader;
-        else if (field.Resolver != null)
-          field.ExecutionType = FieldExecutionType.Resolver;
-        else 
-          AddError($"Field {typeDef.Name}.{field.Name} has no associated resolver or mapped entity field.");
-      }
-    }
-
-
-    /*
-    private bool ValidateTypeRoleKind(Type clrType, GraphQLModule module, GraphQLTypeRoleAttribute typeRoleAttr,
-                                      out TypeRole typeRole, out TypeKind typeKind) {
-      typeRole = default;
-      typeKind = default;
-      var errLoc = $"module {module.GetType().Name}";
-      var isSpecialType = clrType.IsEnum || clrType.IsAssignableFrom(typeof(UnionBase));
-      if (isSpecialType && typeRoleAttr != null) {
-        AddError($"Attribute {typeRoleAttr.GetType().Name} is invalid on type {clrType}; {errLoc}");
-        return false;
-      }
-
-      typeRole = typeRoleAttr == null ? TypeRole.DataType : typeRoleAttr.TypeRole;
-      if (typeRole != TypeRole.DataType) {
-        typeKind = TypeKind.Object;
-        return true;
-      }
-
-      bool result = true;
-      switch (typeRoleAttr) {
-        case ObjectTypeAttribute _:
-          typeKind = TypeKind.Object;
-          break;
-        case InputTypeAttribute _:
-          typeKind = TypeKind.InputObject;
-          break;
-
-        case null:
-          if (clrType.IsEnum)
-            typeKind = TypeKind.Enum;
-          else if (clrType.IsInterface)
-            typeKind = TypeKind.Interface;
-          else if (typeof(UnionBase).IsAssignableFrom(clrType))
-            typeKind = TypeKind.Union;
-          else {
-            result = false;
-            if (!clrType.IsClass) {
-              AddError($"Invalid registered type  {clrType.Name}, must be a class; {errLoc}");
-            }
-            AddError($"Registered type {clrType.Name} is missing an attribute identifying its role (ObjectType, Query, etc); {errLoc}.");
-          }
-          break;
-
-        default:
-          result = false;
-          break;
-      }
-      return result;
-    }
-    */
 
 
   } //class

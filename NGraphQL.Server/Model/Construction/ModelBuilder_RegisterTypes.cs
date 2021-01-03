@@ -25,6 +25,13 @@ namespace NGraphQL.Model.Construction {
       return !_model.HasErrors;
     }
 
+    private void RegisterResolverClasses() {
+      foreach (var module in _server.Modules) {
+        foreach (var resType in module.ResolverTypes)
+          _model.Resolvers.Add(new ResolverClassInfo() { Module = module, Type = resType });
+      }
+    }
+
     private bool RegisterGraphQLTypes() {
       foreach (var module in _server.Modules) {
         var mName = module.Name;
