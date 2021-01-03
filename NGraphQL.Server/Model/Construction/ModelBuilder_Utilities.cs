@@ -78,5 +78,9 @@ namespace NGraphQL.Model.Construction {
       return attrs; 
     }
 
+    public void AddError(string message) {
+      _model.Errors.Add(message);
+    }
+
   } //class
 }

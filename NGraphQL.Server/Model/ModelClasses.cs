@@ -147,6 +147,7 @@ namespace NGraphQL.Model {
 
   [DisplayName("{Name}/{TypeRef.Name}")]
   public class FieldDef : GraphQLModelObject {
+    public readonly ComplexTypeDef OwnerType; 
     public TypeRef TypeRef;
     public IList<Attribute> Attributes;
 
@@ -157,7 +158,8 @@ namespace NGraphQL.Model {
     public Func<object, object> Reader;
     public FieldExecutionType ExecutionType;
 
-    public FieldDef(string name, TypeRef typeRef) {
+    public FieldDef(ComplexTypeDef ownerType, string name, TypeRef typeRef) {
+      OwnerType = ownerType; 
       Name = name;
       TypeRef = typeRef;
       if (typeRef.TypeDef.IsComplexReturnType()) {
@@ -179,7 +181,7 @@ namespace NGraphQL.Model {
   [DisplayName("{Method.Name}")]
   public class ResolverMethodInfo {
     public MethodInfo Method;
-    public ResolverAttribute Attribute;
+    public Attribute SourceAttribute;
     public Type ResolverClass; 
 
     public bool ReturnsTask;

@@ -82,25 +82,30 @@ namespace NGraphQL.Model.Construction {
     private void BuildTypesInternalsFromClrType() {
       foreach (var td in _model.Types) {
         if (td.ClrType == null)
-          continue; // Introspection types and special types (Query, Mutation etc) do not have Clr types
+          continue; // Special types (Query, Mutation etc) do not have Clr types
         DirectiveLocation loc = DirectiveLocation.None; 
         switch (td) {
+
           case InterfaceTypeDef intfTypeDef:
             loc = DirectiveLocation.Interface;
             BuildObjectTypeFields(intfTypeDef);
             break;
+
           case ObjectTypeDef objTypeDef:
             loc = DirectiveLocation.Object;
             BuildObjectTypeFields(objTypeDef);
             break;
+          
           case InputObjectTypeDef inpTypeDef:
             loc = DirectiveLocation.InputObject;
             BuildInputObjectFields(inpTypeDef);
             break;
+          
           case EnumTypeDef etd:
             loc = DirectiveLocation.Enum;
             BuildEnumValues(etd);
             break;
+          
           case UnionTypeDef utd:
             loc = DirectiveLocation.Union;
             // we build union types in a separate loop after building other types
@@ -125,21 +130,13 @@ namespace NGraphQL.Model.Construction {
           continue; //error should be logged already
         var name = GetGraphQLName(member);
         var descr = _docLoader.GetDocString(member, clrType);
-        var fld = new FieldDef(name, typeRef) { ClrMember = member, Description = descr, Attributes = attrs };
+        var fld = new FieldDef(typeDef, name, typeRef) { ClrMember = member, Description = descr, Attributes = attrs };
         fld.Directives = BuildDirectivesFromAttributes(member, DirectiveLocation.FieldDefinition, fld);
         if (attrs.Find<HiddenAttribute>() != null)
           fld.Flags |= FieldFlags.Hidden;
         typeDef.Fields.Add(fld);
         if (member is MethodInfo method)
           BuildFieldArguments(fld, method);
-        if (objTypeDef != null)
-          TryFindAssignFieldResolver(objTypeDef, fld);
-      }
-      // mapping expressions
-      if (objTypeDef?.Mapping != null) {
-        if (objTypeDef.Mapping.Expression != null)
-          ProcessEntityMappingExpression(objTypeDef);
-        ProcessMappingForMatchingMembers(objTypeDef);
       }
     }
 
@@ -168,10 +165,6 @@ namespace NGraphQL.Model.Construction {
         argDefs.Add(argDef);
       }
       return argDefs; 
-    }
-
-    public void AddError(string message) {
-      _model.Errors.Add(message); 
     }
 
     private void LinkImplementedInterfaces() {
@@ -276,11 +269,11 @@ namespace NGraphQL.Model.Construction {
       var schemaDef = _model.Schema = new ObjectTypeDef("Schema", null, noAttrs, null, ObjectTypeRole.Schema);
       RegisterTypeDef(schemaDef);
       schemaDef.Hidden = false; 
-      schemaDef.Fields.Add(new FieldDef("query", _model.QueryType.TypeRefNull));
+      schemaDef.Fields.Add(new FieldDef(schemaDef, "query", _model.QueryType.TypeRefNull));
       if (_model.MutationType != null)
-        schemaDef.Fields.Add(new FieldDef("mutation", _model.MutationType.TypeRefNull));
+        schemaDef.Fields.Add(new FieldDef(schemaDef, "mutation", _model.MutationType.TypeRefNull));
       if (_model.SubscriptionType != null)
-        schemaDef.Fields.Add(new FieldDef("subscription", _model.SubscriptionType.TypeRefNull));
+        schemaDef.Fields.Add(new FieldDef(schemaDef, "subscription", _model.SubscriptionType.TypeRefNull));
     }
 
     private ObjectTypeDef BuildRootSchemaObject(string name, ObjectTypeRole typeRole, ObjectTypeRole moduleTypeRole) {

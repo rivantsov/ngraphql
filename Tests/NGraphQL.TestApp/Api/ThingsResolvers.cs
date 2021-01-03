@@ -64,11 +64,12 @@ namespace NGraphQL.TestApp {
       return strFlags;
     }
 
-    public string EchoInputObj(IFieldContext context, InputObj inpObj) {
+    public string EchoInputObject(IFieldContext context, InputObj inpObj) {
       return inpObj.ToString();
     }
 
-    public string EchoInputObjWithEnums(IFieldContext context, InputObjWithEnums inpObj) {
+    [ResolvesField(nameof(IThingsQuery.EchoInputObjWithEnums))]
+    public string EchoInputObjectWithEnums(IFieldContext context, InputObjWithEnums inpObj) {
       return inpObj.ToString();
     }
 

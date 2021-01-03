@@ -26,8 +26,15 @@ namespace NGraphQL.TestApp {
 
     string EchoEnumArray(TheFlags? flagVals);
 
+    // the following 2 fields are matched to resolvers in 2 different ways. 
+    //  the first field uses [Resolver(methodName)] attribute on the field (in GraphQLQ Query);
+    //  the other one is using [ResolvesField(fieldName)] attribute on the resolver method. 
+    //  Using attribute on resolver method allows you to keep GraphQL type(s) free of 
+    // references to resolver classes and any dependency on deep server-side app logic. 
+    [Resolver("EchoInputObject")]
     string EchoInputObj(InputObj inpObj);
 
+    // matched with resolver using [ResolvesField(field)] attribute on resolver method
     string EchoInputObjWithEnums(InputObjWithEnums inpObj);
 
     string EchoCustomScalars(decimal dec, Guid uuid);

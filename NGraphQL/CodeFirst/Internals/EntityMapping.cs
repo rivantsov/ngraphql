@@ -8,7 +8,7 @@ namespace NGraphQL.CodeFirst.Internals {
   public class EntityMapping {
     public Type GraphQLType;
     public Type EntityType;
-    public LambdaExpression Expression;
+    public LambdaExpression Expression; //might be null; in this case we have mapping using field name matches
     public EntityMapping() { }
   }
 
