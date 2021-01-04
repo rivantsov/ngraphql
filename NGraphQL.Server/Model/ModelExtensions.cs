@@ -63,7 +63,7 @@ namespace NGraphQL.Model {
     }
 
     public static IList<string> GetRequiredFields(this InputObjectTypeDef inputTypeDef) {
-      var reqFNames = inputTypeDef.Fields.Where(f => f.TypeRef.Kind == TypeKind.NotNull)
+      var reqFNames = inputTypeDef.Fields.Where(f => f.TypeRef.Kind == TypeKind.NonNull)
         .Select(f => f.Name).ToList();
       return reqFNames; 
     }

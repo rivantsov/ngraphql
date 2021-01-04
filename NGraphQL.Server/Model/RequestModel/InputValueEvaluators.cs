@@ -88,7 +88,7 @@ namespace NGraphQL.Model.Request {
     public InputListEvaluator(InputValueDef inputDef, TypeRef resultTypeRef, RequestObjectBase anchor,
                  InputValueEvaluator[] elemEvaluators) : base(inputDef, resultTypeRef, anchor) {
       ElemEvaluators = elemEvaluators;
-      if (ResultTypeRef.Kind == TypeKind.NotNull)
+      if (ResultTypeRef.Kind == TypeKind.NonNull)
         ElemTypeRef = ResultTypeRef.Parent.Parent;
       else
         ElemTypeRef = ResultTypeRef.Parent;

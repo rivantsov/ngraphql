@@ -155,7 +155,7 @@ namespace NGraphQL.Model.Construction {
 
       // Flags enums are represented by enum arrays
       if (typeDef.IsEnumFlagArray()) {
-        allKinds.Add(TypeKind.NotNull);
+        allKinds.Add(TypeKind.NonNull);
         allKinds.Add(TypeKind.List);
       }
 
@@ -176,11 +176,11 @@ namespace NGraphQL.Model.Construction {
         baseType = valueTypeUnder ?? baseType;
         var withNulls = attrs.Find<WithNullsAttribute>() != null || valueTypeUnder != null;
         if (!withNulls)
-          kinds.Add(TypeKind.NotNull);
+          kinds.Add(TypeKind.NonNull);
         for (int i = 0; i < rank; i++)
           kinds.Add(TypeKind.List);
         if (notNull)
-          kinds.Add(TypeKind.NotNull);
+          kinds.Add(TypeKind.NonNull);
         return;
       }
 
@@ -194,7 +194,7 @@ namespace NGraphQL.Model.Construction {
       }
 
       if (notNull)
-        kinds.Add(TypeKind.NotNull);
+        kinds.Add(TypeKind.NonNull);
     }
 
   }//class

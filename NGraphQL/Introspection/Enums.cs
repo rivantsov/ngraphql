@@ -55,7 +55,7 @@ namespace NGraphQL.Introspection {
     Enum,
     InputObject,
     List,
-    NotNull,
+    NonNull,
   }
 
 }

@@ -24,11 +24,11 @@ namespace NGraphQL.Server.Parsing {
 
         case TermNames.NotNullTypeRef:
           trbase = BuildTypeRefRec(typeNode.ChildNodes[0]);
-          if (trbase.Kind == TypeKind.NotNull) {
+          if (trbase.Kind == TypeKind.NonNull) {
             AddError($"Duplicate not-null type spec: '{typeNode.GetText()}'", typeNode);
             return trbase;
           } 
-          return GetCreateDerivedTypeRef(trbase, TypeKind.NotNull);
+          return GetCreateDerivedTypeRef(trbase, TypeKind.NonNull);
 
         case TermNames.BaseTypeRef:
         default:

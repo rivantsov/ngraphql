@@ -202,7 +202,7 @@ namespace NGraphQL.Model.Construction {
       if(parent.Type_ == null)
         SetupTypeObject(parent);
       switch(typeRef.Kind) {
-        case TypeKind.NotNull:
+        case TypeKind.NonNull:
         case TypeKind.List:
           typeRef.Type_ = new __Type() { Kind = typeRef.Kind, OfType = parent.Type_, DisplayName = typeRef.Name };
           return; 

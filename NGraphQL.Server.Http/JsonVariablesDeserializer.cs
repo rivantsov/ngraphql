@@ -27,7 +27,7 @@ namespace NGraphQL.Server.Http {
           continue; //it might have default, or might be nullable; if not, it will be handled later
         path.Add(varDef.Name); 
         var clrValue = ReadValue(context, varDef.InputDef.TypeRef, rawValue, path);
-        if (clrValue == null && varDef.InputDef.TypeRef.Kind == TypeKind.NotNull)
+        if (clrValue == null && varDef.InputDef.TypeRef.Kind == TypeKind.NonNull)
           AddError(context, $"Variable {varDef.Name}: null value not allowed.", path);
         // contex
         context.RawRequest.Variables[varDef.Name] = clrValue;
@@ -40,7 +40,7 @@ namespace NGraphQL.Server.Http {
         return null;
       switch (typeRef.Kind) {
 
-        case TypeKind.NotNull:
+        case TypeKind.NonNull:
           var result = ReadValue(context, typeRef.Parent, jsonValue, path);
           if (result == null)
             AddError(context, $"Null value not allowed.", path);

@@ -44,7 +44,7 @@ namespace NGraphQL.Model {
       Attributes = attributes; 
       Module = module; 
       TypeRefNull = new TypeRef(this);
-      TypeRefNotNull = new TypeRef(TypeRefNull, TypeKind.NotNull);
+      TypeRefNotNull = new TypeRef(TypeRefNull, TypeKind.NonNull);
       TypeRefs.Add(TypeRefNull);
       TypeRefs.Add(TypeRefNotNull);
     }
@@ -207,7 +207,7 @@ namespace NGraphQL.Model {
     public readonly string Name;
     public readonly int Rank;
     public readonly bool IsList;
-    public bool IsNotNull => Kind == TypeKind.NotNull;
+    public bool IsNotNull => Kind == TypeKind.NonNull;
     public Type ClrType;
 
     public TypeRef(TypeDefBase typeDef) {
@@ -226,7 +226,7 @@ namespace NGraphQL.Model {
       KindsPath.Add(kind); 
       // for this constructor we should have only List or NotNull kinds
       switch(Kind) {
-        case TypeKind.NotNull:
+        case TypeKind.NonNull:
           Rank = parent.Rank;
           break;
         case TypeKind.List:
