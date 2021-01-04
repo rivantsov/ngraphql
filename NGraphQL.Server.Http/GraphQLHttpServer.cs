@@ -62,7 +62,7 @@ namespace NGraphQL.Server.Http {
         // serialize response
         var httpResp = httpContext.Response;
         httpResp.ContentType = ContentTypeJson;
-        httpResp.Headers["Transfer-Encoding"] = "identity"; //to disable chunking
+        //httpResp.Headers["Transfer-Encoding"] = "identity"; //to disable chunking
         var respJson = SerializeResponse(gqlRequestContext.Response);
         await httpResp.WriteAsync(respJson, gqlRequestContext.CancellationToken);
         gqlRequestContext.Metrics.HttpRequestDuration = AppTime.GetDuration(start);
