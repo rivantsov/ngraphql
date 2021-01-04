@@ -21,7 +21,7 @@ namespace NGraphQL.Introspection {
       return _schema;
     }
 
-    public __Type GetType(IFieldContext context, string name) {
+    public __Type GetGraphQLType(IFieldContext context, string name) {
       var type = _schema.Types.FirstOrDefault(t => t.Name == name);
       return type; 
     }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -113,6 +114,7 @@ namespace NGraphQL.Server.Execution {
 
       for(int fldIndex = 0; fldIndex < mappedFields.Count; fldIndex++) {
         var mappedField = mappedFields[fldIndex];
+        var returnsComplexType = mappedField.FieldDef.Flags.IsSet(FieldFlags.ReturnsComplexType);
         var fieldContext = new FieldContext(_requestContext, this, mappedField, fldIndex, parentScopes);
         foreach (var scope in fieldContext.AllParentScopes) {
           if (fieldContext.BatchResultWasSet && scope.HasValue(fldIndex))
@@ -130,13 +132,13 @@ namespace NGraphQL.Server.Execution {
           var outValue = fieldContext.ConvertToOuputValue(result);
           if (!fieldContext.BatchResultWasSet)
             scope.SetValue(fldIndex, outValue);
-          // check 
-          var needProcessSelSubset = fieldContext.Flags.IsSet(FieldFlags.ReturnsComplexType) &&
-            (result != null || fieldContext.BatchResultWasSet);
-          if (needProcessSelSubset)
-            _executedObjectFieldContexts.Add(fieldContext);
         } //foreach scope
-      }
+        // if there are any non-null object-type results, add this field context to this special list
+        //   to execute selection subsets in the next round. 
+        if (returnsComplexType && fieldContext.AllResultScopes.Count > 0) {
+          _executedObjectFieldContexts.Add(fieldContext);
+        }
+      } //foreach fldIndex
     } //method
 
 

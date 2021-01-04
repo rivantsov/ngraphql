@@ -27,10 +27,14 @@ namespace NGraphQL.Utilities {
       return type.Name; 
     }
 
-    public static IList<MemberInfo> GetFieldsPropsMethods(this Type type) {
-      var mTypes = MemberTypes.Field | MemberTypes.Property | MemberTypes.Method;
+    private static string[] _specialMethods = new string[] { "ToString", "Equals", "GetHashCode", "GetType" };
+
+    public static IList<MemberInfo> GetFieldsPropsMethods(this Type type, bool withMethods) {
+      var mTypes = MemberTypes.Field | MemberTypes.Property;
+      if (withMethods)
+        mTypes |= MemberTypes.Method;
       var members = type.GetMembers(BindingFlags.Public | BindingFlags.Instance)
-        .Where(m => m.DeclaringType != typeof(object))
+        .Where(m => !_specialMethods.Contains(m.Name))
         .Where(m => (m.MemberType & mTypes) != 0)
         .Where(m => !(m is MethodInfo mi && mi.IsSpecialName)) //filter out getters/setters
         .ToList();
@@ -38,8 +42,7 @@ namespace NGraphQL.Utilities {
     }
 
     public static IList<MemberInfo> GetFieldsProps(this Type type) {
-      var all = type.GetFieldsPropsMethods(); 
-      return all.Where(m => m.MemberType != MemberTypes.Method).ToList(); 
+      return type.GetFieldsPropsMethods(withMethods: false); 
     }
 
     public static List<MethodInfo> GetResolverMethods(this Type type, string name) {

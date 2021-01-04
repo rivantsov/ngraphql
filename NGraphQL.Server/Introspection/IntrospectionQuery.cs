@@ -11,6 +11,6 @@ namespace NGraphQL.Introspection {
     public __Schema GetSchema() { return default; }
 
     [GraphQLName("__type"), Null, Hidden]
-    public __Type GetType(string name) { return default; }
+    public __Type GetGraphQLType(string name) { return default; }
   }
 }

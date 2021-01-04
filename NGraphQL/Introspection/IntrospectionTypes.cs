@@ -70,6 +70,8 @@ namespace NGraphQL.Introspection {
     public IList<__EnumValue> EnumValues = new List<__EnumValue>();
 
     public __Type() { }
+
+    public override string ToString() => DisplayName;
   }
 
   [Hidden]

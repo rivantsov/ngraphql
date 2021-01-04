@@ -26,7 +26,6 @@ namespace NGraphQL.Tests {
     public async Task Test_Model_CustomScalars() {
       TestEnv.LogTestMethodStart();
 
-
       TestEnv.LogTestDescr(@" custom scalars: Uuid, Decimal");
       var query = @"
 query { 
@@ -48,62 +47,6 @@ query {
       Assert.AreEqual(expected, result, "Result mismatch");
     }
 
-    [TestMethod]
-    public async Task Test_Model_Introspection() {
-      TestEnv.LogTestMethodStart();
-
-      TestEnv.LogTestDescr(@" introspection queries.");
-      var introQuery = @"
-query {
-  ThingType: __type(name: ""Thing"") {
-     name 
-     fields { 
-       name, 
-       type { displayName }           # displayName is our extension to spec 
-     }
-  }
-  typeKind: __type(name: ""__TypeKind"") {
-     name enumValues  (includeDeprecated: true) {name}
-  }
-} ";
-      var resp = await ExecuteAsync(introQuery); // just check it goes ok
-
-      TestEnv.LogTestDescr(@" introspection queries, checking isDeprecated and and deprecationReason fields.");
-      introQuery = @"
-query introQuery {
-  inputObjType: __type (name: ""InputObj"") {
-    name
-    inputFields {
-      name
-      isDeprecated
-      deprecationReason
-    }
-  }
-}
-";
-      resp = await ExecuteAsync(introQuery);
-      var inpObj = resp.Data["inputObjType"];
-      Assert.IsNotNull(inpObj, "Expected input obj type");
-
-
-
-      TestEnv.LogTestDescr(@" Introspection, querying all __schema fields");
-      introQuery = @"
-query introQuery {
-  __schema {
-      queryType         { name fields { name } }
-      mutationType      { name fields { name } }
-      subscriptionType  { name fields { name } }
-      types  { name }
-      directives { name }
-  }
-}
-";
-      resp = await ExecuteAsync(introQuery);
-      var typeList = resp.GetValue<IList>("__schema.types");
-      Assert.IsTrue(typeList.Count > 5, "Expected types");
-
-    } //method
 
   }
 }

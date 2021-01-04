@@ -160,7 +160,8 @@ namespace NGraphQL.Model.Construction {
         // get all resolver methods from the same module
         var allMethods = new List<MethodInfo>();
         foreach (var resType in typeDef.Module.ResolverTypes) {
-          allMethods.AddRange(resType.GetMethods());
+          var methods = resType.GetMethods();
+          allMethods.AddRange(methods);
         }
         foreach (var field in typeDef.Fields) {
           if (field.ExecutionType != FieldExecutionType.NotSet)

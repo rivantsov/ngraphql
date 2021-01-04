@@ -36,6 +36,9 @@ namespace NGraphQL.Server.Execution {
       Path = path; 
       Entity = entity;
     }
+    public override string ToString() {
+      return Entity?.ToString() ?? "(root)";
+    }
 
     internal void Init(ObjectTypeDef objectTypeDef, IList<MappedField> fields) {
       MappedTypeDef = objectTypeDef;

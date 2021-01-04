@@ -28,9 +28,6 @@ query {
       var randArr = resp.GetValue<int[]>("getThing.randoms");
       Assert.AreEqual(5, randArr.Length, "Expected array of 5 randoms");
 
-
-
-
       TestEnv.LogTestDescr(@" lists of lists.");
       query = @"
 query { 

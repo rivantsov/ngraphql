@@ -6,8 +6,8 @@ namespace NGraphQL.Server.Execution {
 
   /// <summary>Warning: quota functionality is a draft, was not tested. </summary>
   public class RequestQuota {
-    public int MaxDepth = 10;
-    public int MaxOutputObjects = 1000;
+    public int MaxDepth = 100;
+    public int MaxOutputObjects = 10 * 1000; //reasonable default large limit
 
     /// <summary>Max request time; implemented as timeout of cancellation token. </summary>
     public TimeSpan MaxRequestTime = TimeSpan.FromMinutes(5); 

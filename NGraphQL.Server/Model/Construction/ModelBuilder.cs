@@ -120,10 +120,11 @@ namespace NGraphQL.Model.Construction {
       } //foreach td
     }
 
+    // used for interface and Object types
     private void BuildObjectTypeFields(ComplexTypeDef typeDef) {
       var objTypeDef = typeDef as ObjectTypeDef;
       var clrType = typeDef.ClrType;
-      var members = clrType.GetFieldsPropsMethods();
+      var members = clrType.GetFieldsPropsMethods(withMethods: true);
       foreach (var member in members) {
         var attrs = GetAllAttributes(member);
         var ignoreAttr = attrs.Find<IgnoreAttribute>();
