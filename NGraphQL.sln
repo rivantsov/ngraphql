@@ -25,6 +25,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NGraphQL.Server.Http", "NGr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NGraphQL", "NGraphQL\NGraphQL.csproj", "{9ECD6905-EF78-4D72-9826-CF4F40108063}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NGraphQL.TestHttpServer", "Tests\NGraphQL.TestHttpServer\NGraphQL.TestHttpServer.csproj", "{FF033C55-D79E-453F-A9B4-63A732F098F4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -59,6 +61,10 @@ Global
 		{9ECD6905-EF78-4D72-9826-CF4F40108063}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9ECD6905-EF78-4D72-9826-CF4F40108063}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9ECD6905-EF78-4D72-9826-CF4F40108063}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FF033C55-D79E-453F-A9B4-63A732F098F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FF033C55-D79E-453F-A9B4-63A732F098F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FF033C55-D79E-453F-A9B4-63A732F098F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FF033C55-D79E-453F-A9B4-63A732F098F4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -67,6 +73,7 @@ Global
 		{BDA3DEDD-17CF-4E92-8CD7-DCCF6466E2CA} = {CA7361EF-78F4-4367-953F-28A1CDEDBB35}
 		{3D323D68-BF4D-4AF9-98A5-6799264F37F9} = {CA7361EF-78F4-4367-953F-28A1CDEDBB35}
 		{53D550B1-5D5D-41FB-A333-37B661DEC728} = {CA7361EF-78F4-4367-953F-28A1CDEDBB35}
+		{FF033C55-D79E-453F-A9B4-63A732F098F4} = {CA7361EF-78F4-4367-953F-28A1CDEDBB35}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {487D2E61-A748-4092-A70A-6B3548627DE0}
