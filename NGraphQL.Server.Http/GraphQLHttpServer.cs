@@ -20,11 +20,14 @@ namespace NGraphQL.Server.Http {
 
     public readonly JsonSerializerSettings SerializerSettings; 
     public readonly GraphQLServer Server;
-    public readonly HttpServerEvents Events = new HttpServerEvents(); 
+    public readonly HttpServerEvents Events = new HttpServerEvents();
+    public readonly GraphQLHttpOptions Options; 
     JsonVariablesDeserializer _varDeserializer;
 
-    public GraphQLHttpServer(GraphQLServer server, JsonSerializerSettings serializerSettings = null) {
+    public GraphQLHttpServer(GraphQLServer server, JsonSerializerSettings serializerSettings = null, 
+               GraphQLHttpOptions options = GraphQLHttpOptions.ReturnExceptionDetails) {
       Server = server;
+      Options = options; 
       SerializerSettings = serializerSettings; 
       if (SerializerSettings == null) {
         var stt = SerializerSettings = new JsonSerializerSettings();
@@ -40,38 +43,41 @@ namespace NGraphQL.Server.Http {
     }
 
     public async Task HandleGraphQLHttpRequestAsync(HttpContext httpContext) {
-      GraphQLHttpRequest gqlHttpReq = null; 
+      if (httpContext.Request.Path.Value.EndsWith("/schema")) {
+        await HandleSchemaDocRequestAsync(httpContext);
+        return;
+      }
+      GraphQLHttpRequest gqlHttpReq = null;
+      var start = AppTime.GetTimestamp();
+      gqlHttpReq = BuildGraphQLHttpRequest(httpContext);
+      Events.OnRequestStarting(gqlHttpReq);
       try {
-        if (httpContext.Request.Path.Value.EndsWith("/schema")) {
-          await HandleSchemaDocRequestAsync(httpContext);
-          return; 
-        } 
-        var start = AppTime.GetTimestamp(); 
-        gqlHttpReq = BuildGraphQLHttpRequest(httpContext); 
-        var gqlRequestContext = gqlHttpReq.RequestContext = 
-              Server.CreateRequestContext(gqlHttpReq.Request, httpContext.RequestAborted, 
-                      httpContext.User, null, gqlHttpReq);
-        Events.OnRequestStarting(gqlHttpReq); 
-        try { 
-          await Server.ExecuteRequestAsync(gqlRequestContext);
-        } catch (Exception exc) {
-          gqlRequestContext.AddError(exc);
-          gqlHttpReq.Exception = exc;
-          Events.OnRequestError(gqlHttpReq);
-        }
-        // serialize response
+        await Server.ExecuteRequestAsync(gqlHttpReq.RequestContext);
+      } catch (Exception exc) {
+        gqlHttpReq.RequestContext.Exceptions.Add(exc);
+        Events.OnRequestError(gqlHttpReq);
+      }
+
+      // check errors
+      var reqCtx = gqlHttpReq.RequestContext; //internal request context
+      if (reqCtx.Exceptions.Count > 0) {
+        await WriteExceptionsAsTextAsync(httpContext, reqCtx.Exceptions);
+        return;
+      }
+      // success,  serialize response
+      try {
         var httpResp = httpContext.Response;
         httpResp.ContentType = ContentTypeJson;
-        //httpResp.Headers["Transfer-Encoding"] = "identity"; //to disable chunking
-        var respJson = SerializeResponse(gqlRequestContext.Response);
-        await httpResp.WriteAsync(respJson, gqlRequestContext.CancellationToken);
-        gqlRequestContext.Metrics.HttpRequestDuration = AppTime.GetDuration(start);
+        if (Options.IsSet(GraphQLHttpOptions.SuppressChunking))
+          httpResp.Headers["Transfer-Encoding"] = "identity"; //to disable chunking
+        var respJson = SerializeResponse(reqCtx.Response);
+        await httpResp.WriteAsync(respJson, httpContext.RequestAborted);
+        reqCtx.Metrics.HttpRequestDuration = AppTime.GetDuration(start);
         Events.OnRequestCompleted(gqlHttpReq); 
       } catch (Exception ex) {
-        //catastrophic failure of last phases of , writing exc as text
         await WriteExceptionsAsTextAsync(httpContext, new[] { ex });
-        gqlHttpReq = gqlHttpReq ?? new GraphQLHttpRequest(); //create new if not yet created, just to report exc
-        gqlHttpReq.Exception = ex;
+        //create new if not yet created, just to report exc in event
+        gqlHttpReq = gqlHttpReq ?? new GraphQLHttpRequest() { HttpContext = httpContext }; 
         Events.OnRequestError(gqlHttpReq);
       }
     }
@@ -88,7 +94,6 @@ namespace NGraphQL.Server.Http {
       _varDeserializer.PrepareRequestVariables(e.RequestContext);
     }
 
-
     private async Task WriteExceptionsAsTextAsync(HttpContext context, IList<Exception> exs) {
       context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
       var excText = string.Join(Environment.NewLine, exs);
@@ -98,15 +103,23 @@ namespace NGraphQL.Server.Http {
 
     // see https://graphql.org/learn/serving-over-http/#http-methods-headers-and-body
     public GraphQLHttpRequest BuildGraphQLHttpRequest(HttpContext httpContext) {
+      GraphQLHttpRequest gqlHttpReq; 
       var method = httpContext.Request.Method;
       switch (method) {
         case "GET":
-          return BuildGetRequest(httpContext);
+          gqlHttpReq = BuildGetRequest(httpContext);
+          break; 
         case "POST":
-          return BuildPostRequest(httpContext);
+          gqlHttpReq = BuildPostRequest(httpContext);
+          break; 
         default:
           throw new Exception($"Invalid Http method: {method}; expected GET or POST.");
       }
+      // create internal request context
+      gqlHttpReq.RequestContext =
+            Server.CreateRequestContext(gqlHttpReq.Request, httpContext.RequestAborted,
+                    httpContext.User, null, gqlHttpReq);
+      return gqlHttpReq;
     }
 
     private GraphQLHttpRequest BuildGetRequest(HttpContext httpContext) {

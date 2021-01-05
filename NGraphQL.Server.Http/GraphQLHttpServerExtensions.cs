@@ -14,6 +14,9 @@ namespace NGraphQL.Server.Http {
       app.Run(httpContext => server.HandleGraphQLHttpRequestAsync(httpContext));
     }
 
+    public static bool IsSet(this GraphQLHttpOptions options, GraphQLHttpOptions option) {
+      return (options & option) != 0; 
+    }
   }
 
 }

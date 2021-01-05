@@ -9,12 +9,6 @@ using NGraphQL.Server.Execution;
 
 namespace NGraphQL.Server.Http {
 
-  public enum HttpContentType {
-    None,
-    Json,
-    GraphQL,
-  }
-
   public class GraphQLHttpRequest {
     public HttpContext HttpContext;
     public string HttpMethod;
@@ -26,7 +20,6 @@ namespace NGraphQL.Server.Http {
 
     public GraphQLRequest Request;
     public RequestContext RequestContext;
-    public Exception Exception;
 
     public RequestMetrics Metrics => RequestContext.Metrics; 
   }
