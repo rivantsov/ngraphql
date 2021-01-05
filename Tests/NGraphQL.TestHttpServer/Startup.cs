@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NGraphQL.Server;
+using NGraphQL.Server.Http;
 using NGraphQL.TestApp;
 
 namespace NGraphQL.TestHttpServer
@@ -37,6 +38,7 @@ namespace NGraphQL.TestHttpServer
       thingsServer.Initialize();
       services.AddSingleton(thingsBizApp);
       services.AddSingleton(thingsServer);
+      services.AddSingleton(new JsonVariablesDeserializer());
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
