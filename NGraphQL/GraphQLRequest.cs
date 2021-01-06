@@ -8,6 +8,5 @@ namespace NGraphQL {
     public string OperationName;
     public string Query;
     public IDictionary<string, object> Variables = new Dictionary<string, object>();
-
   }
 }

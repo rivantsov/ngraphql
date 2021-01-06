@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using NGraphQL.Server;
+using NGraphQL.Server.Execution;
 using NGraphQL.Server.Http;
 
 namespace NGraphQL.TestHttpServer.Controllers {
@@ -12,18 +13,9 @@ namespace NGraphQL.TestHttpServer.Controllers {
   [Route("graphql")]
   public class GraphQLController : ControllerBase {
     GraphQLServer _server;
-    JsonVariablesDeserializer _varDeserializer;
 
-    public GraphQLController(GraphQLServer server, JsonVariablesDeserializer varDeserializer) {
+    public GraphQLController(GraphQLServer server) {
       _server = server;
-      _varDeserializer = varDeserializer;
-      _server.Events.RequestPrepared += Events_RequestPrepared;
-    }
-
-    private void Events_RequestPrepared(object sender, GraphQLServerEventArgs e) {
-      if (e.RequestContext.Operation.Variables.Count == 0)
-        return;
-      _varDeserializer.PrepareRequestVariables(e.RequestContext);
     }
 
     [HttpPost]
@@ -37,7 +29,10 @@ namespace NGraphQL.TestHttpServer.Controllers {
     }
 
     private async Task<object> ExecuteRequestAsync(GraphQLRequest request) {
-      var resp = await _server.ExecuteAsync(request);
+      var ctx = this.HttpContext;
+      var requestContext = new RequestContext(_server, request, ctx.RequestAborted, ctx.User);
+      await _server.ExecuteRequestAsync(requestContext);
+      var resp = requestContext.Response; 
       object result;
       if (resp.Errors != null && resp.Errors.Count > 0)
         result = new { errors = resp.Errors, data = resp.Data };

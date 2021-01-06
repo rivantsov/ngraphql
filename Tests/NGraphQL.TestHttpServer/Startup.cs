@@ -36,9 +36,15 @@ namespace NGraphQL.TestHttpServer
       var thingsModule = new ThingsGraphQLModule();
       thingsServer.RegisterModules(thingsModule);
       thingsServer.Initialize();
+      var varDeserializer = new JsonVariablesDeserializer();
+      thingsServer.Events.RequestPrepared += (sender, e) => {
+        if (e.RequestContext.Operation.Variables.Count == 0)
+          return;
+        varDeserializer.PrepareRequestVariables(e.RequestContext);
+      };
+      
       services.AddSingleton(thingsBizApp);
       services.AddSingleton(thingsServer);
-      services.AddSingleton(new JsonVariablesDeserializer());
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

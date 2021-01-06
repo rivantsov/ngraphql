@@ -17,21 +17,21 @@ namespace NGraphQL.Server.Http {
     }
 
     public void PrepareRequestVariables(RequestContext context) {
-      var httpRequest = (GraphQLHttpRequest) context.GraphQLHttpRequest;
-      if (httpRequest == null)
-        throw new Exception("GraphQLHttpRequest instance not found on raw request object.");
+      var req = context.RawRequest;
+      if (req.Variables == null || req.Variables.Count == 0)
+        return;
+      context.RawVariables = req.Variables; //save original copy
+      req.Variables = new Dictionary<string, object>(); 
       var op = context.Operation;
-      var path = new List<object>();
+      //var path = new List<object>();
       foreach (var varDef in op.Variables) {
-        if (!httpRequest.RawVariables.TryGetValue(varDef.Name, out var rawValue))
+        if (!context.RawVariables.TryGetValue(varDef.Name, out var rawValue))
           continue; //it might have default, or might be nullable; if not, it will be handled later
-        path.Add(varDef.Name); 
+        var path = new object[] { varDef.Name }; 
         var clrValue = ReadValue(context, varDef.InputDef.TypeRef, rawValue, path);
         if (clrValue == null && varDef.InputDef.TypeRef.Kind == TypeKind.NonNull)
           AddError(context, $"Variable {varDef.Name}: null value not allowed.", path);
-        // contex
         context.RawRequest.Variables[varDef.Name] = clrValue;
-        path.Clear(); 
       }
     }
 

@@ -39,15 +39,18 @@ namespace NGraphQL.Server.Execution {
     public bool Failed { get; internal set; }
     public readonly object Lock = new object();
     // used by http server
-    public object GraphQLHttpRequest { get; } 
+    public object HttpContext { get; } 
+    // For Http server, original variables
+    public IDictionary<string, object> RawVariables;
+
 
     public RequestContext(GraphQLServer server, GraphQLRequest rawRequest, CancellationToken cancellationToken = default, 
-                          ClaimsPrincipal user = null, RequestQuota quota = null, object graphQLHttpRequest = null) {
+                          ClaimsPrincipal user = null, RequestQuota quota = null, object httpContext = null) {
       Server = server;
       RawRequest = rawRequest;
       _externalCancellationToken = cancellationToken;
       User = user;
-      GraphQLHttpRequest = graphQLHttpRequest;
+      HttpContext = httpContext;
       StartTimestamp = AppTime.GetTimestamp();
       Quota = quota ?? Server.DefaultRequestQuota ?? new RequestQuota();
       // cancellation tokens, initial implementation of limiting request time by quota

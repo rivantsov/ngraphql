@@ -72,10 +72,10 @@ namespace NGraphQL.Server {
     }
 
     public RequestContext CreateRequestContext(GraphQLRequest request, CancellationToken cancellationToken = default,
-                      ClaimsPrincipal user = null, RequestQuota quota = null, object httpRequest = null) {
+                      ClaimsPrincipal user = null, RequestQuota quota = null, object httpContext = null) {
       if (Model == null)
         Initialize(); 
-      var context = new RequestContext(this, request, cancellationToken, user, quota, httpRequest);
+      var context = new RequestContext(this, request, cancellationToken, user, quota, httpContext);
       return context; 
     }
 

@@ -15,7 +15,7 @@ namespace NGraphQL.CodeFirst {
     IDictionary<string, object> CustomData { get; }
 
     /// <summary>Protocol context; for HTTP server - HttpContext instance (ASP.NET Core). </summary>
-    object GraphQLHttpRequest { get; }
+    object HttpContext { get; }
   }
 
 }
