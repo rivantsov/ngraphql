@@ -21,13 +21,10 @@ namespace NGraphQL.Server.Http {
     public readonly JsonSerializerSettings SerializerSettings; 
     public readonly GraphQLServer Server;
     public readonly HttpServerEvents Events = new HttpServerEvents();
-    public readonly GraphQLHttpOptions Options; 
     JsonVariablesDeserializer _varDeserializer;
 
-    public GraphQLHttpServer(GraphQLServer server, JsonSerializerSettings serializerSettings = null, 
-               GraphQLHttpOptions options = GraphQLHttpOptions.ReturnExceptionDetails) {
+    public GraphQLHttpServer(GraphQLServer server, JsonSerializerSettings serializerSettings = null) {
       Server = server;
-      Options = options; 
       SerializerSettings = serializerSettings; 
       if (SerializerSettings == null) {
         var stt = SerializerSettings = new JsonSerializerSettings();
@@ -49,7 +46,7 @@ namespace NGraphQL.Server.Http {
       }
       GraphQLHttpRequest gqlHttpReq = null;
       var start = AppTime.GetTimestamp();
-      gqlHttpReq = BuildGraphQLHttpRequest(httpContext);
+      gqlHttpReq = await BuildGraphQLHttpRequestAsync(httpContext);
       Events.OnRequestStarting(gqlHttpReq);
       try {
         await Server.ExecuteRequestAsync(gqlHttpReq.RequestContext);
@@ -68,8 +65,6 @@ namespace NGraphQL.Server.Http {
       try {
         var httpResp = httpContext.Response;
         httpResp.ContentType = ContentTypeJson;
-        if (Options.IsSet(GraphQLHttpOptions.SuppressChunking))
-          httpResp.Headers["Transfer-Encoding"] = "identity"; //to disable chunking
         var respJson = SerializeResponse(reqCtx.Response);
         await httpResp.WriteAsync(respJson, httpContext.RequestAborted);
         reqCtx.Metrics.HttpRequestDuration = AppTime.GetDuration(start);
@@ -102,7 +97,7 @@ namespace NGraphQL.Server.Http {
     }
 
     // see https://graphql.org/learn/serving-over-http/#http-methods-headers-and-body
-    public GraphQLHttpRequest BuildGraphQLHttpRequest(HttpContext httpContext) {
+    private async Task<GraphQLHttpRequest> BuildGraphQLHttpRequestAsync(HttpContext httpContext) {
       GraphQLHttpRequest gqlHttpReq; 
       var method = httpContext.Request.Method;
       switch (method) {
@@ -110,7 +105,7 @@ namespace NGraphQL.Server.Http {
           gqlHttpReq = BuildGetRequest(httpContext);
           break; 
         case "POST":
-          gqlHttpReq = BuildPostRequest(httpContext);
+          gqlHttpReq = await BuildPostRequestAsync(httpContext);
           break; 
         default:
           throw new Exception($"Invalid Http method: {method}; expected GET or POST.");
@@ -139,7 +134,7 @@ namespace NGraphQL.Server.Http {
       return httpReq; 
     }
 
-    private GraphQLHttpRequest BuildPostRequest(HttpContext httpContext) {
+    private async Task<GraphQLHttpRequest> BuildPostRequestAsync(HttpContext httpContext) {
       var req = new GraphQLRequest();
       var httpReq = new GraphQLHttpRequest() {
         HttpContext = httpContext, 
@@ -147,7 +142,7 @@ namespace NGraphQL.Server.Http {
         Request = req };
       // read body
       var reader = new StreamReader(httpContext.Request.Body);
-      var body = reader.ReadToEnd();
+      var body = await reader.ReadToEndAsync();
       httpReq.ContentType = GetRequestContentType(httpContext.Request);
       switch(httpReq.ContentType) {
           

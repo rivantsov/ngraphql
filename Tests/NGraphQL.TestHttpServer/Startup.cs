@@ -1,21 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using NGraphQL.Server;
 using NGraphQL.Server.Http;
 using NGraphQL.TestApp;
 
-namespace NGraphQL.TestHttpServer
-{
+namespace NGraphQL.TestHttpServer {
   public class Startup
   {
     public Startup(IConfiguration configuration)
@@ -28,7 +20,7 @@ namespace NGraphQL.TestHttpServer
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
-      services.AddControllers().AddNewtonsoftJson();
+      services.AddControllers().AddNewtonsoftJson().AddApplicationPart(typeof(GraphQLController).Assembly);
       
       // create server and Http graphQL server 
       var thingsBizApp = new ThingsApp();
@@ -36,14 +28,18 @@ namespace NGraphQL.TestHttpServer
       var thingsModule = new ThingsGraphQLModule();
       thingsServer.RegisterModules(thingsModule);
       thingsServer.Initialize();
+      var httpServer = new GraphQLHttpServer(thingsServer);
+      services.AddSingleton(httpServer);
+
+      /*
       var varDeserializer = new JsonVariablesDeserializer();
       thingsServer.Events.RequestPrepared += (sender, e) => {
         if (e.RequestContext.Operation.Variables.Count == 0)
           return;
         varDeserializer.PrepareRequestVariables(e.RequestContext);
       };
-      
-      services.AddSingleton(thingsBizApp);
+      */
+
       services.AddSingleton(thingsServer);
     }
 
@@ -55,17 +51,17 @@ namespace NGraphQL.TestHttpServer
         app.UseDeveloperExceptionPage();
       }
 
-      //app.UseHttpsRedirection();
+      app.UseHttpsRedirection();
 
       app.UseRouting();
 
-      // app.UseAuthorization();
-
+     
       app.UseEndpoints(endpoints =>
       {
         endpoints.MapControllers();
       });
-
+      
+      // Use GraphiQL UI
       app.UseGraphiQLServer();
     }
 

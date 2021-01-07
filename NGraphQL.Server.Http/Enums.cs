@@ -10,10 +10,4 @@ namespace NGraphQL.Server.Http {
     GraphQL,
   }
 
-  [Flags]
-  public enum GraphQLHttpOptions {
-    None = 0,
-    ReturnExceptionDetails = 1,
-    SuppressChunking = 1 << 1,
-  }
 }
