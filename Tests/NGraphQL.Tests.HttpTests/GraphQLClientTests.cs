@@ -20,7 +20,7 @@ namespace NGraphQL.Tests.HttpTests.Client {
     [TestMethod]
     public async Task TestGraphQLClient() {
       TestEnv.LogTestMethodStart();
-      ServerResponse resp;
+      ResponseData resp;
       string thingName;
       var query1 = "query ($id: Int) { getThing(id: $id) {name kind theFlags} }";
       var queryM = "query { things {name} }";
@@ -68,7 +68,7 @@ namespace NGraphQL.Tests.HttpTests.Client {
     [TestMethod]
     public async Task TestGraphQLClient_StrongTypes() {
       TestEnv.LogTestMethodStart();
-      ServerResponse resp;
+      ResponseData resp;
       string query;
       var vars = new TDict() { { "id", 3 } };
 
@@ -82,7 +82,7 @@ query ($id: Int) {
 }";
       resp = await TestEnv.Client.PostAsync(query, vars);
       resp.EnsureNoErrors();
-      var thing = resp.GetField<Thing_>("thing");
+      var thing = resp.GetTopField<Thing_>("thing");
       Assert.IsNotNull(thing);
       Assert.AreEqual("Name3", thing.Name, "thing name mismatch");
       Assert.AreEqual(ThingKind.KindThree, thing.Kind, "Kind mismatch");
@@ -97,7 +97,7 @@ query ($id: Int) {
     [TestMethod]
     public async Task TestGraphQLClient_Introspection() {
       TestEnv.LogTestMethodStart();
-      ServerResponse resp;
+      ResponseData resp;
       string query;
        
       // Post requests
@@ -117,7 +117,7 @@ query {
 }";
       resp = await TestEnv.Client.PostAsync(query);
       resp.EnsureNoErrors();
-      var type = resp.GetField<__Type>("thingType");
+      var type = resp.GetTopField<__Type>("thingType");
       Assert.IsNotNull(type);
       Assert.AreEqual("Thing", type.Name, "thing name mismatch");
       Assert.IsTrue(type.Fields.Count > 5, "Expected fields");

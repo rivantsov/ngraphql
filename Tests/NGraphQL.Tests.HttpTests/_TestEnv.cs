@@ -4,22 +4,20 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Arrest;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 
+using NGraphQL.Client;
 using NGraphQL.Server;
+using NGraphQL.Server.Http;
 using NGraphQL.TestApp;
 using NGraphQL.Utilities;
-using Arrest;
-using NGraphQL.Client;
-using NGraphQL.Server.Http;
 
 namespace NGraphQL.Tests.HttpTests {
-  using TDict = IDictionary<string, object>;
-
   public static class TestEnv {
     public static string ServiceUrl = "http://127.0.0.1:55000";
     public static string GraphQLEndPointUrl = ServiceUrl + "/graphql";
@@ -89,20 +87,20 @@ Testing: {descr}
 
 
     private static void Client_RequestCompleted(object sender, RequestCompletedEventArgs e) {
-      LogCompletedRequest(e.Response);
+      LogCompletedRequest(e.Data);
     }
 
-    public static void LogCompletedRequest(ServerResponse response) {
+    public static void LogCompletedRequest(ResponseData response) {
       string reqText;
-      var req = response.Request; 
+      var req = response.RequestData; 
       if (req.HttpMethod == "GET") {
         reqText = @$"GET, URL: {req.UrlQueryPartForGet} 
                 unescaped: {Uri.UnescapeDataString(req.UrlQueryPartForGet)}";
       } else 
-        reqText = "POST, payload: " + Environment.NewLine + GetPayloadJson(response.Request);
+        reqText = "POST, payload: " + Environment.NewLine + response.RequestData.Body;
       // for better readability, unescape \r\n
       reqText = reqText.Replace("\\r\\n", Environment.NewLine);
-      var jsonResponse = JsonConvert.SerializeObject(response.Body, Formatting.Indented);
+      var jsonResponse = JsonConvert.SerializeObject(response.TopFields, Formatting.Indented);
       var text = $@"
 Request: 
 {reqText}
@@ -110,7 +108,7 @@ Request:
 Response:
 {jsonResponse}
 
-//  time: {response.TimeMs} ms
+//  time: {response.DurationMs} ms
 ----------------------------------------------------------------------------------------------------------------------------------- 
 
 ";
@@ -118,13 +116,6 @@ Response:
       if (response.Exception != null)
         LogText(response.Exception.ToText());
     }
-
-    private static string GetPayloadJson(ClientRequest request) {
-      var payload = request.PostPayload;
-      var json = JsonConvert.SerializeObject(payload, Formatting.Indented);
-      return json;
-    }
-
 
 
     static object _lock = new object();

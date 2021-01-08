@@ -72,7 +72,7 @@ query ($objWithEnums: InputObjWithEnums) {
     public async Task TestVariables() {
       string query;
       TDict varsDict;
-      ServerResponse resp;
+      ResponseData resp;
 
       TestEnv.LogTestMethodStart();
 

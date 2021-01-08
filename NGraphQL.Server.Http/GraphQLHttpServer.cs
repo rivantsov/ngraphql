@@ -20,7 +20,6 @@ namespace NGraphQL.Server.Http {
 
     public readonly JsonSerializerSettings SerializerSettings; 
     public readonly GraphQLServer Server;
-    public readonly HttpServerEvents Events = new HttpServerEvents();
     JsonVariablesDeserializer _varDeserializer;
 
     public GraphQLHttpServer(GraphQLServer server, JsonSerializerSettings serializerSettings = null) {
@@ -44,16 +43,14 @@ namespace NGraphQL.Server.Http {
         await HandleSchemaDocRequestAsync(httpContext);
         return;
       }
-      GraphQLHttpRequest gqlHttpReq = null;
       var start = AppTime.GetTimestamp();
-      gqlHttpReq = await BuildGraphQLHttpRequestAsync(httpContext);
+      var gqlHttpReq = await BuildGraphQLHttpRequestAsync(httpContext);
       var reqCtx = gqlHttpReq.RequestContext; //internal request context
-      Events.OnRequestStarting(gqlHttpReq);
+
       try {
         await Server.ExecuteRequestAsync(gqlHttpReq.RequestContext);
       } catch (Exception exc) {
         gqlHttpReq.RequestContext.AddError(exc);
-        Events.OnRequestError(gqlHttpReq);
       }
 
       // success,  serialize response
@@ -63,11 +60,7 @@ namespace NGraphQL.Server.Http {
         var respJson = SerializeResponse(reqCtx.Response);
         await httpResp.WriteAsync(respJson, httpContext.RequestAborted);
         reqCtx.Metrics.HttpRequestDuration = AppTime.GetDuration(start);
-        Events.OnRequestCompleted(gqlHttpReq); 
       } catch (Exception ex) {
-        //create new if not yet created, just to report exc in event
-        gqlHttpReq = gqlHttpReq ?? new GraphQLHttpRequest() { HttpContext = httpContext };
-        Events.OnRequestError(gqlHttpReq);
         // this ex is at attempt to write response as json; we try to write it as plain text and return something
         await WriteExceptionsAsTextAsync(httpContext, new[] { ex });
       }

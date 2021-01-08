@@ -42,22 +42,22 @@ namespace NGraphQL.Client {
 
     #endregion
 
-    public Task<ServerResponse> PostAsync(string query, IDict variables = null, string operationName = null,
+    public Task<ResponseData> PostAsync(string query, IDict variables = null, string operationName = null,
                                          CancellationToken cancellationToken = default) {
-      var request = new ClientRequest() {
-        HttpMethod = "POST", Query = query, Variables = variables, OperationName = operationName,
-        CancellationToken = cancellationToken
+      var request = new GraphQLRequest() { Query = query, Variables = variables, OperationName = operationName };
+      var reqData = new RequestData() {
+        HttpMethod = "POST", Request = request, CancellationToken = cancellationToken
       };
-      return SendAsync(request);
+      return SendAsync(reqData);
     }
 
-    public Task<ServerResponse> GetAsync(string query, IDict variables = null, string operationName = null,
+    public Task<ResponseData> GetAsync(string query, IDict variables = null, string operationName = null,
                           CancellationToken cancellationToken = default) {
-      var request = new ClientRequest() {
-        HttpMethod = "GET", Query = query, Variables = variables, OperationName = operationName,
-        CancellationToken = cancellationToken
+      var request = new GraphQLRequest() { Query = query, Variables = variables, OperationName = operationName };
+      var reqData = new RequestData() {
+        HttpMethod = "GET", Request = request, CancellationToken = cancellationToken
       };
-      return SendAsync(request);
+      return SendAsync(reqData);
     }
 
     public async Task<string> GetSchemaDocument(string url = "graphql/schema", CancellationToken cancellationToken = default) {
@@ -69,25 +69,25 @@ namespace NGraphQL.Client {
       return doc;
     }
 
-    public async Task<ServerResponse> SendAsync(ClientRequest request) {
+    public async Task<ResponseData> SendAsync(RequestData requestData) {
       var start = GetTimestamp();
-      var response = new ServerResponse(this, request);
+      var responseData = new ResponseData(requestData);
       try {
-        RequestStarting?.Invoke(this, new RequestStartingEventArgs(request));
-        await SendAsync(request, response);
-        response.TimeMs = GetTimeSince(start);
-        RequestCompleted?.Invoke(this, new RequestCompletedEventArgs(response));
+        RequestStarting?.Invoke(this, new RequestStartingEventArgs(requestData));
+        await SendAsync(requestData, responseData);
+        responseData.DurationMs = GetTimeSince(start);
+        RequestCompleted?.Invoke(this, new RequestCompletedEventArgs(responseData));
       } catch (Exception ex) {
-        response.Exception = ex;
-        RequestCompleted?.Invoke(this, new RequestCompletedEventArgs(response));
-        if (response.Exception != null) {
-          if (response.Exception == ex)
+        responseData.Exception = ex;
+        RequestCompleted?.Invoke(this, new RequestCompletedEventArgs(responseData));
+        if (responseData.Exception != null) {
+          if (responseData.Exception == ex)
             throw;
           else
-            throw response.Exception; //throw new exception
+            throw responseData.Exception; //throw new exception
         }
       }
-      return response;
+      return responseData;
     }
 
   }
