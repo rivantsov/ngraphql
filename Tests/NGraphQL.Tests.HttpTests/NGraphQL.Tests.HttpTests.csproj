@@ -1,19 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <IsPackable>false</IsPackable>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="Client\DataTypes_Disabled.cs" />
-    <Compile Remove="Client\TypedQueryExperiments.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="Client\DataTypes_Disabled.cs" />
-    <None Include="Client\TypedQueryExperiments.cs" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Arrest" Version="1.4.0" />

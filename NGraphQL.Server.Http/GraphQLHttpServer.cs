@@ -56,14 +56,6 @@ namespace NGraphQL.Server.Http {
         Events.OnRequestError(gqlHttpReq);
       }
 
-
-      /* check errors - this is not needed, all exc are already in Errors field of response
-      if (reqCtx.Exceptions.Count > 0) {
-        await WriteExceptionsAsTextAsync(httpContext, reqCtx.Exceptions);
-        return;
-      }
-      */
-
       // success,  serialize response
       try {
         var httpResp = httpContext.Response;

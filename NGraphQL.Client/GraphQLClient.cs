@@ -60,7 +60,7 @@ namespace NGraphQL.Client {
       return SendAsync(request);
     }
 
-    public async Task<string> GetSchemaDocument(string url = "/schema", CancellationToken cancellationToken = default) {
+    public async Task<string> GetSchemaDocument(string url = "graphql/schema", CancellationToken cancellationToken = default) {
       var reqMsg = new HttpRequestMessage(HttpMethod.Get, url);
       reqMsg.Headers.Add("accept", MediaTypeText);
       var respMsg = await _client.SendAsync(reqMsg, cancellationToken);

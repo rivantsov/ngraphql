@@ -16,8 +16,12 @@ namespace NGraphQL.Server.Http {
 
     public GraphQLRequest Request;
     public RequestContext RequestContext;
+  }
 
-    public RequestMetrics Metrics => RequestContext.Metrics; 
+  public enum HttpContentType {
+    None,
+    Json,
+    GraphQL,
   }
 
 }

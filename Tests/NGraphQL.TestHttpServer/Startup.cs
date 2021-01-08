@@ -23,8 +23,6 @@ namespace NGraphQL.TestHttpServer {
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
-      var server = InitializeGraphQLServer();
-      services.AddSingleton(server);
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -34,37 +32,29 @@ namespace NGraphQL.TestHttpServer {
       {
         app.UseDeveloperExceptionPage();
       }
-
       app.UseHttpsRedirection();
-
       app.UseRouting();
 
-     
-      app.UseEndpoints(endpoints =>
-      {
-        //endpoints.MapControllers();
-        endpoints.MapPost("graphql", async context => await HandleGraphQLRequestAsync(context) );
-        endpoints.MapGet("graphql", async context => await HandleGraphQLRequestAsync(context));
-        endpoints.MapGet("graphql/schema", async context => await HandleGraphQLRequestAsync(context));
+      // create server and configure GraphQL endpoints
+      var server = CreateGraphQLHttpServer(); 
+      app.UseEndpoints(endpoints => {
+        endpoints.MapPost("graphql", async context => await server.HandleGraphQLHttpRequestAsync(context));
+        endpoints.MapGet("graphql", async context => await server.HandleGraphQLHttpRequestAsync(context));
+        endpoints.MapGet("graphql/schema", async context => await server.HandleGraphQLHttpRequestAsync(context));
       });
-      
       // Use GraphiQL UI
       app.UseGraphiQLServer();
     }
 
-    private GraphQLHttpServer InitializeGraphQLServer() {
+    private GraphQLHttpServer CreateGraphQLHttpServer() {
       // create server and Http graphQL server 
       var thingsBizApp = new ThingsApp();
       var thingsServer = new GraphQLServer(thingsBizApp);
       var thingsModule = new ThingsGraphQLModule();
       thingsServer.RegisterModules(thingsModule);
       thingsServer.Initialize();
-      _graphQlHttpServer = new GraphQLHttpServer(thingsServer);
-      return _graphQlHttpServer; 
-    }
-    static GraphQLHttpServer _graphQlHttpServer;
-    private static Task HandleGraphQLRequestAsync(HttpContext context) {
-      return _graphQlHttpServer.HandleGraphQLHttpRequestAsync(context);
+      var server = new GraphQLHttpServer(thingsServer);
+      return server; 
     }
 
   }

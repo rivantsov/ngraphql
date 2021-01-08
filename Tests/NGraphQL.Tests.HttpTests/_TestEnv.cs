@@ -62,7 +62,7 @@ namespace NGraphQL.Tests.HttpTests {
     private static void StartWebHost() {
       var hostBuilder = WebHost.CreateDefaultBuilder()
           .ConfigureAppConfiguration((context, config) => { })
-          .UseStartup<TestAppStartup>()
+          .UseStartup<TestStartup>()
           .UseUrls(ServiceUrl)
           ;
       _webHost = hostBuilder.Build();
