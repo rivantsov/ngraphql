@@ -1,5 +1,7 @@
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -8,6 +10,7 @@ using NGraphQL.Server.Http;
 using NGraphQL.TestApp;
 
 namespace NGraphQL.TestHttpServer {
+
   public class Startup
   {
     public Startup(IConfiguration configuration)
@@ -20,27 +23,8 @@ namespace NGraphQL.TestHttpServer {
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
-      services.AddControllers().AddNewtonsoftJson().AddApplicationPart(typeof(GraphQLController).Assembly);
-      
-      // create server and Http graphQL server 
-      var thingsBizApp = new ThingsApp();
-      var thingsServer = new GraphQLServer(thingsBizApp);
-      var thingsModule = new ThingsGraphQLModule();
-      thingsServer.RegisterModules(thingsModule);
-      thingsServer.Initialize();
-      var httpServer = new GraphQLHttpServer(thingsServer);
-      services.AddSingleton(httpServer);
-
-      /*
-      var varDeserializer = new JsonVariablesDeserializer();
-      thingsServer.Events.RequestPrepared += (sender, e) => {
-        if (e.RequestContext.Operation.Variables.Count == 0)
-          return;
-        varDeserializer.PrepareRequestVariables(e.RequestContext);
-      };
-      */
-
-      services.AddSingleton(thingsServer);
+      var server = InitializeGraphQLServer();
+      services.AddSingleton(server);
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -58,11 +42,29 @@ namespace NGraphQL.TestHttpServer {
      
       app.UseEndpoints(endpoints =>
       {
-        endpoints.MapControllers();
+        //endpoints.MapControllers();
+        endpoints.MapPost("graphql", async context => await HandleGraphQLRequestAsync(context) );
+        endpoints.MapGet("graphql", async context => await HandleGraphQLRequestAsync(context));
+        endpoints.MapGet("graphql/schema", async context => await HandleGraphQLRequestAsync(context));
       });
       
       // Use GraphiQL UI
       app.UseGraphiQLServer();
+    }
+
+    private GraphQLHttpServer InitializeGraphQLServer() {
+      // create server and Http graphQL server 
+      var thingsBizApp = new ThingsApp();
+      var thingsServer = new GraphQLServer(thingsBizApp);
+      var thingsModule = new ThingsGraphQLModule();
+      thingsServer.RegisterModules(thingsModule);
+      thingsServer.Initialize();
+      _graphQlHttpServer = new GraphQLHttpServer(thingsServer);
+      return _graphQlHttpServer; 
+    }
+    static GraphQLHttpServer _graphQlHttpServer;
+    private static Task HandleGraphQLRequestAsync(HttpContext context) {
+      return _graphQlHttpServer.HandleGraphQLHttpRequestAsync(context);
     }
 
   }

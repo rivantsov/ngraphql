@@ -13,10 +13,6 @@ namespace NGraphQL.Server.Http {
     public HttpContext HttpContext;
     public string HttpMethod;
     public HttpContentType ContentType;
-    // these are variables initially deserialized from json as dictionary; 
-    // values contain Json objects like JArray and JToken; we later parse these, unpack json objects
-    // and put values into request.Variables
-    public IDictionary<string, object> RawVariables;
 
     public GraphQLRequest Request;
     public RequestContext RequestContext;

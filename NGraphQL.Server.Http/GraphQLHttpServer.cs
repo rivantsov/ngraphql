@@ -47,20 +47,23 @@ namespace NGraphQL.Server.Http {
       GraphQLHttpRequest gqlHttpReq = null;
       var start = AppTime.GetTimestamp();
       gqlHttpReq = await BuildGraphQLHttpRequestAsync(httpContext);
+      var reqCtx = gqlHttpReq.RequestContext; //internal request context
       Events.OnRequestStarting(gqlHttpReq);
       try {
         await Server.ExecuteRequestAsync(gqlHttpReq.RequestContext);
       } catch (Exception exc) {
-        gqlHttpReq.RequestContext.Exceptions.Add(exc);
+        gqlHttpReq.RequestContext.AddError(exc);
         Events.OnRequestError(gqlHttpReq);
       }
 
-      // check errors
-      var reqCtx = gqlHttpReq.RequestContext; //internal request context
+
+      /* check errors - this is not needed, all exc are already in Errors field of response
       if (reqCtx.Exceptions.Count > 0) {
         await WriteExceptionsAsTextAsync(httpContext, reqCtx.Exceptions);
         return;
       }
+      */
+
       // success,  serialize response
       try {
         var httpResp = httpContext.Response;
@@ -70,10 +73,11 @@ namespace NGraphQL.Server.Http {
         reqCtx.Metrics.HttpRequestDuration = AppTime.GetDuration(start);
         Events.OnRequestCompleted(gqlHttpReq); 
       } catch (Exception ex) {
-        await WriteExceptionsAsTextAsync(httpContext, new[] { ex });
         //create new if not yet created, just to report exc in event
-        gqlHttpReq = gqlHttpReq ?? new GraphQLHttpRequest() { HttpContext = httpContext }; 
+        gqlHttpReq = gqlHttpReq ?? new GraphQLHttpRequest() { HttpContext = httpContext };
         Events.OnRequestError(gqlHttpReq);
+        // this ex is at attempt to write response as json; we try to write it as plain text and return something
+        await WriteExceptionsAsTextAsync(httpContext, new[] { ex });
       }
     }
 
@@ -118,19 +122,20 @@ namespace NGraphQL.Server.Http {
     }
 
     private GraphQLHttpRequest BuildGetRequest(HttpContext httpContext) {
-      var uriQuery = httpContext.Request.Query;      
-      var httpReq = new GraphQLHttpRequest() {
-        HttpContext = httpContext,
-        HttpMethod = "GET",   
-        Request = new GraphQLRequest() {
-          Query = uriQuery["query"],
-          OperationName = uriQuery["operationName"]
-        }, 
-        ContentType = HttpContentType.None, //no body
+      var uriQuery = httpContext.Request.Query;
+      var gqlRequest = new GraphQLRequest() {
+        Query = uriQuery["query"],
+        OperationName = uriQuery["operationName"]
       };
       var varsJson = uriQuery["variables"];
-      if (!string.IsNullOrWhiteSpace(varsJson)) 
-        httpReq.RawVariables = Deserialize<IDictionary<string, object>>(varsJson);
+      if (!string.IsNullOrWhiteSpace(varsJson))
+        gqlRequest.Variables = Deserialize<IDictionary<string, object>>(varsJson);
+      var httpReq = new GraphQLHttpRequest() {
+        HttpContext = httpContext,
+        HttpMethod = "GET",
+        Request = gqlRequest,
+        ContentType = HttpContentType.None, //no body
+      };
       return httpReq; 
     }
 
@@ -154,7 +159,7 @@ namespace NGraphQL.Server.Http {
           var bodyObj = Deserialize<GraphQLRequest>(body);
           req.Query = bodyObj.Query;
           req.OperationName = bodyObj.OperationName;
-          httpReq.RawVariables = bodyObj.Variables;
+          req.Variables = bodyObj.Variables;
           break; 
       }
       // still check 'query' parameter in URL and overwrite query in body if found
