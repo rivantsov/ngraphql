@@ -6,13 +6,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Serialization;
 
 using NGraphQL.Client;
-using NGraphQL.Server;
-using NGraphQL.Server.AspNetCore;
-using NGraphQL.TestApp;
 using NGraphQL.Utilities;
 
 namespace NGraphQL.Tests.HttpTests {
