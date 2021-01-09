@@ -7,7 +7,7 @@ using Newtonsoft.Json.Linq;
 
 using NGraphQL.Server.Execution;
 
-namespace NGraphQL.Server.Http {
+namespace NGraphQL.Server.AspNetCore {
 
   public class GraphQLHttpRequest {
     public HttpContext HttpContext;

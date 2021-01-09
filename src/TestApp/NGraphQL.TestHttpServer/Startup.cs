@@ -6,7 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NGraphQL.Server;
-using NGraphQL.Server.Http;
+using NGraphQL.Server.AspNetCore;
 using NGraphQL.TestApp;
 
 namespace NGraphQL.TestHttpServer {

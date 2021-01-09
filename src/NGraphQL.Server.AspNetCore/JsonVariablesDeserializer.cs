@@ -9,7 +9,7 @@ using NGraphQL.Model;
 using NGraphQL.Server.Execution;
 using NGraphQL.Utilities;
 
-namespace NGraphQL.Server.Http {
+namespace NGraphQL.Server.AspNetCore {
 
   public class JsonVariablesDeserializer {
 

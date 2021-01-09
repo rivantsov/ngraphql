@@ -13,7 +13,7 @@ using Newtonsoft.Json.Serialization;
 
 using NGraphQL.Client;
 using NGraphQL.Server;
-using NGraphQL.Server.Http;
+using NGraphQL.Server.AspNetCore;
 using NGraphQL.TestApp;
 using NGraphQL.Utilities;
 
