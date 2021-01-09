@@ -13,7 +13,7 @@ echo Publishing....
 nuget push Nupkg\NGraphQL.%pver%.nupkg -source https://api.nuget.org/v3/index.json 
 nuget push Nupkg\NGraphQL.Client.%pver%.nupkg -source https://api.nuget.org/v3/index.json 
 nuget push Nupkg\NGraphQL.Server.%pver%.nupkg -source https://api.nuget.org/v3/index.json 
-nuget push Nupkg\NGraphQL.Server.Http.%pver%.nupkg -source https://api.nuget.org/v3/index.json 
+nuget push Nupkg\NGraphQL.Server.AspNetCore.%pver%.nupkg -source https://api.nuget.org/v3/index.json 
 pause
 
 :END

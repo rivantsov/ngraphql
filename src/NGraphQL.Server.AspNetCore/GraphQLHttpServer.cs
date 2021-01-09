@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
@@ -14,6 +13,7 @@ using NGraphQL.Utilities;
 
 namespace NGraphQL.Server.AspNetCore {
 
+  /// <summary>GraphQL Http Server. </summary>
   public class GraphQLHttpServer {
     public const string ContentTypeJson = "application/json";
     public const string ContentTypeGraphQL = "application/graphql";

@@ -1,14 +1,14 @@
 <?xml version="1.0"?>
 <package > 
   <metadata>
-    <id>NGraphQL.Server.Http</id>
+    <id>NGraphQL.Server.AspNetCore</id>
     <version>$version$</version>
     <authors>Roman Ivantsov</authors>
     <owners>Roman Ivantsov</owners>
     <projectUrl>https://github.com/rivantsov/ngraphql</projectUrl>
     <license type="expression">MIT</license>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>GraphQL Http server for .NET</description>
+    <description>GraphQL Http server for ASP.NET Core</description>
     <releaseNotes></releaseNotes>
     <copyright>Copyright Roman Ivantsov</copyright>
     <tags>GraphQL .NET c# Http</tags>
@@ -23,8 +23,8 @@
   </metadata>
   
   <files>
-	 <file src="..\NGraphQL.Server.Http\bin\Release\netstandard2.0\NGraphQL.Server.Http.dll" target="lib\netstandard2.0" />
-	 <file src="..\NGraphQL.Server.Http\bin\Release\netstandard2.0\NGraphQL.Server.Http.pdb" target="lib\netstandard2.0" />
-	 <file src="..\NGraphQL.Server.Http\bin\NGraphQL.Server.Http.xml" target="lib\netstandard2.0" />
+	 <file src="..\src\NGraphQL.Server.AspNetCore\bin\Release\netstandard2.0\NGraphQL.Server.AspNetCore.dll" target="lib\netstandard2.0" />
+	 <file src="..\src\NGraphQL.Server.AspNetCore\bin\Release\netstandard2.0\NGraphQL.Server.AspNetCore.pdb" target="lib\netstandard2.0" />
+	 <file src="..\src\NGraphQL.Server.AspNetCore\bin\NGraphQL.Server.AspNetCore.xml" target="lib\netstandard2.0" />
   </files>
 </package>

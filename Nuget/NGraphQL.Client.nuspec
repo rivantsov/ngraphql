@@ -21,8 +21,8 @@
   </metadata>
   
   <files>
-	 <file src="..\NGraphQL.Client\bin\Release\netstandard2.0\NGraphQL.Client.dll" target="lib\netstandard2.0" />
-	 <file src="..\NGraphQL.Client\bin\Release\netstandard2.0\NGraphQL.Client.pdb" target="lib\netstandard2.0" />
-	 <file src="..\NGraphQL.Client\bin\NGraphQL.Client.xml" target="lib\netstandard2.0" />
+	 <file src="..\src\NGraphQL.Client\bin\Release\netstandard2.0\NGraphQL.Client.dll" target="lib\netstandard2.0" />
+	 <file src="..\src\NGraphQL.Client\bin\Release\netstandard2.0\NGraphQL.Client.pdb" target="lib\netstandard2.0" />
+	 <file src="..\src\NGraphQL.Client\bin\NGraphQL.Client.xml" target="lib\netstandard2.0" />
   </files>
 </package>

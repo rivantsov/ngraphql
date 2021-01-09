@@ -6,6 +6,6 @@ del /q /s ..\TemporaryGeneratedFile_*.cs
 nuget.exe pack NGraphQL.nuspec -Symbols -version %pver% -outputdirectory Nupkg
 nuget.exe pack NGraphQL.Client.nuspec -Symbols -version %pver% -outputdirectory Nupkg
 nuget.exe pack NGraphQL.Server.nuspec -Symbols -version %pver% -outputdirectory Nupkg
-nuget.exe pack NGraphQL.Server.Http.nuspec -Symbols -version %pver% -outputdirectory Nupkg
+nuget.exe pack NGraphQL.Server.AspNetCore.nuspec -Symbols -version %pver% -outputdirectory Nupkg
 
 pause
