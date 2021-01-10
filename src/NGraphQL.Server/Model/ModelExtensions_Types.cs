@@ -33,7 +33,7 @@ namespace NGraphQL.Model {
     }
 
     internal static string GetTypeRefName(this TypeRef typeRef) {
-      var baseName = typeRef.Parent == null ? typeRef.TypeDef.Name : typeRef.Parent.Name;
+      var baseName = typeRef.Inner == null ? typeRef.TypeDef.Name : typeRef.Inner.Name;
       switch(typeRef.Kind) {
         case TypeKind.List:
           return "[" + baseName + "]";
@@ -69,14 +69,14 @@ namespace NGraphQL.Model {
           //  so we return ClrType of parent (element)
           var isFlagArray = (typeRef.TypeDef.IsEnumFlagArray() && typeRef.Rank == 1);
           if (isFlagArray) 
-            return typeRef.Parent.ClrType;
+            return typeRef.Inner.ClrType;
           // regular case
-          baseType = typeRef.Parent.ClrType;
+          baseType = typeRef.Inner.ClrType;
           resultType = baseType.MakeArrayType();
           return resultType;
 
         case TypeKind.NonNull:
-          baseType = typeRef.Parent.ClrType;
+          baseType = typeRef.Inner.ClrType;
           // If it is Nullable<ValueType>, get the underlying type
           var underType = Nullable.GetUnderlyingType(baseType);
           resultType = underType ?? baseType;
@@ -107,8 +107,8 @@ namespace NGraphQL.Model {
 
     public static TypeRef GetListElementTypeRef(this TypeRef typeRef) {
       switch (typeRef.Kind) {
-        case TypeKind.List: return typeRef.Parent;
-        case TypeKind.NonNull: return GetListElementTypeRef(typeRef.Parent);
+        case TypeKind.List: return typeRef.Inner;
+        case TypeKind.NonNull: return GetListElementTypeRef(typeRef.Inner);
         default:
           if (typeRef.TypeDef.IsEnumFlagArray())
             return typeRef.TypeDef.TypeRefNotNull; //return enum type ref itself

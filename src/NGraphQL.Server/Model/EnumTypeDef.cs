@@ -47,7 +47,7 @@ namespace NGraphQL.Model {
       if (value == null)
         return null;
       if (typeRef.Kind == TypeKind.NonNull)
-        typeRef = typeRef.Parent;
+        typeRef = typeRef.Inner;
       if (IsFlagSet && typeRef.Rank == 1)
         return FlagsEnumValueToOutput(value);
       if (typeRef.IsList)
@@ -60,7 +60,7 @@ namespace NGraphQL.Model {
         return null;
       var list = value as IList;
       var result = new object[list.Count];
-      var elemTypeRef = typeRef.Parent;
+      var elemTypeRef = typeRef.Inner;
       for (int i = 0; i < result.Length; i++)
         result[i] = ToOutputRec(context, elemTypeRef, list[i]);
       return result; 

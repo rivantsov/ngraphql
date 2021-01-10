@@ -1,53 +1,40 @@
-# NGraphQL - GraphQL implementation for .NET 
- **Performance. Simplicity. Usability.** 
+# NGraphQL - GraphQL for .NET 
 
-**NGraphQL** is a library for implementing [GraphQL APIs](https://spec.graphql.org/) in .NET. 
-
-## NGraphQL Highlights
-* Follows **GraphQL specification**, June 2018 Edition
-* **Usability**: straightforward API development; NGraphQL takes care of the most challenging aspects of GraphQL.
-* **High performance - sub-millisecond roundtrip times** for a typical query 
-* Automatic handling of **GraphQL Enums** - automatic conversion of .NET Enum values to ALL_CAPS strings and back (MyEnumValue <-> MY_ENUM_VALUE)
-* Support for **Enum list types** - mapped to **c# \[Flags\] enums**, conversion is handled automatically.
-* **Parsed query cache**. Repeated identical queries are not parsed again, but taken from the cache and executed with different variable values
-* **Http Server** implementation, ready to use in an ASP.NET Core Web application. 
-* **Parallel execution** of queries
-* Efficient, intuitive **Batching** implementation (aka **Data Loader** ). 
-* Support for easy **input validation** and adding **GraphQL errors** (if any) to the response; aborting the request if errors detected.
-* **Modular API construction** - great for building large APIs.
+**NGraphQL** is a set of packages implementing [GraphQL APIs](https://spec.graphql.org/) client and server components in .NET.  
 
 ## Documentation
-[Star Wars Sample API - Step-by-step guide to NGraphQL](https://github.com/rivantsov/starwars/wiki) 
+See [wiki pages](ttps://rivantsov/ngraphql/wiki). 
 
-## Star Wars example
-Explore the [StarWars sample app](https://github.com/rivantsov/starwars) - a sample of _GraphQL API_ implementation on top of a simple app. The example includes an HTTP server implementation with _Graphiql_ interactive UI for executing queries.  
+## Installation
+Install the latest stable binaries via [NuGet](https://www.nuget.org/packages/NGraphQL/).
+```
+> dotnet add package NGraphQL
+```
 
-## Exploring the source code
-Download the source code, open the solution in *Visual Studio 2019*. Build all and run unit tests in *NGraphQL.Tests* project - all tests should pass. 
+*NGrapQL* package is a slim library with types and definitions used both by Client and Server components. Here is the full list of nuget packages: 
 
-**IMPORTANT: Disable 'Break on exception' flag**. Open Exception Settings window in Visual Studio and uncheck the box 'Common Language Runtime Exceptions' (for Break When Thrown); also right click on this item and select 'Continue when unhandled in user code'. Don't worry, unit tests and test app have proper exception handling in place.
+|Package|Description|
+|-------|-----------|
+|NGraphQL|Basic classes shared by client and server components.|
+|NGraphQL.Client|GraphQL client.|
+|NGraphQL.Server|GraphQL server implementation not tied to a specific transport protocol.|
+|NGraphQL.Server.AspNetCore|GraphQL HTTP server based on ASP.NET Core stack.|
 
-The unit tests write a **detailed log** as they go - and this log is quite readable. Open the log file *_graphQLtests.log* in the *bin* folder of the test project (*HttpTests* project has a similar log file). Scroll through the file - for every test there is a test description, request and response printout (with errors if any), and execution metrics. 
 
-Notice the metrics numbers - once the paths are warmed up, a **typical query runs under 1 ms**. 
+## Examples
+The repo contains a [test application](src/testapp/) with HTTP server and *Graphiql UI*. It is used in HTTP server harness and unit tests. It is a made-up GraphQL API about abstract *Things*, and it is void of any real semantic meaning. The sole purpose is to provide a number of types and methods covering the many aspects of the *GraphQL* protocol. Run the HTTP server harness and play with the *Graphiql* page in browser.
 
-## TestApp application
-The tests use a simple test app and its GraphQL API in the project NGraphQL.TestApp. The app/API defined there is completely void of any real-world semantics - just abstract THINGS and other things etc. No *StarWars* or any real/imaginary world story. Just a playground with made up silly named artefacts for testing GraphQL features.
-The *TestApp* project contains 2 areas - a 'business app' with some data 'entities', and a GraphQL API built on top of it, to expose the 'entities' of the business app. Explore the project sources to get the general idea of how it works. 
+You can run unit tests and see the many request/response examples used there. The unit tests write a **detailed log** as they go. Locate the log file *_graphQLtests.log* in the *bin* folder of the test project (*HttpTests* project has a similar log file). Run the tests and then browse the log file for many examples of GraphQL requests and responses along with metrics information. 
 
-## API development: Code-first only, no schema-first
-It turned out, implementing a working GraphQL API requires creating a number of *detailed c#/.NET artefacts that may not be directly derived or guessed from the Schema document*. So for an existing schema/.net code pair, it is not possible to derive necessary .NET code change from GraphQL Schema document changes. The **complete schema-first scenario is not feasible**.
+See also [Star Wars Example](https://github.com/rivantsov/starwars) in a separate github repository. 
 
-## Limitations
-Subscriptions are not implemented yet. *NGraphQL* parses and executes a subscription query (its resolver) the same way as a query, but does not provide the implementation of 2-way HTTP communication (Web sockets). Will be coming soon.
+##  Limitations
+* *Code-first only, no schema-first scenario*. Implementing a working GraphQL API requires creating a number of *detailed c#/.NET artefacts that may not be directly derived or guessed from the Schema document*. So for an existing schema/.net code pair, it is not possible to derive necessary .NET code change from GraphQL Schema document changes. The **complete schema-first scenario is not feasible**.
 
-## Nuget packages
-NGraphQL comes in 2 nuget packages: 
-* **NGraphQL** - basic components for building custom GraphQL APIs; GraphQL Server implementation
-* **NGraphQL.Http** - Http Server on top of GraphQL server. Implementation follows these [Guidelines](https://graphql.org/learn/serving-over-http/).
+* *Subscriptions are not implemented (yet)* - coming in the future
 
 ## System requirements
-Visual Studio 2019, .NET Standard 2.0 
+Visual Studio 2019, .NET Standard 2.0, .NET Core 3.1 
 
 ## Other GraphQL on .NET solutions
 * [GraphQL DotNet](https://github.com/graphql-dotnet/graphql-dotnet)

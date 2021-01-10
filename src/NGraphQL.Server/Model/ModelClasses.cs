@@ -200,7 +200,7 @@ namespace NGraphQL.Model {
   public class TypeRef { 
     public readonly TypeDefBase TypeDef;
     public readonly TypeKind Kind;
-    public readonly TypeRef Parent;
+    public readonly TypeRef Inner;
     public __Type Type_; //note: not the same as this.TypeDef.Type_ 
     // list of all kinds in parents starting from original type def. 
     public readonly IList<TypeKind> KindsPath;
@@ -219,7 +219,7 @@ namespace NGraphQL.Model {
     }
 
     public TypeRef(TypeRef parent, TypeKind kind) {
-      Parent = parent;
+      Inner = parent;
       Kind = kind;
       TypeDef = parent.TypeDef;
       KindsPath = new List<TypeKind>(parent.KindsPath);

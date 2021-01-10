@@ -42,7 +42,7 @@ namespace NGraphQL.Server.AspNetCore {
       switch (typeRef.Kind) {
 
         case TypeKind.NonNull:
-          var result = ReadValue(context, typeRef.Parent, jsonValue, path);
+          var result = ReadValue(context, typeRef.Inner, jsonValue, path);
           if (result == null)
             AddError(context, $"Null value not allowed.", path);
           return result; 
@@ -70,7 +70,7 @@ namespace NGraphQL.Server.AspNetCore {
     }
 
     private object ReadList(RequestContext context, TypeRef typeRef, object jsonValue, IList<object> path) {
-      var elemTypeRef = typeRef.Parent;
+      var elemTypeRef = typeRef.Inner;
       var elemClrType = elemTypeRef.ClrType;
       switch(jsonValue) {
         case JArray jArr:

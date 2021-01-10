@@ -193,7 +193,7 @@ namespace NGraphQL.Model.Construction {
     private void SetupTypeObject(TypeRef typeRef) {
       if(typeRef.Type_ != null)
         return;
-      var parent = typeRef.Parent;
+      var parent = typeRef.Inner;
       if (parent == null) { //this is TypeDef.TypeRefNull value, should have same Type_ as typeDef
         typeRef.Type_ = typeRef.TypeDef.Type_;
         return; 

@@ -89,9 +89,9 @@ namespace NGraphQL.Model.Request {
                  InputValueEvaluator[] elemEvaluators) : base(inputDef, resultTypeRef, anchor) {
       ElemEvaluators = elemEvaluators;
       if (ResultTypeRef.Kind == TypeKind.NonNull)
-        ElemTypeRef = ResultTypeRef.Parent.Parent;
+        ElemTypeRef = ResultTypeRef.Inner.Inner;
       else
-        ElemTypeRef = ResultTypeRef.Parent;
+        ElemTypeRef = ResultTypeRef.Inner;
     }
 
     public override bool IsConst() {
