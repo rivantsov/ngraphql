@@ -22,40 +22,54 @@ Install the latest stable binaries via [NuGet](https://www.nuget.org/packages/NG
 Create a .NET Standard class library project and add references to *NGraphQL*, *NGraphQL.Server* packages. Start defining your GraphQL API model - types, fields/methods etc. GraphQL types are defined as POCO classes/interfaces decorated with attributes: 
 
 ```c$
-  /// <summary>A humanoid creature from the Star Wars universe </summary>
-  public class Human_ : ICharacter_ {
-    /// <summary>The ID of the human </summary>
+  /// <summary>A starship. </summary>
+  public class Starship_ {
+    /// <summary>The ID of the starship </summary>
     [Scalar("ID")]
     public string Id { get; set; }
 
-    /// <summary>What this human calls themselves </summary>
+    /// <summary>The name of the starship </summary>
     public string Name { get; set; }
 
-    /// <summary>This human's friends, or an empty list if they have none </summary>
-    public IList<ICharacter_> Friends { get; }
-
-    /// <summary>The movies this human appears in </summary>
-    public IList<Episode> AppearsIn { get; }
-
-    /// <summary>The home planet of the human, or null if unknown </summary>
-    [Null] public string HomePlanet { get; set; }
-
-    /// <summary>Height in the preferred unit, default is meters </summary>
-    [GraphQLName("height")]
-    public float? GetHeight(LengthUnit unit = LengthUnit.Meter) { return default; }
-
-    /// <summary>Mass in kilograms, or null if unknown </summary>
-    public float? Mass { get; set; }
-
-    /// <summary>A list of starships this person has piloted, or an empty list if none </summary>
-    [Resolver("GetStarshipsBatched")] 
-    public IList<Starship_> Starships { get; }
+    /// <summary>Length of the starship, along the longest axis </summary>
+    [GraphQLName("length")]
+    public float? GetLength(LengthUnit unit = LengthUnit.Meter) { return default; }
   }
 ``` 
 
 We use the underscore suffix (\_) in type names to avoid name collisions with the underlying 'business' entities. This prefix will be automatically stripped by the engine in Schema definition. The XML comments will appear in the Schema document as GraphQL descriptions. The \[Null\] attribute marks the field as nullable; everything is non-nullable by default, except nullable value types like *int?*. 
 
-Once you defined all    
+The top-level Query, Mutation types are defined as an interface:      
+```c$
+  interface IStarWarsQuery {
+
+    [Resolver("GetStarships")]
+    IList<Starship_> Starships { get; }
+
+    [GraphQLName("starship"), Resolver("GetStarshipAsync")]
+    Starship_ GetStarship([Scalar("ID")] string id);
+  }
+``` 
+
+Once you defined all types, interfaces,  unions etc, you register them as part of a GraphQL module: 
+
+```c$
+  public class StarWarsApiModule: GraphQLModule {
+    public StarWarsApiModule() {
+      // Register types
+      this.EnumTypes.AddRange(new Type[] { typeof(Episode), typeof(LengthUnit), typeof(Emojis) });
+      this.ObjectTypes.AddRange(new Type[] { typeof(Human_), typeof(Droid_), typeof(Starship_), typeof(Review_) });
+      this.InterfaceTypes.Add(typeof(ICharacter_));
+      this.UnionTypes.Add(typeof(SearchResult_));
+      this.InputTypes.Add(typeof(ReviewInput_));
+      this.QueryType = typeof(IStarWarsQuery);
+      this.MutationType = typeof(IStarWarsMutation);
+      this.ResolverTypes.Add(typeof(StarWarsResolvers));
+
+      // (skipped) map app entity types to GraphQL Api types
+    } 
+  }
+``` 
 
 ### Client
 
