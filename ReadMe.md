@@ -35,7 +35,7 @@ Create a .NET Standard class library project and add references to *NGraphQL*, *
   }
 ``` 
 
-We use the underscore suffix (\_) in type names to avoid name collisions with the underlying 'business' entities. This prefix will be automatically stripped by the engine in Schema definition. The XML comments will appear in the Schema document as GraphQL descriptions. The \[Null\] attribute marks the field as nullable; everything is non-nullable by default, except nullable value types like *int?*. 
+We use the underscore suffix (\_) in type names to avoid name collisions with the underlying 'business' entities. This prefix will be automatically stripped by the engine in Schema definition. The XML comments will appear in the Schema document as GraphQL descriptions. The \[Null\] attribute marks the field as nullable; everything is non-nullable by default, except *Nullable\<T\>* types like *int?*. 
 
 The top-level Query, Mutation types are defined as an interface:      
 ```csharp
@@ -66,6 +66,20 @@ Once you defined all types, interfaces,  unions etc, you register them as part o
     } 
   }
 ``` 
+
+Note that you can use .NET Enum types as-is. The engine translates the pascal-cased value *ValueOne* in c# definition into a GraphQL-style string *VALUE_ONE*, and all conversions at runtime are handled automatically. Additionally, the engine translates the *\[Flags\]* enums into GraphQL List-of-Enum types.
+
+You can use business model entity classes directly as GraphQL types when you see fit. Most common case is enums and input types. 
+
+After we register all types in module constructor, we need to map GraphQL Object types to to business logic layer entities: 
+
+```csharp
+      MapEntity<Starship>().To<Starship_>();
+      MapEntity<Human>().To<Human_>(h => new Human_() { Mass = h.MassKg });
+``` 
+
+Most of the fields in entities are matched by name. For mismatch cases, or when you need to call a function or do a conversion, you can provide an expression. More complex mappings are handled by resolvers. 
+ 
 
 ### Client
 
