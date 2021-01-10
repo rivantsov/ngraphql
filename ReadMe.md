@@ -21,16 +21,14 @@ Install the latest stable binaries via [NuGet](https://www.nuget.org/packages/NG
 ### Server
 Create a .NET Standard class library project and add references to *NGraphQL*, *NGraphQL.Server* packages. Start defining your GraphQL API model - types, fields/methods etc. GraphQL types are defined as POCO classes/interfaces decorated with attributes: 
 
-```c$
+```csharp
   /// <summary>A starship. </summary>
   public class Starship_ {
     /// <summary>The ID of the starship </summary>
     [Scalar("ID")]
     public string Id { get; set; }
-
     /// <summary>The name of the starship </summary>
     public string Name { get; set; }
-
     /// <summary>Length of the starship, along the longest axis </summary>
     [GraphQLName("length")]
     public float? GetLength(LengthUnit unit = LengthUnit.Meter) { return default; }
@@ -40,12 +38,10 @@ Create a .NET Standard class library project and add references to *NGraphQL*, *
 We use the underscore suffix (\_) in type names to avoid name collisions with the underlying 'business' entities. This prefix will be automatically stripped by the engine in Schema definition. The XML comments will appear in the Schema document as GraphQL descriptions. The \[Null\] attribute marks the field as nullable; everything is non-nullable by default, except nullable value types like *int?*. 
 
 The top-level Query, Mutation types are defined as an interface:      
-```c$
+```csharp
   interface IStarWarsQuery {
-
     [Resolver("GetStarships")]
     IList<Starship_> Starships { get; }
-
     [GraphQLName("starship"), Resolver("GetStarshipAsync")]
     Starship_ GetStarship([Scalar("ID")] string id);
   }
@@ -53,12 +49,12 @@ The top-level Query, Mutation types are defined as an interface:
 
 Once you defined all types, interfaces,  unions etc, you register them as part of a GraphQL module: 
 
-```c$
+```csharp
   public class StarWarsApiModule: GraphQLModule {
     public StarWarsApiModule() {
-      // Register types
       this.EnumTypes.AddRange(new Type[] { typeof(Episode), typeof(LengthUnit), typeof(Emojis) });
-      this.ObjectTypes.AddRange(new Type[] { typeof(Human_), typeof(Droid_), typeof(Starship_), typeof(Review_) });
+      this.ObjectTypes.AddRange(new Type[] 
+      { typeof(Human_), typeof(Droid_), typeof(Starship_), typeof(Review_) });
       this.InterfaceTypes.Add(typeof(ICharacter_));
       this.UnionTypes.Add(typeof(SearchResult_));
       this.InputTypes.Add(typeof(ReviewInput_));
