@@ -57,5 +57,7 @@ namespace NGraphQL.TestApp {
     IList<ThingsUnion> GetThingsUnionList();
 
     IList<INamedObj> GetSomeNamedObjects();
+
+    ThingKind[] GetAllKinds();
   }
 }

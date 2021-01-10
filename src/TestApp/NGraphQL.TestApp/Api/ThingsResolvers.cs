@@ -190,6 +190,11 @@ namespace NGraphQL.TestApp {
       return result; 
     }
 
+    public ThingKind[] GetAllKinds(IFieldContext context) {
+      return new[] { ThingKind.KindOne, ThingKind.KindTwo, ThingKind.KindThree };
+    }
+
+
 
     // this is just a test placeholder
     public bool Subscribe(IFieldContext context, string childName) {

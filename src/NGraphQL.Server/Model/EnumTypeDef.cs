@@ -8,6 +8,7 @@ using NGraphQL.Server;
 using NGraphQL.Server.Execution;
 using NGraphQL.Model.Request;
 using NGraphQL.Utilities;
+using System.Collections;
 
 namespace NGraphQL.Model {
 
@@ -38,12 +39,31 @@ namespace NGraphQL.Model {
     }
 
     public override object ToOutput(FieldContext context, object value) {
-      if(value == null)
+      return ToOutputRec(context, context.FieldDef.TypeRef, value); 
+    }
+
+    // Recursive method, for high-rank arrays
+    private object ToOutputRec(FieldContext context, TypeRef typeRef, object value) {
+      if (value == null)
         return null;
-      if(IsFlagSet)
+      if (typeRef.Kind == TypeKind.NonNull)
+        typeRef = typeRef.Parent;
+      if (IsFlagSet && typeRef.Rank == 1)
         return FlagsEnumValueToOutput(value);
-      else
-        return EnumValueToOutput(value);
+      if (typeRef.IsList)
+        return ArrayToOutputRec(context, typeRef, value);
+      return EnumValueToOutput(value);
+    }
+
+    private object ArrayToOutputRec(FieldContext context, TypeRef typeRef, object value) {
+      if (value == null)
+        return null;
+      var list = value as IList;
+      var result = new object[list.Count];
+      var elemTypeRef = typeRef.Parent;
+      for (int i = 0; i < result.Length; i++)
+        result[i] = ToOutputRec(context, elemTypeRef, list[i]);
+      return result; 
     }
 
     public object ConvertInputValue(RequestContext context, object inpValue, RequestObjectBase anchor) {

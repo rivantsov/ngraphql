@@ -18,9 +18,16 @@ namespace NGraphQL.Tests.HttpTests {
     [TestMethod]
     public async Task TestBasicQueries() {
       TestEnv.LogTestMethodStart();
+      ResponseData resp; 
 
-      TestEnv.LogTestDescr("Testing dynamic query");
-      var resp = await TestEnv.Client.PostAsync("query { things {name} }");
+      TestEnv.LogTestDescr("bug fix: return array of enum values");
+      resp = await TestEnv.Client.PostAsync("query { kinds: getAllKinds }");
+      resp.EnsureNoErrors();
+      var allKinds = resp.data.kinds;
+      Assert.AreEqual(3, allKinds.Count, "Expected 3 values");
+
+      TestEnv.LogTestDescr("Trying basic query, get all things, with names");
+      resp = await TestEnv.Client.PostAsync("query { things {name} }");
       resp.EnsureNoErrors();
       var thing0Name = resp.data.things[0].name;
       Assert.IsNotNull(resp);
