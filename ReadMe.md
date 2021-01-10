@@ -24,14 +24,14 @@ Install the latest stable binaries via [NuGet](https://www.nuget.org/packages/NG
 ## Examples
 The repo contains a [test application](src/testapp/) with HTTP server and *Graphiql UI*. It is used in HTTP server harness and unit tests. It is a made-up GraphQL API about abstract *Things*, and it is void of any real semantic meaning. The sole purpose is to provide a number of types and methods covering the many aspects of the *GraphQL* protocol. Run the HTTP server harness and play with the *Graphiql* page in browser.
 
-You can run unit tests and see the many request/response examples used there. The unit tests write a **detailed log** as they go. Locate the log file *_graphQLtests.log* in the *bin* folder of the test project (*HttpTests* project has a similar log file). Run the tests and then browse the log file for many examples of GraphQL requests and responses along with metrics information. 
+You can run unit tests and see the many request/response examples used there. The unit tests write a detailed log as they go. Run the tests, locate the log file in the *bin* folder, and browse the file for many examples of GraphQL requests and responses along with metrics. 
 
 See also [Star Wars Example](https://github.com/rivantsov/starwars) in a separate github repository. 
 
 ##  Limitations
-* *Code-first only, no schema-first scenario*. Implementing a working GraphQL API requires creating a number of *detailed c#/.NET artefacts that may not be directly derived or guessed from the Schema document*. So for an existing schema/.net code pair, it is not possible to derive necessary .NET code change from GraphQL Schema document changes. The **complete schema-first scenario is not feasible**.
+* *Code-first only, no schema-first scenario*. Implementing a working GraphQL API requires creating a number of detailed c#/.NET artefacts that cannot be directly derived from the Schema document. The complete schema-first scenario is not feasible.
 
-* *Subscriptions are not implemented (yet)* - coming in the future
+* *Subscriptions are not implemented* - coming in the future
 
 ## System requirements
 Visual Studio 2019, .NET Standard 2.0, .NET Core 3.1 
