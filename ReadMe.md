@@ -127,16 +127,16 @@ public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 We create HTTP server instance and setup the standard GraphQL HTTP endpoints. Launch the project - the GraphQL server will start and will respond on the configured endpoint. You can hit it with a client, or explore using GraphQL tools like Graphiql. 
 
 ### Client
-The *NGraphQL.Client* implements HTTP client. To use it, install the package and reference to the namespace. Then create the client: 
+The *NGraphQL.Client* implements GraphQL HTTP client. To use it, install the package and add the reference to the namespace. Then create the client: 
 
 ```csharp
   var client = new GraphQLClient("http://127.0.0.1:5500/graphql");
 ``` 
 
-Now you can send GraphQL queries and recieve the data: 
+Now you can send GraphQL queries and receive the data: 
 
 ```csharp
-  query = " query { starships {name, length } } ";
+  query = " query { starships { id, name, length } } ";
   var response = await client.PostAsync(query);
   var ships = response.data.starships;
   foreach(var sh in ships)
@@ -151,12 +151,11 @@ However, you can share the type definitions from your model with the client, and
   var ships = response.GetTopField<Starship_[]>("starships");
   Starship_ sh = ships[0];
 ``` 
-
-You can use queries with variables: 
+The returned strongly-typed objects will be partially populated, based on selection sets in your query. You can use queries with variables: 
 
 ```csharp
       query = @" query ($id: ID) { 
-        starship(id: $id) {name, length} 
+        starship(id: $id) {id, name, length} 
        } ";
       var vars = new Dictionary<string, object>() { { "id", "3001" } };
       resp = await client.PostAsync(query, vars);
