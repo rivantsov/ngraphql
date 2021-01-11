@@ -99,7 +99,7 @@ Here is a resolver method for the *length* field of the *Starship* type:
 
 The first parameter is always the *fieldContext*, the second is the parent entity for which the field is invoked (absent for top-level Query fields). The reference to the business layer objects is available through injection at resolver class initialization, or through _fieldContext_ reference to global context and GraphQL App.
 
-With GraphQL module defined, we can now create GraphQL server and setup Http endpoints. Create a new ASP.NET Core API project, add references to _NGraphQL_, NGraphQL.Server_, _NGraphQL.Server.AspNetCore_ packages, and to the project containing the GraphQL classes we just defined. Add the following code to the _Startup_ class: 
+With GraphQL module defined, we can now create GraphQL server and setup HTTP endpoints. Create a new ASP.NET Core API project, add references to _NGraphQL_, NGraphQL.Server_, _NGraphQL.Server.AspNetCore_ packages, and to the project containing the GraphQL classes we just defined. Add the following code to the _Startup_ class: 
   
 ```csharp
 private GraphQLHttpServer CreateGraphQLHttpServer() {
@@ -127,7 +127,41 @@ public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 We create HTTP server instance and setup the standard GraphQL HTTP endpoints. Launch the project - the GraphQL server will start and will respond on the configured endpoint. You can hit it with a client, or explore using GraphQL tools like Graphiql. 
 
 ### Client
+The *NGraphQL.Client* implements HTTP client. To use it, install the package and reference to the namespace. Then create the client: 
 
+```csharp
+  var client = new GraphQLClient("http://127.0.0.1:5500/graphql");
+``` 
+
+Now you can send GraphQL queries and recieve the data: 
+
+```csharp
+  query = " query { starships {name, length } } ";
+  var response = await client.PostAsync(query);
+  var ships = response.data.starships;
+  foreach(var sh in ships)
+    Console.WriteLine($"Starship {sh.name}, length: {sh.length}");
+``` 
+
+The *response.data* field is of *dynamic* data type, so we can browse the returned tree as tree of dynamic objects. This is convenient as we do not need strong types for the data returned by the server. 
+
+However, you can share the type definitions from your model with the client, and then retrieve the returned object(s) as strong type: 
+
+```csharp
+  var ships = response.GetTopField<Starship_[]>("starships");
+  Starship_ sh = ships[0];
+``` 
+
+You can use queries with variables: 
+
+```csharp
+      query = @" query ($id: ID) { 
+        starship(id: $id) {name, length} 
+       } ";
+      var vars = new Dictionary<string, object>() { { "id", "3001" } };
+      resp = await client.PostAsync(query, vars);
+      var shipName = resp.data.starship.name; //should be X-Wing
+``` 
 
 ## Examples
 The repo contains a [test application](tree/master/src/TestApp) with HTTP server and *Graphiql UI*. It is used in HTTP server harness and unit tests. It is a made-up GraphQL API about abstract *Things*, and it is void of any real semantic meaning. The sole purpose is to provide a number of types and methods covering the many aspects of the *GraphQL* protocol. Run the HTTP server harness and play with the *Graphiql* page in browser.
