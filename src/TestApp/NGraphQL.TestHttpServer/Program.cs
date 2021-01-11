@@ -20,7 +20,7 @@ namespace NGraphQL.TestHttpServer
         Host.CreateDefaultBuilder(args)
             .ConfigureWebHostDefaults(webBuilder =>
             {
-              webBuilder.UseStartup<Startup>();
+              webBuilder.UseStartup<TestServerStartup>();
             });
   }
 }
