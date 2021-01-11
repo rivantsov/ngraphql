@@ -24,6 +24,8 @@ namespace NGraphQL.Server.AspNetCore {
 
     public GraphQLHttpServer(GraphQLServer server, JsonSerializerSettings serializerSettings = null) {
       Server = server;
+      if (Server.Model == null)
+        Server.Initialize(); 
       SerializerSettings = serializerSettings; 
       if (SerializerSettings == null) {
         var stt = SerializerSettings = new JsonSerializerSettings();

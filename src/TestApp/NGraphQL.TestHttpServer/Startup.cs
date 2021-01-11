@@ -50,7 +50,6 @@ namespace NGraphQL.TestHttpServer {
       var thingsServer = new GraphQLServer(thingsBizApp);
       var thingsModule = new ThingsGraphQLModule();
       thingsServer.RegisterModules(thingsModule);
-      thingsServer.Initialize();
       var server = new GraphQLHttpServer(thingsServer);
       return server; 
     }

@@ -18,6 +18,7 @@ Install the latest stable binaries via [NuGet](https://www.nuget.org/packages/NG
 |NGraphQL.Server.AspNetCore|GraphQL HTTP server based on ASP.NET Core stack.|
 
 ## Basic Usage
+
 ### Server
 Create a .NET Standard class library project and add references to *NGraphQL*, *NGraphQL.Server* packages. Start defining your GraphQL API model - types, fields/methods etc. GraphQL types are defined as POCO classes/interfaces decorated with attributes: 
 
@@ -35,7 +36,7 @@ Create a .NET Standard class library project and add references to *NGraphQL*, *
   }
 ``` 
 
-We use the underscore suffix (\_) in type names to avoid name collisions with the underlying 'business' entities. This prefix will be automatically stripped by the engine in Schema definition. The XML comments will appear in the Schema document as GraphQL descriptions. The \[Null\] attribute marks the field as nullable; everything is non-nullable by default, except *Nullable\<T\>* types like *int?*. 
+We use the underscore suffix in type names to avoid name collisions with the underlying 'business' entities. This prefix will be automatically stripped by the engine in Schema definition. The XML comments will appear in the Schema document as GraphQL descriptions. The \[Null\] attribute marks the field as nullable; everything is non-nullable by default, except *Nullable\<T\>* types like *int?*. 
 
 The top-level Query, Mutation types are defined as an interface:      
 ```csharp
@@ -67,21 +68,64 @@ Once you defined all types, interfaces,  unions etc, you register them as part o
   }
 ``` 
 
-Note that you can use .NET Enum types as-is. The engine translates the pascal-cased value *ValueOne* in c# definition into a GraphQL-style string *VALUE_ONE*, and all conversions at runtime are handled automatically. Additionally, the engine translates the *\[Flags\]* enums into GraphQL List-of-Enum types.
+> Note that you can use .NET Enum types as-is. The engine translates the pascal-cased value *ValueOne* in c# definition into a GraphQL-style string *VALUE_ONE*, and all conversions at runtime are handled automatically. Additionally, the engine translates the *\[Flags\]* enums into GraphQL List-of-Enum types.
 
-You can use business model entity classes directly as GraphQL types when you see fit. Most common case is enums and input types. 
+You can use business model entity classes directly as GraphQL types when you see fit. Most common cases are enums and Input types. 
 
 After we register all types in module constructor, we need to map GraphQL Object types to to business logic layer entities: 
 
 ```csharp
+      // in module constructor
       MapEntity<Starship>().To<Starship_>();
       MapEntity<Human>().To<Human_>(h => new Human_() { Mass = h.MassKg });
 ``` 
 
-Most of the fields in entities are matched by name. For mismatch cases, or when you need to call a function or do a conversion, you can provide an expression. More complex mappings are handled by resolvers. 
+Most of the fields are matched by name. For mismatch cases, or when you need to call a function or do a conversion, you can provide an expression. More complex mappings are handled by resolvers. 
  
+Resolvers are just instance methods in dedicated resolver classes registered with GraphQL module (see above). Not every field in GraphQL model need a resolver - only those that cannot be handled by property mapping to business entities. Among these - fields in top-level _Query_, _Mutation_ types, and all fields with arguments. A resolver is mapped to the field using either \[Resolver\] attribute (on the field), \[Resolves\] attribute on the resolver itself, or by a name match in absense of attributes or mapping. 
 
-### Client
+Here is a resolver method for the *length* field of the *Starship* type:
+ 
+```csharp
+    public float? GetLength(IFieldContext fieldContext, Starship starship, LengthUnit unit) {
+      if (starship.Length == null)
+        return null;
+      else if (unit == LengthUnit.Meter)
+        return starship.Length;
+      else 
+        return starship.Length * 3.28f; // feet
+    }
+``` 
+
+The first parameter is always the *fieldContext*, the second is the parent entity for which the field is invoked (absent for top-level Query fields). The reference to the business layer objects is available through injection at resolver class initialization, or through _fieldContext_ reference to global context and GraphQL App.
+
+With GraphQL module defined, we can now create GraphQL server and setup Http endpoints. Create a new ASP.NET Core API project, add references to _NGraphQL_, NGraphQL.Server_, _NGraphQL.Server.AspNetCore_ packages, and to the project containing the GraphQL classes we just defined. Add the following code to the _Startup_ class: 
+  
+```csharp
+    private GraphQLHttpServer CreateGraphQLHttpServer() {
+      var app = new StarWarsApp(); // or ref to your biz app
+      var server = new GraphQLServer(app); 
+      server.RegisterModules(new StarWarsApiModule());
+      return new GraphQLHttpServer(server);
+    }
+    
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    {
+      // ... skipped
+
+      app.UseRouting();
+      var server = CreateGraphQLHttpServer(); 
+      app.UseEndpoints(endpoints => {
+        endpoints.MapPost("graphql", async context => await server.HandleGraphQLHttpRequestAsync(context));
+        endpoints.MapGet("graphql", async context => await server.HandleGraphQLHttpRequestAsync(context));
+        endpoints.MapGet("graphql/schema", async context => await server.HandleGraphQLHttpRequestAsync(context));
+     });
+    }
+``` 
+
+We create HTTP server instance and setup the standard GraphQL HTTP endpoints. Launch the project - the GraphQL server will start.   
+
+##Client
 
 
 ## Examples
