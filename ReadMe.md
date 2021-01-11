@@ -151,7 +151,9 @@ However, you can share the type definitions from your model with the client, and
   var ships = response.GetTopField<Starship_[]>("starships");
   Starship_ sh = ships[0];
 ``` 
-The returned strongly-typed objects will be partially populated, based on selection sets in your query. You can use queries with variables: 
+The returned strongly-typed objects will be partially populated, based on selection sets in your query. 
+
+You can use queries with variables: 
 
 ```csharp
       query = @" query ($id: ID) { 
@@ -170,7 +172,7 @@ You can run unit tests and see the many request/response examples used there. Th
 See also [Star Wars Example](https://github.com/rivantsov/starwars) in a separate github repository. 
 
 ## Documentation
-See the [Wiki pages](https://rivantsov/ngraphql/wiki) for this project. 
+See the Wiki pages for this project (documentation under construction). 
 
 ##  Limitations
 * *Code-first only, no schema-first scenario*. Implementing a working GraphQL API requires creating a number of detailed c#/.NET artefacts that cannot be directly derived from the Schema document. The complete schema-first scenario is not feasible.
