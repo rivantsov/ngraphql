@@ -1,6 +1,6 @@
 # NGraphQL - GraphQL for .NET 
 
-**NGraphQL** is a set of packages implementing [GraphQL APIs](https://spec.graphql.org/) client and server components in .NET.  
+**NGraphQL** is a set of packages for implementing [GraphQL](https://graphql.org/) APIs in .NET. It provides server- and client-side components.  
 
 ## Installation
 Install the latest stable binaries via [NuGet](https://www.nuget.org/packages/NGraphQL/).
