@@ -30,6 +30,8 @@ Create a .NET Standard class library project and add references to *NGraphQL*, *
     public string Id { get; set; }
     /// <summary>The name of the starship </summary>
     public string Name { get; set; }
+    /// <summary>Category, optional </summary>
+    [Null] public string Category { get; set; }
     /// <summary>Length of the starship, along the longest axis </summary>
     [GraphQLName("length")]
     public float? GetLength(LengthUnit unit = LengthUnit.Meter) { return default; }
