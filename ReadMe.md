@@ -36,7 +36,7 @@ Create a .NET Standard class library project and add references to *NGraphQL*, *
   }
 ``` 
 
-We use the underscore suffix in type names to avoid name collisions with the underlying 'business' entities. This prefix will be automatically stripped by the engine in Schema definition. The XML comments will appear in the Schema document as GraphQL descriptions. The \[Null\] attribute marks the field as nullable; everything is non-nullable by default, except *Nullable\<T\>* types like *int?*. 
+We use the underscore suffix in type names to avoid name collisions with the underlying 'business' entities. It will be automatically stripped off by the engine in the final model/schema definition. The XML comments will appear in the Schema document as GraphQL descriptions. The \[Null\] attribute marks the field as nullable; everything is non-nullable by default, except *Nullable\<T\>* types like *int?*. 
 
 The top-level Query, Mutation types are defined as an interface:      
 ```csharp
