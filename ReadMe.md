@@ -126,7 +126,7 @@ public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 }
 ``` 
 
-We create HTTP server instance and setup the standard GraphQL HTTP endpoints. Launch the project - the GraphQL server will start and will respond on the configured endpoint. You can hit it with a client, or explore using GraphQL tools like Graphiql. 
+We create HTTP server instance and setup the standard GraphQL HTTP endpoints. Launch the project - the GraphQL server will start and will respond on the configured endpoint. You can send requests to it using *NGraphQL* client (next section), or explore it using GraphQL tools like Graphiql. 
 
 ### Client
 The *NGraphQL.Client* implements GraphQL HTTP client. To use it, install the package and add the reference to the namespace. Then create the client: 
