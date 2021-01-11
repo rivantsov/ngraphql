@@ -11,7 +11,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DocumentationFile>bin\release\netstandard2.0\TestApp.xml</DocumentationFile>
+    <DocumentationFile>bin\release\netstandard2.0\NGraphQL.TestApp.xml</DocumentationFile>
     <WarningsAsErrors></WarningsAsErrors>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <NoWarn>1701;1702;1591</NoWarn>
