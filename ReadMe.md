@@ -102,30 +102,30 @@ The first parameter is always the *fieldContext*, the second is the parent entit
 With GraphQL module defined, we can now create GraphQL server and setup Http endpoints. Create a new ASP.NET Core API project, add references to _NGraphQL_, NGraphQL.Server_, _NGraphQL.Server.AspNetCore_ packages, and to the project containing the GraphQL classes we just defined. Add the following code to the _Startup_ class: 
   
 ```csharp
-    private GraphQLHttpServer CreateGraphQLHttpServer() {
-      var app = new StarWarsApp(); // or ref to your biz app
-      var server = new GraphQLServer(app); 
-      server.RegisterModules(new StarWarsApiModule());
-      return new GraphQLHttpServer(server);
-    }
-    
-    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-    {
-      // ... skipped
+private GraphQLHttpServer CreateGraphQLHttpServer() {
+  var app = new StarWarsApp(); // or ref to your biz app
+  var server = new GraphQLServer(app); 
+  server.RegisterModules(new StarWarsApiModule());
+  return new GraphQLHttpServer(server);
+}
 
-      app.UseRouting();
-      var server = CreateGraphQLHttpServer(); 
-      app.UseEndpoints(endpoints => {
-        endpoints.MapPost("graphql", async context => await server.HandleGraphQLHttpRequestAsync(context));
-        endpoints.MapGet("graphql", async context => await server.HandleGraphQLHttpRequestAsync(context));
-        endpoints.MapGet("graphql/schema", async context => await server.HandleGraphQLHttpRequestAsync(context));
-     });
-    }
+public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+{
+  // ... skipped
+
+  app.UseRouting();
+  var server = CreateGraphQLHttpServer(); 
+  app.UseEndpoints(endpoints => {
+    endpoints.MapPost("graphql", async context => await server.HandleGraphQLHttpRequestAsync(context));
+    endpoints.MapGet("graphql", async context => await server.HandleGraphQLHttpRequestAsync(context));
+    endpoints.MapGet("graphql/schema", async context => await server.HandleGraphQLHttpRequestAsync(context));
+ });
+}
 ``` 
 
-We create HTTP server instance and setup the standard GraphQL HTTP endpoints. Launch the project - the GraphQL server will start.   
+We create HTTP server instance and setup the standard GraphQL HTTP endpoints. Launch the project - the GraphQL server will start and will respond on the configured endpoint. You can hit it with a client, or explore using GraphQL tools like Graphiql. 
 
-##Client
+## Client
 
 
 ## Examples
