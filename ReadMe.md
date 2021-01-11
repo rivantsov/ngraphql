@@ -118,14 +118,15 @@ public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
   app.UseEndpoints(endpoints => {
     endpoints.MapPost("graphql", async context => await server.HandleGraphQLHttpRequestAsync(context));
     endpoints.MapGet("graphql", async context => await server.HandleGraphQLHttpRequestAsync(context));
-    endpoints.MapGet("graphql/schema", async context => await server.HandleGraphQLHttpRequestAsync(context));
+    endpoints.MapGet("graphql/schema", 
+              async context => await server.HandleGraphQLHttpRequestAsync(context));
  });
 }
 ``` 
 
 We create HTTP server instance and setup the standard GraphQL HTTP endpoints. Launch the project - the GraphQL server will start and will respond on the configured endpoint. You can hit it with a client, or explore using GraphQL tools like Graphiql. 
 
-## Client
+### Client
 
 
 ## Examples
