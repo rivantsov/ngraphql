@@ -18,7 +18,7 @@ namespace NGraphQL.Tests.HttpTests {
     [TestMethod]
     public async Task TestBasicQueries() {
       TestEnv.LogTestMethodStart();
-      ResponseData resp; 
+      ServerResponse resp; 
 
       TestEnv.LogTestDescr("bug fix: return array of enum values");
       resp = await TestEnv.Client.PostAsync("query { kinds: getAllKinds }");
@@ -79,7 +79,7 @@ query ($objWithEnums: InputObjWithEnums) {
     public async Task TestVariables() {
       string query;
       TDict varsDict;
-      ResponseData resp;
+      ServerResponse resp;
 
       TestEnv.LogTestMethodStart();
 

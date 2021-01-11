@@ -77,7 +77,9 @@ namespace NGraphQL.Introspection {
   [Hidden]
   public class __Field: IntroObjectBase {
     public IList<__InputValue> Args = new List<__InputValue>();
-    public __Type Type; 
+    public __Type Type;
+    [Hidden]
+    public bool IsHidden; 
   }
 
   [Hidden]

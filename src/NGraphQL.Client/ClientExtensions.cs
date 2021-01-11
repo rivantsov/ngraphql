@@ -7,7 +7,7 @@ namespace NGraphQL.Client {
 
   public static class ClientExtensions {
 
-    public static void EnsureNoErrors(this ResponseData response) {
+    public static void EnsureNoErrors(this ServerResponse response) {
       if (response.Errors == null || response.Errors.Count == 0)
         return;
       var errText = response.GetErrorsAsText();
@@ -17,21 +17,21 @@ namespace NGraphQL.Client {
       throw new Exception(msg);
     }
 
-    public static string GetErrorsAsText(this ResponseData response) {
+    public static string GetErrorsAsText(this ServerResponse response) {
       if (response.Errors == null || response.Errors.Count == 0)
         return string.Empty;
       var text = string.Join(Environment.NewLine, response.Errors);
       return text;
     }
 
-    internal static JObject GetDataJObject(this ResponseData response) {
+    internal static JObject GetDataJObject(this ServerResponse response) {
       // read 'data' object as JObject 
       if (response.TopFields.TryGetValue("data", out var data))
         return data as JObject;
       return null;
     }
 
-    public static T GetTopField<T>(this ResponseData response, string name) {
+    public static T GetTopField<T>(this ServerResponse response, string name) {
       var dataJObj = response.GetDataJObject();
       if (dataJObj == null)
         throw new Exception("'data' element was not returned by the request. See errors in response.");

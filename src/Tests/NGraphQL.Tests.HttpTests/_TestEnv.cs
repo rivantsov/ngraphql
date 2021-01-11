@@ -58,17 +58,17 @@ Testing: {descr}
     }
 
     private static void Client_RequestCompleted(object sender, RequestCompletedEventArgs e) {
-      LogCompletedRequest(e.Data);
+      LogCompletedRequest(e.Response);
     }
 
-    public static void LogCompletedRequest(ResponseData response) {
+    public static void LogCompletedRequest(ServerResponse response) {
       string reqText;
-      var req = response.RequestData; 
+      var req = response.Request; 
       if (req.HttpMethod == "GET") {
         reqText = @$"GET, URL: {req.UrlQueryPartForGet} 
                 unescaped: {Uri.UnescapeDataString(req.UrlQueryPartForGet)}";
       } else 
-        reqText = "POST, payload: " + Environment.NewLine + response.RequestData.Body;
+        reqText = "POST, payload: " + Environment.NewLine + response.Request.Body;
       // for better readability, unescape \r\n
       reqText = reqText.Replace("\\r\\n", Environment.NewLine);
       var jsonResponse = JsonConvert.SerializeObject(response.TopFields, Formatting.Indented);

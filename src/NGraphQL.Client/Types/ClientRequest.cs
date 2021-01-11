@@ -5,8 +5,8 @@ using System.Threading;
 
 namespace NGraphQL.Client {
 
-  public class RequestData {
-    public GraphQLRequest Request;
+  public class ClientRequest {
+    public GraphQLRequest CoreRequest;
 
     public string HttpMethod;
     public string Body;
@@ -16,7 +16,7 @@ namespace NGraphQL.Client {
     public IDictionary<string, string> Headers;
     public HttpCompletionOption CompletionOption = HttpCompletionOption.ResponseContentRead;
 
-    public RequestData() { }
+    public ClientRequest() { }
   }
 
 }

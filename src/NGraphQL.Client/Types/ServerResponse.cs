@@ -8,8 +8,8 @@ using NGraphQL.Client.Utilities;
 
 namespace NGraphQL.Client {
 
-  public class ResponseData {
-    public readonly RequestData RequestData;
+  public class ServerResponse {
+    public readonly ClientRequest Request;
 
     public HttpStatusCode StatusCode { get; internal set; }
 
@@ -30,8 +30,8 @@ namespace NGraphQL.Client {
       }
     }  object _data;
 
-    public ResponseData(RequestData request) {
-      RequestData = request; 
+    public ServerResponse(ClientRequest request) {
+      Request = request; 
     }
 
     public T GetUnmappedFieldValue<T>(object parent, string name) {

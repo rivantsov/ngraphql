@@ -30,7 +30,7 @@ namespace NGraphQL.TestHttpServer {
       {
         app.UseDeveloperExceptionPage();
       }
-      app.UseHttpsRedirection();
+      //app.UseHttpsRedirection();
       app.UseRouting();
 
       // create server and configure GraphQL endpoints

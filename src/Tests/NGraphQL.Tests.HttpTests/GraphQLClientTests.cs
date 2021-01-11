@@ -20,7 +20,7 @@ namespace NGraphQL.Tests.HttpTests.Client {
     [TestMethod]
     public async Task TestGraphQLClient() {
       TestEnv.LogTestMethodStart();
-      ResponseData resp;
+      ServerResponse resp;
       string thingName;
       var query1 = "query ($id: Int) { getThing(id: $id) {name kind theFlags} }";
       var queryM = "query { things {name} }";
@@ -68,7 +68,7 @@ namespace NGraphQL.Tests.HttpTests.Client {
     [TestMethod]
     public async Task TestGraphQLClient_StrongTypes() {
       TestEnv.LogTestMethodStart();
-      ResponseData resp;
+      ServerResponse resp;
       string query;
       var vars = new TDict() { { "id", 3 } };
 
@@ -97,7 +97,7 @@ query ($id: Int) {
     [TestMethod]
     public async Task TestGraphQLClient_Introspection() {
       TestEnv.LogTestMethodStart();
-      ResponseData resp;
+      ServerResponse resp;
       string query;
        
       // Post requests

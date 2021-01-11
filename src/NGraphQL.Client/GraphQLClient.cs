@@ -42,20 +42,20 @@ namespace NGraphQL.Client {
 
     #endregion
 
-    public Task<ResponseData> PostAsync(string query, IDict variables = null, string operationName = null,
+    public Task<ServerResponse> PostAsync(string query, IDict variables = null, string operationName = null,
                                          CancellationToken cancellationToken = default) {
       var request = new GraphQLRequest() { Query = query, Variables = variables, OperationName = operationName };
-      var reqData = new RequestData() {
-        HttpMethod = "POST", Request = request, CancellationToken = cancellationToken
+      var reqData = new ClientRequest() {
+        HttpMethod = "POST", CoreRequest = request, CancellationToken = cancellationToken
       };
       return SendAsync(reqData);
     }
 
-    public Task<ResponseData> GetAsync(string query, IDict variables = null, string operationName = null,
+    public Task<ServerResponse> GetAsync(string query, IDict variables = null, string operationName = null,
                           CancellationToken cancellationToken = default) {
       var request = new GraphQLRequest() { Query = query, Variables = variables, OperationName = operationName };
-      var reqData = new RequestData() {
-        HttpMethod = "GET", Request = request, CancellationToken = cancellationToken
+      var reqData = new ClientRequest() {
+        HttpMethod = "GET", CoreRequest = request, CancellationToken = cancellationToken
       };
       return SendAsync(reqData);
     }
@@ -69,25 +69,25 @@ namespace NGraphQL.Client {
       return doc;
     }
 
-    public async Task<ResponseData> SendAsync(RequestData requestData) {
+    public async Task<ServerResponse> SendAsync(ClientRequest request) {
       var start = GetTimestamp();
-      var responseData = new ResponseData(requestData);
+      var response = new ServerResponse(request);
       try {
-        RequestStarting?.Invoke(this, new RequestStartingEventArgs(requestData));
-        await SendAsync(requestData, responseData);
-        responseData.DurationMs = GetTimeSince(start);
-        RequestCompleted?.Invoke(this, new RequestCompletedEventArgs(responseData));
+        RequestStarting?.Invoke(this, new RequestStartingEventArgs(request));
+        await SendAsync(request, response);
+        response.DurationMs = GetTimeSince(start);
+        RequestCompleted?.Invoke(this, new RequestCompletedEventArgs(response));
       } catch (Exception ex) {
-        responseData.Exception = ex;
-        RequestCompleted?.Invoke(this, new RequestCompletedEventArgs(responseData));
-        if (responseData.Exception != null) {
-          if (responseData.Exception == ex)
+        response.Exception = ex;
+        RequestCompleted?.Invoke(this, new RequestCompletedEventArgs(response));
+        if (response.Exception != null) {
+          if (response.Exception == ex)
             throw;
           else
-            throw responseData.Exception; //throw new exception
+            throw response.Exception; //throw new exception
         }
       }
-      return responseData;
+      return response;
     }
 
   }

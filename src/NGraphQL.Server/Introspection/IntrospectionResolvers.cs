@@ -28,7 +28,7 @@ namespace NGraphQL.Introspection {
 
     //[Field("fields", OnType = typeof(Type__)), Null]
     public IList<__Field> GetFields(IFieldContext context, __Type type_, bool includeDeprecated = true) {
-      return type_.Fields; 
+      return type_.Fields.Where(t => !t.IsHidden).ToList(); 
     }
 
     //[Field("enumValues", OnType = typeof(Type__)), Null]

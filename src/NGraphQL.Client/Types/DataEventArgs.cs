@@ -3,18 +3,18 @@
 namespace NGraphQL.Client {
 
   public class RequestStartingEventArgs : EventArgs {
-    public readonly RequestData Data;
+    public readonly ClientRequest Request;
 
-    public RequestStartingEventArgs(RequestData data) {
-      Data = data; 
+    public RequestStartingEventArgs(ClientRequest request) {
+      Request = request; 
     }
   }
 
   public class RequestCompletedEventArgs : EventArgs {
-    public readonly ResponseData Data;
+    public readonly ServerResponse Response;
 
-    public RequestCompletedEventArgs(ResponseData data) {
-      Data = data; 
+    public RequestCompletedEventArgs(ServerResponse response) {
+      Response = response; 
     }
   }
 

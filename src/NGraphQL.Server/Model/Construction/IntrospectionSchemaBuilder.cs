@@ -137,7 +137,8 @@ namespace NGraphQL.Model.Construction {
       var type_ = typeDef.Type_; 
       // build fields
       foreach(var fld in typeDef.Fields) {
-        var fld_ = new __Field() { Name = fld.Name, Description = fld.Description, Type = fld.TypeRef.Type_ };
+        var hidden = fld.Flags.IsSet(FieldFlags.Hidden); // ex: _typename should not be listed as field in intro queries
+        var fld_ = new __Field() { Name = fld.Name, Description = fld.Description, Type = fld.TypeRef.Type_, IsHidden = hidden };
         fld.Intro_ = fld_; 
         // convert args
         foreach(var inpV in fld.Args) {

@@ -11,7 +11,7 @@ using NGraphQL.Client.Serialization;
 namespace NGraphQL.Client {
   public partial class GraphQLClient {
 
-    private async Task SendAsync(RequestData request, ResponseData response) {
+    private async Task SendAsync(ClientRequest request, ServerResponse response) {
       var reqMessage = new HttpRequestMessage();
       switch (request.HttpMethod) {
 
@@ -40,7 +40,7 @@ namespace NGraphQL.Client {
       await ReadServerResponseAsync(response, respMessage);
     }
 
-    private async Task ReadServerResponseAsync(ResponseData response, HttpResponseMessage respMessage) {
+    private async Task ReadServerResponseAsync(ServerResponse response, HttpResponseMessage respMessage) {
       response.BodyJson = await respMessage.Content.ReadAsStringAsync();
       response.TopFields = JsonConvert.DeserializeObject<IDictionary<string, JToken>>(response.BodyJson);
       if (response.TopFields.TryGetValue("errors", out var errs) && errs != null) {
@@ -48,16 +48,16 @@ namespace NGraphQL.Client {
       }
     }
 
-    private HttpContent BuildPostMessageContent(RequestData requestData) {
-      var payloadDict = BuildPayload(requestData.Request);
-      requestData.Body = JsonConvert.SerializeObject(payloadDict);
-      var content = new StringContent(requestData.Body, Encoding.UTF8, MediaTypeJson);
+    private HttpContent BuildPostMessageContent(ClientRequest request) {
+      var payloadDict = BuildPayload(request.CoreRequest);
+      request.Body = JsonConvert.SerializeObject(payloadDict);
+      var content = new StringContent(request.Body, Encoding.UTF8, MediaTypeJson);
       return content;
     }
 
     // see https://graphql.org/learn/serving-over-http/#get-request
-    private string BuildGetMessageUrlQuery(RequestData requestData) {
-      var req = requestData.Request;
+    private string BuildGetMessageUrlQuery(ClientRequest request) {
+      var req = request.CoreRequest;
       var urlQry = "query=" + Uri.EscapeUriString(req.Query);
       if (!string.IsNullOrWhiteSpace(req.OperationName))
         urlQry += "&operationName=" + Uri.EscapeUriString(req.OperationName);
