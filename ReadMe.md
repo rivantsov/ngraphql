@@ -107,7 +107,7 @@ With GraphQL module defined, we can now create GraphQL server and setup HTTP end
 private GraphQLHttpServer CreateGraphQLHttpServer() {
   var app = new StarWarsApp(); // or ref to your biz app
   var server = new GraphQLServer(app); 
-  server.RegisterModules(new StarWarsApiModule());
+  server.RegisterModules(new StarWarsApiModule()); //this is the module we defined
   return new GraphQLHttpServer(server);
 }
 
@@ -145,9 +145,9 @@ Now you can send GraphQL queries and receive the data:
     Console.WriteLine($"Starship {sh.name}, length: {sh.length}");
 ``` 
 
-The *response.data* field is of *dynamic* data type, so we can browse the returned tree as tree of dynamic objects. This is convenient as we do not need strong types for the data returned by the server. 
+The *response.data* field is of *dynamic* data type, so we can browse the returned tree as a tree of dynamic objects. This is convenient as we do not need strong types for the data returned by the server. 
 
-However, you can share the type definitions from your model with the client, and then retrieve the returned object(s) as strong type: 
+However, you can share the type definitions from your model with the client, and then retrieve the returned object(s) as a type: 
 
 ```csharp
   var ships = response.GetTopField<Starship_[]>("starships");
@@ -162,8 +162,8 @@ You can use queries with variables:
         starship(id: $id) {id, name, length} 
        } ";
       var vars = new Dictionary<string, object>() { { "id", "3001" } };
-      resp = await client.PostAsync(query, vars);
-      var shipName = resp.data.starship.name; //should be X-Wing
+      var response = await client.PostAsync(query, vars);
+      var shipName = response.data.starship.name; //should be X-Wing
 ``` 
 
 ## Examples
