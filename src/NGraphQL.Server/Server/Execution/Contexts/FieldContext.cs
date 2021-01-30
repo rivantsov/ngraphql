@@ -99,10 +99,12 @@ namespace NGraphQL.Server.Execution {
           return scope;
 
         default: // rank > 0, array
-          var list = rawResult as IList;
-          var scopes = new object[list.Count];
-          for (int i = 0; i < list.Count; i++) {
-            scopes[i] = CreateObjectFieldResultScopes(list[i], rank - 1, path.Append(i));
+          var list = (IEnumerable) rawResult; 
+          var scopes = new List<object>();
+          var index = 0;
+          foreach(var item in list) {
+            var itemScope = CreateObjectFieldResultScopes(item, rank - 1, path.Append(index++));
+            scopes.Add(itemScope); 
           }
           return scopes;
       }

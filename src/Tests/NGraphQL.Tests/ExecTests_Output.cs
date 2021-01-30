@@ -44,7 +44,7 @@ query {
   res: getThingsList() { name }
 }";
       resp = await ExecuteAsync(query);
-      var objArr = resp.GetValue<object[]>("res");
+      var objArr = resp.GetValue<IList<object>>("res");
       Assert.IsNotNull(objArr);
 
       TestEnv.LogTestDescr(@" list of lists of object types.");
@@ -53,10 +53,10 @@ query {
   res: getThingsListRank2() { name kind }
 }";
       resp = await ExecuteAsync(query);
-      var objArr2 = resp.GetValue<object[]>("res");
-      Assert.AreEqual(2, objArr2.Length, "Expected array of 2 elems");
-      var childArr = objArr2[0] as object[];
-      Assert.AreEqual(2, childArr.Length, "Expected child array of 2 elems");
+      var objArr2 = resp.GetValue<IList<object>>("res");
+      Assert.AreEqual(2, objArr2.Count, "Expected array of 2 elems");
+      var childArr = objArr2[0] as IList<object>;
+      Assert.AreEqual(2, childArr.Count, "Expected child array of 2 elems");
     }
 
   } //class

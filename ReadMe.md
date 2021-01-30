@@ -57,7 +57,7 @@ Once you defined all types, interfaces,  unions etc, you register them as part o
     public StarWarsApiModule() {
       this.EnumTypes.AddRange(new Type[] { typeof(Episode), typeof(LengthUnit), typeof(Emojis) });
       this.ObjectTypes.AddRange(new Type[] 
-      { typeof(Human_), typeof(Droid_), typeof(Starship_), typeof(Review_) });
+              { typeof(Human_), typeof(Droid_), typeof(Starship_), typeof(Review_) });
       this.InterfaceTypes.Add(typeof(ICharacter_));
       this.UnionTypes.Add(typeof(SearchResult_));
       this.InputTypes.Add(typeof(ReviewInput_));

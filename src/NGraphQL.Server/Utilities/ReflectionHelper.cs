@@ -160,9 +160,7 @@ namespace NGraphQL.Utilities {
     }
 
     public static IList CreateTypedArray(this Type elemType, int length) {
-      return Array.CreateInstance(elemType, length);
+      return Array.CreateInstance(elemType, length); 
     }
-
-
   }
 }

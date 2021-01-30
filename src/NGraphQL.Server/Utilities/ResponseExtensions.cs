@@ -9,10 +9,9 @@ using NGraphQL.Server.Execution;
 
 namespace NGraphQL.Utilities {
 
-  public static class ClientDataHelper {
+  // Helper methods to retrieve values from Response data tree
+  public static class ResponseExtensions {
     
-    // Helper methods to retrieve values from Response data tree
-    //  
     public static T GetValue<T> (this GraphQLResponse resp, string path) {
       return resp.Data.GetValue<T>(path); 
     }
