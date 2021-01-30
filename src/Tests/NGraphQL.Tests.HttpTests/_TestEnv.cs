@@ -67,10 +67,11 @@ Testing: {descr}
       if (req.HttpMethod == "GET") {
         reqText = @$"GET, URL: {req.UrlQueryPartForGet} 
                 unescaped: {Uri.UnescapeDataString(req.UrlQueryPartForGet)}";
-      } else 
-        reqText = "POST, payload: " + Environment.NewLine + response.Request.Body;
-      // for better readability, unescape \r\n
-      reqText = reqText.Replace("\\r\\n", Environment.NewLine);
+      } else {
+        // for better readability, unescape \r\n; Json serializer escapes new-line symbols inside strings,
+        var bodyUnesc = req.Body.Replace("\\r\\n", Environment.NewLine);
+        reqText = "POST, payload: " + Environment.NewLine + bodyUnesc;
+      }
       var jsonResponse = JsonConvert.SerializeObject(response.TopFields, Formatting.Indented);
       var text = $@"
 Request: 

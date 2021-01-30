@@ -60,10 +60,14 @@ namespace NGraphQL.Server {
         Model.Errors.Add(ex.ToText());
       }
       if (Model.Errors.Count > 0) {
-        Trace.WriteLine("================= GraphQL Model Errors Detected =========================");
+        Trace.WriteLine(@"
+
+================= GraphQL Model Errors Detected =========================");
         var errText = string.Join(Environment.NewLine, Model.Errors);
         Trace.WriteLine(errText);
-        Trace.WriteLine("================= End GraphQL Model Errors ==============================");
+        Trace.WriteLine(@"================= End GraphQL Model Errors ==============================
+
+");
         throw new ServerStartupException(Model.Errors);
       }
     }
