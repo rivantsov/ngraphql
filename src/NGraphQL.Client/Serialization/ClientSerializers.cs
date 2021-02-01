@@ -10,7 +10,8 @@ namespace NGraphQL.Client.Serialization {
   internal static class ClientSerializers {
     // Deserializer with ExpandoObjectConverter for deserializing data into dynamic object
     internal static JsonSerializer DynamicObjectJsonSerializer;
-    // regular strong types serializer
+    // regular strong types serializer/deserializer
+    internal static JsonSerializerSettings TypedJsonSerializerSettings; 
     internal static JsonSerializer TypedJsonSerializer;
     // serializer for variables in URL (GET queries) - non-indented formatting
     internal static JsonSerializerSettings UrlJsonSettings;
@@ -23,7 +24,7 @@ namespace NGraphQL.Client.Serialization {
       dynStt.Converters.Add(new ExpandoObjectConverter());
       DynamicObjectJsonSerializer = JsonSerializer.Create(dynStt);
 
-      var typedStt = new JsonSerializerSettings();
+      var typedStt = TypedJsonSerializerSettings = new JsonSerializerSettings();
       typedStt.Formatting = Formatting.Indented;
       typedStt.ContractResolver = new DefaultContractResolver { NamingStrategy = new CamelCaseNamingStrategy() };
       typedStt.Converters.Add(enumConv);

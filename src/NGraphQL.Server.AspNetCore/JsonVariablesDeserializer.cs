@@ -94,7 +94,7 @@ namespace NGraphQL.Server.AspNetCore {
 
     private object ReadScalar(RequestContext context, Scalar scalar, object jsonValue, IList<object> path) {
       var value = UnwrapSimpleValue(context, jsonValue, path);
-      var res = scalar.ConvertInputValue(value);
+      var res = scalar.ConvertInputValue(context, value);
       return res; 
     }
 
@@ -127,31 +127,32 @@ namespace NGraphQL.Server.AspNetCore {
     }
 
     private object ReadEnum(RequestContext context, EnumTypeDef enumTypeDef, object jsonValue, IList<object> path) {
+      var handler = enumTypeDef.Handler;
       var src = path.FirstOrDefault()?.ToString();
       switch (jsonValue) {
         case JArray jArr:
-          if (enumTypeDef.IsFlagSet) {
+          if (handler.IsFlagSet) {
             var strArr = jArr.Select(v => v.ToString()).ToArray();
-            var enumV = enumTypeDef.FlagsValueFromOutputStrings(strArr);
+            var enumV = handler.ConvertStringListToFlagsEnumValue(strArr);
             return enumV;
           } else {
-            AddError(context, $"Enum {enumTypeDef.Name} is not flag set, array input is invalid; around '{src}'.", path);
-            return enumTypeDef.NoneValue;
+            AddError(context, $"Enum {handler.EnumName} is not flag set, array input is invalid; around '{src}'.", path);
+            return handler.NoneValue;
           }
 
         case JValue jv:
           if (jv.Value == null)
             return null;
-          var enumVs = enumTypeDef.EnumValueFromOutput(jv.Value.ToString());
+          var enumVs = handler.ConvertStringToEnumValue(jv.Value.ToString());
           return enumVs;
 
         case string sV:
-          var enumV1 = enumTypeDef.EnumValueFromOutput(sV);
+          var enumV1 = handler.ConvertStringToEnumValue(sV);
           return enumV1;
 
         default:
-          AddError(context, $"Invalid value for enum {enumTypeDef.Name}, around {src}.", path);
-          return enumTypeDef.NoneValue;
+          AddError(context, $"Invalid value for enum {handler.EnumName}, around {src}.", path);
+          return handler.NoneValue;
       } //switch
     }
     

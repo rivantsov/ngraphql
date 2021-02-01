@@ -176,7 +176,7 @@ namespace NGraphQL.Model.Construction {
 
     private void BuildEnumType(EnumTypeDef enumTypeDef) {
       var type_ = enumTypeDef.Type_; 
-      foreach(var enumV in enumTypeDef.EnumValues) {
+      foreach(var enumV in enumTypeDef.Handler.Values) {
         var enumV_ = new __EnumValue() {
           Name = enumV.Name, Description = enumV.Description,
         };

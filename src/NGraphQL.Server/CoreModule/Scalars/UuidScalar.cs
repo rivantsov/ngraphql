@@ -29,7 +29,7 @@ namespace NGraphQL.Core.Scalars {
       return "'" + g.ToString("D") + "'";
     }
 
-    public override object ConvertInputValue(object value) {
+    public override object ConvertInputValue(RequestContext context, object value) {
       switch (value) {
         case Guid g: return g;
         case string s:

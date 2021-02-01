@@ -97,16 +97,15 @@ namespace NGraphQL.Server.Parsing {
           }
         
         case EnumTypeDef etdef:
-          if(etdef.IsFlagSet && valueSource is ListValueSource)
+          var handler = etdef.Handler;
+          if(handler.IsFlagSet && valueSource is ListValueSource)
             return GetInputListEvaluator(inputDef, valueSource, resultTypeRef);
           if(valueSource is TokenValueSource tknValueSrc) { 
             if(tknValueSrc.TokenData.TermName != TermNames.Name)
               throw new InvalidInputException($"Invalid value '{tknValueSrc.TokenData.Text}', expected Enum value.", valueSource);
-            var vname = tknValueSrc.TokenData.Text;
-            var enumVal = etdef.EnumValues.FirstOrDefault(ev => ev.Name == vname);
-            if (enumVal == null)
-              throw new InvalidInputException($"Invalid value '{vname}' for enum '{etdef.ClrType.Name}'.", valueSource);
-            return CreateConstantInputValue(inputDef, tknValueSrc, resultTypeRef, enumVal.ClrValue);
+            var vText = tknValueSrc.TokenData.Text;
+            var enumVal = handler.ConvertStringToEnumValue(vText);
+            return CreateConstantInputValue(inputDef, tknValueSrc, resultTypeRef, enumVal);
           } else {
             throw new InvalidInputException($"Invalid input value, expected enum value.", valueSource); 
           }

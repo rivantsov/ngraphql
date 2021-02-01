@@ -50,7 +50,8 @@ namespace NGraphQL.Client {
 
     private HttpContent BuildPostMessageContent(ClientRequest request) {
       var payloadDict = BuildPayload(request.CoreRequest);
-      request.Body = JsonConvert.SerializeObject(payloadDict);
+      // use this settings object to ensure camel-case names in objects (varirable values)
+      request.Body = JsonConvert.SerializeObject(payloadDict, ClientSerializers.TypedJsonSerializerSettings);
       var content = new StringContent(request.Body, Encoding.UTF8, MediaTypeJson);
       return content;
     }

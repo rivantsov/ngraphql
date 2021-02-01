@@ -1,4 +1,5 @@
 ﻿using System;
+using NGraphQL.Server.Execution;
 
 namespace NGraphQL.Core.Scalars {
 
@@ -8,7 +9,7 @@ namespace NGraphQL.Core.Scalars {
       IsDefaultForClrType = false; 
     }
 
-    public override object ConvertInputValue(object value) {
+    public override object ConvertInputValue(RequestContext context, object value) {
       switch (value) {
         case string s: return s;
         default:

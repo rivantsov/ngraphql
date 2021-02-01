@@ -4,12 +4,11 @@ using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using NGraphQL.Client.Utilities;
+using NGraphQL.Internals;
 
 namespace NGraphQL.Client.Serialization {
 
   internal class JsonEnumConverter : JsonConverter {
-    EnumConverter _conv = EnumConverter.Instance;
 
     // We want to handle enum, enum? types. For arrays of enums, we do not want to interfere, the main serializer will handle 
     // array, and only come here for individual values.  
@@ -19,7 +18,7 @@ namespace NGraphQL.Client.Serialization {
       if (!objectType.IsValueType)
         return false; 
       // try lookup and register
-      var enumInfo = _conv.GetEnumInfo(objectType); 
+      var enumInfo = KnownEnumTypes.GetEnumHandler(objectType); 
       return enumInfo != null; 
     }
 
@@ -28,7 +27,8 @@ namespace NGraphQL.Client.Serialization {
       var nullable = ReflectionHelper.CheckNullable(ref enumType);
       if (!enumType.IsEnum)
         throw new Exception($"{nameof(JsonEnumConverter)}: unexpected conversion type {enumType}; expected enum.");
-      var enumInfo = _conv.GetEnumInfo(enumType);
+      var enumHandler = KnownEnumTypes.GetEnumHandler(enumType);
+      var enumInfo = KnownEnumTypes.GetEnumHandler(enumType);
       // check null
       if (reader.TokenType == JsonToken.Null) {
         if (!nullable)
@@ -40,19 +40,19 @@ namespace NGraphQL.Client.Serialization {
           case JArray jArr:
             if (jArr.Count == 0)
               return enumInfo.NoneValue;
-            var objArr = jArr.Select(v => (object) v.ToString()).ToArray();
-            var res = _conv.Convert(objArr, objectType);
+            var strings = jArr.Select(v => v.ToString()).ToArray();
+            var res = enumHandler.ConvertStringListToFlagsEnumValue(strings);
             reader.Skip();
             return res; 
           default:
-            throw new Exception($"{nameof(JsonEnumConverter)}: invalid input value for Flags enum type {objectType}, expected string array.");
+            throw new Exception($"{nameof(JsonEnumConverter)}: invalid input value for Flags enum type {enumType}, expected string array.");
         }
       } else {
         switch(tokenReader.CurrentToken) {
           case JValue jv:
             if (!(jv.Value is string s))
               throw new Exception($"{nameof(JsonEnumConverter)}: invalid input value for enum type {objectType}, expected string.");
-            var res = _conv.Convert(s, objectType);
+            var res = enumHandler.ConvertStringToEnumValue(s);
             return res;
           default:
             throw new Exception($"{nameof(JsonEnumConverter)}: invalid input value for enum type {objectType}, expected string.");
@@ -60,8 +60,23 @@ namespace NGraphQL.Client.Serialization {
       } //else
     }
 
+    // Used in serializing enums on the client
     public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer) {
-      throw new NotImplementedException(); //should never be called
-    }
+      if (value == null) {
+        writer.WriteNull();
+        return; 
+      }
+      var enumType = value.GetType();
+      if (!enumType.IsEnum)
+        throw new Exception($"{nameof(JsonEnumConverter)}: unexpected conversion type {enumType}; expected enum.");
+      var enumInfo = KnownEnumTypes.GetEnumHandler(enumType);
+      if (enumInfo.IsFlagSet) {
+        writer.WriteStartArray();
+        
+      } else {
+
+      }
+
+    }//method
   }
 }

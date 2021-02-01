@@ -38,7 +38,7 @@ namespace NGraphQL.Core.Scalars {
       return dt.ToString("s"); // sortable datetime format, ex: 2009-06-15T13:45:30
     }
 
-    public override object ConvertInputValue(object value) {
+    public override object ConvertInputValue(RequestContext context, object value) {
       switch (value) {
         case DateTime dt: return dt;
         case string s:

@@ -129,7 +129,7 @@ namespace NGraphQL.Model.Request {
         var value = eval.GetValue(context);
         values[i] = value; 
       }
-      var result = EnumTypeDef.CombineFlags(values);
+      var result = EnumTypeDef.ConvertFlagListToEnumValue(values);
       return result;
     }
 

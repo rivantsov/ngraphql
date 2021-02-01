@@ -21,7 +21,7 @@ namespace NGraphQL.Core.Scalars {
       throw new ScalarException($"Invalid value: '{tokenData.Text}' for boolean type.", tokenData);
     }
 
-    public override object ConvertInputValue(object value) {
+    public override object ConvertInputValue(RequestContext context, object value) { 
       switch(value) {
         case bool b: return b; 
         default:

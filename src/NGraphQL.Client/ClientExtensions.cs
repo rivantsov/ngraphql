@@ -1,7 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json.Linq;
 using NGraphQL.Client.Serialization;
-using NGraphQL.Client.Utilities;
+using NGraphQL.Internals;
 
 namespace NGraphQL.Client {
 

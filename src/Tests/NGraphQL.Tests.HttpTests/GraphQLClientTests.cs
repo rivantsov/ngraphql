@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NGraphQL.Client;
+using NGraphQL.Internals;
 using NGraphQL.Introspection;
 using NGraphQL.TestApp;
 

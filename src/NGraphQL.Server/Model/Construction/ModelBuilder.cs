@@ -7,6 +7,7 @@ using NGraphQL.CodeFirst;
 using NGraphQL.CodeFirst.Internals;
 using NGraphQL.Core;
 using NGraphQL.Core.Scalars;
+using NGraphQL.Internals;
 using NGraphQL.Introspection;
 using NGraphQL.Server;
 using NGraphQL.Utilities;
@@ -108,7 +109,7 @@ namespace NGraphQL.Model.Construction {
           
           case EnumTypeDef etd:
             loc = DirectiveLocation.Enum;
-            BuildEnumValues(etd);
+            // internal EnumHandler and enum values are already built in EnumTypeDef constructor
             break;
           
           case UnionTypeDef utd:
@@ -238,28 +239,6 @@ namespace NGraphQL.Model.Construction {
             AddError($"Union type {utDef.Name}: type {objType} is not GraphQL 'type'.");
         }
       } //foreach unionType
-    }
-
-    private void BuildEnumValues(EnumTypeDef enumTypeDef) {
-      // enum values are static public fields of enum type
-      var fields = enumTypeDef.ClrType.GetFields(BindingFlags.Public | BindingFlags.Static); 
-      foreach(var fld in fields) {
-        var attrs = GetAllAttributes(fld);
-        var ignoreAttr = attrs.Find<IgnoreAttribute>();
-        if(ignoreAttr != null)
-          continue; 
-        var fldValue = fld.GetValue(null);
-        var longValue = Convert.ToInt64(fldValue);
-        if(longValue == 0 && enumTypeDef.IsFlagSet)
-          continue; // ignore 'None=0' member in Flags enum
-        var enumV = new EnumValue() {
-          Name = GetEnumFieldGraphQLName(fld), ClrValue = fldValue, ClrName = fldValue.ToString(), LongValue = longValue, 
-          Attributes = attrs, 
-          Description = _docLoader.GetDocString(fld, enumTypeDef.ClrType)
-        };
-        enumV.Directives = BuildDirectivesFromAttributes(fld, DirectiveLocation.EnumValue, enumV);
-        enumTypeDef.EnumValues.Add(enumV);
-      }
     }
 
     private void BuildSchemaDef() {

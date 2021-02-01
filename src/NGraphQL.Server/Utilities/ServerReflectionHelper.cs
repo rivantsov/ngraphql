@@ -10,22 +10,7 @@ using NGraphQL.Model;
 
 namespace NGraphQL.Utilities {
 
-  public static class ReflectionHelper {
-
-    public static object GetDefaultValue(this Type type) {
-      if (type.IsValueType)
-        return Activator.CreateInstance(type);
-      else
-        return null; 
-    }
-
-    public static string GetTypeName(this Type type) {
-      if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>)) {
-        var t = type.GetGenericArguments()[0];
-        return t.Name + "?";
-      }
-      return type.Name; 
-    }
+  public static class ServerReflectionHelper {
 
     private static string[] _specialMethods = new string[] { "ToString", "Equals", "GetHashCode", "GetType" };
 
@@ -75,20 +60,6 @@ namespace NGraphQL.Utilities {
           fi.SetValue(obj, value);
           break;
       }
-    }
-
-    public static TAttr GetAttribute<TAttr>(this ICustomAttributeProvider provider) where TAttr : Attribute {
-      var attr = provider.GetAttributes<TAttr>().FirstOrDefault();
-      return attr;
-    }
-
-    public static IList<TAttr> GetAttributes<TAttr>(this ICustomAttributeProvider provider) where TAttr : Attribute {
-      var attrs = provider.GetCustomAttributes(inherit: true).Where(a => a is TAttr).OfType<TAttr>().ToList();
-      return attrs;
-    }
-
-    public static TAttr Find<TAttr>(this IList<Attribute> attrs) where TAttr : Attribute {
-      return attrs.FirstOrDefault(a => a.GetType() == typeof(TAttr)) as TAttr;
     }
 
 

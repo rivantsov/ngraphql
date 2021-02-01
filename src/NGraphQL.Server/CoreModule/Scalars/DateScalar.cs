@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using NGraphQL.Server.Execution;
 
 namespace NGraphQL.Core.Scalars {
 
@@ -17,7 +18,7 @@ namespace NGraphQL.Core.Scalars {
       return base.ToSchemaDocString(value);
     }
 
-    public override object ConvertInputValue(object value) {
+    public override object ConvertInputValue(RequestContext context, object value) {
       switch (value) {
         case DateTime dt: return dt.Date;
         case string s:

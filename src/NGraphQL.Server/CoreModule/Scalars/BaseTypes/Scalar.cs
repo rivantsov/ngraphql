@@ -1,5 +1,6 @@
 ﻿using System;
 using NGraphQL.CodeFirst;
+using NGraphQL.Model.Request;
 using NGraphQL.Server.Execution;
 
 namespace NGraphQL.Core.Scalars {
@@ -22,9 +23,9 @@ namespace NGraphQL.Core.Scalars {
     public virtual object ParseToken(RequestContext context, TokenData tokenData) {
       return tokenData.ParsedValue; // this is value converted by Irony parser
     }
-    // from deserialized Json variable value
-    public virtual object ConvertInputValue(object value) {
-      return value;
+
+    public virtual object ConvertInputValue(RequestContext context, object inpValue) {
+      return inpValue;
     }
 
     // used in Schema doc output

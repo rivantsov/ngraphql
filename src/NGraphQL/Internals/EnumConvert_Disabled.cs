@@ -1,39 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using NGraphQL.Client.Utilities;
+using NGraphQL.Internals;
 
-namespace NGraphQL.Client.Serialization {
-  internal class EnumConverter {
-    public static readonly EnumConverter Instance = new EnumConverter();  
+namespace NGraphQL.Internals {
 
-    Dictionary<Type, EnumInfo> _enumsInfoLookup = new Dictionary<Type, EnumInfo>();
+  public static class EnumConvert {
 
-    public EnumInfo GetEnumInfo(Type enumType) {
-      if (enumType.IsEnum && _enumsInfoLookup.TryGetValue(enumType, out var enumInfo))
-        return enumInfo;
-      if (!enumType.IsValueType)
-        return null;
-      var underType = Nullable.GetUnderlyingType(enumType);
-      if (underType != null) {
-        enumType = underType;
-        // lookup again
-        if (enumType.IsEnum && _enumsInfoLookup.TryGetValue(enumType, out enumInfo))
-          return enumInfo;
-      }
-      if (!enumType.IsEnum)
-        return null;
-      enumInfo = RegisterEnum(enumType);
-      return enumInfo;
+    /// <summary>Converts a dynamic value from GraphQL response serialized as dynamic data into enum value. </summary>
+    /// <typeparam name="T">Enum type.</typeparam>
+    /// <param name="dynamicValue">The value to convert.</param>
+    /// <returns></returns>
+    // Note: dynamic object do not allow externsion methods, so don't try putting 'this' before parameter
+    public static T ToEnum<T>(object dynamicValue) {
+      return EnumConverter.Instance.Convert<T>(dynamicValue);
     }
 
-    public T Convert<T>(object value) {
+
+    public static T Convert<T>(object value) {
       return (T)Convert(value, typeof(T));
     }
 
-    public object Convert(object value, Type type) {
+    public static object StringToEnum(EnumHandler enumInfo, object value) {
       var nullable = ReflectionHelper.CheckNullable(ref type);
-      var enumInfo = GetEnumInfo(type);
       if (enumInfo == null)
         throw new Exception($"Type {type} is not enum, expected enum type."); 
       switch(value) {
@@ -42,7 +31,7 @@ namespace NGraphQL.Client.Serialization {
             return default;
           throw new Exception($"Enum conversion error: failed to convert null to type {type}.");
         case string sValue:
-          if (enumInfo.ValueInfos.TryGetValue(sValue, out var enumValue))
+          if (enumInfo.ValuesLookup.TryGetValue(sValue, out var enumValue))
             return enumValue.Value;
           throw new Exception($"Enum conversion error: failed to convert string '{sValue}' to enum {type}.");
         case IList<object> vArr:
@@ -57,33 +46,19 @@ namespace NGraphQL.Client.Serialization {
       } //switch value
     }
 
-    public object ConvertFlagsEnum(EnumInfo enumInfo, IList<object> values) {
+    public object ConvertFlagsEnum(EnumHandler enumInfo, IList<object> values) {
       long result = 0;
       if (values.Count == 0)
         return enumInfo.NoneValue;
       foreach (var v in values) {
         if (!(v is string vStr))
           throw new Exception($"Enum conversion error: failed to convert array to Flags enum {enumInfo.Type}, invalid element {v} in input array.");
-        if(!enumInfo.ValueInfos.TryGetValue(vStr, out var vInfo))
+        if(!enumInfo.ValuesLookup.TryGetValue(vStr, out var vInfo))
           throw new Exception($"Enum conversion error: failed to convert array to Flags enum {enumInfo.Type}, {vStr} in input array does not match any enum members.");
         result |= vInfo.LongValue;
       }
       // convert long to enum;
       return Enum.ToObject(enumInfo.Type, result); 
-    }
-
-    // private methods 
-    object _lock = new object();
-
-    private EnumInfo RegisterEnum(Type enumType) {
-      var enumInfo = new EnumInfo (enumType);
-      lock (_lock) {
-        // copy-add-replace
-        var newDict = new Dictionary<Type, EnumInfo>(_enumsInfoLookup);
-        newDict[enumType] = enumInfo;
-        _enumsInfoLookup = newDict; 
-      }
-      return enumInfo; 
     }
 
   }

@@ -32,7 +32,7 @@ namespace NGraphQL.Core.Scalars {
       return dt.ToString("c"); 
     }
 
-    public override object ConvertInputValue(object value) {
+    public override object ConvertInputValue(RequestContext context, object value) {
       switch (value) {
         case TimeSpan ts: return ts;
         case string s:

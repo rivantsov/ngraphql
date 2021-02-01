@@ -24,7 +24,7 @@ namespace NGraphQL.Core.Scalars {
     }
 
     // value is garanteed to be not null
-    public override object ConvertInputValue(object value) {
+    public override object ConvertInputValue(RequestContext context, object value) {
       switch(value) {
         case null: return null;
         case int i: return i; 

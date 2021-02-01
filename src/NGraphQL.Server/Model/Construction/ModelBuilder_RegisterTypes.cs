@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using NGraphQL.CodeFirst;
 using NGraphQL.Core.Scalars;
+using NGraphQL.Internals;
 using NGraphQL.Introspection;
 using NGraphQL.Utilities;
 
@@ -114,8 +115,7 @@ namespace NGraphQL.Model.Construction {
             AddError($"Type {type} cannot be registered as Enum GraphQL type, must be enum; module: {moduleName}");
             return null; 
           }
-          var flagsAttr = type.GetAttribute<FlagsAttribute>();
-          return new EnumTypeDef(typeName, type, isFlagSet: flagsAttr != null, allAttrs, module);
+          return new EnumTypeDef(type, allAttrs, module);
 
         case TypeKind.Object:
           return new ObjectTypeDef(typeName, type, allAttrs, module);

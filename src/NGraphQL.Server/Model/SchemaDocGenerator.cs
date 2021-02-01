@@ -34,7 +34,7 @@ namespace NGraphQL.Model {
       foreach(var enumDef in enumDefs) {
         AppendDescr(enumDef.Description);
         _builder.AppendLine("enum " + enumDef.Name + " {");
-        foreach(var m in enumDef.EnumValues) {
+        foreach(var m in enumDef.Handler.Values) {
           AppendDescr(m.Description, true);
           _builder.AppendLine(Indent + m.Name);
         }

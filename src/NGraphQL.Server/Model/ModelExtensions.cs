@@ -59,7 +59,7 @@ namespace NGraphQL.Model {
     }
 
     public static bool IsEnumFlagArray(this TypeDefBase typeDef) {
-      return typeDef.Kind == TypeKind.Enum && (typeDef is EnumTypeDef etd && etd.IsFlagSet);
+      return typeDef.Kind == TypeKind.Enum && (typeDef is EnumTypeDef etd && etd.Handler.IsFlagSet);
     }
 
     public static IList<string> GetRequiredFields(this InputObjectTypeDef inputTypeDef) {
@@ -101,8 +101,6 @@ namespace NGraphQL.Model {
           break;
 
         case EnumTypeDef etd:
-          foreach (var ev in etd.EnumValues)
-            ApplyDeep(ev, action);
           break;
 
         case ScalarTypeDef _:

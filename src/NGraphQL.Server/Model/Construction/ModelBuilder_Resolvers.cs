@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using NGraphQL.CodeFirst;
+using NGraphQL.Internals;
 using NGraphQL.Introspection;
 using NGraphQL.Utilities;
 
@@ -183,7 +184,7 @@ namespace NGraphQL.Model.Construction {
       Func<object, object> taskResultReader = null;
       if (returnsTask) {
         retType = retType.GetGenericArguments()[0];
-        taskResultReader = ReflectionHelper.CompileTaskResultReader(retType);
+        taskResultReader = ServerReflectionHelper.CompileTaskResultReader(retType);
       }
       // validate return type
       if (!CheckReturnTypeCompatible(retType, field, resolverMethod))

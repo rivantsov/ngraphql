@@ -53,11 +53,11 @@ namespace NGraphQL.Server.Execution {
       switch(typeRef.TypeDef) {
         case ScalarTypeDef sctdef:
           // most common case - let Scalar take care of it
-          var convValue = sctdef.Scalar.ConvertInputValue(value);
+          var convValue = sctdef.Scalar.ConvertInputValue(context, value);
           return convValue;
 
         case EnumTypeDef etd:
-          return etd.ConvertInputValue(context, value, anchor);
+          return etd.ConvertInputEnumValue(context, value, anchor);
 
         case InputObjectTypeDef _:
           return value; 

@@ -4,7 +4,6 @@ using System.Dynamic;
 using System.Net;
 using Newtonsoft.Json.Linq;
 using NGraphQL.Client.Serialization;
-using NGraphQL.Client.Utilities;
 
 namespace NGraphQL.Client {
 

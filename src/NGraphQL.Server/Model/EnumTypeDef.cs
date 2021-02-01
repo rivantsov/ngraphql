@@ -9,37 +9,25 @@ using NGraphQL.Server.Execution;
 using NGraphQL.Model.Request;
 using NGraphQL.Utilities;
 using System.Collections;
+using NGraphQL.Internals;
 
 namespace NGraphQL.Model {
 
-  public class EnumValue : GraphQLModelObject {
-    public object ClrValue;
-    public string ClrName;
-    public IList<Attribute> Attributes;
-    public long LongValue;  // enum value converted to int
-  }
-
-
   public class EnumTypeDef : TypeDefBase {
-    public static string[] EmptyStringArray = new string[] { };
+    public EnumHandler Handler; 
 
-    public List<EnumValue> EnumValues = new List<EnumValue>();
-    public bool IsFlagSet;
-    public readonly object NoneValue;
-    public readonly Type EnumBaseType;
-    public Func<object, long> ToLong; 
-
-    public EnumTypeDef(string name, Type enumType, bool isFlagSet, IList<Attribute> attrs, GraphQLModule module) 
-          : base(name, TypeKind.Enum, enumType, attrs, module) {
-      base.ClrType = enumType;
-      IsFlagSet = isFlagSet; 
-      EnumBaseType = Enum.GetUnderlyingType(enumType);
-      NoneValue = Activator.CreateInstance(enumType);
-      ToLong = ReflectionHelper.GetEnumToLongConverter(enumType); 
+    public EnumTypeDef(Type type, IList<Attribute> attrs, GraphQLModule module) 
+          : base(type.Name, TypeKind.Enum, type, attrs, module) {
+      Handler = new EnumHandler(type);
+      base.Name = Handler.EnumName;      
     }
 
     public override object ToOutput(FieldContext context, object value) {
       return ToOutputRec(context, context.FieldDef.TypeRef, value); 
+    }
+
+    public override string ToSchemaDocString(object value) {
+      return Handler.ConvertToSchemaDocString(value); 
     }
 
     // Recursive method, for high-rank arrays
@@ -48,11 +36,11 @@ namespace NGraphQL.Model {
         return null;
       if (typeRef.Kind == TypeKind.NonNull)
         typeRef = typeRef.Inner;
-      if (IsFlagSet && typeRef.Rank == 1)
-        return FlagsEnumValueToOutput(value);
+      if (Handler.IsFlagSet && typeRef.Rank == 1)
+        return Handler.ConvertFlagsEnumValueToStringList(value);
       if (typeRef.IsList)
         return ArrayToOutputRec(context, typeRef, value);
-      return EnumValueToOutput(value);
+      return Handler.ConvertEnumValueToOutputString(value);
     }
 
     private object ArrayToOutputRec(FieldContext context, TypeRef typeRef, object value) {
@@ -66,85 +54,28 @@ namespace NGraphQL.Model {
       return result; 
     }
 
-    public object ConvertInputValue(RequestContext context, object inpValue, RequestObjectBase anchor) {
+    public object ConvertInputEnumValue(RequestContext context, object inpValue, RequestObjectBase anchor) {
       if (inpValue == null)
         return null;
-      if (IsFlagSet) {
+      if (Handler.IsFlagSet) {
         if (inpValue is string s)
           inpValue = new string[] { s };
         if (inpValue is IList<string> strings)
-          return FlagsValueFromOutputStrings(strings);
-        throw new InvalidInputException($"Input value '{inpValue}' cannot be converted to type '{this.Name}'; expected list of strings.",
-          anchor);
+          return Handler.ConvertStringListToFlagsEnumValue(strings);
+        throw new InvalidInputException(
+          $"Input value '{inpValue}' cannot be converted to type '{this.Name}'; expected list of strings.", anchor);
       } else {
         // not input flags
-        if (!(inpValue is string))
+        if (!(inpValue is string stringValue))
           throw new InvalidInputException($"Input value '{inpValue}' cannot be converted to type '{this.Name}'; expected string", anchor);
-        return this.EnumValueFromOutput((string)inpValue);
+        return Handler.ConvertStringToEnumValue(stringValue);
       } //else 
     }
 
-    public object FlagsValueFromOutputStrings(IList<string> strings) {
-      if(strings.Count == 0)
-        return NoneValue;
-      long result = 0; 
-      foreach(var s in strings) {
-        var enumVal = EnumValues.FirstOrDefault(ev => ev.Name == s);
-        if(enumVal == null)
-          throw new Exception($"Invalid value {s} for enum type {this.Name}");
-        result |= enumVal.LongValue; 
-      }
-      // convert long to enum;
-      var v = Enum.ToObject(this.ClrType, result); 
-      return v; 
-    }
-
-    public object EnumValueFromOutput(string outString) {
-      var enumV = this.EnumValues.FirstOrDefault(ev => ev.Name == outString);
-      return enumV?.ClrValue;
-    }
-
-    public override string ToSchemaDocString(object value) {
-      if(value == null)
-        return null;
-      if(IsFlagSet) {
-        var arr = FlagsEnumValueToOutput(value) as IList<string>;
-        var strValues = string.Join(", ", arr);
-        return $"[{strValues}]";
-      } else
-        return EnumValueToOutput(value).ToString();
-    }
-
-    public object EnumValueToOutput(object value) {
-      var longV = Convert.ToInt64(value);
-      try {
-        // TODO: implement smth more efficient, probably dict or array
-        var member = this.EnumValues.FirstOrDefault(m => m.LongValue == longV);
-        return member.Name;
-      } catch(Exception) {
-        return value.ToString();
-      }
-    }
-
-    private object FlagsEnumValueToOutput(object value) {
-      // flags enums are represented as arrays of enum values (as strings)
-      if(value == null)
-        return null;
-      var longV = ToLong(value);
-      if (longV == 0)
-        return EmptyStringArray;
-      var resultList = new List<string>(); 
-      foreach(var enumV in this.EnumValues ) {
-        if((longV & enumV.LongValue) != 0)
-          resultList.Add(enumV.Name);
-      }
-      return resultList.ToArray(); 
-    }
-
-    public object CombineFlags(IList<object> flags) {
+    public object ConvertFlagListToEnumValue(IList<object> flags) {
       long result = 0;
       for(int i = 0; i < flags.Count; i++)
-        result |= ToLong(flags[i]);
+        result |= Handler.ConvertToLong(flags[i]);
       return Enum.ToObject(this.ClrType, result); 
     }
 

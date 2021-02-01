@@ -22,7 +22,7 @@ namespace NGraphQL.Core.Scalars {
       return null;
     }
 
-    public override object ConvertInputValue(object value) {
+    public override object ConvertInputValue(RequestContext context, object value) {
       switch (value) {
         case null: return null;
         case int i: return (long) i;
