@@ -44,12 +44,10 @@ namespace NGraphQL.Core.Scalars {
         case string s:
           if (DateTime.TryParse(s, out var d))
             return d;
-          throw new Exception($"Invalid DateTime value: '{value}'"); 
-        default:
-          throw new Exception($"Invalid DateTime value: '{value}'");
+          break;
       }
+      throw new Exception($"Invalid DateTime value: '{value}'");
     }
 
-  }
-
+  } //class
 }

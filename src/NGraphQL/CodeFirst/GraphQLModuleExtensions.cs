@@ -35,5 +35,11 @@ namespace NGraphQL.CodeFirst {
       });
     }
 
+    // To allow add multiple types to module's types lists
+    public static void Add(this IList<Type> list, params Type[] types) {
+      foreach (var type in types)
+        list.Add(type);
+    }
+
   }
 }

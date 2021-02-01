@@ -69,12 +69,16 @@ namespace NGraphQL.Client.Serialization {
       var enumType = value.GetType();
       if (!enumType.IsEnum)
         throw new Exception($"{nameof(JsonEnumConverter)}: unexpected conversion type {enumType}; expected enum.");
-      var enumInfo = KnownEnumTypes.GetEnumHandler(enumType);
-      if (enumInfo.IsFlagSet) {
+      var handler = KnownEnumTypes.GetEnumHandler(enumType);
+      if (handler.IsFlagSet) {
         writer.WriteStartArray();
-        
+        var strings = handler.ConvertFlagsEnumValueToOutputStringList(value);
+        foreach (var sv in strings)
+          writer.WriteValue(sv);
+        writer.WriteEndArray(); 
       } else {
-
+        var sv = handler.ConvertEnumValueToOutputString(value);
+        writer.WriteValue(sv); 
       }
 
     }//method
