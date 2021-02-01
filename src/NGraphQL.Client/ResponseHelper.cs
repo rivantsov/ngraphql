@@ -1,11 +1,14 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json.Linq;
 using NGraphQL.Client.Serialization;
 using NGraphQL.Internals;
 
 namespace NGraphQL.Client {
 
-  public static class ClientExtensions {
+  public static class ResponseHelper {
 
     public static void EnsureNoErrors(this ServerResponse response) {
       if (response.Errors == null || response.Errors.Count == 0)
@@ -51,7 +54,18 @@ namespace NGraphQL.Client {
       return res;
     }
 
-
+    public static TEnum ToEnum<TEnum>(object value) {
+      var enumType = typeof(TEnum);
+      if (!enumType.IsEnum)
+        throw new Exception($"Invalid type argument '{enumType}', expected enum.");
+      var handler = KnownEnumTypes.GetEnumHandler(enumType);
+      if (handler.IsFlagSet) {
+        if (!(value is IList<string> stringList))
+          stringList = ((IList)value).OfType<string>().ToList(); 
+        return (TEnum) handler.ConvertStringListToFlagsEnumValue(stringList);
+      } else
+        return (TEnum) handler.ConvertStringToEnumValue((string)value);
+    }
 
   }
 }

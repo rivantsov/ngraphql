@@ -70,7 +70,7 @@ namespace NGraphQL.Internals {
       if (value == null)
         return null;
       if (IsFlagSet) {
-        var arr = ConvertFlagsEnumValueToStringList(value) as IList<string>;
+        var arr = ConvertFlagsEnumValueToOutputStringList(value) as IList<string>;
         var strValues = string.Join(", ", arr);
         return $"[{strValues}]";
       } else
@@ -99,7 +99,7 @@ namespace NGraphQL.Internals {
       return v;
     }
 
-    public IList<string> ConvertFlagsEnumValueToStringList(object value) {
+    public IList<string> ConvertFlagsEnumValueToOutputStringList(object value) {
       // flags enums are represented as arrays of enum values (as strings)
       if (value == null)
         return null;

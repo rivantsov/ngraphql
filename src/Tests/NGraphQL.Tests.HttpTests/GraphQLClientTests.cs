@@ -35,9 +35,9 @@ namespace NGraphQL.Tests.HttpTests.Client {
       var thing = resp.data.getThing;
       thingName = thing.name;
       Assert.AreEqual("Name3", thingName);
-      var thingKind = EnumConvert.ToEnum<ThingKind>(thing.kind);
+      var thingKind = ResponseHelper.ToEnum<ThingKind>(thing.kind);
       Assert.AreEqual(ThingKind.KindThree, thingKind, "Invalid kind field value.");
-      var flags = EnumConvert.ToEnum<TheFlags>(thing.theFlags);
+      var flags = ResponseHelper.ToEnum<TheFlags>(thing.theFlags);
       Assert.AreEqual(TheFlags.FlagOne | TheFlags.FlagTwo, flags, "Invalid flags field value");
 
       // list of things 

@@ -37,7 +37,7 @@ namespace NGraphQL.Model {
       if (typeRef.Kind == TypeKind.NonNull)
         typeRef = typeRef.Inner;
       if (Handler.IsFlagSet && typeRef.Rank == 1)
-        return Handler.ConvertFlagsEnumValueToStringList(value);
+        return Handler.ConvertFlagsEnumValueToOutputStringList(value);
       if (typeRef.IsList)
         return ArrayToOutputRec(context, typeRef, value);
       return Handler.ConvertEnumValueToOutputString(value);
