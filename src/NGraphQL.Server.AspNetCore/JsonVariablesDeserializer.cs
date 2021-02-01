@@ -94,6 +94,8 @@ namespace NGraphQL.Server.AspNetCore {
 
     private object ReadScalar(RequestContext context, Scalar scalar, object jsonValue, IList<object> path) {
       var value = UnwrapSimpleValue(context, jsonValue, path);
+      if (value == null)
+        return null; 
       var res = scalar.ConvertInputValue(context, value);
       return res; 
     }
@@ -118,8 +120,7 @@ namespace NGraphQL.Server.AspNetCore {
             case JTokenType.Boolean:
               return jtoken.Value<bool>();
             default:
-              AddError(context, "Expected primitive value.", path);
-              return null;
+              return jtoken.Value<string>(); //let Scalar parse it
           } // switch jtoken.type
         default:
           return value;
