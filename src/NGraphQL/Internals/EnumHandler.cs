@@ -17,6 +17,7 @@ namespace NGraphQL.Internals {
     public __EnumValue Intro_; 
   }
 
+  /// <summary>Handles conversions of enum values: to/from CLR enums vs stings and string arrays in GraphQL. </summary>
   public class EnumHandler {
     public static string[] EmptyStringArray = new string[] { };
 
@@ -64,7 +65,7 @@ namespace NGraphQL.Internals {
       }
     }
 
-    #region Value converters ============================================================
+    #region Value conversion methods ============================================================
 
     public string ConvertToSchemaDocString(object value) {
       if (value == null)
