@@ -123,7 +123,7 @@ namespace NGraphQL.Server.Execution {
                             .Select(s => (TEntity)s.Entity).ToList();
     }
 
-    public void SetBatchedResults<TEntity, TResult>(IDictionary<TEntity, TResult> results) {
+    public void SetBatchedResults<TEntity, TResult>(IDictionary<TEntity, TResult> results, TResult valueForMissingEntry) {
       // TODO: add validation of types: TEntity -> typeof(Entity), TResult==fieldType
       /*
       var returnsObj = this.Flags.IsSet(FieldFlags.ReturnsComplexType);
@@ -135,10 +135,10 @@ namespace NGraphQL.Server.Execution {
       }
       */
       foreach (var scope in this.AllParentScopes) {
-        if (results.TryGetValue((TEntity)scope.Entity, out var result)) {
-          var outValue = this.ConvertToOuputValue(result);
-          scope.SetValue(this.FieldIndex, outValue);
-        }
+        if (!results.TryGetValue((TEntity)scope.Entity, out var result))
+          result = valueForMissingEntry;
+        var outValue = this.ConvertToOuputValue(result);
+        scope.SetValue(this.FieldIndex, outValue);
       }
       this.BatchResultWasSet = true;
     }

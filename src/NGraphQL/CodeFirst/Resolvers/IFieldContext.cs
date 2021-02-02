@@ -16,7 +16,7 @@ namespace NGraphQL.CodeFirst {
     
     // Batching (aka DataLoader functionality)
     IList<TEntity> GetAllParentEntities<TEntity>();
-    void SetBatchedResults<TEntity, TResult>(IDictionary<TEntity, TResult> results);
+    void SetBatchedResults<TEntity, TResult>(IDictionary<TEntity, TResult> results, TResult valueForMissingEntry);
   }
 
 }
