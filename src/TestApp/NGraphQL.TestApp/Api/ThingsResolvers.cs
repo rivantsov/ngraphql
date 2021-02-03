@@ -85,7 +85,7 @@ namespace NGraphQL.TestApp {
     public OtherThing GetMainOtherThing(IFieldContext context, Thing parent) {
       var allParents = context.GetAllParentEntities<Thing>();
       var batchedResults = allParents.ToDictionary(p => p, p => p.MainOtherThing);
-      context.SetBatchedResults(batchedResults);
+      context.SetBatchedResults(batchedResults, null);
       return parent.MainOtherThing;
     }
 
@@ -93,7 +93,7 @@ namespace NGraphQL.TestApp {
     public IList<OtherThing> GetOtherThings(IFieldContext context, Thing parent) {
       var allParents = context.GetAllParentEntities<Thing>();
       var batchedResults = allParents.ToDictionary(p => p, p => p.OtherThings);
-      context.SetBatchedResults(batchedResults);
+      context.SetBatchedResults(batchedResults, new List<OtherThing>());
       return batchedResults[parent];
     }
 
