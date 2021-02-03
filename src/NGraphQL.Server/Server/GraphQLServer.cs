@@ -96,6 +96,8 @@ namespace NGraphQL.Server {
         await handler.ExecuteAsync();
       } catch (AbortRequestException) {
         return; // error already added to response
+      } catch (InvalidInputException inpEx) {
+        context.AddInputError(inpEx);
       } catch (Exception ex) {
         context.AddError(ex); 
       } finally {

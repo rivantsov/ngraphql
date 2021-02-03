@@ -123,7 +123,7 @@ namespace NGraphQL.Server.Execution {
                             .Select(s => (TEntity)s.Entity).ToList();
     }
 
-    public void SetBatchedResults<TEntity, TResult>(IDictionary<TEntity, TResult> results, TResult valueForMissingEntry) {
+    public void SetBatchedResults<TEntity, TResult>(IDictionary<TEntity, TResult> results, TResult valueForMissingKeys) {
       // TODO: add validation of types: TEntity -> typeof(Entity), TResult==fieldType
       /*
       var returnsObj = this.Flags.IsSet(FieldFlags.ReturnsComplexType);
@@ -136,7 +136,7 @@ namespace NGraphQL.Server.Execution {
       */
       foreach (var scope in this.AllParentScopes) {
         if (!results.TryGetValue((TEntity)scope.Entity, out var result))
-          result = valueForMissingEntry;
+          result = valueForMissingKeys;
         var outValue = this.ConvertToOuputValue(result);
         scope.SetValue(this.FieldIndex, outValue);
       }

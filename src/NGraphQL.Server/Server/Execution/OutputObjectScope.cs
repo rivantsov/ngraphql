@@ -64,6 +64,8 @@ namespace NGraphQL.Server.Execution {
 
     // method used by serializer
     public IEnumerator<KeyValuePair<string, object>> GetEnumerator() {
+      if (Fields == null)
+        yield break; 
       for(int i = 0; i < Fields.Count; i++) {
         if (_valuesMask.GetValue(i))
           yield return new KeyValuePair<string, object>(Fields[i].Field.Key, _values[i]);
