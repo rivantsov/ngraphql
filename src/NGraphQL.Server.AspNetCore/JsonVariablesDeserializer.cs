@@ -43,8 +43,8 @@ namespace NGraphQL.Server.AspNetCore {
 
         case TypeKind.NonNull:
           var result = ReadValue(context, typeRef.Inner, jsonValue, path);
-          if (result == null)
-            AddError(context, $"Null value not allowed.", path);
+          //if (result == null)  // - it will be reported later
+          //   AddError(context, $"Null value not allowed.", path);
           return result; 
 
         case TypeKind.List:
@@ -166,37 +166,33 @@ namespace NGraphQL.Server.AspNetCore {
       var missingFldNamess = inputTypeDef.GetRequiredFields();
       var inputObj = Activator.CreateInstance(clrType);
       foreach (var prop in jObj.Properties()) {
-        path.Add(prop.Name); 
+        var newPath = new List<object>(path);
+        newPath.Add(prop.Name); 
         var fldDef = inputTypeDef.Fields.FirstOrDefault(f => f.Name == prop.Name);
         if (fldDef == null) {
-          AddError(context, $"Field {prop.Name} not defined on input object {inputTypeDef.Name}.", path);
+          AddError(context, $"Field {prop.Name} not defined on input object {inputTypeDef.Name}.", newPath);
           continue;
         }
         if (missingFldNamess.Contains(prop.Name))
           missingFldNamess.Remove(prop.Name); 
         
-        var value = ReadValue(context, fldDef.TypeRef, prop.Value, path);
+        var value = ReadValue(context, fldDef.TypeRef, prop.Value, newPath);
         if (value == null && fldDef.TypeRef.IsNotNull) {
-          AddError(context, $"Field {prop.Name} on input object {inputTypeDef.Name} may not be null.", path);
+          AddError(context, $"Field {prop.Name} on input object {inputTypeDef.Name} may not be null.", newPath);
           continue; 
         }
         fldDef.InputObjectClrMember.SetMember(inputObj, value);
-        path.RemoveAt(path.Count - 1);
       }
       // check that all required fields are provided
       if (missingFldNamess.Count > 0) {
         var missingStr = string.Join(", ", missingFldNamess);
         AddError(context, $"Input object {inputTypeDef.Name}: missing required fields: {missingStr}", path); 
       }
-
       return inputObj; 
     }
 
     private void AddError(RequestContext context, string message, IList<object> path) {
-      var err = new GraphQLError() {
-        Message = "Variables: " + message,
-        Path = path
-      };
+      var err = new GraphQLError("Variables: " + message, path);
       context.AddError(err);
     }
   }
