@@ -140,9 +140,9 @@ namespace NGraphQL.Server.Parsing {
         if (parsedInputObj.Fields.TryGetValue(fldDef.Name, out var inpValue))
           fldEval = GetInputValueEvaluator(fldDef, inpValue, fldDef.TypeRef);
         else if (fldDef.HasDefaultValue)
-          fldEval = CreateConstantInputValue(fldDef, valueSource, typeRef, fldDef.DefaultValue);
+          fldEval = CreateConstantInputValue(fldDef, valueSource, fldDef.TypeRef, fldDef.DefaultValue);
         else if (!fldDef.TypeRef.IsNotNull)
-          fldEval = CreateConstantInputValue(fldDef, valueSource, typeRef, null);
+          fldEval = CreateConstantInputValue(fldDef, valueSource, fldDef.TypeRef, null);
         else {
           throw new InvalidInputException($"Missing value for field '{fldDef.Name}'.", valueSource);
         }

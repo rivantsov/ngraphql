@@ -164,6 +164,9 @@ namespace NGraphQL.Model.Construction {
         if (prmTypeRef.IsList && !prmTypeRef.TypeDef.IsEnumFlagArray())
           VerifyListParameterType(prm.ParameterType, method, prm.Name);
         var dftValue = prm.DefaultValue == DBNull.Value ? null : prm.DefaultValue;
+        // special case: if default value is null, it is nullable
+        if (prm.HasDefaultValue && dftValue == null && prmTypeRef.Kind == TypeKind.NonNull)
+          prmTypeRef = prmTypeRef.Inner; // nullable
         var argDef = new InputValueDef() {
           Name = GetGraphQLName(prm), TypeRef = prmTypeRef, Attributes = attrs,
           ParamType = prm.ParameterType, HasDefaultValue = prm.HasDefaultValue, DefaultValue = dftValue
