@@ -10,6 +10,8 @@ namespace NGraphQL.TestApp {
     [Resolver(nameof(ThingsResolvers.GetThings))]
     List<Thing_> Things { get; }
 
+    /// <summary>Returns the Thing specified by Id.</summary>
+    /// <param name="id">Thing id.</param>
     Thing_ GetThing(int id);
 
     int WaitForPositiveValueAsync();
