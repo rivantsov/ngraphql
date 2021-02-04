@@ -7,7 +7,7 @@ using System.Text;
 using NGraphQL.CodeFirst;
 using NGraphQL.Introspection;
 
-namespace NGraphQL.Internals {
+namespace NGraphQL.Model {
 
   public class EnumValueInfo {
     public object Value;

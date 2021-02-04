@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Text;
 
 using NGraphQL.CodeFirst;
-using NGraphQL.CodeFirst.Internals;
 using NGraphQL.Utilities;
 
 namespace NGraphQL.Model.Construction {

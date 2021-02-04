@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using NGraphQL.Internals;
+using NGraphQL.Model;
 
 namespace NGraphQL.Client.Serialization {
   public static class KnownEnumTypes {

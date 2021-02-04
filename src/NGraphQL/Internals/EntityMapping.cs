@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Text;
+using NGraphQL.CodeFirst;
 
-namespace NGraphQL.CodeFirst.Internals {
+namespace NGraphQL.Model {
 
   public class EntityMapping {
     public Type GraphQLType;

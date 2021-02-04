@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
-using NGraphQL.CodeFirst.Internals;
+using NGraphQL.Model;
 using NGraphQL.Core;
 using NGraphQL.Introspection;
 

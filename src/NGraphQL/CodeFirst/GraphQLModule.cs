@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using NGraphQL.Introspection;
-using NGraphQL.CodeFirst.Internals;
 using NGraphQL.Core;
+using NGraphQL.Model;
 
 namespace NGraphQL.CodeFirst {
 

@@ -6,7 +6,7 @@ using System.Text;
 
 using NGraphQL.CodeFirst;
 using NGraphQL.Core;
-using NGraphQL.Internals;
+using NGraphQL.Model;
 using NGraphQL.Introspection;
 using NGraphQL.Utilities;
 

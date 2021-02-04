@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using NGraphQL.Internals;
+using NGraphQL.Model;
 
 namespace NGraphQL.Client.Serialization {
 

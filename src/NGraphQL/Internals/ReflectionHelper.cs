@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace NGraphQL.Internals {
+namespace NGraphQL.Model {
   public static class ReflectionHelper {
 
     public static object GetDefaultValue(this Type type) {

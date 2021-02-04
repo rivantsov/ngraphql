@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using NGraphQL.CodeFirst;
-using NGraphQL.Internals;
+using NGraphQL.Model;
 using NGraphQL.Introspection;
 using NGraphQL.Utilities;
 

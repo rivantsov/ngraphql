@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace NGraphQL.CodeFirst.Internals {
+namespace NGraphQL.Model {
 
   public class ModelAdjustment {
     public Type Type; 

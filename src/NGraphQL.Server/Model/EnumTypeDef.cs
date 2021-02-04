@@ -9,7 +9,7 @@ using NGraphQL.Server.Execution;
 using NGraphQL.Model.Request;
 using NGraphQL.Utilities;
 using System.Collections;
-using NGraphQL.Internals;
+using NGraphQL.Model;
 
 namespace NGraphQL.Model {
 
