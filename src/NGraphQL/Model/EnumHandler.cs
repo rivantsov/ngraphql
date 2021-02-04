@@ -32,7 +32,7 @@ namespace NGraphQL.Model {
     public Func<object, long> ConvertToLong;
     public object NoneValue;
 
-    public EnumHandler(Type enumType) {
+    public EnumHandler(Type enumType, IList<ModelAdjustment> adjustments = null) {
       Type = enumType;
       UnderlyingType = Enum.GetUnderlyingType(enumType);
       var nameAttr = Type.GetAttribute<GraphQLNameAttribute>();
@@ -47,22 +47,36 @@ namespace NGraphQL.Model {
       var fields = enumType.GetFields(BindingFlags.Static | BindingFlags.Public);
       for (int i = 0; i < fields.Length; i++) {
         var fld = fields[i];
-        if (fld.HasAttribute<IgnoreAttribute>())
+        if (fld.HasAttribute<IgnoreAttribute>() || HasAttribute<IgnoreAttribute>(fld, adjustments))
+          continue;
+        var value = values.GetValue(i);
+        var fldLongValue = ConvertToLong(value);
+        if (IsFlagSet && fldLongValue == 0) //Flags enum values with 0 value (like NONE) are ignored.
           continue;
         nameAttr = fld.GetAttribute<GraphQLNameAttribute>();
         var name = nameAttr?.Name ?? Utility.ToUnderscoreUpperCase(fld.Name);
         descAttr = fld.GetAttribute<DescriptionAttribute>();
         string descr = descAttr?.Description;
-        var value = values.GetValue(i);
         var vInfo = new EnumValueInfo() {
           Value = value,
           Name = name,
           Description = descr,
-          LongValue = ConvertToLong(value)
+          LongValue = fldLongValue
         };
         Values.Add(vInfo); 
         ValuesLookup.Add(vInfo.Name, vInfo);
       }
+    }
+
+    private bool ShouldIgnore(FieldInfo field, IList<ModelAdjustment> adjustments = null) {
+      return HasAttribute<IgnoreAttribute>(field, adjustments);
+    }
+    
+    private bool HasAttribute<TAttr>(FieldInfo field, IList<ModelAdjustment> adjustments = null) {
+      if (adjustments == null || adjustments.Count == 0)
+        return false;
+      var attr = adjustments.FirstOrDefault(ad => ad.Type == this.Type && ad.MemberName == field.Name && ad.Attribute is TAttr);
+      return attr != null; 
     }
 
     #region Value conversion methods ============================================================

@@ -18,7 +18,7 @@ namespace NGraphQL.Model {
 
     public EnumTypeDef(Type type, IList<Attribute> attrs, GraphQLModule module) 
           : base(type.Name, TypeKind.Enum, type, attrs, module) {
-      Handler = new EnumHandler(type);
+      Handler = new EnumHandler(type, module.Adjustments);
       base.Name = Handler.EnumName;      
     }
 
