@@ -23,6 +23,7 @@ namespace NGraphQL.TestApp {
     ///   - this comment will show up in the schema printout as a field description.</summary>
     /// <param name="context"></param>
     /// <returns></returns>
+    [ResolvesField("things", typeof(IThingsQuery))]
     public List<Thing> GetThings(IFieldContext context) {
       return _app.Things;
     }

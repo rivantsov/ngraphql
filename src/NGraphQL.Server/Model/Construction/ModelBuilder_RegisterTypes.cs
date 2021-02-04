@@ -62,6 +62,7 @@ namespace NGraphQL.Model.Construction {
       var typeName = $"{module.Name}_{type.Name}";
       var typeDef = new ObjectTypeDef(typeName, type, GraphQLModelObject.EmptyAttributeList, module, typeRole);
       _model.Types.Add(typeDef);
+      _model.TypesByClrType.Add(type, typeDef); 
     }
 
     private void CreateRegisterTypeDef(Type type, GraphQLModule module, TypeKind typeKind) {
@@ -83,12 +84,9 @@ namespace NGraphQL.Model.Construction {
 
     private void RegisterTypeDef(TypeDefBase typeDef) {
       _model.Types.Add(typeDef);
-      // do not register further (by name or CLR type) the special objects
-      if (typeDef is ObjectTypeDef otd && otd.TypeRole != ObjectTypeRole.Data)
-        return; 
       // data types - we register them by name and CLR type; they always have module and CLR type
-      var modName = typeDef.Module.Name;
-      if (typeDef.IsDefaultForClrType) {
+      var modName = typeDef.Module?.Name ?? "(no module)";
+      if (typeDef.ClrType != null && typeDef.IsDefaultForClrType) {
         if (_model.TypesByClrType.ContainsKey(typeDef.ClrType)) {
           AddError($"Duplicate registration of type {typeDef.Name} as default for CLR type {typeDef.ClrType}, module {modName}.");
           return;

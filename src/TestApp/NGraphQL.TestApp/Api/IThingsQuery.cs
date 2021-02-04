@@ -7,7 +7,8 @@ using NGraphQL.Core;
 namespace NGraphQL.TestApp {
 
   public interface IThingsQuery {
-    [Resolver(nameof(ThingsResolvers.GetThings))]
+    // Resolver is linked thru attribute on resolver method
+    // [Resolver(nameof(ThingsResolvers.GetThings))]
     List<Thing_> Things { get; }
 
     /// <summary>Returns the Thing specified by Id.</summary>
