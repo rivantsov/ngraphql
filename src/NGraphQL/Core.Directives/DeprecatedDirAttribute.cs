@@ -8,7 +8,7 @@ namespace NGraphQL.Core {
   /// <summary>Marks type, field or parameter as deprecated. The element in schema document will appear with @deprecated
   /// directive.</summary>
   [AttributeUsage(
-    AttributeTargets.Class | AttributeTargets.Interface |
+    AttributeTargets.Class | AttributeTargets.Interface | AttributeTargets.Enum |
     AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Method | AttributeTargets.Parameter)]
   public class DeprecatedDirAttribute : BaseDirectiveAttribute {
     public DeprecatedDirAttribute(string reason) : base(reason) {

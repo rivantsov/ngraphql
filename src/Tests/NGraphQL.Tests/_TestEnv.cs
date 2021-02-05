@@ -8,11 +8,10 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
 using NGraphQL.CodeFirst;
-using NGraphQL.Model;
 using NGraphQL.Server;
 using NGraphQL.Server.Execution;
-using NGraphQL.Utilities;
 using NGraphQL.TestApp;
+using NGraphQL.Utilities;
 
 namespace NGraphQL.Tests {
 
@@ -43,8 +42,7 @@ namespace NGraphQL.Tests {
         throw;
       }
       // Printout
-      var schemaGen = new SchemaDocGenerator();
-      var schemaDoc = schemaGen.GenerateSchema(ThingsServer.Model);
+      var schemaDoc =ThingsServer.Model.SchemaDoc;
       File.WriteAllText("_thingsApiSchema.txt", schemaDoc);
 
       _serializerSettings = new JsonSerializerSettings() {

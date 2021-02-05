@@ -171,12 +171,12 @@ namespace NGraphQL.Server.Parsing {
 
     private void AddRuntimeModelDirectives(MappedField mappedField) {
       var fldDef = mappedField.FieldDef;
-      if (fldDef.Directives != null)
-        foreach (var fldDir in fldDef.Directives)
+      if (fldDef.HasDirectives())
+        foreach (ModelDirective fldDir in fldDef.Directives)
           mappedField.AddDirective(new RuntimeModelDirective(fldDir));
-      var typeDefDirs = fldDef.TypeRef.TypeDef.Directives;
-      if (typeDefDirs != null)
-        foreach (var tdir in typeDefDirs)
+      var typeDef = fldDef.TypeRef.TypeDef;
+      if (typeDef.HasDirectives())
+        foreach (ModelDirective tdir in typeDef.Directives)
           mappedField.AddDirective(new RuntimeModelDirective(tdir));
     }
 

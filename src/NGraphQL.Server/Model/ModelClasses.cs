@@ -12,14 +12,6 @@ using NGraphQL.Server.Execution;
 
 namespace NGraphQL.Model {
 
-  public class GraphQLModelObject {
-    public string Name { get; set; }
-    public string Description;
-    public IList<ModelDirective> Directives = new List<ModelDirective>();
-    public IntroObjectBase Intro_; 
-    public override string ToString() => Name;
-    public static readonly IList<Attribute> EmptyAttributeList = new Attribute[] { };
-  }
 
   public class TypeDefBase : GraphQLModelObject {
     public readonly GraphQLModule Module;
@@ -64,11 +56,9 @@ namespace NGraphQL.Model {
   }
 
   public class ModelDirective {
-    public static IList<ModelDirective> EmptyList = new ModelDirective[] { };
-
     public DirectiveDef Def;
     public DirectiveLocation Location; 
-    public BaseDirectiveAttribute ModelAttribute; // for model (type system) directives
+    public BaseDirectiveAttribute ModelAttribute; 
 
     public override string ToString() {
       return Def?.ToString(); 

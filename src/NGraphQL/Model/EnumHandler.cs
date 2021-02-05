@@ -9,13 +9,11 @@ using NGraphQL.Introspection;
 
 namespace NGraphQL.Model {
 
-  public class EnumValueInfo {
+  public class EnumValueInfo : GraphQLModelObject {
+    public FieldInfo Field; 
     public object Value;
-    public string Name; //GraphQL name
-    public string Description; 
     public long LongValue;
-    public __EnumValue Intro_; 
-  }
+ }
 
   /// <summary>Handles conversions of enum values: to/from CLR enums vs stings and string arrays in GraphQL. </summary>
   public class EnumHandler {
@@ -58,6 +56,7 @@ namespace NGraphQL.Model {
         descAttr = fld.GetAttribute<DescriptionAttribute>();
         string descr = descAttr?.Description;
         var vInfo = new EnumValueInfo() {
+          Field = fld,
           Value = value,
           Name = name,
           Description = descr,

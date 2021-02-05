@@ -79,28 +79,34 @@ namespace NGraphQL.Model {
       }
     }
 
-    public static void ForEachModelObject(this GraphQLApiModel model, Action<GraphQLModelObject> action) {
+    public static bool HasDirectives(this GraphQLModelObject modelObject) {
+      return modelObject.Directives != null && modelObject.Directives.Count > 0; 
+    }
+
+    public static void ApplyToAllModelObjects(this GraphQLApiModel model, Action<GraphQLModelObject> action) {
+      foreach (var dirDef in model.Directives.Values)
+        dirDef.ApplyToAllRec(action);
       foreach (var typeDef in model.Types) 
         if (typeDef.IsSchemaType()) // skip Module-Level transient types (ModuleQuery, ModuleMutation etc) 
-          typeDef.ApplyDeep(action);
-      foreach (var dirDef in model.Directives.Values)
-        dirDef.ApplyDeep(action); 
+          typeDef.ApplyToAllRec(action);
     } //method
 
-    public static void ApplyDeep(this GraphQLModelObject modelObj, Action<GraphQLModelObject> action) {
+    private static void ApplyToAllRec(this GraphQLModelObject modelObj, Action<GraphQLModelObject> action) {
       action(modelObj);
       switch (modelObj) {
         case ComplexTypeDef ctd: // object type and interface type
           foreach (var fld in ctd.Fields)
-            ApplyDeep(fld, action);
+            ApplyToAllRec(fld, action);
           break;
 
         case InputObjectTypeDef itd:
           foreach (var f in itd.Fields)
-            ApplyDeep(f, action);
+            ApplyToAllRec(f, action);
           break;
 
         case EnumTypeDef etd:
+          foreach (var enumV in etd.Handler.Values)
+            ApplyToAllRec(enumV, action);
           break;
 
         case ScalarTypeDef _:
@@ -112,13 +118,13 @@ namespace NGraphQL.Model {
         case FieldDef fd:
           if (fd.Args != null)
             foreach (var a in fd.Args)
-              ApplyDeep(a, action);
+              ApplyToAllRec(a, action);
           break;
 
         case DirectiveDef dirDef:
           if (dirDef.Args != null)
             foreach (var a in dirDef.Args)
-              ApplyDeep(a, action); 
+              ApplyToAllRec(a, action); 
           break; 
       } //switch
     }

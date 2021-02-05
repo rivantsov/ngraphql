@@ -8,6 +8,6 @@ namespace NGraphQL.Model {
     public DirectiveDef Def;
     public DirectiveLocation Location;
     public object Owner;
-    public Irony.Parsing.SourceLocation SourceLocation;
+    public SourceLocation SourceLocation;
   }
 }

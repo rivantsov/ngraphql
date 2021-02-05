@@ -45,11 +45,12 @@ namespace NGraphQL.Model.Construction {
             attrSrc = dirReg.Signature;
           }
           //  create dir def
-          var deprAttr = attrSrc.GetAttribute<DeprecatedDirAttribute>();
+          // first check secondary depr attribute - in case the target directive is deprecated itself
+          var deprAttrSec = attrSrc.GetAttribute<DeprecatedDirAttribute>();
           var prms = dirReg.Signature.GetParameters();
           var argDefs = BuildArgDefs(prms, dirReg.Signature);
           var dirDef = new DirectiveDef() {
-            DirInfo = dirReg, Name = dirReg.Name, Description = dirReg.Description, DeprecatedAttribute = deprAttr,
+            DirInfo = dirReg, Name = dirReg.Name, Description = dirReg.Description, DeprecatedAttribute = deprAttrSec,
             Args = argDefs
           };
           _model.Directives[dirReg.Name] = dirDef;
@@ -79,13 +80,15 @@ namespace NGraphQL.Model.Construction {
       }
     }
 
-    private IList<ModelDirective> BuildDirectivesFromAttributes(ICustomAttributeProvider clrObjectInfo, 
+    static object[] _emptyObjectList = new object[] { }; 
+
+    private IList<object> BuildDirectivesFromAttributes(ICustomAttributeProvider clrObjectInfo, 
                           DirectiveLocation location, GraphQLModelObject owner) {
       var attrList = clrObjectInfo.GetCustomAttributes(inherit: true);
       if (attrList.Length == 0)
-        return ModelDirective.EmptyList;
+        return _emptyObjectList;
 
-      var dirList = new List<ModelDirective>();
+      var dirList = new List<object>();
       foreach (var attr in attrList) {
         if (!(attr is BaseDirectiveAttribute dirAttr))
           continue;

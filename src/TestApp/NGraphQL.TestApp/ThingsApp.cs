@@ -16,10 +16,14 @@ namespace NGraphQL.TestApp {
   ****************************************************************************************/
 
   /// <summary>Thing kind enumeration.</summary>  
+  [DeprecatedDir("ThingKind is deprecated.")]
   public enum ThingKind {
     /// <summary>Thing kind #1.</summary>  
     KindOne,
     KindTwo,
+
+    /// <summary>This is kind Three </summary>
+    [DeprecatedDir("KindThree is deprecated.")]
     KindThree,
 
     // this value will be ignored by model builder - it will not show up in schema doc. 

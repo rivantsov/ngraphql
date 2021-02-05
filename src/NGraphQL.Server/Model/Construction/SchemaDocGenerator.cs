@@ -6,7 +6,7 @@ using NGraphQL.Introspection;
 using NGraphQL.Model;
 using NGraphQL.Model.Request;
 
-namespace NGraphQL.Model {
+namespace NGraphQL.Model.Construction {
 
   public class SchemaDocGenerator {
     GraphQLApiModel _model;
@@ -33,10 +33,14 @@ namespace NGraphQL.Model {
       var enumDefs = SelectTypes<EnumTypeDef>(TypeKind.Enum); 
       foreach(var enumDef in enumDefs) {
         AppendDescr(enumDef.Description);
-        _builder.AppendLine("enum " + enumDef.Name + " {");
-        foreach(var m in enumDef.Handler.Values) {
-          AppendDescr(m.Description, true);
-          _builder.AppendLine(Indent + m.Name);
+        _builder.Append("enum " + enumDef.Name);
+        AppendDirs(enumDef);
+        _builder.AppendLine(" {");
+        foreach(var enumV in enumDef.Handler.Values) {
+          AppendDescr(enumV.Description, true);
+          _builder.Append(Indent + enumV.Name + " ");
+          AppendDirs(enumV);
+          _builder.AppendLine(); 
         }
         _builder.AppendLine("}");
         _builder.AppendLine();
@@ -90,7 +94,7 @@ namespace NGraphQL.Model {
           var intfList = string.Join(" & ", tDef.Implements.Select(iDef => iDef.Name));
           _builder.Append(intfList);
         }
-        AppendDirs(tDef.Directives);
+        AppendDirs(tDef);
         _builder.AppendLine(" {");
         foreach(var fld in tDef.Fields) {
           if(fld.Flags.IsSet(FieldFlags.Hidden))
@@ -105,10 +109,10 @@ namespace NGraphQL.Model {
       return _builder.ToString(); 
     }
 
-    private void AppendDirs(IList<ModelDirective> dirs) {
-      if(dirs == null || dirs.Count == 0)
+    private void AppendDirs(GraphQLModelObject modelObj) {
+      if(!modelObj.HasDirectives())
         return; 
-      foreach(var dir in dirs) {
+      foreach(ModelDirective dir in modelObj.Directives) {
         _builder.Append(" ");
         _builder.Append(dir.Def.Name);
         if (dir.Def.Args.Count > 0) {
@@ -170,7 +174,7 @@ namespace NGraphQL.Model {
         var tdef = valueDef.TypeRef.TypeDef; 
         _builder.Append(tdef.ToSchemaDocString(valueDef.DefaultValue));
       }
-      AppendDirs(valueDef.Directives);
+      AppendDirs(valueDef);
     }
 
     private void AppendDescr(string descr, bool indent = false) {

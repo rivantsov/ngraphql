@@ -21,8 +21,10 @@ namespace NGraphQL.Model.Request {
       ResultTypeRef = resultTypeRef; 
       Anchor = anchor;
       // prepare directives
-      if (inputDef.Directives != null)
-        Directives = inputDef.Directives.Where(d => d.Def.Handler is IInputValueDirectiveAction)
+      if (inputDef.HasDirectives())
+        Directives = inputDef.Directives
+          .OfType<ModelDirective>()
+          .Where(d => d.Def.Handler is IInputValueDirectiveAction)
           .Select(d => new RuntimeModelDirective(d)).ToList(); 
     }
     public override string ToString() => InputDef.ToString();

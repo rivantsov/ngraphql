@@ -14,10 +14,10 @@ using NGraphQL.Utilities;
 namespace NGraphQL.Model.Construction {
 
   public partial class ModelBuilder {
-    GraphQLServer _server; 
+    GraphQLServer _server;
     GraphQLApiModel _model;
     XmlDocumentationLoader _docLoader;
-    IList<ModelAdjustment> _modelAdjustments; 
+    IList<ModelAdjustment> _modelAdjustments;
 
     public ModelBuilder(GraphQLServer server) {
       _server = server;
@@ -29,13 +29,13 @@ namespace NGraphQL.Model.Construction {
       _modelAdjustments = _server.Modules.SelectMany(m => m.Adjustments).ToList();
 
       // collect,register scalar, data types, query/mutation types, resolvers
-      RegisterScalars(); 
+      RegisterScalars();
       if (!RegisterGraphQLTypes())
         return;
       RegisterResolverClasses();
 
       if (!BuildRegisteredDirectiveDefinitions())
-        return; 
+        return;
 
       if (!AssignMappedEntitiesForObjectTypes())
         return;
@@ -59,7 +59,7 @@ namespace NGraphQL.Model.Construction {
         return;
 
       // apply directives to all model objects in the model
-      _model.ForEachModelObject(this.ApplyDirectives);
+      _model.ApplyToAllModelObjects(this.ApplyDirectives);
       if (_model.HasErrors)
         return;
 
@@ -74,9 +74,9 @@ namespace NGraphQL.Model.Construction {
     }
 
     private void ApplyDirectives(GraphQLModelObject obj) {
-      if (obj.Directives == null || obj.Directives.Count == 0)
+      if (!obj.HasDirectives())
         return;
-      foreach (var dir in obj.Directives) {
+      foreach (ModelDirective dir in obj.Directives) {
         var action = dir.Def.Handler as IModelDirectiveAction;
         if (action == null)
           continue;
@@ -88,7 +88,7 @@ namespace NGraphQL.Model.Construction {
       foreach (var td in _model.Types) {
         if (td.ClrType == null)
           continue; // Special types (Query, Mutation etc) do not have Clr types
-        DirectiveLocation loc = DirectiveLocation.None; 
+        DirectiveLocation loc = DirectiveLocation.None;
         switch (td) {
 
           case InterfaceTypeDef intfTypeDef:
@@ -100,17 +100,17 @@ namespace NGraphQL.Model.Construction {
             loc = DirectiveLocation.Object;
             BuildObjectTypeFields(objTypeDef);
             break;
-          
+
           case InputObjectTypeDef inpTypeDef:
             loc = DirectiveLocation.InputObject;
             BuildInputObjectFields(inpTypeDef);
             break;
-          
+
           case EnumTypeDef etd:
             loc = DirectiveLocation.Enum;
-            // internal EnumHandler and enum values are already built in EnumTypeDef constructor
+            BuildEnumTypeFields(etd); 
             break;
-          
+
           case UnionTypeDef utd:
             loc = DirectiveLocation.Union;
             // we build union types in a separate loop after building other types
@@ -150,7 +150,7 @@ namespace NGraphQL.Model.Construction {
       var prms = resMethod.GetParameters();
       if (prms == null || prms.Length == 0)
         return;
-      fieldDef.Args = BuildArgDefs(prms, resMethod); 
+      fieldDef.Args = BuildArgDefs(prms, resMethod);
     }
 
     private IList<InputValueDef> BuildArgDefs(IList<ParameterInfo> parameters, MethodBase method) {
@@ -173,20 +173,20 @@ namespace NGraphQL.Model.Construction {
         argDef.Directives = BuildDirectivesFromAttributes(prm, DirectiveLocation.ArgumentDefinition, argDef);
         argDefs.Add(argDef);
       }
-      return argDefs; 
+      return argDefs;
     }
 
     private void LinkImplementedInterfaces() {
       var objTypes = _model.GetTypeDefs<ObjectTypeDef>(TypeKind.Object);
-      foreach(var typeDef in objTypes) {
+      foreach (var typeDef in objTypes) {
         if (typeDef.ClrType == null) //exclude Intro objects and special types
           continue;
         var intTypes = typeDef.ClrType.GetInterfaces();
-        foreach(var iType in intTypes) {
-          var iTypeDef = (InterfaceTypeDef) _model.LookupTypeDef(iType);
+        foreach (var iType in intTypes) {
+          var iTypeDef = (InterfaceTypeDef)_model.LookupTypeDef(iType);
           if (iTypeDef != null) {
             typeDef.Implements.Add(iTypeDef);
-            iTypeDef.PossibleTypes.Add(typeDef); 
+            iTypeDef.PossibleTypes.Add(typeDef);
           }
         }
       } //foreach typeDef
@@ -194,8 +194,8 @@ namespace NGraphQL.Model.Construction {
 
     private void BuildInputObjectFields(InputObjectTypeDef inpTypeDef) {
       var members = inpTypeDef.ClrType.GetFieldsProps();
-      foreach(var member in members) {
-        var attrs = GetAllAttributes(member); 
+      foreach (var member in members) {
+        var attrs = GetAllAttributes(member);
         var mtype = member.GetMemberReturnType();
         var typeRef = GetTypeRef(mtype, member, $"Field {inpTypeDef.Name}.{member.Name}");
         if (typeRef == null)
@@ -207,14 +207,14 @@ namespace NGraphQL.Model.Construction {
             continue;
           }
         }
-        switch(typeRef.TypeDef.Kind) {
+        switch (typeRef.TypeDef.Kind) {
           case TypeKind.Scalar:
           case TypeKind.Enum:
           case TypeKind.InputObject:
             break;
           default:
             AddError($"Input type member {inpTypeDef.Name}.{member.Name}: type {mtype} is not scalar or input type.");
-            continue; 
+            continue;
         }
         var inpFldDef = new InputValueDef() { Name = member.Name.FirstLower(), TypeRef = typeRef, Attributes = attrs,
           InputObjectClrMember = member,
@@ -223,6 +223,16 @@ namespace NGraphQL.Model.Construction {
         inpFldDef.Directives = BuildDirectivesFromAttributes(member, DirectiveLocation.InputFieldDefinition, inpFldDef);
         inpTypeDef.Fields.Add(inpFldDef);
       } //foreach
+    }
+
+    private void BuildEnumTypeFields(EnumTypeDef enumTypeDef) {
+      // internal EnumHandler and enum values are already built in EnumTypeDef constructor
+      // all we do is add descriptions and directives if any
+      foreach(var enumV in enumTypeDef.Handler.Values) {
+        enumV.Description = _docLoader.GetDocString(enumV.Field, enumTypeDef.ClrType);
+        enumV.Directives = this.BuildDirectivesFromAttributes(enumV.Field, DirectiveLocation.EnumValue, enumV);
+      }
+
     }
 
     private void BuildUnionTypes() {
