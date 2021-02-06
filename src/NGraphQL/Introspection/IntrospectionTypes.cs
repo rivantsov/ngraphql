@@ -55,10 +55,10 @@ namespace NGraphQL.Introspection {
       throw new NotImplementedException("GetEnumValues is a server-side method and should not be called directly.");
     }
 
-    /// <summary>Display name allowing to see the type full name/spec.  The current arrangement in GraphQL
-    /// requires unfolding of the entire chain of nested types (NotNull-s and List-s). 
-    /// This property is an extension of GraphQL spec. </summary>
-    [Null, Hidden, GraphQLName("displayName")]
+    // The displayName property is an extension of GraphQL spec. 
+    // The current arrangement in GraphQL requires unfolding of the entire chain of nested types (NotNull-s and List-s). 
+    /// <summary>Full type spec, ex: [Int!]! .</summary>
+    [Null]
     public string DisplayName;
 
     // these 2 properties will be ignored on the server. When used on the client, they will be receiving 
