@@ -4,7 +4,7 @@
 
 ## Features
 * Implements Official 2018 Specification.
-* GraphQL model is defined using plain c# (POCO) classes decorated with some attributes. Contrast to other .NET GraphQL solutions, *NGraphQL*-based APIs look and feel like real .NET artifacts - strongly typed, compact and readable.   
+* GraphQL model is defined using plain c# (POCO) classes decorated with some attributes. Unlike other .NET GraphQL solutions, *NGraphQL*-based API definitions look and feel like real .NET artifacts - strongly typed, compact and readable.   
 * Server and client components. ASP.NET Core -based HTTP server implementation following the standard "serving over HTTP" rules 
 * Light-weight but capable GraphQL Client - supports both dynamic-type objects for return data, or strongly-typed objects by directly using the GraphQL c# classes from the model. 
 * Modular construction - separately coded modules define parts of the overall GraphQL API Schema; modules are registered with the GraphQL host server which implements the GraphQL API. 
