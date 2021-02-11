@@ -40,12 +40,12 @@ See also [Star Wars Example](https://github.com/rivantsov/starwars) in a separat
 [VITA](https://github.com/rivantsov/vita) ORM contains a sample project implementing a GraphQL Server for a BookStore sample application. Among other things, it shows how (N+1) problem can be efficiently handled **automagically** by a smart-enough ORM. Most of the related entities like *Book.Publisher* or *Book.Authors* are batch-loaded automatically by the ORM. 
 
 ## Documentation
-See the Wiki pages for this project (documentation under construction). 
+See the [Wiki pages](https://github.com/rivantsov/ngraphql/wiki) for this project. 
 
 ##  Limitations
 * *Code-first only, no schema-first scenario*. Implementing a working GraphQL API requires creating a number of detailed c#/.NET artefacts that cannot be directly derived from the Schema document. The complete schema-first scenario is not feasible.
 
-* *Subscriptions are not implemented yet* - coming in the future
+* Subscriptions are not implemented yet - coming in the future
 
 ## System requirements
 Visual Studio 2019, .NET Standard 2.0, .NET Core 3.1 
