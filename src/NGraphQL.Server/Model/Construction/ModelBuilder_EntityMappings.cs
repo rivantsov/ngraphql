@@ -73,12 +73,12 @@ namespace NGraphQL.Model.Construction {
         if (mapping == null)
           continue; 
         var entityType = mapping.EntityType;
+        var allEntFldProps = entityType.GetFieldsProps();
         foreach (var fldDef in typeDef.Fields) {
           if (fldDef.Resolver != null || fldDef.Reader != null)
             continue;
           var memberName = fldDef.ClrMember.Name;
-          MemberInfo entMember = entityType.GetFieldsProps()
-            .Where(m => m.Name.Equals(memberName, StringComparison.OrdinalIgnoreCase))
+          MemberInfo entMember = allEntFldProps.Where(m => m.Name.Equals(memberName, StringComparison.OrdinalIgnoreCase))
             .FirstOrDefault();
           if (entMember == null)
             continue;

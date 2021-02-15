@@ -40,10 +40,14 @@ namespace NGraphQL.TestApp {
     FlagThree = 1 << 2,
   }
 
-  [DebuggerDisplay("Thing: {Name}/{TheKind}")]
-  public class Thing {
+  // testing entity subclassing
+  public class ThingBase {
     public int Id { get; set; }
     public string Name { get; set; }
+  }
+
+  [DebuggerDisplay("Thing: {Name}/{TheKind}")]
+  public class Thing: ThingBase {
     public string Descr;
     public ThingKind TheKind;
     public TheFlags Flags;
@@ -56,7 +60,9 @@ namespace NGraphQL.TestApp {
     public IList<OtherThing> OtherThings; 
 
     [DeprecatedDir("Deprecate-reason1")]
-    public string Tag; 
+    public string Tag;
+
+    public IThingIntfEntity ThingEntity; 
   }
 
   [DebuggerDisplay("{Name}")]
@@ -80,6 +86,28 @@ namespace NGraphQL.TestApp {
     public int?[] IntsWithNulls; // -> [Int]!
 
   }
+
+  #region entities as interfaces
+  // testing entities as interfaces, with inheritance - the case for VITA ORM
+  public interface IThingIntfEntityBase {
+    int Id { get; }
+    string Name { get; }
+  }
+
+  public interface IThingIntfEntity : IThingIntfEntityBase {
+    string Tag { get; }
+  }
+
+  public class ThingEntity : IThingIntfEntity {
+    public int Id { get; set; } = _id++;
+    public string Name { get; set; } = "name" + _id;
+    public string Tag { get; set; } = "tag" + _id; 
+
+    private static int _id; 
+  }
+  #endregion
+
+
 
   public class ThingsApp {
     public static ThingsApp Instance;
@@ -110,13 +138,13 @@ namespace NGraphQL.TestApp {
       Things = new List<Thing>() {
           new Thing() { Name = "Name1", Id = 1, Descr = "Descr1",
             SomeDate = date0, DateQ = date0.AddHours(1), TheKind = ThingKind.KindOne,
-            Flags = TheFlags.FlagOne | TheFlags.FlagThree},
+            Flags = TheFlags.FlagOne | TheFlags.FlagThree, ThingEntity = new ThingEntity()},
           new Thing() { Name = "Name2", Id = 2, Descr = "Descr2",
             SomeDate = date0, DateQ = null, TheKind = ThingKind.KindTwo,
-            Flags = TheFlags.FlagTwo},
+            Flags = TheFlags.FlagTwo, ThingEntity = new ThingEntity()},
           new Thing() { Name = "Name3", Id = 3, Descr = "Descr3",
             SomeDate = date0, DateQ = date0, TheKind = ThingKind.KindThree,
-            Flags = TheFlags.FlagOne | TheFlags.FlagTwo},
+            Flags = TheFlags.FlagOne | TheFlags.FlagTwo, ThingEntity = new ThingEntity()},
       };
       Things[0].NextThing = Things[1];
       Things[1].NextThing = Things[2];

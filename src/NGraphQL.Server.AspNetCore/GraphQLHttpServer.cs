@@ -89,7 +89,7 @@ namespace NGraphQL.Server.AspNetCore {
 
     // see https://graphql.org/learn/serving-over-http/#http-methods-headers-and-body
     private async Task<GraphQLHttpRequest> BuildGraphQLHttpRequestAsync(HttpContext httpContext) {
-      GraphQLHttpRequest gqlHttpReq; 
+      GraphQLHttpRequest gqlHttpReq;  
       var method = httpContext.Request.Method;
       switch (method) {
         case "GET":
@@ -104,7 +104,7 @@ namespace NGraphQL.Server.AspNetCore {
       // create internal request context
       gqlHttpReq.RequestContext =
             Server.CreateRequestContext(gqlHttpReq.Request, httpContext.RequestAborted,
-                    httpContext.User, null, gqlHttpReq);
+                    httpContext.User, null, httpContext);
       return gqlHttpReq;
     }
 

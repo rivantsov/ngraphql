@@ -7,10 +7,14 @@ using NGraphQL.Core;
 
 namespace NGraphQL.TestApp {
 
-  /// <summary>A sample GraphQL output object.</summary>
-  public class Thing_ : INamedObj, IObjWithId {
+  // testing subclassing 
+  public class ThingBase_ {
     public int Id { get; set; }
     public string Name { get; set; }
+  }
+
+  /// <summary>A sample GraphQL output object.</summary>
+  public class Thing_ : ThingBase_, INamedObj, IObjWithId {
     [Null]
     public string Description;
     public ThingKind Kind;
@@ -41,6 +45,8 @@ namespace NGraphQL.TestApp {
     [Ignore]
     public int[] Randoms;
 
+    public ThingForIntfEntity_ ThingEntity; 
+
   }
 
   public class OtherThing_ : INamedObj {
@@ -63,6 +69,13 @@ namespace NGraphQL.TestApp {
 
     public string GetNameOrThrow() { return default; }
     public string GetNameOrThrowAsync() { return default; }
+  }
+
+  // mapped to interface entity
+  public class ThingForIntfEntity_ {
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public string Tag { get; set; }
   }
 
 

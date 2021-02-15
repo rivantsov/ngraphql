@@ -11,11 +11,11 @@ namespace NGraphQL.TestApp {
   public class ThingsGraphQLModule : GraphQLModule {
     public ThingsGraphQLModule() {
       // 1. Register all types
-      base.EnumTypes.AddRange(new[] { typeof(ThingKind), typeof(TheFlags) });
-      base.ObjectTypes.AddRange(new[] { typeof(Thing_), typeof(OtherThing_) });
-      base.InputTypes.AddRange(new[] { typeof(InputObj), typeof(InputObjWithEnums), typeof(InputObjParent),         
-        typeof(InputObjChild),  typeof(InputObjWithList) });
-      base.InterfaceTypes.AddRange(new[] { typeof(INamedObj), typeof(IObjWithId) });
+      base.EnumTypes.Add(typeof(ThingKind), typeof(TheFlags));
+      base.ObjectTypes.Add(typeof(Thing_), typeof(OtherThing_), typeof(ThingForIntfEntity_));
+      base.InputTypes.Add(typeof(InputObj), typeof(InputObjWithEnums), typeof(InputObjParent),         
+        typeof(InputObjChild),  typeof(InputObjWithList));
+      base.InterfaceTypes.Add(typeof(INamedObj), typeof(IObjWithId));
       base.UnionTypes.Add(typeof(ThingsUnion));
 
       base.QueryType = typeof(IThingsQuery);
@@ -37,6 +37,7 @@ namespace NGraphQL.TestApp {
         
       });
       MapEntity<OtherThing>().To<OtherThing_>(); // engine will automatically map all matching fields
+      MapEntity<IThingIntfEntity>().To<ThingForIntfEntity_>();
 
       this.ResolverTypes.Add(typeof(ThingsResolvers));
 

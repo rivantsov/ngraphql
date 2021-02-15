@@ -18,12 +18,25 @@ namespace NGraphQL.Utilities {
       var mTypes = MemberTypes.Field | MemberTypes.Property;
       if (withMethods)
         mTypes |= MemberTypes.Method;
-      var members = type.GetMembers(BindingFlags.Public | BindingFlags.Instance)
+      var members = type.GetAllPublicMembers()
         .Where(m => !_specialMethods.Contains(m.Name))
         .Where(m => (m.MemberType & mTypes) != 0)
         .Where(m => !(m is MethodInfo mi && mi.IsSpecialName)) //filter out getters/setters
         .ToList();
       return members;
+    }
+
+    // Note: interfaces are special; if the entity type is interface (as in VITA, db entities are defined as interfaces),
+    //  getting all members must account for this; GetMembers does NOT return members of base interfaces, so we do it explicitly
+    private static IList<MemberInfo> GetAllPublicMembers(this Type type) {
+      var flags = BindingFlags.Public | BindingFlags.Instance;
+      var members = type.GetMembers(flags).ToList();
+      if (type.IsInterface) {
+        var interfaces = type.GetInterfaces();
+        foreach (var intf in interfaces) 
+          members.AddRange(intf.GetMembers(flags));
+      }
+      return members; 
     }
 
     public static IList<MemberInfo> GetFieldsProps(this Type type) {
