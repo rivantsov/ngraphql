@@ -41,8 +41,8 @@ namespace NGraphQL.Tests {
         LogText(sEx.GetErrorsAsText());
         throw;
       }
-      // Printout
-      var schemaDoc =ThingsServer.Model.SchemaDoc;
+      // Write schema doc to file
+      var schemaDoc = ThingsServer.Model.SchemaDoc;
       File.WriteAllText("_thingsApiSchema.txt", schemaDoc);
 
       _serializerSettings = new JsonSerializerSettings() {

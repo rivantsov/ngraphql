@@ -45,8 +45,9 @@ namespace NGraphQL.TestApp {
     [Ignore]
     public int[] Randoms;
 
-    public ThingForIntfEntity_ ThingEntity; 
+    public ThingForIntfEntity_ IntfThing;
 
+    [Null] public OtherThingWrapper_ OtherThingWrapped;
   }
 
   public class OtherThing_ : INamedObj {
@@ -71,13 +72,20 @@ namespace NGraphQL.TestApp {
     public string GetNameOrThrowAsync() { return default; }
   }
 
+  // test case for bug #169 in Vita; 
+  // this class is GraphQL type without business entity behind; it has ref to OtherThing_
+  public class OtherThingWrapper_ {
+    public string OtherThingName;
+    public DateTime WrappedOn;
+    public OtherThing_ OtherThing; 
+  }
+
   // mapped to interface entity
   public class ThingForIntfEntity_ {
     public int Id { get; set; }
     public string Name { get; set; }
     public string Tag { get; set; }
   }
-
 
   public class InputObj {
     public int Id;

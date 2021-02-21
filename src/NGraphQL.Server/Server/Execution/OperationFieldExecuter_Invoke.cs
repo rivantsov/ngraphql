@@ -22,12 +22,13 @@ namespace NGraphQL.Server.Execution {
           BuildResolverArguments(fieldContext);
         // we might have encountered errors when evaluating args; if so, abort all
         this.AbortIfFailed();
+        var fldDef = fieldContext.FieldDef;
         // set current parentEntity arg
-        if (fieldContext.Flags.IsSet(FieldFlags.HasParentArg))
+        if (fldDef.Flags.IsSet(FieldFlags.HasParentArg))
           fieldContext.ArgValues[1] = fieldContext.CurrentScope.Entity;
-        var resolver = fieldContext.FieldDef.Resolver;
+        var resolver = fldDef.Resolver;
         var result = resolver.Method.Invoke(fieldContext.ResolverClassInstance, fieldContext.ArgValues);
-        if(fieldContext.Flags.IsSet(FieldFlags.ReturnsTask))
+        if(fldDef.Flags.IsSet(FieldFlags.ResolverReturnsTask))
           result = await UnwrapTaskResultAsync(fieldContext, (Task)result);
         Interlocked.Increment(ref _requestContext.Metrics.ResolverCallCount);
         // Note: result might be null, but batched result might be set.

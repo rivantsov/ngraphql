@@ -12,7 +12,7 @@ namespace NGraphQL.TestApp {
     public ThingsGraphQLModule() {
       // 1. Register all types
       base.EnumTypes.Add(typeof(ThingKind), typeof(TheFlags));
-      base.ObjectTypes.Add(typeof(Thing_), typeof(OtherThing_), typeof(ThingForIntfEntity_));
+      base.ObjectTypes.Add(typeof(Thing_), typeof(OtherThing_), typeof(ThingForIntfEntity_), typeof(OtherThingWrapper_));
       base.InputTypes.Add(typeof(InputObj), typeof(InputObjWithEnums), typeof(InputObjParent),         
         typeof(InputObjChild),  typeof(InputObjWithList));
       base.InterfaceTypes.Add(typeof(INamedObj), typeof(IObjWithId));
@@ -33,9 +33,10 @@ namespace NGraphQL.TestApp {
         SomeDateTime = bt.SomeDate,
         // example of using FromMap function to explicitly convert biz object to API object (BizThing => ApiThing)
         // Note: we could skip this, as field names match, it would automap
-        NextThing = FromMap<Thing_>(bt.NextThing)
-        
+        NextThing = FromMap<Thing_>(bt.NextThing), 
+        OtherThingWrapped = bt.MainOtherThing.GetWrapper(),        
       });
+
       MapEntity<OtherThing>().To<OtherThing_>(); // engine will automatically map all matching fields
       MapEntity<IThingIntfEntity>().To<ThingForIntfEntity_>();
 
@@ -48,5 +49,6 @@ namespace NGraphQL.TestApp {
     }// constructor
 
   } // class
+
 
 }

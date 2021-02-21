@@ -60,8 +60,8 @@ namespace NGraphQL.Model.Construction {
           var fieldDef = typeDef.Fields.FirstOrDefault(fld => fld.ClrMember == bnd.Member);
           if (asmtBnd == null || fieldDef == null)
             continue; //should never happen, but just in case
-                      // create lambda reading the source property
-          fieldDef.Reader = CompileFieldReader(entityPrm, asmtBnd.Expression);
+          // create lambda reading the source property
+          fieldDef.Reader = CompileFieldReader(fieldDef, entityPrm, asmtBnd.Expression);
         }
       }
     }
@@ -95,12 +95,17 @@ namespace NGraphQL.Model.Construction {
       }
     }
 
-    private Func<object, object> CompileFieldReader( ParameterExpression entityParam, Expression body) {
+    private Func<object, object> CompileFieldReader(FieldDef field, ParameterExpression entityParam, Expression body) {
+      
       // check if body is a MapTo func - return the source entity, mapping will be handled by the caller
-      if (body is MethodCallExpression mc && mc.Method.DeclaringType == typeof(GraphQLModule) && 
-                             mc.Method.Name == nameof(GraphQLModule.FromMap) ) {
-        body = mc.Arguments[0];
-      }
+      var methCall = body as MethodCallExpression;
+      var usesFromMapFunc = methCall != null && methCall.Method.DeclaringType == typeof(GraphQLModule) &&
+                             methCall.Method.Name == nameof(GraphQLModule.FromMap);
+      if (usesFromMapFunc)
+        body = methCall.Arguments[0];
+      else
+        field.Flags |= FieldFlags.ResolverReturnsGraphQLObject;
+      // TODO: add return type validation
       var baseLambda = Expression.Lambda(body, entityParam);
       var newParentPrm = Expression.Parameter(typeof(object));
       var parentObj = Expression.Convert(newParentPrm, entityParam.Type);

@@ -194,7 +194,7 @@ namespace NGraphQL.Model.Construction {
             ResolverClass = resolverMethod.DeclaringType,
           ReturnsTask = returnsTask, TaskResultReader = taskResultReader };
       if (returnsTask)
-        field.Flags |= FieldFlags.ReturnsTask;
+        field.Flags |= FieldFlags.ResolverReturnsTask;
       if (typeDef is ObjectTypeDef otd && otd.TypeRole == ObjectTypeRole.Data)
         field.Flags |= FieldFlags.HasParentArg; 
       ValidateResolverMethodArguments(typeDef, field); 

@@ -51,13 +51,13 @@ namespace NGraphQL.Server.Execution {
     public override string ToString() => Field.ToString();
 
 
-    public object ConvertToOuputValue(object result) {
+    public object ConvertToOuputValue(object result, bool forceGqlTypes) {
       // validate result value
       //ValidateFieldResult(field, resultValue);
       if (Flags.IsSet(FieldFlags.ReturnsComplexType)) {
         var rank = this.Field.FieldDef.TypeRef.Rank;
         var path = this.CurrentScope.Path.Append(this.Field.Field.Key);
-        return CreateObjectFieldResultScopes(result, rank, path);
+        return CreateObjectFieldResultScopes(result, rank, path, forceGqlTypes);
       }
       // cover conversions like enums to strings
       var typeDef = Field.FieldDef.TypeRef.TypeDef;
@@ -65,7 +65,7 @@ namespace NGraphQL.Server.Execution {
       return outValue;
     }
 
-    public object CreateObjectFieldResultScopes(object rawResult, int rank, RequestPath path) {
+    public object CreateObjectFieldResultScopes(object rawResult, int rank, RequestPath path, bool resultIsGraphQLType) {
       if (rawResult == null)
         return null;
       
@@ -90,7 +90,7 @@ namespace NGraphQL.Server.Execution {
                 return null;
               break;
           }
-          var scope = new OutputObjectScope(this, path, rawResult);
+          var scope = new OutputObjectScope(this, path, rawResult, resultIsGraphQLType);
           AllResultScopes.Add(scope);
           var newCount = Interlocked.Increment(ref _requestContext.Metrics.OutputObjectCount);
           // check total count against quota
@@ -103,7 +103,7 @@ namespace NGraphQL.Server.Execution {
           var scopes = new List<object>();
           var index = 0;
           foreach(var item in list) {
-            var itemScope = CreateObjectFieldResultScopes(item, rank - 1, path.Append(index++));
+            var itemScope = CreateObjectFieldResultScopes(item, rank - 1, path.Append(index++), resultIsGraphQLType);
             scopes.Add(itemScope); 
           }
           return scopes;
@@ -137,7 +137,7 @@ namespace NGraphQL.Server.Execution {
       foreach (var scope in this.AllParentScopes) {
         if (!results.TryGetValue((TEntity)scope.Entity, out var result))
           result = valueForMissingKeys;
-        var outValue = this.ConvertToOuputValue(result);
+        var outValue = this.ConvertToOuputValue(result, false);
         scope.SetValue(this.FieldIndex, outValue);
       }
       this.BatchResultWasSet = true;

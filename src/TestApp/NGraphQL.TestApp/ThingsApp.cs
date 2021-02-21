@@ -62,7 +62,7 @@ namespace NGraphQL.TestApp {
     [DeprecatedDir("Deprecate-reason1")]
     public string Tag;
 
-    public IThingIntfEntity ThingEntity; 
+    public IThingIntfEntity IntfThing; 
   }
 
   [DebuggerDisplay("{Name}")]
@@ -138,13 +138,13 @@ namespace NGraphQL.TestApp {
       Things = new List<Thing>() {
           new Thing() { Name = "Name1", Id = 1, Descr = "Descr1",
             SomeDate = date0, DateQ = date0.AddHours(1), TheKind = ThingKind.KindOne,
-            Flags = TheFlags.FlagOne | TheFlags.FlagThree, ThingEntity = new ThingEntity()},
+            Flags = TheFlags.FlagOne | TheFlags.FlagThree, IntfThing = new ThingEntity()},
           new Thing() { Name = "Name2", Id = 2, Descr = "Descr2",
             SomeDate = date0, DateQ = null, TheKind = ThingKind.KindTwo,
-            Flags = TheFlags.FlagTwo, ThingEntity = new ThingEntity()},
+            Flags = TheFlags.FlagTwo, IntfThing = new ThingEntity()},
           new Thing() { Name = "Name3", Id = 3, Descr = "Descr3",
             SomeDate = date0, DateQ = date0, TheKind = ThingKind.KindThree,
-            Flags = TheFlags.FlagOne | TheFlags.FlagTwo, ThingEntity = new ThingEntity()},
+            Flags = TheFlags.FlagOne | TheFlags.FlagTwo, IntfThing = new ThingEntity()},
       };
       Things[0].NextThing = Things[1];
       Things[1].NextThing = Things[2];

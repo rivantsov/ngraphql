@@ -18,9 +18,10 @@ namespace NGraphQL.Server.Execution {
     public static readonly IList<OutputObjectScope> EmptyList = new OutputObjectScope[] { };
 
     public RequestPath Path; 
-    public readonly IFieldContext SourceFieldContext;
+    public readonly FieldContext SourceFieldContext;
     public ObjectTypeDef MappedTypeDef; // when field is union or interface
     public object Entity;
+    public bool EntityIsGqlType; 
 
     public IList<MappedField> Fields { get; private set; }
     object[] _values;
@@ -31,11 +32,13 @@ namespace NGraphQL.Server.Execution {
       Path = new RequestPath(); 
     }
 
-    public OutputObjectScope(IFieldContext sourceFieldContext, RequestPath path, object entity) {
+    public OutputObjectScope(FieldContext sourceFieldContext, RequestPath path, object entity, bool entityIsGqlType) {
       SourceFieldContext = sourceFieldContext;
       Path = path; 
       Entity = entity;
+      EntityIsGqlType = entityIsGqlType; 
     }
+
     public override string ToString() {
       return Entity?.ToString() ?? "(root)";
     }

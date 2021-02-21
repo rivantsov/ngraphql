@@ -39,13 +39,13 @@ namespace NGraphQL.Model {
   public enum FieldFlags {
     None = 0,
     Nullable = 1,
-    ReturnsComplexType = 1 << 1,
-    ReturnsTask = 1 << 2,
-    Hidden = 1 << 3,
+    Hidden = 1 << 1,
+    // indicator of parent arg in resolver method for the field
+    HasParentArg = 1 << 2,
 
-    IsBatched = 1 << 4,
-    // indicators of arguments in resolver method for the field
-    HasParentArg = 1 << 5,
+    ReturnsComplexType = 1 << 4,
+    ResolverReturnsGraphQLObject = 1 << 5,
+    ResolverReturnsTask = 1 << 6,
   }
 
 }

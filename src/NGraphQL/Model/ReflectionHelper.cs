@@ -64,5 +64,29 @@ namespace NGraphQL.Model {
       }
     }
 
+    public static object GetMemberValue(this MemberInfo member, object obj) {
+      switch (member) {
+        case PropertyInfo pi:
+          return pi.GetValue(obj);
+        case FieldInfo fi:
+          return fi.GetValue(obj);
+      }
+      return null;
+    }
+
+    public static Type GetMemberReturnType(this MemberInfo member) {
+      switch (member) {
+        case PropertyInfo pi:
+          return pi.PropertyType;
+        case FieldInfo fi:
+          return fi.FieldType;
+        case MethodInfo mi:
+          return mi.ReturnType;
+        case ConstructorInfo ci:
+          return null;
+      }
+      throw new Exception($"Invalid argument for GetMemberType: {member.Name}");
+    }
+
   }
 }

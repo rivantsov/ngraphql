@@ -44,7 +44,7 @@ namespace NGraphQL.Server.Execution {
         var opFieldContext = new FieldContext(_requestContext, this, _operationField, _fieldIndex);
         opFieldContext.CurrentScope = _parentScope;
         var result = await InvokeResolverAsync(opFieldContext);
-        var opOutValue = opFieldContext.ConvertToOuputValue(result);
+        var opOutValue = opFieldContext.ConvertToOuputValue(result, false);
         _parentScope.SetValue(_fieldIndex, opOutValue);
         // for fields returning objects, save for further processing of results
         if (opFieldContext.Flags.IsSet(FieldFlags.ReturnsComplexType))
@@ -112,24 +112,32 @@ namespace NGraphQL.Server.Execution {
       foreach (var scope in parentScopes)
         scope.Init(objTypeDef, mappedFields);
 
-      for(int fldIndex = 0; fldIndex < mappedFields.Count; fldIndex++) {
+      for (int fldIndex = 0; fldIndex < mappedFields.Count; fldIndex++) {
         var mappedField = mappedFields[fldIndex];
-        var returnsComplexType = mappedField.FieldDef.Flags.IsSet(FieldFlags.ReturnsComplexType);
+        var fldDef = mappedField.FieldDef;
+
+        var returnsComplexType = fldDef.Flags.IsSet(FieldFlags.ReturnsComplexType);
         var fieldContext = new FieldContext(_requestContext, this, mappedField, fldIndex, parentScopes);
         foreach (var scope in fieldContext.AllParentScopes) {
           if (fieldContext.BatchResultWasSet && scope.HasValue(fldIndex))
             continue;
           fieldContext.CurrentScope = scope;
-          object result = null; 
-          switch(mappedField.FieldDef.ExecutionType) {
-            case FieldExecutionType.Reader:
-              result = InvokeFieldReader(fieldContext, fieldContext.CurrentScope.Entity);
-              break;
-            case FieldExecutionType.Resolver:
-              result = await InvokeResolverAsync(fieldContext);
-              break; 
-          }
-          var outValue = fieldContext.ConvertToOuputValue(result);
+          object result = null;
+          // special case, when parent is Gql type, not entity; in this case just read its property
+          if (scope.EntityIsGqlType) {
+            result = ReadGraphQLObjectValue(fldDef, scope.Entity);
+          } else {
+            switch (fldDef.ExecutionType) {
+              case FieldExecutionType.Reader:
+                result = InvokeFieldReader(fieldContext, fieldContext.CurrentScope.Entity);
+                break;
+              case FieldExecutionType.Resolver:
+                result = await InvokeResolverAsync(fieldContext);
+                break;
+            }
+          } // else
+          var forceGqlTypes = scope.EntityIsGqlType || fldDef.Flags.IsSet(FieldFlags.ResolverReturnsGraphQLObject);
+          var outValue = fieldContext.ConvertToOuputValue(result, forceGqlTypes);
           if (!fieldContext.BatchResultWasSet)
             scope.SetValue(fldIndex, outValue);
         } //foreach scope
@@ -141,6 +149,9 @@ namespace NGraphQL.Server.Execution {
       } //foreach fldIndex
     } //method
 
+    private object ReadGraphQLObjectValue(FieldDef fldDef, object obj) {
+      return ReflectionHelper.GetMemberValue(fldDef.ClrMember, obj);
+    }
 
     private void Fail() {
       _failed = true;
