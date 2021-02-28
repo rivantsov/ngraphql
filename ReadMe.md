@@ -17,7 +17,7 @@
 * Fast, efficient query parser; query cache - parsed queries are saved in cache for future reuse with different input variables
 * Facilities for input validation and returning failures as multiple GraphQL errors
 * Robust implementation of batching (N+1 problem)
-* Integration with relational databases and ORMs - [A BookStore Sample](https://github.com/rivantsov/vita) shows a GraphQL server on top of a data-connected application, with batching support.    
+* Integration with relational databases and ORMs - the [BookStore Sample](https://github.com/rivantsov/vita) shows a GraphQL server on top of a data-connected application, with batching support.    
 * Built-in logging and diagnostics, query timings and metrics
 
 ## Packages and Components
@@ -38,6 +38,8 @@ Run the **unit tests** and see the many request/response examples used there. Th
 See also [Star Wars Example](https://github.com/rivantsov/starwars) in a separate github repository. 
 
 [VITA](https://github.com/rivantsov/vita) ORM contains a sample project implementing a GraphQL Server for a BookStore sample application. Among other things, it shows how (N+1) problem can be efficiently handled **automagically** by a smart-enough ORM. Most of the related entities like *Book.Publisher* or *Book.Authors* are batch-loaded automatically by the ORM. 
+
+To see some request/response samples, inspect the file [UnitTestsLog](misc/UnitTestsLog.txt). It is a complete log file for a run of all tests in unit tests project. It contains requests, responses and metrics data.  
 
 ## Documentation
 See the [Wiki pages](https://github.com/rivantsov/ngraphql/wiki) for this project. 

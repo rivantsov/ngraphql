@@ -1,0 +1,6414 @@
+
+
+==================================== Test Method Test_Errors_InvalidQuery ================================================
+
+Testing: error - unknown selection field.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query myQuery { 
+  things { 
+      name, 
+      nextThing { name, unknownField }, 
+  }  
+}",
+  "variables": null
+}
+
+Response:
+{
+  "errors": [
+    {
+      "message": "Field 'unknownField' not found on type 'Thing'.",
+      "locations": [
+        {
+          "line": 5,
+          "column": 25
+        }
+      ],
+      "path": [
+        "things",
+        "nextThing",
+        "unknownField"
+      ],
+      "extensions": {
+        "code": "BAD_REQUEST"
+      }
+    }
+  ],
+  "data": null
+}
+
+// execution time: 47.8611 ms, request from cache: False, threads: 0,  resolver calls: 0, output objects: 0
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing: error - object-type field must have a selection subset.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query myQuery { 
+  getThing(id: 1) {
+    name, 
+    nextThing          # error - selection subset is missing
+  } 
+}",
+  "variables": null
+}
+
+Response:
+{
+  "errors": [
+    {
+      "message": "Field 'nextThing' of type 'Thing' must have a selection subset.",
+      "locations": [
+        {
+          "line": 5,
+          "column": 5
+        }
+      ],
+      "path": [
+        "getThing",
+        "nextThing"
+      ],
+      "extensions": {
+        "code": "BAD_REQUEST"
+      }
+    }
+  ],
+  "data": null
+}
+
+// execution time: 10.0962 ms, request from cache: False, threads: 0,  resolver calls: 0, output objects: 0
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing: error - scalar, enum fields may not have a selection subset.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query { 
+  things {  name { abc } } 
+}",
+  "variables": null
+}
+
+Response:
+{
+  "errors": [
+    {
+      "message": "Field 'name' of type 'String' may not have a selection subset.",
+      "locations": [
+        {
+          "line": 3,
+          "column": 20
+        }
+      ],
+      "path": [
+        "things",
+        "name"
+      ],
+      "extensions": {
+        "code": "BAD_REQUEST"
+      }
+    }
+  ],
+  "data": null
+}
+
+// execution time: 0.2619 ms, request from cache: False, threads: 0,  resolver calls: 0, output objects: 0
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing: error - default (anonymous) query may not be combined with other operations.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+# this is a default query
+{ 
+  things {  name { abc }, def } 
+}
+
+# this is another query
+query { 
+  things {  name { abc }, def } 
+}
+",
+  "variables": null
+}
+
+Response:
+{
+  "errors": [
+    {
+      "message": "If the request contains a default (anonymous) query, it cannot contain any other operations.",
+      "locations": [
+        {
+          "line": 8,
+          "column": 1
+        }
+      ],
+      "path": [],
+      "extensions": {
+        "code": "BAD_REQUEST"
+      }
+    }
+  ],
+  "data": null
+}
+
+// execution time: 1.3476 ms, request from cache: False, threads: 0,  resolver calls: 0, output objects: 0
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+
+==================================== Test Method Test_Errors_Syntax ================================================
+
+Testing: syntax error, invalid character.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query myQuery { 
+  things { 
+      name, 
+      nextThing { ? name }, 
+  }  
+}",
+  "variables": null
+}
+
+Response:
+{
+  "errors": [
+    {
+      "message": "Query parsing failed: Invalid character: '?'.",
+      "locations": [
+        {
+          "line": 5,
+          "column": 19
+        }
+      ],
+      "path": [],
+      "extensions": {
+        "code": "SYNTAX_ERROR"
+      }
+    }
+  ],
+  "data": null
+}
+
+// execution time: 8.3041 ms, request from cache: False, threads: 0,  resolver calls: 0, output objects: 0
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing: syntax error, unbalanced braces.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query myQuery { 
+  things {  name ]          # error, should be right brace '}' here 
+  }  
+}",
+  "variables": null
+}
+
+Response:
+{
+  "errors": [
+    {
+      "message": "Query parsing failed: Unmatched closing brace ']'.",
+      "locations": [
+        {
+          "line": 3,
+          "column": 18
+        }
+      ],
+      "path": [],
+      "extensions": {
+        "code": "SYNTAX_ERROR"
+      }
+    }
+  ],
+  "data": null
+}
+
+// execution time: 0.3786 ms, request from cache: False, threads: 0,  resolver calls: 0, output objects: 0
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+
+==================================== Test Method Test_Fragments ================================================
+
+Testing: fragment with object field and selection subset.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query myQuery { 
+  getThing(id: 1) {
+    ...Flds 
+  }
+}
+fragment Flds on Thing {
+    name
+    nextThing {
+      name
+      nextId: id
+    }
+}
+",
+  "variables": null
+}
+
+Response:
+{
+  "data": {
+    "getThing": {
+      "name": "Name1",
+      "nextThing": {
+        "name": "Name2",
+        "nextId": 2
+      }
+    }
+  }
+}
+
+// execution time: 24.6752 ms, request from cache: False, threads: 1,  resolver calls: 1, output objects: 2
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing: inline fragment with 'On' condition.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query myQuery { 
+  getThing(id: 1) {
+    name
+    ... on Thing {
+      id
+    }
+  }
+}
+",
+  "variables": null
+}
+
+Response:
+{
+  "data": {
+    "getThing": {
+      "name": "Name1",
+      "id": 1
+    }
+  }
+}
+
+// execution time: 1.7728 ms, request from cache: False, threads: 1,  resolver calls: 1, output objects: 1
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing: inline fragment without 'On' condition and with @include(if:true).
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query myQuery ($inc: Boolean) { 
+  getThing(id: 1) {
+    name
+    ... @include(if: $inc) {
+      id
+    }
+  }
+}
+",
+  "variables": {
+    "inc": true
+  }
+}
+
+Response:
+{
+  "data": {
+    "getThing": {
+      "name": "Name1",
+      "id": 1
+    }
+  }
+}
+
+// execution time: 8.5078 ms, request from cache: False, threads: 1,  resolver calls: 1, output objects: 1
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing: same but with @include(if:false)
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query myQuery ($inc: Boolean) { 
+  getThing(id: 1) {
+    name
+    ... @include(if: $inc) {
+      id
+    }
+  }
+}
+",
+  "variables": {
+    "inc": false
+  }
+}
+
+Response:
+{
+  "data": {
+    "getThing": {
+      "name": "Name1"
+    }
+  }
+}
+
+// execution time: 0.1512 ms, request from cache: True, threads: 1,  resolver calls: 1, output objects: 1
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing: query on union with fragment with conditional-on-type inline fragments 
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query { 
+  uList: getThingsUnionList() { 
+    ...UnionFields  
+  }
+}
+fragment UnionFields on ThingsUnion {
+    __typename
+    name
+    ... on Thing {
+      nextThing {
+        nextName: name
+      }
+    }
+    ... on OtherThing {
+      idStr
+    }
+}",
+  "variables": null
+}
+
+Response:
+{
+  "data": {
+    "uList": [
+      {
+        "__typename": "Thing",
+        "name": "Name1",
+        "nextThing": {
+          "nextName": "Name2"
+        }
+      },
+      {
+        "__typename": "OtherThing",
+        "name": "Other-1-a",
+        "idStr": "1"
+      }
+    ]
+  }
+}
+
+// execution time: 4.8366 ms, request from cache: False, threads: 1,  resolver calls: 1, output objects: 3
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+
+==================================== Test Method Test_FragmentsInline ================================================
+
+Testing: Testing inline fragment
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query  { 
+  getSomeNamedObjects {
+    name
+    ... on OtherThing {
+      idStr
+    }
+  }
+}
+",
+  "variables": null
+}
+
+Response:
+{
+  "data": {
+    "getSomeNamedObjects": [
+      {
+        "name": "Name1"
+      },
+      {
+        "name": "Other-1-a",
+        "idStr": "1"
+      }
+    ]
+  }
+}
+
+// execution time: 0.8631 ms, request from cache: False, threads: 1,  resolver calls: 1, output objects: 2
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+
+==================================== Test Method Test_Fragments_Errors ================================================
+
+Testing: error - invalid (unknown) field in a fragment 
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query myQuery { 
+  getThing(id: 1) {
+    ...Fr1 
+  }
+}
+fragment Fr1 on Thing {
+    nameX
+    ...Fr2
+}
+fragment Fr2 on NamedObj {
+    name2
+}
+",
+  "variables": null
+}
+
+Response:
+{
+  "errors": [
+    {
+      "message": "Fragment Fr1: field 'nameX' not defined on type 'Thing'.",
+      "locations": [
+        {
+          "line": 8,
+          "column": 5
+        }
+      ],
+      "path": [
+        "Fr1",
+        "nameX"
+      ],
+      "extensions": {
+        "code": "BAD_REQUEST"
+      }
+    },
+    {
+      "message": "Fragment Fr2: field 'name2' not defined on type 'NamedObj'.",
+      "locations": [
+        {
+          "line": 12,
+          "column": 5
+        }
+      ],
+      "path": [
+        "Fr2",
+        "name2"
+      ],
+      "extensions": {
+        "code": "BAD_REQUEST"
+      }
+    }
+  ],
+  "data": null
+}
+
+// execution time: 0.3658 ms, request from cache: False, threads: 0,  resolver calls: 0, output objects: 0
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing: error - self-ref and circular ref fragments; circular refs are invalid at top level.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query myQuery { 
+  getThing(id: 1) {
+    ...Fr1 
+  }
+}
+fragment Fr1 on Thing {
+    name
+    ...Fr2
+}
+fragment Fr2 on Thing {
+    name
+    ...Fr1
+}
+",
+  "variables": null
+}
+
+Response:
+{
+  "errors": [
+    {
+      "message": "Fragment Fr1 is self-referencing, possibly through circular references with other fragments.",
+      "locations": [
+        {
+          "line": 7,
+          "column": 1
+        }
+      ],
+      "path": [
+        "Fr1"
+      ],
+      "extensions": {
+        "code": "BAD_REQUEST"
+      }
+    },
+    {
+      "message": "Fragment Fr2 is self-referencing, possibly through circular references with other fragments.",
+      "locations": [
+        {
+          "line": 11,
+          "column": 1
+        }
+      ],
+      "path": [
+        "Fr2"
+      ],
+      "extensions": {
+        "code": "BAD_REQUEST"
+      }
+    }
+  ],
+  "data": null
+}
+
+// execution time: 0.4096 ms, request from cache: False, threads: 0,  resolver calls: 0, output objects: 0
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing: self-referencing fragment; self-ref and circular refs are OK when inside selection subsets.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query myQuery { 
+  getThing(id: 1) {
+    ...ThingDetails 
+  }
+}
+fragment ThingDetails on Thing {
+    name
+    nextThing {
+      ...ThingDetails
+    }
+}
+",
+  "variables": null
+}
+
+Response:
+{
+  "data": {
+    "getThing": {
+      "name": "Name1",
+      "nextThing": {
+        "name": "Name2",
+        "nextThing": {
+          "name": "Name3",
+          "nextThing": null
+        }
+      }
+    }
+  }
+}
+
+// execution time: 0.4269 ms, request from cache: False, threads: 1,  resolver calls: 1, output objects: 3
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing: using self-referencing fragment to unfold the type definition
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+#                      querying list of fields of an input type; print out field name, type
+query {
+  __type (name: \"InputObjWithList\") {
+    name
+    kind
+    inputFields {
+      name
+      type {
+        ...TypeDetails
+      }
+    }
+  }
+}
+fragment TypeDetails on __Type {
+    displayName      # this is our extension of the spec
+    kind
+    ofType {
+      ...TypeDetails
+    }
+}
+",
+  "variables": null
+}
+
+Response:
+{
+  "data": {
+    "__type": {
+      "name": "InputObjWithList",
+      "kind": "INPUT_OBJECT",
+      "inputFields": [
+        {
+          "name": "list",
+          "type": {
+            "displayName": "[[Int!]]!",
+            "kind": "NON_NULL",
+            "ofType": {
+              "displayName": "[[Int!]]",
+              "kind": "LIST",
+              "ofType": {
+                "displayName": "[Int!]",
+                "kind": "LIST",
+                "ofType": {
+                  "displayName": "Int!",
+                  "kind": "NON_NULL",
+                  "ofType": {
+                    "displayName": "Int",
+                    "kind": "SCALAR",
+                    "ofType": null
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+
+// execution time: 17.0037 ms, request from cache: False, threads: 1,  resolver calls: 1, output objects: 7
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+
+==================================== Test Method Test_Input_FieldArgs ================================================
+
+Testing: error - invalid arg names.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query { 
+  echo: echoInputValuesWithNulls(boolValXYZ: true, longValXYZ: 123, doubleVal: 23.45)
+}",
+  "variables": null
+}
+
+Response:
+{
+  "errors": [
+    {
+      "message": "Field(dir) echoInputValuesWithNulls: argument boolValXYZ not defined.",
+      "locations": [
+        {
+          "line": 3,
+          "column": 34
+        }
+      ],
+      "path": [
+        "echoInputValuesWithNulls",
+        "boolValXYZ"
+      ],
+      "extensions": {
+        "code": "BAD_REQUEST"
+      }
+    },
+    {
+      "message": "Field(dir) echoInputValuesWithNulls: argument longValXYZ not defined.",
+      "locations": [
+        {
+          "line": 3,
+          "column": 52
+        }
+      ],
+      "path": [
+        "echoInputValuesWithNulls",
+        "longValXYZ"
+      ],
+      "extensions": {
+        "code": "BAD_REQUEST"
+      }
+    }
+  ],
+  "data": null
+}
+
+// execution time: 2.8062 ms, request from cache: False, threads: 0,  resolver calls: 0, output objects: 0
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing: error - args referring to vars of wrong type.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query ($str: String) { 
+  echo: echoInputValuesWithNulls(longVal: $str)
+}",
+  "variables": null
+}
+
+Response:
+{
+  "errors": [
+    {
+      "message": "Incompatible types: variable $str cannot be converted to type 'Long'",
+      "locations": [
+        {
+          "line": 3,
+          "column": 43
+        }
+      ],
+      "path": [
+        "echoInputValuesWithNulls",
+        "longVal"
+      ],
+      "extensions": {
+        "code": "INPUT_ERROR"
+      }
+    }
+  ],
+  "data": null
+}
+
+// execution time: 2.0721 ms, request from cache: False, threads: 0,  resolver calls: 0, output objects: 0
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing: error - invalid arg name for a directive.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query { 
+  things { name @include(ifXYZ: true) }
+}",
+  "variables": null
+}
+
+Response:
+{
+  "errors": [
+    {
+      "message": "Field(dir) @include: argument ifXYZ not defined.",
+      "locations": [
+        {
+          "line": 3,
+          "column": 26
+        }
+      ],
+      "path": [
+        "things",
+        "name",
+        "@include",
+        "ifXYZ"
+      ],
+      "extensions": {
+        "code": "BAD_REQUEST"
+      }
+    }
+  ],
+  "data": null
+}
+
+// execution time: 0.535 ms, request from cache: False, threads: 0,  resolver calls: 0, output objects: 0
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing: error - passing wrong value types to field args using a literal.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query myQuery() { 
+  echo: echoInputValuesWithNulls (longVal: \"abc\")
+}",
+  "variables": {}
+}
+
+Response:
+{
+  "errors": [
+    {
+      "message": "Invalid long value: '\"abc\"'",
+      "locations": [
+        {
+          "line": 3,
+          "column": 44
+        }
+      ],
+      "path": [
+        "echoInputValuesWithNulls",
+        "longVal"
+      ],
+      "extensions": {
+        "code": "INPUT_ERROR"
+      }
+    }
+  ],
+  "data": null
+}
+
+// execution time: 2.0249 ms, request from cache: False, threads: 0,  resolver calls: 0, output objects: 0
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing: error - passing wrong value types to field args, using bad value in a variable.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query myQuery($longVal: Long, $doubleVal: Double) { 
+  echo: echoInputValuesWithNulls (longVal: $longVal, doubleVal: $doubleVal)
+}",
+  "variables": {
+    "longVal": true,
+    "doubleVal": "abc"
+  }
+}
+
+Response:
+{
+  "errors": [
+    {
+      "message": "Variable $longVal: failed to convert value 'True' to type Long: Invalid Long value: 'True'",
+      "locations": [
+        {
+          "line": 2,
+          "column": 15
+        }
+      ],
+      "path": [
+        "longVal"
+      ],
+      "extensions": {
+        "code": "INPUT_ERROR"
+      }
+    },
+    {
+      "message": "Variable $doubleVal: failed to convert value 'abc' to type Double: Invalid Double value: 'abc'",
+      "locations": [
+        {
+          "line": 2,
+          "column": 31
+        }
+      ],
+      "path": [
+        "doubleVal"
+      ],
+      "extensions": {
+        "code": "INPUT_ERROR"
+      }
+    }
+  ],
+  "data": null
+}
+
+// execution time: 1.9549 ms, request from cache: False, threads: 0,  resolver calls: 0, output objects: 0
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing: error - passing wrong value types to field args, using variables; test multiple errors.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query myQuery($boolVal: Boolean, $longVal: Long, $doubleVal: Double, $strVal: String, $kindVal: ThingKind, $flags: [TheFlags!]) { 
+  # totally wrong match of args, expected 3 errors
+  echo: echoInputValuesWithNulls (boolVal: $longVal, longVal: $doubleVal, doubleVal: $strVal ) 
+}",
+  "variables": {
+    "boolVal": true,
+    "longVal": 654321,
+    "doubleVal": 543.21,
+    "kindVal": "KIND_ONE",
+    "flags": [
+      "FLAG_ONE",
+      "FLAG_TWO"
+    ],
+    "strVal": "SomeString"
+  }
+}
+
+Response:
+{
+  "errors": [
+    {
+      "message": "Incompatible types: variable $longVal cannot be converted to type 'Boolean'",
+      "locations": [
+        {
+          "line": 4,
+          "column": 44
+        }
+      ],
+      "path": [
+        "echoInputValuesWithNulls",
+        "boolVal"
+      ],
+      "extensions": {
+        "code": "INPUT_ERROR"
+      }
+    },
+    {
+      "message": "Incompatible types: variable $doubleVal cannot be converted to type 'Long'",
+      "locations": [
+        {
+          "line": 4,
+          "column": 63
+        }
+      ],
+      "path": [
+        "echoInputValuesWithNulls",
+        "longVal"
+      ],
+      "extensions": {
+        "code": "INPUT_ERROR"
+      }
+    },
+    {
+      "message": "Incompatible types: variable $strVal cannot be converted to type 'Double'",
+      "locations": [
+        {
+          "line": 4,
+          "column": 86
+        }
+      ],
+      "path": [
+        "echoInputValuesWithNulls",
+        "doubleVal"
+      ],
+      "extensions": {
+        "code": "INPUT_ERROR"
+      }
+    }
+  ],
+  "data": null
+}
+
+// execution time: 1.4803 ms, request from cache: False, threads: 0,  resolver calls: 0, output objects: 0
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+
+==================================== Test Method Test_Input_FlagsEnum ================================================
+
+Testing: passing flags enum value as literal array.
+
+Request: 
+{
+  "operationName": null,
+  "query": " query { echoFlags(flags: [FLAG_ONE FLAG_THREE]) }",
+  "variables": null
+}
+
+Response:
+{
+  "data": {
+    "echoFlags": [
+      "FLAG_ONE",
+      "FLAG_THREE"
+    ]
+  }
+}
+
+// execution time: 4.6754 ms, request from cache: False, threads: 1,  resolver calls: 1, output objects: 0
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing: passing empty array as flags enum value.
+
+Request: 
+{
+  "operationName": null,
+  "query": " query { echoFlags(flags: []) }",
+  "variables": null
+}
+
+Response:
+{
+  "data": {
+    "echoFlags": []
+  }
+}
+
+// execution time: 0.7188 ms, request from cache: False, threads: 1,  resolver calls: 1, output objects: 0
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing: passing null as flags enum value; should return empty array.
+
+Request: 
+{
+  "operationName": null,
+  "query": " query { echoFlags(flags: null) }",
+  "variables": null
+}
+
+Response:
+{
+  "data": {
+    "echoFlags": []
+  }
+}
+
+// execution time: 0.3036 ms, request from cache: False, threads: 1,  resolver calls: 1, output objects: 0
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing:  verify flags enum value passed to resolver.
+
+Request: 
+{
+  "operationName": null,
+  "query": " query { echoFlagsStr(flags: [FLAG_TWO FLAG_THREE]) }    # returns c# value.ToString() ",
+  "variables": null
+}
+
+Response:
+{
+  "data": {
+    "echoFlagsStr": "FlagTwo,FlagThree"
+  }
+}
+
+// execution time: 0.7423 ms, request from cache: False, threads: 1,  resolver calls: 1, output objects: 0
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing:  testing flags enum field on object. ApiThing.theFlags is [Flags] enum; the value returned should be list of strings.
+
+Request: 
+{
+  "operationName": null,
+  "query": " query {  thing: getThing(id:1) { id name kind theFlags } }",
+  "variables": null
+}
+
+Response:
+{
+  "data": {
+    "thing": {
+      "id": 1,
+      "name": "Name1",
+      "kind": "KIND_ONE",
+      "theFlags": [
+        "FLAG_ONE",
+        "FLAG_THREE"
+      ]
+    }
+  }
+}
+
+// execution time: 0.589 ms, request from cache: False, threads: 1,  resolver calls: 1, output objects: 1
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+
+==================================== Test Method Test_Input_InputObjects ================================================
+
+Testing: literal input object as argument.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query { 
+  res: echoInputObj(inpObj: {id: 1, name: \"abc\", num: 0})       # returns inpObj.ToString()
+}",
+  "variables": null
+}
+
+Response:
+{
+  "data": {
+    "res": "id:1,name:abc,num:0"
+  }
+}
+
+// execution time: 3.4261 ms, request from cache: False, threads: 1,  resolver calls: 1, output objects: 0
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing: literal input object as argument, with some of its properties set from variables.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query myQuery($id : int) { 
+  res: echoInputObj(inpObj: {id: $id, name: \"abc\", num:456})
+}",
+  "variables": {
+    "id": 1
+  }
+}
+
+Response:
+{
+  "data": {
+    "res": "id:1,name:abc,num:456"
+  }
+}
+
+// execution time: 0.4319 ms, request from cache: False, threads: 1,  resolver calls: 1, output objects: 0
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing: literal input object as argument; variable value ($id) is not provided and is assigned from default.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query myQuery($num: Int!, $name: String!, $id: Int = 123) { 
+  echoInputObj (inpObj: {id: $id, num: $num, name: $name}) 
+}",
+  "variables": {
+    "num": 456,
+    "name": "SomeName"
+  }
+}
+
+Response:
+{
+  "data": {
+    "echoInputObj": "id:123,name:SomeName,num:456"
+  }
+}
+
+// execution time: 0.3778 ms, request from cache: False, threads: 1,  resolver calls: 1, output objects: 0
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing: complex input object in a variable.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query myQuery($inpObj: InputObj!) { 
+  echoInputObj (inpObj: $inpObj) 
+}",
+  "variables": {
+    "inpObj": {
+      "id": 123,
+      "name": "SomeName",
+      "num": 456
+    }
+  }
+}
+
+Response:
+{
+  "data": {
+    "echoInputObj": "id:123,name:SomeName,num:456"
+  }
+}
+
+// execution time: 0.2849 ms, request from cache: False, threads: 1,  resolver calls: 1, output objects: 0
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+
+==================================== Test Method Test_Input_InputTypes ================================================
+
+Testing: input values of various types.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query { 
+  res: echoInputValues(boolVal: true, intVal: 123, floatVal: 23.45, strVal: \"abc\", kindVal: KIND_ONE)
+}",
+  "variables": null
+}
+
+Response:
+{
+  "data": {
+    "res": "True|123|23.45|abc|KindOne"
+  }
+}
+
+// execution time: 2.4834 ms, request from cache: False, threads: 1,  resolver calls: 1, output objects: 0
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing: nullable input values of various types.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query { 
+  res: echoInputValuesWithNulls(boolVal: true, longVal: 123, doubleVal: 23.45, strVal: null, kindVal: KIND_ONE, flags: [FLAG_ONE])
+}",
+  "variables": null
+}
+
+Response:
+{
+  "data": {
+    "res": "True|123|23.45||KindOne|FlagOne"
+  }
+}
+
+// execution time: 1.192 ms, request from cache: False, threads: 1,  resolver calls: 1, output objects: 0
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing: hex notation for integer literals (0xFF).
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query { 
+  res: echoInputValuesWithNulls(boolVal: true, longVal: 0xFF, doubleVal: 23.45, strVal: null, kindVal: KIND_ONE, flags: [FLAG_ONE])
+}",
+  "variables": null
+}
+
+Response:
+{
+  "data": {
+    "res": "True|255|23.45||KindOne|FlagOne"
+  }
+}
+
+// execution time: 1.8557 ms, request from cache: False, threads: 1,  resolver calls: 1, output objects: 0
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+
+==================================== Test Method Test_Input_Lists ================================================
+
+Testing: passing a list as an argument (list as literal).
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query { 
+  res: echoIntArray(intVals: [3,2,1])
+}",
+  "variables": null
+}
+
+Response:
+{
+  "data": {
+    "res": "3,2,1"
+  }
+}
+
+// execution time: 4.1902 ms, request from cache: False, threads: 1,  resolver calls: 1, output objects: 0
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing: passing an enum array in argument (mapped to c# enum with [Flags] attr).
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query { 
+  res: echoEnumArray(flagVals: [FLAG_ONE, FLAG_TWO])              # returns flagVals.ToString()
+}",
+  "variables": null
+}
+
+Response:
+{
+  "data": {
+    "res": "FlagOne,FlagTwo"
+  }
+}
+
+// execution time: 0.9186 ms, request from cache: False, threads: 1,  resolver calls: 1, output objects: 0
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing: passing a list int[][], value from literal and variables.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query ($one: Int) { 
+  res: echoIntListRank2(values: [ [3, 2, $one], [6, 5, 4] ] )
+}",
+  "variables": {
+    "one": 1
+  }
+}
+
+Response:
+{
+  "data": {
+    "res": "3,2,1,6,5,4"
+  }
+}
+
+// execution time: 4.1983 ms, request from cache: False, threads: 1,  resolver calls: 1, output objects: 0
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+
+==================================== Test Method Test_Input_Nulls ================================================
+
+Testing: Nullable args are optional by definition; calling method with all (nullable) args missing
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query { 
+  echo: echoInputValuesWithNulls()
+}",
+  "variables": null
+}
+
+Response:
+{
+  "data": {
+    "echo": "|||||"
+  }
+}
+
+// execution time: 0.3594 ms, request from cache: False, threads: 1,  resolver calls: 1, output objects: 0
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing: value coersion.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query { 
+  echo: echoInputValuesWithNulls(boolVal: true, longVal: 123, doubleVal: 23, strVal: null, kindVal: KIND_ONE, flags: [FLAG_ONE])
+}",
+  "variables": null
+}
+
+Response:
+{
+  "data": {
+    "echo": "True|123|23||KindOne|FlagOne"
+  }
+}
+
+// execution time: 0.387 ms, request from cache: False, threads: 1,  resolver calls: 1, output objects: 0
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+
+==================================== Test Method Test_Input_Validation ================================================
+
+Testing: validation of input values in resolver code, posting response errors and aborting the request.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+mutation ($id: Int!, $newName: String!) { 
+  th: mutateThingWithValidation(id: $id, newName: $newName) { 
+         id, name 
+      }
+}",
+  "variables": {
+    "id": -1,
+    "newName": "Name  Tooo  Loooooooooooooooooooooong"
+  }
+}
+
+Response:
+{
+  "errors": [
+    {
+      "message": "Id value may not be negative.",
+      "locations": [
+        {
+          "line": 3,
+          "column": 3
+        }
+      ],
+      "path": [
+        "th"
+      ],
+      "extensions": {
+        "code": "INPUT_ERROR"
+      }
+    },
+    {
+      "message": "newName too long, max size = 10.",
+      "locations": [
+        {
+          "line": 3,
+          "column": 3
+        }
+      ],
+      "path": [
+        "th"
+      ],
+      "extensions": {
+        "code": "INPUT_ERROR"
+      }
+    }
+  ],
+  "data": {}
+}
+
+// execution time: 3.7674 ms, request from cache: False, threads: 1,  resolver calls: 0, output objects: 0
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing: same resolver method, different variable values, happy path - all values are OK.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+mutation ($id: Int!, $newName: String!) { 
+  th: mutateThingWithValidation(id: $id, newName: $newName) { 
+         id, name 
+      }
+}",
+  "variables": {
+    "id": 2,
+    "newName": "Name2_"
+  }
+}
+
+Response:
+{
+  "data": {
+    "th": {
+      "id": 2,
+      "name": "Name2_"
+    }
+  }
+}
+
+// execution time: 0.4781 ms, request from cache: True, threads: 1,  resolver calls: 1, output objects: 1
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+
+==================================== Test Method Test_Input_Variables ================================================
+
+Testing: missing variable value.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query myQuery($longVal: Long!) { 
+  echo: echoInputValuesWithNulls (longVal: $longVal)
+}",
+  "variables": null
+}
+
+Response:
+{
+  "errors": [
+    {
+      "message": "Value for required variable longVal is not provided.",
+      "locations": [
+        {
+          "line": 1,
+          "column": 1
+        }
+      ],
+      "path": [],
+      "extensions": {
+        "code": "INPUT_ERROR"
+      }
+    }
+  ],
+  "data": null
+}
+
+// execution time: 0.7004 ms, request from cache: False, threads: 0,  resolver calls: 0, output objects: 0
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing: unknown variable used in argument.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query myQuery($longVal: Long) { 
+  echo: echoInputValuesWithNulls (longVal: $longValXYZ)
+}",
+  "variables": {
+    "longVal": 654321
+  }
+}
+
+Response:
+{
+  "errors": [
+    {
+      "message": "Variable longValXYZ not defined.",
+      "locations": [
+        {
+          "line": 3,
+          "column": 44
+        }
+      ],
+      "path": [
+        "echoInputValuesWithNulls",
+        "longVal"
+      ],
+      "extensions": {
+        "code": "INPUT_ERROR"
+      }
+    }
+  ],
+  "data": null
+}
+
+// execution time: 0.399 ms, request from cache: False, threads: 0,  resolver calls: 0, output objects: 0
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing: variable value type mismatch - sending string value for a long var.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query myQuery($longVal: Long) { 
+  echo: echoInputValuesWithNulls ()
+}",
+  "variables": {
+    "longVal": "abc"
+  }
+}
+
+Response:
+{
+  "errors": [
+    {
+      "message": "Variable $longVal: failed to convert value 'abc' to type Long: Invalid Long value: 'abc'",
+      "locations": [
+        {
+          "line": 2,
+          "column": 15
+        }
+      ],
+      "path": [
+        "longVal"
+      ],
+      "extensions": {
+        "code": "INPUT_ERROR"
+      }
+    }
+  ],
+  "data": null
+}
+
+// execution time: 0.3561 ms, request from cache: False, threads: 0,  resolver calls: 0, output objects: 0
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing: string -> enum conversion; enum input values are sent as strings.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query myQuery($kindVal: ThingKind) { 
+  echo: echoInputValuesWithNulls (kindVal: $kindVal)
+}",
+  "variables": {
+    "kindVal": "KIND_ONE"
+  }
+}
+
+Response:
+{
+  "data": {
+    "echo": "||||KindOne|"
+  }
+}
+
+// execution time: 0.8615 ms, request from cache: False, threads: 1,  resolver calls: 1, output objects: 0
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing: int -> long? automatic conversion.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query myQuery($longVal: Long) { 
+  echo: echoInputValuesWithNulls (longVal: $longVal)
+}",
+  "variables": {
+    "longVal": 654321
+  }
+}
+
+Response:
+{
+  "data": {
+    "echo": "|654321||||"
+  }
+}
+
+// execution time: 0.3427 ms, request from cache: False, threads: 1,  resolver calls: 1, output objects: 0
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing: multiple input variables of various types, happy path.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query myQuery($boolVal: Boolean, $longVal: Long, $doubleVal: Double, $strVal: String, $kindVal: ThingKind, $flags: [TheFlags!]) { 
+  echo: echoInputValuesWithNulls (boolVal: $boolVal, longVal: $longVal, doubleVal: $doubleVal, strVal: $strVal, 
+                                  kindVal: $kindVal, flags: $flags )
+}",
+  "variables": {
+    "boolVal": true,
+    "longVal": 654321,
+    "doubleVal": 543.21,
+    "kindVal": "KIND_ONE",
+    "flags": [
+      "FLAG_ONE",
+      "FLAG_TWO"
+    ],
+    "strVal": "SomeString"
+  }
+}
+
+Response:
+{
+  "data": {
+    "echo": "True|654321|543.21|SomeString|KindOne|FlagOne, FlagTwo"
+  }
+}
+
+// execution time: 0.9076 ms, request from cache: False, threads: 1,  resolver calls: 1, output objects: 0
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+
+==================================== Test Method Test_Introspection_GraphiqlQuery ================================================
+
+Testing:  testing Graphiql introspection query.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+    query IntrospectionQuery {
+      __schema {
+        
+        queryType { name }
+        mutationType { name }
+        subscriptionType { name }
+        types {
+          ...FullType
+        }
+        directives {
+          name
+          description
+          
+          locations
+          args {
+            ...InputValue
+          }
+        }
+      }
+    }
+
+    fragment FullType on __Type {
+      kind
+      name
+      description
+      
+      fields(includeDeprecated: true) {
+        name
+        description
+        args {
+          ...InputValue
+        }
+        type {
+          ...TypeRef
+        }
+        isDeprecated
+        deprecationReason
+      }
+      inputFields {
+        ...InputValue
+      }
+      interfaces {
+        ...TypeRef
+      }
+      enumValues(includeDeprecated: true) {
+        name
+        description
+        isDeprecated
+        deprecationReason
+      }
+      possibleTypes {
+        ...TypeRef
+      }
+    }
+
+    fragment InputValue on __InputValue {
+      name
+      description
+      type { ...TypeRef }
+      defaultValue
+    }
+
+    fragment TypeRef on __Type {
+      kind
+      name
+      ofType {
+        kind
+        name
+        ofType {
+          kind
+          name
+          ofType {
+            kind
+            name
+            ofType {
+              kind
+              name
+              ofType {
+                kind
+                name
+                ofType {
+                  kind
+                  name
+                  ofType {
+                    kind
+                    name
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+        
+      ",
+  "variables": null
+}
+
+Response:
+{
+  "data": {
+    "__schema": {
+      "queryType": {
+        "name": "Query"
+      },
+      "mutationType": {
+        "name": "Mutation"
+      },
+      "subscriptionType": null,
+      "types": [
+        {
+          "kind": "SCALAR",
+          "name": "String",
+          "description": null,
+          "fields": [],
+          "inputFields": null,
+          "interfaces": null,
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "SCALAR",
+          "name": "Int",
+          "description": null,
+          "fields": [],
+          "inputFields": null,
+          "interfaces": null,
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "SCALAR",
+          "name": "Long",
+          "description": null,
+          "fields": [],
+          "inputFields": null,
+          "interfaces": null,
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "SCALAR",
+          "name": "Float",
+          "description": null,
+          "fields": [],
+          "inputFields": null,
+          "interfaces": null,
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "SCALAR",
+          "name": "Double",
+          "description": null,
+          "fields": [],
+          "inputFields": null,
+          "interfaces": null,
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "SCALAR",
+          "name": "Boolean",
+          "description": null,
+          "fields": [],
+          "inputFields": null,
+          "interfaces": null,
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "SCALAR",
+          "name": "ID",
+          "description": null,
+          "fields": [],
+          "inputFields": null,
+          "interfaces": null,
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "SCALAR",
+          "name": "DateTime",
+          "description": null,
+          "fields": [],
+          "inputFields": null,
+          "interfaces": null,
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "SCALAR",
+          "name": "Date",
+          "description": null,
+          "fields": [],
+          "inputFields": null,
+          "interfaces": null,
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "SCALAR",
+          "name": "Time",
+          "description": null,
+          "fields": [],
+          "inputFields": null,
+          "interfaces": null,
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "SCALAR",
+          "name": "Uuid",
+          "description": null,
+          "fields": [],
+          "inputFields": null,
+          "interfaces": null,
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "SCALAR",
+          "name": "Decimal",
+          "description": null,
+          "fields": [],
+          "inputFields": null,
+          "interfaces": null,
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "ENUM",
+          "name": "__TypeKind",
+          "description": null,
+          "fields": [],
+          "inputFields": null,
+          "interfaces": null,
+          "enumValues": [
+            {
+              "name": "SCALAR",
+              "description": null,
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "OBJECT",
+              "description": null,
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "INTERFACE",
+              "description": null,
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "UNION",
+              "description": null,
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "ENUM",
+              "description": null,
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "INPUT_OBJECT",
+              "description": null,
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "LIST",
+              "description": null,
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "NON_NULL",
+              "description": null,
+              "isDeprecated": false,
+              "deprecationReason": null
+            }
+          ],
+          "possibleTypes": null
+        },
+        {
+          "kind": "ENUM",
+          "name": "__DirectiveLocation",
+          "description": null,
+          "fields": [],
+          "inputFields": null,
+          "interfaces": null,
+          "enumValues": [
+            {
+              "name": "QUERY",
+              "description": null,
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "MUTATION",
+              "description": null,
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "SUBSCRIPTION",
+              "description": null,
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "FIELD",
+              "description": null,
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "FRAGMENT_DEFINITION",
+              "description": null,
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "FRAGMENT_SPREAD",
+              "description": null,
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "INLINE_FRAGMENT",
+              "description": null,
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "VARIABLE_DEFINITION",
+              "description": null,
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "SCHEMA",
+              "description": null,
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "SCALAR",
+              "description": null,
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "OBJECT",
+              "description": null,
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "FIELD_DEFINITION",
+              "description": null,
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "ARGUMENT_DEFINITION",
+              "description": null,
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "INTERFACE",
+              "description": null,
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "UNION",
+              "description": null,
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "ENUM",
+              "description": null,
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "ENUM_VALUE",
+              "description": null,
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "INPUT_OBJECT",
+              "description": null,
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "INPUT_FIELD_DEFINITION",
+              "description": null,
+              "isDeprecated": false,
+              "deprecationReason": null
+            }
+          ],
+          "possibleTypes": null
+        },
+        {
+          "kind": "OBJECT",
+          "name": "__Schema",
+          "description": null,
+          "fields": [
+            {
+              "name": "types",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "LIST",
+                  "name": null,
+                  "ofType": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "OBJECT",
+                      "name": "__Type",
+                      "ofType": null
+                    }
+                  }
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "queryType",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "OBJECT",
+                  "name": "__Type",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "mutationType",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "OBJECT",
+                  "name": "__Type",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "subscriptionType",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "OBJECT",
+                  "name": "__Type",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "directives",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "LIST",
+                  "name": null,
+                  "ofType": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "OBJECT",
+                      "name": "__Directive",
+                      "ofType": null
+                    }
+                  }
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            }
+          ],
+          "inputFields": null,
+          "interfaces": [],
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "OBJECT",
+          "name": "__Type",
+          "description": null,
+          "fields": [
+            {
+              "name": "fields",
+              "description": null,
+              "args": [
+                {
+                  "name": "includeDeprecated",
+                  "description": null,
+                  "type": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "SCALAR",
+                      "name": "Boolean",
+                      "ofType": null
+                    }
+                  },
+                  "defaultValue": "True"
+                }
+              ],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "LIST",
+                  "name": null,
+                  "ofType": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "OBJECT",
+                      "name": "__Field",
+                      "ofType": null
+                    }
+                  }
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "enumValues",
+              "description": null,
+              "args": [
+                {
+                  "name": "includeDeprecated",
+                  "description": null,
+                  "type": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "SCALAR",
+                      "name": "Boolean",
+                      "ofType": null
+                    }
+                  },
+                  "defaultValue": "True"
+                }
+              ],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "LIST",
+                  "name": null,
+                  "ofType": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "OBJECT",
+                      "name": "__EnumValue",
+                      "ofType": null
+                    }
+                  }
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "kind",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "ENUM",
+                  "name": "__TypeKind",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "interfaces",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "OBJECT",
+                    "name": "__Type",
+                    "ofType": null
+                  }
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "possibleTypes",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "OBJECT",
+                    "name": "__Type",
+                    "ofType": null
+                  }
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "inputFields",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "OBJECT",
+                    "name": "__InputValue",
+                    "ofType": null
+                  }
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "ofType",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "OBJECT",
+                "name": "__Type",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "displayName",
+              "description": "Full type spec, ex: [Int!]! .",
+              "args": [],
+              "type": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "name",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "description",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "isDeprecated",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "Boolean",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "deprecationReason",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            }
+          ],
+          "inputFields": null,
+          "interfaces": [],
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "OBJECT",
+          "name": "__Field",
+          "description": null,
+          "fields": [
+            {
+              "name": "args",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "LIST",
+                  "name": null,
+                  "ofType": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "OBJECT",
+                      "name": "__InputValue",
+                      "ofType": null
+                    }
+                  }
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "type",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "OBJECT",
+                  "name": "__Type",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "name",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "description",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "isDeprecated",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "Boolean",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "deprecationReason",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            }
+          ],
+          "inputFields": null,
+          "interfaces": [],
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "OBJECT",
+          "name": "__InputValue",
+          "description": null,
+          "fields": [
+            {
+              "name": "type",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "OBJECT",
+                  "name": "__Type",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "defaultValue",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "name",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "description",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "isDeprecated",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "Boolean",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "deprecationReason",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            }
+          ],
+          "inputFields": null,
+          "interfaces": [],
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "OBJECT",
+          "name": "__EnumValue",
+          "description": null,
+          "fields": [
+            {
+              "name": "name",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "description",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "isDeprecated",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "Boolean",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "deprecationReason",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            }
+          ],
+          "inputFields": null,
+          "interfaces": [],
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "OBJECT",
+          "name": "__Directive",
+          "description": null,
+          "fields": [
+            {
+              "name": "locations",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "LIST",
+                  "name": null,
+                  "ofType": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "ENUM",
+                      "name": "__DirectiveLocation",
+                      "ofType": null
+                    }
+                  }
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "args",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "LIST",
+                  "name": null,
+                  "ofType": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "OBJECT",
+                      "name": "__InputValue",
+                      "ofType": null
+                    }
+                  }
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "name",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "description",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "isDeprecated",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "Boolean",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "deprecationReason",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            }
+          ],
+          "inputFields": null,
+          "interfaces": [],
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "ENUM",
+          "name": "ThingKind",
+          "description": "Thing kind enumeration.",
+          "fields": [],
+          "inputFields": null,
+          "interfaces": null,
+          "enumValues": [
+            {
+              "name": "KIND_ONE",
+              "description": "Thing kind #1.",
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "KIND_TWO",
+              "description": null,
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "KIND_THREE",
+              "description": "This is kind Three",
+              "isDeprecated": true,
+              "deprecationReason": "KindThree is deprecated."
+            }
+          ],
+          "possibleTypes": null
+        },
+        {
+          "kind": "ENUM",
+          "name": "TheFlags",
+          "description": "Thing flags enumeration.",
+          "fields": [],
+          "inputFields": null,
+          "interfaces": null,
+          "enumValues": [
+            {
+              "name": "FLAG_ONE",
+              "description": null,
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "FLAG_TWO",
+              "description": null,
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "FLAG_THREE",
+              "description": null,
+              "isDeprecated": false,
+              "deprecationReason": null
+            }
+          ],
+          "possibleTypes": null
+        },
+        {
+          "kind": "OBJECT",
+          "name": "Thing",
+          "description": "A sample GraphQL output object.",
+          "fields": [
+            {
+              "name": "randoms",
+              "description": null,
+              "args": [
+                {
+                  "name": "count",
+                  "description": null,
+                  "type": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "SCALAR",
+                      "name": "Int",
+                      "ofType": null
+                    }
+                  },
+                  "defaultValue": "3"
+                }
+              ],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "LIST",
+                  "name": null,
+                  "ofType": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "SCALAR",
+                      "name": "Int",
+                      "ofType": null
+                    }
+                  }
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "id",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "Int",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "name",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "description",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "kind",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "ENUM",
+                  "name": "ThingKind",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "theFlags",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "LIST",
+                  "name": null,
+                  "ofType": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "ENUM",
+                      "name": "TheFlags",
+                      "ofType": null
+                    }
+                  }
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "dateTimeOpt",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "SCALAR",
+                "name": "DateTime",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "someDateTime",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "DateTime",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "nextThing",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "OBJECT",
+                "name": "Thing",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "otherThingWrapped",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "OBJECT",
+                "name": "OtherThingWrapper",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "tag",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "mainOtherThing",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "OBJECT",
+                "name": "OtherThing",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "otherThings",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "LIST",
+                  "name": null,
+                  "ofType": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "OBJECT",
+                      "name": "OtherThing",
+                      "ofType": null
+                    }
+                  }
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "intfThing",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "OBJECT",
+                  "name": "ThingForIntfEntity",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            }
+          ],
+          "inputFields": null,
+          "interfaces": [
+            {
+              "kind": "INTERFACE",
+              "name": "NamedObj",
+              "ofType": null
+            },
+            {
+              "kind": "INTERFACE",
+              "name": "ObjWithId",
+              "ofType": null
+            }
+          ],
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "OBJECT",
+          "name": "OtherThing",
+          "description": null,
+          "fields": [
+            {
+              "name": "getNameOrThrow",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "getNameOrThrowAsync",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "name",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "idStr",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "ID",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "dateValue",
+              "description": "This is a date field - this description comes from Xml comment in type definition.",
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "Date",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "timeValue",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "Time",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "strings",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "LIST",
+                  "name": null,
+                  "ofType": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "SCALAR",
+                      "name": "String",
+                      "ofType": null
+                    }
+                  }
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "stringsWithNulls",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "intsWithNulls",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "LIST",
+                  "name": null,
+                  "ofType": {
+                    "kind": "SCALAR",
+                    "name": "Int",
+                    "ofType": null
+                  }
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "nameOrThrow",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            }
+          ],
+          "inputFields": null,
+          "interfaces": [
+            {
+              "kind": "INTERFACE",
+              "name": "NamedObj",
+              "ofType": null
+            }
+          ],
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "OBJECT",
+          "name": "ThingForIntfEntity",
+          "description": null,
+          "fields": [
+            {
+              "name": "id",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "Int",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "name",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "tag",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            }
+          ],
+          "inputFields": null,
+          "interfaces": [],
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "OBJECT",
+          "name": "OtherThingWrapper",
+          "description": null,
+          "fields": [
+            {
+              "name": "otherThingName",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "wrappedOn",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "DateTime",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "otherThing",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "OBJECT",
+                  "name": "OtherThing",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            }
+          ],
+          "inputFields": null,
+          "interfaces": [],
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "INPUT_OBJECT",
+          "name": "InputObj",
+          "description": null,
+          "fields": [],
+          "inputFields": [
+            {
+              "name": "num",
+              "description": null,
+              "type": {
+                "kind": "SCALAR",
+                "name": "Int",
+                "ofType": null
+              },
+              "defaultValue": null
+            },
+            {
+              "name": "id",
+              "description": null,
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "Int",
+                  "ofType": null
+                }
+              },
+              "defaultValue": null
+            },
+            {
+              "name": "name",
+              "description": null,
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                }
+              },
+              "defaultValue": null
+            }
+          ],
+          "interfaces": null,
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "INPUT_OBJECT",
+          "name": "InputObjWithEnums",
+          "description": null,
+          "fields": [],
+          "inputFields": [
+            {
+              "name": "flags",
+              "description": null,
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "LIST",
+                  "name": null,
+                  "ofType": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "ENUM",
+                      "name": "TheFlags",
+                      "ofType": null
+                    }
+                  }
+                }
+              },
+              "defaultValue": null
+            },
+            {
+              "name": "kind",
+              "description": null,
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "ENUM",
+                  "name": "ThingKind",
+                  "ofType": null
+                }
+              },
+              "defaultValue": null
+            },
+            {
+              "name": "flagsArray",
+              "description": null,
+              "type": {
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "LIST",
+                    "name": null,
+                    "ofType": {
+                      "kind": "NON_NULL",
+                      "name": null,
+                      "ofType": {
+                        "kind": "ENUM",
+                        "name": "TheFlags",
+                        "ofType": null
+                      }
+                    }
+                  }
+                }
+              },
+              "defaultValue": null
+            }
+          ],
+          "interfaces": null,
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "INPUT_OBJECT",
+          "name": "InputObjParent",
+          "description": null,
+          "fields": [],
+          "inputFields": [
+            {
+              "name": "id",
+              "description": null,
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "Int",
+                  "ofType": null
+                }
+              },
+              "defaultValue": null
+            },
+            {
+              "name": "name",
+              "description": null,
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                }
+              },
+              "defaultValue": null
+            },
+            {
+              "name": "childObjects",
+              "description": null,
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "LIST",
+                  "name": null,
+                  "ofType": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "INPUT_OBJECT",
+                      "name": "InputObjChild",
+                      "ofType": null
+                    }
+                  }
+                }
+              },
+              "defaultValue": null
+            }
+          ],
+          "interfaces": null,
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "INPUT_OBJECT",
+          "name": "InputObjChild",
+          "description": null,
+          "fields": [],
+          "inputFields": [
+            {
+              "name": "parent",
+              "description": null,
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "INPUT_OBJECT",
+                  "name": "InputObjParent",
+                  "ofType": null
+                }
+              },
+              "defaultValue": null
+            },
+            {
+              "name": "id",
+              "description": null,
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "Int",
+                  "ofType": null
+                }
+              },
+              "defaultValue": null
+            },
+            {
+              "name": "name",
+              "description": null,
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                }
+              },
+              "defaultValue": null
+            }
+          ],
+          "interfaces": null,
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "INPUT_OBJECT",
+          "name": "InputObjWithList",
+          "description": null,
+          "fields": [],
+          "inputFields": [
+            {
+              "name": "list",
+              "description": null,
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "LIST",
+                  "name": null,
+                  "ofType": {
+                    "kind": "LIST",
+                    "name": null,
+                    "ofType": {
+                      "kind": "NON_NULL",
+                      "name": null,
+                      "ofType": {
+                        "kind": "SCALAR",
+                        "name": "Int",
+                        "ofType": null
+                      }
+                    }
+                  }
+                }
+              },
+              "defaultValue": null
+            }
+          ],
+          "interfaces": null,
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "INTERFACE",
+          "name": "NamedObj",
+          "description": null,
+          "fields": [
+            {
+              "name": "name",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            }
+          ],
+          "inputFields": null,
+          "interfaces": null,
+          "enumValues": null,
+          "possibleTypes": [
+            {
+              "kind": "OBJECT",
+              "name": "Thing",
+              "ofType": null
+            },
+            {
+              "kind": "OBJECT",
+              "name": "OtherThing",
+              "ofType": null
+            }
+          ]
+        },
+        {
+          "kind": "INTERFACE",
+          "name": "ObjWithId",
+          "description": null,
+          "fields": [
+            {
+              "name": "id",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "Int",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            }
+          ],
+          "inputFields": null,
+          "interfaces": null,
+          "enumValues": null,
+          "possibleTypes": [
+            {
+              "kind": "OBJECT",
+              "name": "Thing",
+              "ofType": null
+            }
+          ]
+        },
+        {
+          "kind": "UNION",
+          "name": "ThingsUnion",
+          "description": null,
+          "fields": [],
+          "inputFields": null,
+          "interfaces": null,
+          "enumValues": null,
+          "possibleTypes": [
+            {
+              "kind": "OBJECT",
+              "name": "Thing",
+              "ofType": null
+            },
+            {
+              "kind": "OBJECT",
+              "name": "OtherThing",
+              "ofType": null
+            }
+          ]
+        },
+        {
+          "kind": "OBJECT",
+          "name": "Query",
+          "description": null,
+          "fields": [
+            {
+              "name": "getThing",
+              "description": "Returns the Thing specified by Id.",
+              "args": [
+                {
+                  "name": "id",
+                  "description": null,
+                  "type": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "SCALAR",
+                      "name": "Int",
+                      "ofType": null
+                    }
+                  },
+                  "defaultValue": ""
+                }
+              ],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "OBJECT",
+                  "name": "Thing",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "waitForPositiveValueAsync",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "Int",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "getFlags",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "LIST",
+                  "name": null,
+                  "ofType": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "ENUM",
+                      "name": "TheFlags",
+                      "ofType": null
+                    }
+                  }
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "echoInputValues",
+              "description": null,
+              "args": [
+                {
+                  "name": "boolVal",
+                  "description": null,
+                  "type": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "SCALAR",
+                      "name": "Boolean",
+                      "ofType": null
+                    }
+                  },
+                  "defaultValue": ""
+                },
+                {
+                  "name": "intVal",
+                  "description": null,
+                  "type": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "SCALAR",
+                      "name": "Int",
+                      "ofType": null
+                    }
+                  },
+                  "defaultValue": ""
+                },
+                {
+                  "name": "floatVal",
+                  "description": null,
+                  "type": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "SCALAR",
+                      "name": "Float",
+                      "ofType": null
+                    }
+                  },
+                  "defaultValue": ""
+                },
+                {
+                  "name": "strVal",
+                  "description": null,
+                  "type": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "SCALAR",
+                      "name": "String",
+                      "ofType": null
+                    }
+                  },
+                  "defaultValue": ""
+                },
+                {
+                  "name": "kindVal",
+                  "description": null,
+                  "type": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "ENUM",
+                      "name": "ThingKind",
+                      "ofType": null
+                    }
+                  },
+                  "defaultValue": ""
+                }
+              ],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "echoInputValuesWithNulls",
+              "description": null,
+              "args": [
+                {
+                  "name": "boolVal",
+                  "description": null,
+                  "type": {
+                    "kind": "SCALAR",
+                    "name": "Boolean",
+                    "ofType": null
+                  },
+                  "defaultValue": ""
+                },
+                {
+                  "name": "longVal",
+                  "description": null,
+                  "type": {
+                    "kind": "SCALAR",
+                    "name": "Long",
+                    "ofType": null
+                  },
+                  "defaultValue": ""
+                },
+                {
+                  "name": "doubleVal",
+                  "description": null,
+                  "type": {
+                    "kind": "SCALAR",
+                    "name": "Double",
+                    "ofType": null
+                  },
+                  "defaultValue": ""
+                },
+                {
+                  "name": "strVal",
+                  "description": null,
+                  "type": {
+                    "kind": "SCALAR",
+                    "name": "String",
+                    "ofType": null
+                  },
+                  "defaultValue": ""
+                },
+                {
+                  "name": "kindVal",
+                  "description": null,
+                  "type": {
+                    "kind": "ENUM",
+                    "name": "ThingKind",
+                    "ofType": null
+                  },
+                  "defaultValue": ""
+                },
+                {
+                  "name": "flags",
+                  "description": null,
+                  "type": {
+                    "kind": "LIST",
+                    "name": null,
+                    "ofType": {
+                      "kind": "NON_NULL",
+                      "name": null,
+                      "ofType": {
+                        "kind": "ENUM",
+                        "name": "TheFlags",
+                        "ofType": null
+                      }
+                    }
+                  },
+                  "defaultValue": ""
+                }
+              ],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "echoIntArray",
+              "description": null,
+              "args": [
+                {
+                  "name": "intVals",
+                  "description": null,
+                  "type": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "LIST",
+                      "name": null,
+                      "ofType": {
+                        "kind": "NON_NULL",
+                        "name": null,
+                        "ofType": {
+                          "kind": "SCALAR",
+                          "name": "Int",
+                          "ofType": null
+                        }
+                      }
+                    }
+                  },
+                  "defaultValue": ""
+                }
+              ],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "echoEnumArray",
+              "description": null,
+              "args": [
+                {
+                  "name": "flagVals",
+                  "description": null,
+                  "type": {
+                    "kind": "LIST",
+                    "name": null,
+                    "ofType": {
+                      "kind": "NON_NULL",
+                      "name": null,
+                      "ofType": {
+                        "kind": "ENUM",
+                        "name": "TheFlags",
+                        "ofType": null
+                      }
+                    }
+                  },
+                  "defaultValue": ""
+                }
+              ],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "echoInputObj",
+              "description": null,
+              "args": [
+                {
+                  "name": "inpObj",
+                  "description": null,
+                  "type": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "INPUT_OBJECT",
+                      "name": "InputObj",
+                      "ofType": null
+                    }
+                  },
+                  "defaultValue": ""
+                }
+              ],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "echoInputObjWithEnums",
+              "description": null,
+              "args": [
+                {
+                  "name": "inpObj",
+                  "description": null,
+                  "type": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "INPUT_OBJECT",
+                      "name": "InputObjWithEnums",
+                      "ofType": null
+                    }
+                  },
+                  "defaultValue": ""
+                }
+              ],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "echoCustomScalars",
+              "description": null,
+              "args": [
+                {
+                  "name": "dec",
+                  "description": null,
+                  "type": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "SCALAR",
+                      "name": "Decimal",
+                      "ofType": null
+                    }
+                  },
+                  "defaultValue": ""
+                },
+                {
+                  "name": "uuid",
+                  "description": null,
+                  "type": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "SCALAR",
+                      "name": "Uuid",
+                      "ofType": null
+                    }
+                  },
+                  "defaultValue": ""
+                }
+              ],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "echoDateTimeScalars",
+              "description": null,
+              "args": [
+                {
+                  "name": "dt",
+                  "description": null,
+                  "type": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "SCALAR",
+                      "name": "DateTime",
+                      "ofType": null
+                    }
+                  },
+                  "defaultValue": ""
+                },
+                {
+                  "name": "date",
+                  "description": null,
+                  "type": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "SCALAR",
+                      "name": "DateTime",
+                      "ofType": null
+                    }
+                  },
+                  "defaultValue": ""
+                },
+                {
+                  "name": "time",
+                  "description": null,
+                  "type": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "SCALAR",
+                      "name": "Time",
+                      "ofType": null
+                    }
+                  },
+                  "defaultValue": ""
+                }
+              ],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "getIntListRank2",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "LIST",
+                  "name": null,
+                  "ofType": {
+                    "kind": "LIST",
+                    "name": null,
+                    "ofType": {
+                      "kind": "NON_NULL",
+                      "name": null,
+                      "ofType": {
+                        "kind": "SCALAR",
+                        "name": "Int",
+                        "ofType": null
+                      }
+                    }
+                  }
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "echoIntListRank2",
+              "description": null,
+              "args": [
+                {
+                  "name": "values",
+                  "description": null,
+                  "type": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "LIST",
+                      "name": null,
+                      "ofType": {
+                        "kind": "LIST",
+                        "name": null,
+                        "ofType": {
+                          "kind": "NON_NULL",
+                          "name": null,
+                          "ofType": {
+                            "kind": "SCALAR",
+                            "name": "Int",
+                            "ofType": null
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "defaultValue": ""
+                }
+              ],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "getThingsList",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "LIST",
+                  "name": null,
+                  "ofType": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "OBJECT",
+                      "name": "Thing",
+                      "ofType": null
+                    }
+                  }
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "getThingsListRank2",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "LIST",
+                  "name": null,
+                  "ofType": {
+                    "kind": "LIST",
+                    "name": null,
+                    "ofType": {
+                      "kind": "NON_NULL",
+                      "name": null,
+                      "ofType": {
+                        "kind": "OBJECT",
+                        "name": "Thing",
+                        "ofType": null
+                      }
+                    }
+                  }
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "echoFlags",
+              "description": null,
+              "args": [
+                {
+                  "name": "flags",
+                  "description": null,
+                  "type": {
+                    "kind": "LIST",
+                    "name": null,
+                    "ofType": {
+                      "kind": "NON_NULL",
+                      "name": null,
+                      "ofType": {
+                        "kind": "ENUM",
+                        "name": "TheFlags",
+                        "ofType": null
+                      }
+                    }
+                  },
+                  "defaultValue": ""
+                }
+              ],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "LIST",
+                  "name": null,
+                  "ofType": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "ENUM",
+                      "name": "TheFlags",
+                      "ofType": null
+                    }
+                  }
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "echoFlagsStr",
+              "description": null,
+              "args": [
+                {
+                  "name": "flags",
+                  "description": null,
+                  "type": {
+                    "kind": "LIST",
+                    "name": null,
+                    "ofType": {
+                      "kind": "NON_NULL",
+                      "name": null,
+                      "ofType": {
+                        "kind": "ENUM",
+                        "name": "TheFlags",
+                        "ofType": null
+                      }
+                    }
+                  },
+                  "defaultValue": ""
+                }
+              ],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "getThingsUnionList",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "LIST",
+                  "name": null,
+                  "ofType": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "UNION",
+                      "name": "ThingsUnion",
+                      "ofType": null
+                    }
+                  }
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "getSomeNamedObjects",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "LIST",
+                  "name": null,
+                  "ofType": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "INTERFACE",
+                      "name": "NamedObj",
+                      "ofType": null
+                    }
+                  }
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "getAllKinds",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "LIST",
+                  "name": null,
+                  "ofType": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "ENUM",
+                      "name": "ThingKind",
+                      "ofType": null
+                    }
+                  }
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "things",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "LIST",
+                  "name": null,
+                  "ofType": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "OBJECT",
+                      "name": "Thing",
+                      "ofType": null
+                    }
+                  }
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            }
+          ],
+          "inputFields": null,
+          "interfaces": [],
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "OBJECT",
+          "name": "Mutation",
+          "description": null,
+          "fields": [
+            {
+              "name": "mutateThing",
+              "description": null,
+              "args": [
+                {
+                  "name": "id",
+                  "description": null,
+                  "type": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "SCALAR",
+                      "name": "Int",
+                      "ofType": null
+                    }
+                  },
+                  "defaultValue": ""
+                },
+                {
+                  "name": "newName",
+                  "description": null,
+                  "type": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "SCALAR",
+                      "name": "String",
+                      "ofType": null
+                    }
+                  },
+                  "defaultValue": ""
+                }
+              ],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "OBJECT",
+                  "name": "Thing",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "mutateThingWithValidation",
+              "description": null,
+              "args": [
+                {
+                  "name": "id",
+                  "description": null,
+                  "type": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "SCALAR",
+                      "name": "Int",
+                      "ofType": null
+                    }
+                  },
+                  "defaultValue": ""
+                },
+                {
+                  "name": "newName",
+                  "description": null,
+                  "type": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "SCALAR",
+                      "name": "String",
+                      "ofType": null
+                    }
+                  },
+                  "defaultValue": ""
+                }
+              ],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "OBJECT",
+                  "name": "Thing",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            }
+          ],
+          "inputFields": null,
+          "interfaces": [],
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "OBJECT",
+          "name": "Schema",
+          "description": null,
+          "fields": [
+            {
+              "name": "query",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "OBJECT",
+                "name": "Query",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "mutation",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "OBJECT",
+                "name": "Mutation",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            }
+          ],
+          "inputFields": null,
+          "interfaces": [],
+          "enumValues": null,
+          "possibleTypes": null
+        }
+      ],
+      "directives": [
+        {
+          "name": "@deprecated",
+          "description": "Marks type system element as deprecated",
+          "locations": [
+            "SCALAR",
+            "OBJECT",
+            "FIELD_DEFINITION",
+            "ARGUMENT_DEFINITION",
+            "INTERFACE",
+            "UNION",
+            "ENUM",
+            "ENUM_VALUE",
+            "INPUT_OBJECT",
+            "INPUT_FIELD_DEFINITION"
+          ],
+          "args": [
+            {
+              "name": "reason",
+              "description": null,
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                }
+              },
+              "defaultValue": ""
+            }
+          ]
+        },
+        {
+          "name": "@include",
+          "description": "Conditional field include.",
+          "locations": [
+            "FIELD",
+            "FRAGMENT_SPREAD",
+            "INLINE_FRAGMENT",
+            "SCHEMA"
+          ],
+          "args": [
+            {
+              "name": "if",
+              "description": null,
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "Boolean",
+                  "ofType": null
+                }
+              },
+              "defaultValue": ""
+            }
+          ]
+        },
+        {
+          "name": "@skip",
+          "description": "Conditional field skip.",
+          "locations": [
+            "FIELD",
+            "FRAGMENT_SPREAD",
+            "INLINE_FRAGMENT",
+            "SCHEMA"
+          ],
+          "args": [
+            {
+              "name": "if",
+              "description": null,
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "Boolean",
+                  "ofType": null
+                }
+              },
+              "defaultValue": ""
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
+
+// execution time: 3.2197 ms, request from cache: False, threads: 1,  resolver calls: 75, output objects: 551
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+
+==================================== Test Method Test_Introspection_Misc ================================================
+
+Testing:  misc introspection queries.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query {
+  ThingType: __type(name: \"Thing\") {
+     name 
+     fields { 
+       name, 
+       type { displayName }           # displayName is our extension to spec 
+     }
+  }
+  typeKind: __type(name: \"__TypeKind\") {
+     name enumValues  (includeDeprecated: true) {name}
+  }
+} ",
+  "variables": null
+}
+
+Response:
+{
+  "data": {
+    "ThingType": {
+      "name": "Thing",
+      "fields": [
+        {
+          "name": "randoms",
+          "type": {
+            "displayName": "[Int!]!"
+          }
+        },
+        {
+          "name": "id",
+          "type": {
+            "displayName": "Int!"
+          }
+        },
+        {
+          "name": "name",
+          "type": {
+            "displayName": "String!"
+          }
+        },
+        {
+          "name": "description",
+          "type": {
+            "displayName": "String"
+          }
+        },
+        {
+          "name": "kind",
+          "type": {
+            "displayName": "ThingKind!"
+          }
+        },
+        {
+          "name": "theFlags",
+          "type": {
+            "displayName": "[TheFlags!]!"
+          }
+        },
+        {
+          "name": "dateTimeOpt",
+          "type": {
+            "displayName": "DateTime"
+          }
+        },
+        {
+          "name": "someDateTime",
+          "type": {
+            "displayName": "DateTime!"
+          }
+        },
+        {
+          "name": "nextThing",
+          "type": {
+            "displayName": "Thing"
+          }
+        },
+        {
+          "name": "otherThingWrapped",
+          "type": {
+            "displayName": "OtherThingWrapper"
+          }
+        },
+        {
+          "name": "tag",
+          "type": {
+            "displayName": "String"
+          }
+        },
+        {
+          "name": "mainOtherThing",
+          "type": {
+            "displayName": "OtherThing"
+          }
+        },
+        {
+          "name": "otherThings",
+          "type": {
+            "displayName": "[OtherThing!]!"
+          }
+        },
+        {
+          "name": "intfThing",
+          "type": {
+            "displayName": "ThingForIntfEntity!"
+          }
+        }
+      ]
+    },
+    "typeKind": {
+      "name": "__TypeKind",
+      "enumValues": [
+        {
+          "name": "SCALAR"
+        },
+        {
+          "name": "OBJECT"
+        },
+        {
+          "name": "INTERFACE"
+        },
+        {
+          "name": "UNION"
+        },
+        {
+          "name": "ENUM"
+        },
+        {
+          "name": "INPUT_OBJECT"
+        },
+        {
+          "name": "LIST"
+        },
+        {
+          "name": "NON_NULL"
+        }
+      ]
+    }
+  }
+}
+
+// execution time: 3.5419 ms, request from cache: False, threads: 2,  resolver calls: 4, output objects: 38
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing:  introspection queries, checking isDeprecated and and deprecationReason fields.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query introQuery {
+  inputObjType: __type (name: \"InputObj\") {
+    name
+    inputFields {
+      name
+      isDeprecated
+      deprecationReason
+    }
+  }
+}
+",
+  "variables": null
+}
+
+Response:
+{
+  "data": {
+    "inputObjType": {
+      "name": "InputObj",
+      "inputFields": [
+        {
+          "name": "num",
+          "isDeprecated": true,
+          "deprecationReason": "Num is deprecated. Esc chars: \", \\ "
+        },
+        {
+          "name": "id",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "name",
+          "isDeprecated": false,
+          "deprecationReason": null
+        }
+      ]
+    }
+  }
+}
+
+// execution time: 0.4538 ms, request from cache: False, threads: 1,  resolver calls: 1, output objects: 4
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing:  Introspection, querying all __schema fields
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query introQuery {
+  __schema {
+      queryType         { name fields { name } }
+      mutationType      { name fields { name } }
+      subscriptionType  { name fields { name } }
+      types  { name }
+      directives { name }
+  }
+}
+",
+  "variables": null
+}
+
+Response:
+{
+  "data": {
+    "__schema": {
+      "queryType": {
+        "name": "Query",
+        "fields": [
+          {
+            "name": "getThing"
+          },
+          {
+            "name": "waitForPositiveValueAsync"
+          },
+          {
+            "name": "getFlags"
+          },
+          {
+            "name": "echoInputValues"
+          },
+          {
+            "name": "echoInputValuesWithNulls"
+          },
+          {
+            "name": "echoIntArray"
+          },
+          {
+            "name": "echoEnumArray"
+          },
+          {
+            "name": "echoInputObj"
+          },
+          {
+            "name": "echoInputObjWithEnums"
+          },
+          {
+            "name": "echoCustomScalars"
+          },
+          {
+            "name": "echoDateTimeScalars"
+          },
+          {
+            "name": "getIntListRank2"
+          },
+          {
+            "name": "echoIntListRank2"
+          },
+          {
+            "name": "getThingsList"
+          },
+          {
+            "name": "getThingsListRank2"
+          },
+          {
+            "name": "echoFlags"
+          },
+          {
+            "name": "echoFlagsStr"
+          },
+          {
+            "name": "getThingsUnionList"
+          },
+          {
+            "name": "getSomeNamedObjects"
+          },
+          {
+            "name": "getAllKinds"
+          },
+          {
+            "name": "things"
+          }
+        ]
+      },
+      "mutationType": {
+        "name": "Mutation",
+        "fields": [
+          {
+            "name": "mutateThing"
+          },
+          {
+            "name": "mutateThingWithValidation"
+          }
+        ]
+      },
+      "subscriptionType": null,
+      "types": [
+        {
+          "name": "String"
+        },
+        {
+          "name": "Int"
+        },
+        {
+          "name": "Long"
+        },
+        {
+          "name": "Float"
+        },
+        {
+          "name": "Double"
+        },
+        {
+          "name": "Boolean"
+        },
+        {
+          "name": "ID"
+        },
+        {
+          "name": "DateTime"
+        },
+        {
+          "name": "Date"
+        },
+        {
+          "name": "Time"
+        },
+        {
+          "name": "Uuid"
+        },
+        {
+          "name": "Decimal"
+        },
+        {
+          "name": "__TypeKind"
+        },
+        {
+          "name": "__DirectiveLocation"
+        },
+        {
+          "name": "__Schema"
+        },
+        {
+          "name": "__Type"
+        },
+        {
+          "name": "__Field"
+        },
+        {
+          "name": "__InputValue"
+        },
+        {
+          "name": "__EnumValue"
+        },
+        {
+          "name": "__Directive"
+        },
+        {
+          "name": "ThingKind"
+        },
+        {
+          "name": "TheFlags"
+        },
+        {
+          "name": "Thing"
+        },
+        {
+          "name": "OtherThing"
+        },
+        {
+          "name": "ThingForIntfEntity"
+        },
+        {
+          "name": "OtherThingWrapper"
+        },
+        {
+          "name": "InputObj"
+        },
+        {
+          "name": "InputObjWithEnums"
+        },
+        {
+          "name": "InputObjParent"
+        },
+        {
+          "name": "InputObjChild"
+        },
+        {
+          "name": "InputObjWithList"
+        },
+        {
+          "name": "NamedObj"
+        },
+        {
+          "name": "ObjWithId"
+        },
+        {
+          "name": "ThingsUnion"
+        },
+        {
+          "name": "Query"
+        },
+        {
+          "name": "Mutation"
+        },
+        {
+          "name": "Schema"
+        }
+      ],
+      "directives": [
+        {
+          "name": "@deprecated"
+        },
+        {
+          "name": "@include"
+        },
+        {
+          "name": "@skip"
+        }
+      ]
+    }
+  }
+}
+
+// execution time: 0.577 ms, request from cache: False, threads: 1,  resolver calls: 3, output objects: 66
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+
+==================================== Test Method Test_Misc_AsyncMethods ================================================
+
+Testing:  async calls, verifying that stack unwinds when resolver code awaits.
+
+Request: 
+{
+  "operationName": null,
+  "query": " query { v: waitForPositiveValueAsync }",
+  "variables": {}
+}
+
+Response:
+{
+  "data": {
+    "v": 36
+  }
+}
+
+// execution time: 114.6469 ms, request from cache: False, threads: 1,  resolver calls: 1, output objects: 0
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+
+==================================== Test Method Test_Misc_Batching ================================================
+
+Testing: batching (aka Data Loader). Case 1 - simple field on child object (mainOtherThing).
+        Notice # of resolver calls - 2; without batching it would be 4 = 1 (things) + 3 (mainOtherThing).
+
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query { 
+  things() { 
+    id 
+    name 
+    mainOtherThing      # this field is implemented by resolver method
+    {
+      name
+    }
+  }
+}",
+  "variables": null
+}
+
+Response:
+{
+  "data": {
+    "things": [
+      {
+        "id": 1,
+        "name": "Name1",
+        "mainOtherThing": {
+          "name": "Other-1-a"
+        }
+      },
+      {
+        "id": 2,
+        "name": "Name2",
+        "mainOtherThing": {
+          "name": "Other-2-a"
+        }
+      },
+      {
+        "id": 3,
+        "name": "Name3",
+        "mainOtherThing": {
+          "name": "Other-3-a"
+        }
+      }
+    ]
+  }
+}
+
+// execution time: 4.1435 ms, request from cache: False, threads: 1,  resolver calls: 2, output objects: 7
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing: batching, Case 2 - list field on child object (otherThings). notice # of resolver calls - 2
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query { 
+  things() { 
+    id 
+    name 
+    otherThings() {
+      name
+    }
+  }
+}",
+  "variables": null
+}
+
+Response:
+{
+  "data": {
+    "things": [
+      {
+        "id": 1,
+        "name": "Name1",
+        "otherThings": [
+          {
+            "name": "Other-1-a"
+          },
+          {
+            "name": "Other-1-b"
+          },
+          {
+            "name": "Other-1-c"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "name": "Name2",
+        "otherThings": [
+          {
+            "name": "Other-2-a"
+          },
+          {
+            "name": "Other-2-b"
+          },
+          {
+            "name": "Other-2-c"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "name": "Name3",
+        "otherThings": [
+          {
+            "name": "Other-3-a"
+          },
+          {
+            "name": "Other-3-b"
+          },
+          {
+            "name": "Other-3-c"
+          }
+        ]
+      }
+    ]
+  }
+}
+
+// execution time: 1.1303 ms, request from cache: False, threads: 1,  resolver calls: 2, output objects: 15
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+
+==================================== Test Method Test_Misc_Exceptions ================================================
+
+Testing: handling 'unexpected' exceptions in resolver methods.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+# exception in resolver and in field reader
+query { 
+  # Three queries will be executed in parallel. All with throw, expect 3 exc
+  th1: things { 
+    id 
+    name 
+    otherThings {
+      getNameOrThrowAsync  # async resolver method
+    }
+  }
+  th2: things { 
+    id 
+    name 
+    otherThings {
+      getNameOrThrow  # sync resolver method
+    }
+  }
+  th3: things { 
+    id 
+    name 
+    otherThings {
+      nameOrThrow      # this is plain property, it throws on some objects
+    }
+  }
+
+}",
+  "variables": null
+}
+
+Response:
+{
+  "errors": [
+    {
+      "message": "Exception thrown by GetNameOrThrow.",
+      "locations": [
+        {
+          "line": 16,
+          "column": 7
+        }
+      ],
+      "path": [
+        "th2",
+        0,
+        "otherThings",
+        1,
+        "getNameOrThrow"
+      ],
+      "extensions": {
+        "code": "RESOLVER_ERROR",
+        "Details": "System.Exception: Exception thrown by GetNameOrThrow.\r\n   at NGraphQL.TestApp.ThingsResolvers.GetNameOrThrow(IFieldContext context, OtherThing otherThing) in C:\\MyProjects\\NGraphQL\\src\\TestApp\\NGraphQL.TestApp\\Api\\ThingsResolvers.cs:line 108"
+      }
+    },
+    {
+      "message": "Exception thrown by GetNameOrThrowAsync.",
+      "locations": [
+        {
+          "line": 9,
+          "column": 7
+        }
+      ],
+      "path": [
+        "th1",
+        0,
+        "otherThings",
+        1,
+        "getNameOrThrowAsync"
+      ],
+      "extensions": {
+        "code": "RESOLVER_ERROR",
+        "Details": "System.Exception: Exception thrown by GetNameOrThrowAsync.\r\n   at NGraphQL.TestApp.ThingsResolvers.GetNameOrThrowAsync(IFieldContext context, OtherThing otherThing) in C:\\MyProjects\\NGraphQL\\src\\TestApp\\NGraphQL.TestApp\\Api\\ThingsResolvers.cs:line 114"
+      }
+    },
+    {
+      "message": "Exception thrown by NameOrThrow.",
+      "locations": [
+        {
+          "line": 23,
+          "column": 7
+        }
+      ],
+      "path": [
+        "th3",
+        0,
+        "otherThings",
+        1,
+        "nameOrThrow"
+      ],
+      "extensions": {
+        "code": "RESOLVER_ERROR",
+        "Details": "System.Exception: Exception thrown by NameOrThrow.\r\n   at NGraphQL.TestApp.OtherThing.get_NameOrThrow() in C:\\MyProjects\\NGraphQL\\src\\TestApp\\NGraphQL.TestApp\\ThingsApp.cs:line 77"
+      }
+    }
+  ],
+  "data": {
+    "th1": [
+      {
+        "id": 1,
+        "name": "Name1",
+        "otherThings": [
+          {
+            "getNameOrThrowAsync": "Other-1-a"
+          },
+          {
+            "getNameOrThrowAsync": "Other-1-b"
+          },
+          {
+            "getNameOrThrowAsync": "Other-1-c"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "name": "Name2",
+        "otherThings": [
+          {
+            "getNameOrThrowAsync": "Other-2-a"
+          },
+          {},
+          {}
+        ]
+      },
+      {
+        "id": 3,
+        "name": "Name3",
+        "otherThings": [
+          {},
+          {},
+          {}
+        ]
+      }
+    ],
+    "th2": [
+      {
+        "id": 1,
+        "name": "Name1",
+        "otherThings": [
+          {
+            "getNameOrThrow": "Other-1-a"
+          },
+          {
+            "getNameOrThrow": "Other-1-b"
+          },
+          {
+            "getNameOrThrow": "Other-1-c"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "name": "Name2",
+        "otherThings": [
+          {
+            "getNameOrThrow": "Other-2-a"
+          },
+          {},
+          {}
+        ]
+      },
+      {
+        "id": 3,
+        "name": "Name3",
+        "otherThings": [
+          {},
+          {},
+          {}
+        ]
+      }
+    ],
+    "th3": [
+      {
+        "id": 1,
+        "name": "Name1",
+        "otherThings": [
+          {
+            "nameOrThrow": "Other-1-a"
+          },
+          {
+            "nameOrThrow": "Other-1-b"
+          },
+          {
+            "nameOrThrow": "Other-1-c"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "name": "Name2",
+        "otherThings": [
+          {
+            "nameOrThrow": "Other-2-a"
+          },
+          {},
+          {}
+        ]
+      },
+      {
+        "id": 3,
+        "name": "Name3",
+        "otherThings": [
+          {},
+          {},
+          {}
+        ]
+      }
+    ]
+  }
+}
+
+// execution time: 21.6287 ms, request from cache: False, threads: 3,  resolver calls: 14, output objects: 45
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+System.Exception: Exception thrown by GetNameOrThrow.
+   at NGraphQL.TestApp.ThingsResolvers.GetNameOrThrow(IFieldContext context, OtherThing otherThing) in C:\MyProjects\NGraphQL\src\TestApp\NGraphQL.TestApp\Api\ThingsResolvers.cs:line 108System.Exception: Exception thrown by GetNameOrThrowAsync.
+   at NGraphQL.TestApp.ThingsResolvers.GetNameOrThrowAsync(IFieldContext context, OtherThing otherThing) in C:\MyProjects\NGraphQL\src\TestApp\NGraphQL.TestApp\Api\ThingsResolvers.cs:line 114System.Exception: Exception thrown by NameOrThrow.
+   at NGraphQL.TestApp.OtherThing.get_NameOrThrow() in C:\MyProjects\NGraphQL\src\TestApp\NGraphQL.TestApp\ThingsApp.cs:line 77
+
+==================================== Test Method Test_Misc_IncludeSkip ================================================
+
+Testing:  @include directive with arg value from variable.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query myQuery ($all: Boolean!) { 
+  thing: getThing(id:1) { 
+    id 
+    name 
+    kind @include(if: $all)
+  }
+}",
+  "variables": {
+    "all": true
+  }
+}
+
+Response:
+{
+  "data": {
+    "thing": {
+      "id": 1,
+      "name": "Name1",
+      "kind": "KIND_ONE"
+    }
+  }
+}
+
+// execution time: 0.4943 ms, request from cache: False, threads: 1,  resolver calls: 1, output objects: 1
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing:  same, with $all=false.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query myQuery ($all: Boolean!) { 
+  thing: getThing(id:1) { 
+    id 
+    name 
+    kind @include(if: $all)
+  }
+}",
+  "variables": {
+    "all": false
+  }
+}
+
+Response:
+{
+  "data": {
+    "thing": {
+      "id": 1,
+      "name": "Name1"
+    }
+  }
+}
+
+// execution time: 0.0759 ms, request from cache: True, threads: 1,  resolver calls: 1, output objects: 1
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+
+==================================== Test Method Test_Misc_Interfaces ================================================
+
+Testing:  handling Interface return types.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query { 
+        # return type is [NamedObj], NamedObj is interface
+  list: getSomeNamedObjects() { __typename, name }
+}",
+  "variables": null
+}
+
+Response:
+{
+  "data": {
+    "list": [
+      {
+        "__typename": "Thing",
+        "name": "Name1"
+      },
+      {
+        "__typename": "OtherThing",
+        "name": "Other-1-a"
+      }
+    ]
+  }
+}
+
+// execution time: 0.2987 ms, request from cache: False, threads: 1,  resolver calls: 1, output objects: 2
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+
+==================================== Test Method Test_Misc_Mutations ================================================
+
+Testing: mutations.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+mutation myMut { 
+  mutateThing(id:1, newName: \"NewName1\") { 
+    id 
+    name 
+  }
+}",
+  "variables": null
+}
+
+Response:
+{
+  "data": {
+    "mutateThing": {
+      "id": 1,
+      "name": "NewName1"
+    }
+  }
+}
+
+// execution time: 0.8156 ms, request from cache: False, threads: 1,  resolver calls: 1, output objects: 1
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+
+==================================== Test Method Test_Misc_Unions ================================================
+
+Testing:  handling Union return type.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query { 
+  #  return type is a list of Union of Thing|OtherThing
+  uList: getThingsUnionList() { __typename name }
+}",
+  "variables": null
+}
+
+Response:
+{
+  "data": {
+    "uList": [
+      {
+        "__typename": "Thing",
+        "name": "Name1"
+      },
+      {
+        "__typename": "OtherThing",
+        "name": "Other-1-a"
+      }
+    ]
+  }
+}
+
+// execution time: 0.4274 ms, request from cache: False, threads: 1,  resolver calls: 1, output objects: 2
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+
+==================================== Test Method Test_Model_CustomScalars ================================================
+
+Testing:  custom scalars: Uuid, Decimal
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query { 
+  res: echoCustomScalars(dec: -12345.78, uuid: 'e675af6b-a421-43ef-98f4-e155df7ab8f6')
+}",
+  "variables": null
+}
+
+Response:
+{
+  "data": {
+    "res": "-12345.78|e675af6b-a421-43ef-98f4-e155df7ab8f6"
+  }
+}
+
+// execution time: 2.074 ms, request from cache: False, threads: 1,  resolver calls: 1, output objects: 0
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing:  custom scalars: Date, Time
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query { 
+  res: echoDateTimeScalars(dt: '2020/05/31', date: '2020/06/15', time: '11:22:33')
+}",
+  "variables": null
+}
+
+Response:
+{
+  "data": {
+    "res": "2020-05-31|2020-06-15|11:22:33"
+  }
+}
+
+// execution time: 3.278 ms, request from cache: False, threads: 1,  resolver calls: 1, output objects: 0
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+
+==================================== Test Method Test_Model_SchemaGenerateParse ================================================
+
+Testing:  schema doc generator; generating schema and parsing it, verifying syntactic correctness. See schema saved in the _thingsApiSchema.txt file in bin folder. 
+
+
+==================================== Test Method Test_Out_Lists ================================================
+
+Testing:  Returning plain list of randoms
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query { 
+  getThing(id: 1) {
+    randoms(count: 5) 
+  }
+}",
+  "variables": null
+}
+
+Response:
+{
+  "data": {
+    "getThing": {
+      "randoms": [
+        64,
+        19,
+        25,
+        19,
+        63
+      ]
+    }
+  }
+}
+
+// execution time: 2.4589 ms, request from cache: False, threads: 1,  resolver calls: 2, output objects: 1
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing:  lists of lists.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query { 
+  res: getIntListRank2()
+}",
+  "variables": null
+}
+
+Response:
+{
+  "data": {
+    "res": [
+      [
+        3,
+        2,
+        1
+      ],
+      [
+        6,
+        5,
+        4
+      ]
+    ]
+  }
+}
+
+// execution time: 0.6028 ms, request from cache: False, threads: 1,  resolver calls: 1, output objects: 0
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing:  list of object types.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query { 
+  res: getThingsList() { name }
+}",
+  "variables": null
+}
+
+Response:
+{
+  "data": {
+    "res": [
+      {
+        "name": "Name1"
+      },
+      {
+        "name": "Name2"
+      }
+    ]
+  }
+}
+
+// execution time: 0.7356 ms, request from cache: False, threads: 1,  resolver calls: 1, output objects: 2
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing:  list of lists of object types.
+
+Request: 
+{
+  "operationName": null,
+  "query": "
+query { 
+  res: getThingsListRank2() { name kind }
+}",
+  "variables": null
+}
+
+Response:
+{
+  "data": {
+    "res": [
+      [
+        {
+          "name": "Name1",
+          "kind": "KIND_ONE"
+        },
+        {
+          "name": "Name2",
+          "kind": "KIND_TWO"
+        }
+      ],
+      [
+        {
+          "name": "Name2",
+          "kind": "KIND_TWO"
+        },
+        {
+          "name": "Name3",
+          "kind": "KIND_THREE"
+        }
+      ]
+    ]
+  }
+}
+
+// execution time: 0.7157 ms, request from cache: False, threads: 1,  resolver calls: 1, output objects: 4
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+
+==================================== Test Method Test_RequestTiming ================================================
+
+Testing: Run 1: warm-up, query not in cache, resolver method might need JITed, so the call might be relatively slow, 10 ms or more
+
+Request: 
+{
+  "operationName": null,
+  "query": " 
+query myQuery { 
+  # these two operations will be executed in parallel
+   th1: things { 
+         name, 
+         nextThing { name }, 
+         kind, theFlags  
+   }  
+   th2: things {
+         id,
+         name, 
+         nextThing { name }, 
+         kind, theFlags  
+   }  
+}",
+  "variables": null
+}
+
+Response:
+{
+  "data": {
+    "th1": [
+      {
+        "name": "Name1",
+        "nextThing": {
+          "name": "Name2"
+        },
+        "kind": "KIND_ONE",
+        "theFlags": [
+          "FLAG_ONE",
+          "FLAG_THREE"
+        ]
+      },
+      {
+        "name": "Name2",
+        "nextThing": {
+          "name": "Name3"
+        },
+        "kind": "KIND_TWO",
+        "theFlags": [
+          "FLAG_TWO"
+        ]
+      },
+      {
+        "name": "Name3",
+        "nextThing": null,
+        "kind": "KIND_THREE",
+        "theFlags": [
+          "FLAG_ONE",
+          "FLAG_TWO"
+        ]
+      }
+    ],
+    "th2": [
+      {
+        "id": 1,
+        "name": "Name1",
+        "nextThing": {
+          "name": "Name2"
+        },
+        "kind": "KIND_ONE",
+        "theFlags": [
+          "FLAG_ONE",
+          "FLAG_THREE"
+        ]
+      },
+      {
+        "id": 2,
+        "name": "Name2",
+        "nextThing": {
+          "name": "Name3"
+        },
+        "kind": "KIND_TWO",
+        "theFlags": [
+          "FLAG_TWO"
+        ]
+      },
+      {
+        "id": 3,
+        "name": "Name3",
+        "nextThing": null,
+        "kind": "KIND_THREE",
+        "theFlags": [
+          "FLAG_ONE",
+          "FLAG_TWO"
+        ]
+      }
+    ]
+  }
+}
+
+// execution time: 0.5403 ms, request from cache: False, threads: 2,  resolver calls: 2, output objects: 10
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing: Run 2, same query with disabled query cache, so query should be parsed again, but now with path warmed up - should be 1 ms or less.
+
+Request: 
+{
+  "operationName": null,
+  "query": " 
+query myQuery { 
+  # these two operations will be executed in parallel
+   th1: things { 
+         name, 
+         nextThing { name }, 
+         kind, theFlags  
+   }  
+   th2: things {
+         id,
+         name, 
+         nextThing { name }, 
+         kind, theFlags  
+   }  
+}",
+  "variables": null
+}
+
+Response:
+{
+  "data": {
+    "th1": [
+      {
+        "name": "Name1",
+        "nextThing": {
+          "name": "Name2"
+        },
+        "kind": "KIND_ONE",
+        "theFlags": [
+          "FLAG_ONE",
+          "FLAG_THREE"
+        ]
+      },
+      {
+        "name": "Name2",
+        "nextThing": {
+          "name": "Name3"
+        },
+        "kind": "KIND_TWO",
+        "theFlags": [
+          "FLAG_TWO"
+        ]
+      },
+      {
+        "name": "Name3",
+        "nextThing": null,
+        "kind": "KIND_THREE",
+        "theFlags": [
+          "FLAG_ONE",
+          "FLAG_TWO"
+        ]
+      }
+    ],
+    "th2": [
+      {
+        "id": 1,
+        "name": "Name1",
+        "nextThing": {
+          "name": "Name2"
+        },
+        "kind": "KIND_ONE",
+        "theFlags": [
+          "FLAG_ONE",
+          "FLAG_THREE"
+        ]
+      },
+      {
+        "id": 2,
+        "name": "Name2",
+        "nextThing": {
+          "name": "Name3"
+        },
+        "kind": "KIND_TWO",
+        "theFlags": [
+          "FLAG_TWO"
+        ]
+      },
+      {
+        "id": 3,
+        "name": "Name3",
+        "nextThing": null,
+        "kind": "KIND_THREE",
+        "theFlags": [
+          "FLAG_ONE",
+          "FLAG_TWO"
+        ]
+      }
+    ]
+  }
+}
+
+// execution time: 0.5454 ms, request from cache: False, threads: 2,  resolver calls: 2, output objects: 10
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+Testing: Run 3: all warmed up, parsed query is retrieved from cache, not parsed. Should be really fast.
+
+Request: 
+{
+  "operationName": null,
+  "query": " 
+query myQuery { 
+  # these two operations will be executed in parallel
+   th1: things { 
+         name, 
+         nextThing { name }, 
+         kind, theFlags  
+   }  
+   th2: things {
+         id,
+         name, 
+         nextThing { name }, 
+         kind, theFlags  
+   }  
+}",
+  "variables": null
+}
+
+Response:
+{
+  "data": {
+    "th1": [
+      {
+        "name": "Name1",
+        "nextThing": {
+          "name": "Name2"
+        },
+        "kind": "KIND_ONE",
+        "theFlags": [
+          "FLAG_ONE",
+          "FLAG_THREE"
+        ]
+      },
+      {
+        "name": "Name2",
+        "nextThing": {
+          "name": "Name3"
+        },
+        "kind": "KIND_TWO",
+        "theFlags": [
+          "FLAG_TWO"
+        ]
+      },
+      {
+        "name": "Name3",
+        "nextThing": null,
+        "kind": "KIND_THREE",
+        "theFlags": [
+          "FLAG_ONE",
+          "FLAG_TWO"
+        ]
+      }
+    ],
+    "th2": [
+      {
+        "id": 1,
+        "name": "Name1",
+        "nextThing": {
+          "name": "Name2"
+        },
+        "kind": "KIND_ONE",
+        "theFlags": [
+          "FLAG_ONE",
+          "FLAG_THREE"
+        ]
+      },
+      {
+        "id": 2,
+        "name": "Name2",
+        "nextThing": {
+          "name": "Name3"
+        },
+        "kind": "KIND_TWO",
+        "theFlags": [
+          "FLAG_TWO"
+        ]
+      },
+      {
+        "id": 3,
+        "name": "Name3",
+        "nextThing": null,
+        "kind": "KIND_THREE",
+        "theFlags": [
+          "FLAG_ONE",
+          "FLAG_TWO"
+        ]
+      }
+    ]
+  }
+}
+
+// execution time: 0.0988 ms, request from cache: True, threads: 2,  resolver calls: 2, output objects: 10
+----------------------------------------------------------------------------------------------------------------------------------- 
+
+
+
+==================================== Test Method Test_Utils_DoubleBufferCache ================================================
