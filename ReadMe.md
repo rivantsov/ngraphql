@@ -33,13 +33,11 @@ NGraphQL binaries are distributed as a set of [NuGet packages](https://www.nuget
 ## Examples
 The repo contains a TestApp with HTTP server and *Graphiql UI*. It is used in HTTP server harness and unit tests. It is a made-up GraphQL API about abstract *Things*, and it is void of any real semantic meaning. The sole purpose of this app is to provide a number of types and methods covering the many aspects of the *GraphQL* protocol. Run the HTTP server harness and play with the *Graphiql* page in browser.
 
-Run the **unit tests** and see the many request/response examples used there. The unit tests write a detailed log as they go. Run the tests, locate the log file in the *bin* folder, and look inside for many examples of GraphQL requests and responses along with the metrics. 
+Run the **unit tests** and see the many request/response examples used there. The unit tests write a detailed log as they go. Run the tests, locate the log file in the *bin* folder, and look inside for many examples of GraphQL requests and responses along with the metrics. See this file here: [UnitTestsLog](misc/UnitTestsLog.txt).
 
 See also [Star Wars Example](https://github.com/rivantsov/starwars) in a separate github repository. 
 
 [VITA](https://github.com/rivantsov/vita) ORM contains a sample project implementing a GraphQL Server for a BookStore sample application. Among other things, it shows how (N+1) problem can be efficiently handled **automagically** by a smart-enough ORM. Most of the related entities like *Book.Publisher* or *Book.Authors* are batch-loaded automatically by the ORM. 
-
-To see some request/response samples, inspect the file [UnitTestsLog](misc/UnitTestsLog.txt). It is a complete log file for a run of all tests in unit tests project. It contains requests, responses and metrics data.  
 
 ## Documentation
 See the [Wiki pages](https://github.com/rivantsov/ngraphql/wiki) for this project. 
