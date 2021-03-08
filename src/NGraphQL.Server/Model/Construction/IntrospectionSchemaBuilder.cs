@@ -18,7 +18,7 @@ namespace NGraphQL.Model.Construction {
 
       // Create type objects without internal details; for typeDef and its typeRefs
       foreach (var typeDef in _model.Types) {
-        if (!typeDef.IsSchemaType())
+        if (!typeDef.IsDataType())
           continue; 
         CreateTypeObject(typeDef);
         foreach(var typeRef in typeDef.TypeRefs)
@@ -103,7 +103,8 @@ namespace NGraphQL.Model.Construction {
 
           case ComplexTypeDef ctd:  // object types and interfaces
             BuildComplexObjectType(ctd);
-            AddTypeNameField(ctd); 
+            if (ctd.IsDataType())
+              AddTypeNameField(ctd); 
             break;
 
           case InputObjectTypeDef inpDef:

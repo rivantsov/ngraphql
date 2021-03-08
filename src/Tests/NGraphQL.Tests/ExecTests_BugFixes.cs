@@ -40,14 +40,13 @@ mutation {
     name 
   }
 }";
-      // currently fails with null ref exc
-      // the same happens with Query; to fix - remove __typename from top objects
-      // also - add sanity check if resolver type is assigned in AssignResolverClassInstance and post more meaningful message
-      resp = await ExecuteAsync(query);
-      Assert.IsNotNull(resp, "Expected result");
-
+      // Bug, old behavior: fails with null ref exc
+      // Fixed: now returns error "field _typename not found"
+      resp = await ExecuteAsync(query, throwOnError: false);
+      Assert.AreEqual(1, resp.Errors.Count, "Expected 1 result");
+      var err0 = resp.Errors[0];
+      Assert.IsTrue(err0.Message.Contains(@"Field '__typename' not found"), "Invalid error message"); 
     }
 
   }
-
 }

@@ -23,18 +23,18 @@ namespace NGraphQL.TestApp {
       base.SubscriptionType = typeof(IThingsSubscription);
 
       // Define mappings of entities (biz app objects) to API Object Types 
-      MapEntity<Thing>().To<Thing_>(bt => new Thing_() {
-        Id = bt.Id,
-        Name = bt.Name,
-        Description = bt.Descr,
-        Kind = bt.TheKind,
-        TheFlags = bt.Flags,
-        DateTimeOpt = bt.DateQ,
-        SomeDateTime = bt.SomeDate,
+      MapEntity<Thing>().To<Thing_>(th => new Thing_() {
+        Id = th.Id,
+        Name = th.Name,
+        Description = th.Descr,
+        Kind = th.TheKind,
+        TheFlags = th.Flags,
+        DateTimeOpt = th.DateQ,
+        SomeDateTime = th.SomeDate,
         // example of using FromMap function to explicitly convert biz object to API object (BizThing => ApiThing)
         // Note: we could skip this, as field names match, it would automap
-        NextThing = FromMap<Thing_>(bt.NextThing), 
-        OtherThingWrapped = bt.MainOtherThing.GetWrapper(),        
+        NextThing = FromMap<Thing_>(th.NextThing), 
+        OtherThingWrapped = th.MainOtherThing.GetWrapper(),        
       });
 
       MapEntity<OtherThing>().To<OtherThing_>(); // engine will automatically map all matching fields

@@ -12,10 +12,8 @@ using NGraphQL.Server.Execution;
 
 namespace NGraphQL.Model {
 
-
   public class TypeDefBase : GraphQLModelObject {
     public readonly GraphQLModule Module;
-    public ObjectTypeRole TypeRole = ObjectTypeRole.Data;
     public IList<Attribute> Attributes; 
     public TypeKind Kind;
     public Type ClrType;
@@ -68,7 +66,7 @@ namespace NGraphQL.Model {
   public class ScalarTypeDef : TypeDefBase {
     public readonly Scalar Scalar;
     public ScalarTypeDef(Scalar scalar, GraphQLModule module) 
-      : base (scalar.Name, TypeKind.Scalar, scalar.DefaultClrType, EmptyAttributeList, module) {
+            : base (scalar.Name, TypeKind.Scalar, scalar.DefaultClrType, EmptyAttributeList, module) {
       Scalar = scalar;
       base.IsDefaultForClrType = Scalar.IsDefaultForClrType; 
     }
@@ -88,9 +86,11 @@ namespace NGraphQL.Model {
   public class ObjectTypeDef : ComplexTypeDef {
     public List<InterfaceTypeDef> Implements = new List<InterfaceTypeDef>();
     public EntityMapping Mapping;
+    public ObjectTypeRole TypeRole;
 
-    public ObjectTypeDef(string name, Type clrType, IList<Attribute> attrs, GraphQLModule module, ObjectTypeRole typeRole = ObjectTypeRole.Data) 
-      : base(name, TypeKind.Object, clrType, attrs, module) {
+    public ObjectTypeDef(string name, Type clrType, IList<Attribute> attrs, GraphQLModule module, 
+          ObjectTypeRole typeRole = ObjectTypeRole.Data) 
+             : base(name, TypeKind.Object, clrType, attrs, module) {
       this.TypeRole = typeRole;
     }
   }

@@ -21,8 +21,5 @@ namespace NGraphQL.Model {
       GraphQLType = typeof(TGraphQL);
       Expression = expression;
     }
-    public void ToUnion<TUnion>() where TUnion : UnionBase {
-      GraphQLType = typeof(TUnion);
-    }
   }
 }

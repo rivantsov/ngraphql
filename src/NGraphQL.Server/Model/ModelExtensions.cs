@@ -68,15 +68,10 @@ namespace NGraphQL.Model {
       return reqFNames; 
     }
 
-    public static bool IsSchemaType(this TypeDefBase typeDef) {
-      switch(typeDef.TypeRole) {
-        case ObjectTypeRole.ModuleMutation:
-        case ObjectTypeRole.ModuleQuery:
-        case ObjectTypeRole.ModuleSubscription:
-          return false;
-        default:
-          return true; 
-      }
+    public static bool IsDataType(this TypeDefBase typeDef) {
+      if (typeDef is ObjectTypeDef objTypeDef)
+        return objTypeDef.TypeRole == ObjectTypeRole.Data;
+      return true; // non-object types: Scalars, enums, input types
     }
 
     public static bool HasDirectives(this GraphQLModelObject modelObject) {
@@ -86,9 +81,11 @@ namespace NGraphQL.Model {
     public static void ApplyToAllModelObjects(this GraphQLApiModel model, Action<GraphQLModelObject> action) {
       foreach (var dirDef in model.Directives.Values)
         dirDef.ApplyToAllRec(action);
-      foreach (var typeDef in model.Types) 
-        if (typeDef.IsSchemaType()) // skip Module-Level transient types (ModuleQuery, ModuleMutation etc) 
-          typeDef.ApplyToAllRec(action);
+      foreach (var typeDef in model.Types) {
+        if (!typeDef.IsDataType()) // skip utility types like Query, Mutation etc 
+          continue; 
+        typeDef.ApplyToAllRec(action);
+      }
     } //method
 
     private static void ApplyToAllRec(this GraphQLModelObject modelObj, Action<GraphQLModelObject> action) {

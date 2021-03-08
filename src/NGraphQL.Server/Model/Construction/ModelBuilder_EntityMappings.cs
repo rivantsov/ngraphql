@@ -30,7 +30,7 @@ namespace NGraphQL.Model.Construction {
         }
       }
       // Self-mapped object types
-      // if some GraphQL type is not mapped to anything, we assume it is mapped it itself. 
+      // if some GraphQL type is not mapped to anything, we assume it is mapped to itself. 
       // This is the case for introspection types, there are no entities behind them, 
       //  they are entities themselves. 
       //  Add this mappings explicitly, this will allow building field readers on each
