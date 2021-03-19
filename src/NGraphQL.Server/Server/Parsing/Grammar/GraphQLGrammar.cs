@@ -41,10 +41,6 @@ namespace NGraphQL.Server.Parsing {
       var qStr = new StringLiteral(TermNames.Qstr, "'"); //used by custom scalars: Datetime, Uuid, etc
       var nullVal = ToTerm("null", TermNames.NullValue);
       var name = new IdentifierTerminal(TermNames.Name);
-      var varName = new IdentifierTerminal(TermNames.VarName);
-      varName.AllFirstChars = "$";
-      var dirName = new IdentifierTerminal("dirName");
-      dirName.AllFirstChars = "@";
 
       //non-terminals
       SchemaDocRoot = new NonTerminal("schemaDoc");
@@ -122,6 +118,7 @@ namespace NGraphQL.Server.Parsing {
       var falseVal = ToTerm("false", TermNames.False);
       var boolVal = new NonTerminal("boolVal", trueVal | falseVal);
 
+      var varName = new NonTerminal(TermNames.VarName, "$" + name);
       var varDef = new NonTerminal("varDef");
       var varDefList = new NonTerminal(TermNames.VarDefList);
       var varDefsOpt = new NonTerminal("varDefsOpt");
@@ -133,6 +130,7 @@ namespace NGraphQL.Server.Parsing {
       var selFld = new NonTerminal(TermNames.SelField);
       var aliasedName = new NonTerminal(TermNames.AliasedName);
 
+      var dirName = new NonTerminal(TermNames.DirName, "@" + name);
       var dir = new NonTerminal("dir");
       var dirListOpt = new NonTerminal(TermNames.DirListOpt);
 

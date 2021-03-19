@@ -113,7 +113,7 @@ namespace NGraphQL.Model.Construction {
       if(!modelObj.HasDirectives())
         return; 
       foreach(ModelDirective dir in modelObj.Directives) {
-        _builder.Append(" ");
+        _builder.Append(" @");
         _builder.Append(dir.Def.Name);
         if (dir.Def.Args.Count > 0) {
           var nvList = new List<string>(); 

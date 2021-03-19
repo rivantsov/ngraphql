@@ -69,9 +69,8 @@ namespace NGraphQL.Server.Parsing {
       return null;
     }
 
-    private DirectiveDef LookupDirective(Node dirNode) {
+    private DirectiveDef LookupDirective(string dirName, Node dirNode) {
       var model = _requestContext.ApiModel;
-      var dirName = dirNode.ChildNodes[0].GetText();
       if(model.Directives.TryGetValue(dirName, out var dirDef))
         return dirDef;
       AddError($"Directive {dirName} not defined.", dirNode);

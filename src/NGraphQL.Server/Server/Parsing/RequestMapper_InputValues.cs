@@ -19,7 +19,7 @@ namespace NGraphQL.Server.Parsing {
       if(!hasArgDefs && !hasArgs)
         return MappedArg.EmptyList;
       if(!hasArgDefs && hasArgs) {
-        AddError($"No arguments are expected for {owner.Name}", owner);
+        AddError($"No arguments are expected for '{owner.Name}'", owner);
         return MappedArg.EmptyList;
       }
 
@@ -27,7 +27,7 @@ namespace NGraphQL.Server.Parsing {
       var unknownArgs = args.Where(a => !argDefs.Any(ad => ad.Name == a.Name)).ToList();
       if (unknownArgs.Count > 0) { 
         foreach(var ua in unknownArgs) {
-          AddError($"Field(dir) {owner.Name}: argument {ua.Name} not defined.", ua);
+          AddError($"Field(dir) '{owner.Name}': argument '{ua.Name}' not defined.", ua);
         }
         return MappedArg.EmptyList; 
       }
@@ -121,7 +121,7 @@ namespace NGraphQL.Server.Parsing {
     private VariableRefEvaluator GetVariableRefEvaluator(InputValueDef inputDef, TypeRef resultTypeRef, VariableValueSource varRef) {
       var varDecl = _currentOp.Variables.FirstOrDefault(vd => vd.Name == varRef.VariableName);
       if (varDecl == null)
-        throw new InvalidInputException($"Variable {varRef.VariableName} not defined.", varRef);
+        throw new InvalidInputException($"Variable ${varRef.VariableName} not defined.", varRef);
       // check type compatibility 
       if(!resultTypeRef.IsConvertibleFrom(varDecl.InputDef.TypeRef)) 
         throw new InvalidInputException(
