@@ -23,7 +23,7 @@ namespace NGraphQL.Server.Execution {
     public object Entity;
     public bool EntityIsGqlType; 
 
-    public IList<MappedField> Fields { get; private set; }
+    public IList<MappedSelectionField> Fields { get; private set; }
     object[] _values;
     IBitSet _valuesMask; //indicates if there's a value
 
@@ -43,7 +43,7 @@ namespace NGraphQL.Server.Execution {
       return Entity?.ToString() ?? "(root)";
     }
 
-    internal void Init(ObjectTypeDef objectTypeDef, IList<MappedField> fields) {
+    internal void Init(ObjectTypeDef objectTypeDef, IList<MappedSelectionField> fields) {
       MappedTypeDef = objectTypeDef;
       Fields = fields;
       _values = new object[fields.Count];

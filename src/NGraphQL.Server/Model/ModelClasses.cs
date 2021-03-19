@@ -85,8 +85,8 @@ namespace NGraphQL.Model {
 
   public class ObjectTypeDef : ComplexTypeDef {
     public List<InterfaceTypeDef> Implements = new List<InterfaceTypeDef>();
-    public EntityMapping Mapping;
     public ObjectTypeRole TypeRole;
+    public List<TypeMapping> Mappings = new List<TypeMapping>();
 
     public ObjectTypeDef(string name, Type clrType, IList<Attribute> attrs, GraphQLModule module, 
           ObjectTypeRole typeRole = ObjectTypeRole.Data) 
@@ -143,9 +143,11 @@ namespace NGraphQL.Model {
     public FieldFlags Flags;
     public IList<InputValueDef> Args = new List<InputValueDef>();
     public MemberInfo ClrMember;
-    public ResolverMethodInfo Resolver;
-    public Func<object, object> Reader;
+    public ResolverMethodInfo Resolver_;
+    public Func<object, object> Reader_;
     public FieldExecutionType ExecutionType;
+
+    public FieldMapping DefaultResolver; 
 
     public FieldDef(ComplexTypeDef ownerType, string name, TypeRef typeRef) {
       OwnerType = ownerType; 

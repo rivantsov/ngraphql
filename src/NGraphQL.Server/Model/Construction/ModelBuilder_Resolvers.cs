@@ -190,14 +190,17 @@ namespace NGraphQL.Model.Construction {
       if (!CheckReturnTypeCompatible(retType, field, resolverMethod))
         return false; 
 
-      field.Resolver = new ResolverMethodInfo() { SourceAttribute = sourceAttr, Method = resolverMethod, 
+      var resMethInfo =  new ResolverMethodInfo() { SourceAttribute = sourceAttr, Method = resolverMethod, 
             ResolverClass = resolverMethod.DeclaringType,
           ReturnsTask = returnsTask, TaskResultReader = taskResultReader };
+      var fldResolver = new FieldMapping() { Field = field, ResolverInfo = resMethInfo };
+      field.Resolver = resMethInfo; 
       if (returnsTask)
         field.Flags |= FieldFlags.ResolverReturnsTask;
       if (typeDef is ObjectTypeDef otd && otd.TypeRole == ObjectTypeRole.Data)
         field.Flags |= FieldFlags.HasParentArg; 
-      ValidateResolverMethodArguments(typeDef, field); 
+      ValidateResolverMethodArguments(typeDef, field);
+      
       return !_model.HasErrors;
     }
 

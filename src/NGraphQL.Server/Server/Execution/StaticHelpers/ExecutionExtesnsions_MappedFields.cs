@@ -9,20 +9,20 @@ namespace NGraphQL.Server.Execution {
   static partial class ExecutionExtensions {
     
     // returns list of all fields (with expanded fragments), but with regard to @include/@skip directives
-    internal static IList<MappedField> GetIncludedMappedFields(this RequestContext requestContext, MappedObjectItemSet outSet) {
+    internal static IList<MappedSelectionField> GetIncludedMappedFields(this RequestContext requestContext, SelectionSubSetMapping outSet) {
       var mappedFields = outSet.StaticMappedFields;
       if (mappedFields != null)
         return mappedFields;
-      mappedFields = new List<MappedField>();
+      mappedFields = new List<MappedSelectionField>();
       bool hasIncludeSkip = false; 
-      AddIncludedMappedFieldsRec(requestContext, outSet.Items, mappedFields, ref hasIncludeSkip);
+      AddIncludedMappedFieldsRec(requestContext, outSet.MappedItems, mappedFields, ref hasIncludeSkip);
       if (!hasIncludeSkip)
         outSet.StaticMappedFields = mappedFields;
       return mappedFields; 
     }
 
     private static void AddIncludedMappedFieldsRec(RequestContext requestContext, IList<MappedSelectionItem> items,
-                IList<MappedField> result, ref bool hasIncludeSkip) {
+                IList<MappedSelectionField> result, ref bool hasIncludeSkip) {
       foreach(var item in items) {
         var dirs = item.Item.Directives;
         if (dirs != null && dirs.Count > 0) {
@@ -30,7 +30,7 @@ namespace NGraphQL.Server.Execution {
             continue; 
         }
         switch (item) {
-          case MappedField fld:
+          case MappedSelectionField fld:
             result.Add(fld);
             continue;
           case MappedFragmentSpread spread:

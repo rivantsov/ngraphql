@@ -116,7 +116,7 @@ namespace NGraphQL.Server.Parsing {
     // Might be called for ObjectType or Interface (for intf - just to check fields exist)
     private void MapObjectSelectionSubset(SelectionSubset selSubset, ObjectTypeDef objectTypeDef, IList<RequestDirective> directives, bool isForUnion = false) {
       var mappedFields = MapSelectionItems(selSubset.Items, objectTypeDef, directives, isForUnion);
-      selSubset.MappedItemSets.Add(new MappedObjectItemSet() { ObjectTypeDef = objectTypeDef, Items = mappedFields });
+      selSubset.AddMapping(new SelectionSubSetMapping() { ObjectTypeDef = objectTypeDef, MappedItems = mappedFields });
     }
 
     // Might be called for ObjectType or Interface (for intf - just to check fields exist)
@@ -135,7 +135,7 @@ namespace NGraphQL.Server.Parsing {
               continue; 
             }
             var mappedArgs = MapArguments(selFld.Args, fldDef.Args, selFld);
-            var mappedFld = new MappedField(selFld, fldDef, mappedArgs);
+            var mappedFld = new MappedSelectionField(selFld, fldDef, mappedArgs);
             AddRuntimeModelDirectives(mappedFld);
             AddRuntimeRequestDirectives(mappedFld); 
             mappedItems.Add(mappedFld);
@@ -169,7 +169,7 @@ namespace NGraphQL.Server.Parsing {
       }
     }
 
-    private void AddRuntimeModelDirectives(MappedField mappedField) {
+    private void AddRuntimeModelDirectives(MappedSelectionField mappedField) {
       var fldDef = mappedField.FieldDef;
       if (fldDef.HasDirectives())
         foreach (ModelDirective fldDir in fldDef.Directives)
@@ -198,16 +198,16 @@ namespace NGraphQL.Server.Parsing {
         MapObjectSelectionSubset(fs.Fragment.SelectionSubset, objectTypeDef, fs.Directives, isForUnion);
       }
       // there must be mapped field set now
-      var mappedFragmItemSet = fs.Fragment.SelectionSubset.MappedItemSets.FirstOrDefault(fset => fset.ObjectTypeDef == objectTypeDef);
+      var mappedFragmItemSet = fs.Fragment.SelectionSubset.GetMapping(objectTypeDef);
       if (mappedFragmItemSet == null) {
         AddError($"FATAL: Could not retrieve mapped item list for fragment spread {fs.Name}", fs, ErrorCodes.ServerError);
         return null;
       }
-      var mappedSpread = new MappedFragmentSpread(fs, mappedFragmItemSet.Items);
+      var mappedSpread = new MappedFragmentSpread(fs, mappedFragmItemSet.MappedItems);
       return mappedSpread;
     }
 
-    private void ValidateMappedFieldAndProcessSubset(MappedField mappedField) {
+    private void ValidateMappedFieldAndProcessSubset(MappedSelectionField mappedField) {
       var typeDef = mappedField.FieldDef.TypeRef.TypeDef;
       var selField = mappedField.Field;
       var selSubset = selField.SelectionSubset;

@@ -19,8 +19,6 @@ namespace NGraphQL.Model {
       return null;
     }
 
-
-
     public static bool IsComplexReturnType(this TypeDefBase typeDef) {
       switch(typeDef.Kind) {
         case TypeKind.Object:
@@ -115,6 +113,13 @@ namespace NGraphQL.Model {
           else
             return null;
       }
+    }
+
+    public static TypeMapping AddSelfMap(this ObjectTypeDef objTypeDef) {
+      var entMapping = new EntityMapping() { EntityType = objTypeDef.ClrType, GraphQLType = objTypeDef.ClrType };
+      var typeMapping = new TypeMapping() { SourceEntityMapping = entMapping };
+      objTypeDef.Mappings.Add(typeMapping);
+      return typeMapping;
     }
 
 

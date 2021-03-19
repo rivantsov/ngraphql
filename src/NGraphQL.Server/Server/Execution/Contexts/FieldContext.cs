@@ -24,7 +24,7 @@ namespace NGraphQL.Server.Execution {
     public IOperationFieldContext RootField { get; }
     public IRequestContext RequestContext => _requestContext;
 
-    public readonly MappedField Field;
+    public readonly MappedSelectionField Field;
     public readonly int FieldIndex;
     public FieldFlags Flags => Field.FieldDef.Flags;
 
@@ -37,7 +37,7 @@ namespace NGraphQL.Server.Execution {
 
     RequestContext _requestContext;
 
-    public FieldContext(RequestContext requestContext, IOperationFieldContext rootField, MappedField field, int fieldIndex,
+    public FieldContext(RequestContext requestContext, IOperationFieldContext rootField, MappedSelectionField field, int fieldIndex,
                          IList<OutputObjectScope> allParentScopes = null) {
       _requestContext = requestContext;
       RootField = rootField;

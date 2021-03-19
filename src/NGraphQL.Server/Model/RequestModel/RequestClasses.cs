@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-
+using System.Linq;
 using NGraphQL.CodeFirst;
 using NGraphQL.Introspection;
 
@@ -46,13 +46,20 @@ namespace NGraphQL.Model.Request {
 
   public class SelectionSubset: RequestObjectBase {
     public List<SelectionItem> Items;
-    // List of (ObjectDef, FieldCallInfo[]) pairs, 
-    public IList<MappedObjectItemSet> MappedItemSets = new List<MappedObjectItemSet>(); 
+    IList<SelectionSubSetMapping> _mappings = new List<SelectionSubSetMapping>(); 
 
     public SelectionSubset(RequestObjectBase parent, List<SelectionItem> items, SourceLocation location) {
       Parent = parent; 
       Items = items;
       this.SourceLocation = location; 
+    }
+
+    public void AddMapping(SelectionSubSetMapping mapping) {
+      _mappings.Add(mapping); 
+    }
+
+    public SelectionSubSetMapping GetMapping(ObjectTypeDef objTypeDef) {
+      return _mappings.FirstOrDefault(m => m.ObjectTypeDef == objTypeDef);
     }
   }
 
@@ -117,7 +124,7 @@ namespace NGraphQL.Model.Request {
     public DirectiveDef Def;
     public DirectiveLocation Location; 
     public IList<InputValue> Args;
-    public IList<MappedArg> MappedArgs;
+    public IList<MappedSelectionFieldArg> MappedArgs;
     public RequestDirective() { }
   }
 

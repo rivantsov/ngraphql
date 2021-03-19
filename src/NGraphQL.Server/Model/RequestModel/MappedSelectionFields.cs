@@ -20,19 +20,21 @@ namespace NGraphQL.Model.Request {
   // Mapped field set is a 'flattened' list of fields (with all fragments expanded)
   // for a specific output object type (when parent field returns union or interface)
   // It is also prepared for resolver invocation with mapped args.  
-  public class MappedField: MappedSelectionItem {
+  public class MappedSelectionField: MappedSelectionItem {
     public readonly SelectionField Field;
     public readonly FieldDef FieldDef;
-    public readonly IList<MappedArg> Args;
+    public readonly IList<MappedSelectionFieldArg> Args;
 
-    public MappedField(SelectionField field, FieldDef fieldDef, IList<MappedArg> args): base(field) {
+    public FieldMapping Resolver;
+
+    public MappedSelectionField(SelectionField field, FieldDef fieldDef, IList<MappedSelectionFieldArg> args): base(field) {
       Field = field;
       FieldDef = fieldDef;
       Args = args; 
     }
 
     public override string ToString() => $"{Field.Key}";
-    public static readonly IList<MappedField> EmptyList = new MappedField[] { };
+    public static readonly IList<MappedSelectionField> EmptyList = new MappedSelectionField[] { };
   }
 
   public class MappedFragmentSpread: MappedSelectionItem {
@@ -45,21 +47,21 @@ namespace NGraphQL.Model.Request {
   }
 
   // used as MappedField args and request directive args
-  public class MappedArg {
-    public static readonly IList<MappedArg> EmptyList = new MappedArg[] { };
+  public class MappedSelectionFieldArg {
+    public static readonly IList<MappedSelectionFieldArg> EmptyList = new MappedSelectionFieldArg[] { };
 
     public RequestObjectBase Anchor; 
     public InputValueDef ArgDef; 
     public InputValueEvaluator Evaluator;
 
-    public MappedArg() { }
+    public MappedSelectionFieldArg() { }
     public override string ToString() => $"{ArgDef.Name}/{ArgDef.TypeRef.Name}";
   }
 
-  public class MappedObjectItemSet {
+  public class SelectionSubSetMapping {
     public ObjectTypeDef ObjectTypeDef;
-    public IList<MappedSelectionItem> Items = new List<MappedSelectionItem>();
-    public IList<MappedField> StaticMappedFields; //when there's no @include/@skip directives
+    public IList<MappedSelectionItem> MappedItems = new List<MappedSelectionItem>();
+    public IList<MappedSelectionField> StaticMappedFields; //when there's no @include/@skip directives
   }
 
 }

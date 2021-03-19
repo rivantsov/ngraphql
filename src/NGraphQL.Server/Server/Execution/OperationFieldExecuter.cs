@@ -19,7 +19,7 @@ namespace NGraphQL.Server.Execution {
     RequestContext _requestContext;
     OutputObjectScope _parentScope; 
     int _fieldIndex; 
-    MappedField _operationField; 
+    MappedSelectionField _operationField; 
     List<object> _resolverInstances = new List<object>();
     // this is a flag indicating failure of this operation field; we have more global flag in RequestContext,
     //  but it is for ALL operation fields executing concurrently. We track individual oper field in this _failed
@@ -106,8 +106,8 @@ namespace NGraphQL.Server.Execution {
 
     private async Task ExecuteObjectsSelectionSubsetAsync(IList<OutputObjectScope> parentScopes,
                                                   ObjectTypeDef objTypeDef, SelectionSubset subSet) {
-      var outItemSet = subSet.MappedItemSets.FirstOrDefault(fi => fi.ObjectTypeDef == objTypeDef);
-      var mappedFields = _requestContext.GetIncludedMappedFields(outItemSet);
+      var outSetMapping = subSet.GetMapping(objTypeDef);
+      var mappedFields = _requestContext.GetIncludedMappedFields(outSetMapping);
       // init scopes
       foreach (var scope in parentScopes)
         scope.Init(objTypeDef, mappedFields);
