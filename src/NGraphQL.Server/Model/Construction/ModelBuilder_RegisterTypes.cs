@@ -98,7 +98,6 @@ namespace NGraphQL.Model.Construction {
         return;
       }
       _model.TypesByName.Add(typeDef.Name, typeDef);
-
     }
 
     private TypeDefBase CreateTypeDef (Type type, TypeKind typeKind, GraphQLModule module) {

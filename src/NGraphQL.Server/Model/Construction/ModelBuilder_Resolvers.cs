@@ -170,10 +170,16 @@ namespace NGraphQL.Model.Construction {
           if (field.ClrMember == null)
             continue; //__typename has no clr member
           var methName = field.ClrMember.Name;
-          var method = allMethods.FirstOrDefault(m => m.Name == methName);
-          if (method == null)
-            continue;
-          SetupFieldResolverMethod(typeDef, field, method, null);
+          var methods = allMethods.Where(m => m.Name == methName).ToList();
+          switch(methods.Count) {
+            case 0: continue;
+            case 1:
+              SetupFieldResolverMethod(typeDef, field, methods[0], null);
+              continue;
+            default:
+              AddError($"Field {typeDef.Name}.{field.Name}: found more than one resolver method ({methName}).");
+              continue; 
+          } //switch
         } //foreach field
       } //foreach typeDef
     }//method
@@ -192,11 +198,12 @@ namespace NGraphQL.Model.Construction {
 
       field.Resolver = new ResolverMethodInfo() { SourceAttribute = sourceAttr, Method = resolverMethod, 
             ResolverClass = resolverMethod.DeclaringType,
-          ReturnsTask = returnsTask, TaskResultReader = taskResultReader };
+            ReturnsTask = returnsTask, TaskResultReader = taskResultReader };
       if (returnsTask)
         field.Flags |= FieldFlags.ResolverReturnsTask;
       if (typeDef is ObjectTypeDef otd && otd.TypeRole == TypeRole.Data)
-        field.Flags |= FieldFlags.HasParentArg; 
+        field.Flags |= FieldFlags.HasParentArg;
+      field.ExecutionType = FieldExecutionType.Resolver;
       ValidateResolverMethodArguments(typeDef, field); 
       return !_model.HasErrors;
     }
