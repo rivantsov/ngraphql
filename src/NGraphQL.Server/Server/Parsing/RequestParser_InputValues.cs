@@ -13,18 +13,18 @@ namespace NGraphQL.Server.Parsing {
   public partial class RequestParser {
 
     private ValueSource BuildInputValue(Node valueNode, RequestObjectBase parent) {
-      if (valueNode.Token != null) {
-        if(valueNode.Term.Name == TermNames.VarName) {
-          var varName = valueNode.Token.Text.Substring(1); //cut off $ prefix
-          return new VariableValueSource() { VariableName = varName, SourceLocation = valueNode.GetLocation(), Parent = parent };
-
-        } else {
+    
+      if (valueNode.Token != null) { //it is simple token
           var tkn = valueNode.Token;
           var tknData = new TokenData() { TermName = tkn.Terminal.Name, Text = tkn.Text, ParsedValue = tkn.Value };
           return new TokenValueSource() { TokenData = tknData, SourceLocation = valueNode.GetLocation(), Parent = parent };
-        }
       }
+
       switch(valueNode.Term.Name) {
+        case TermNames.VarName:
+          var varName = valueNode.ChildNodes[1].Token.Text; // child0 is $
+          return new VariableValueSource() { VariableName = varName, SourceLocation = valueNode.GetLocation(), Parent = parent };
+
         case TermNames.ConstList:
           var values = valueNode.ChildNodes.Select(n => BuildInputValue(n, parent)).ToArray();
           return new ListValueSource() { Values = values, SourceLocation = valueNode.GetLocation(), Parent = parent };

@@ -78,21 +78,22 @@ namespace NGraphQL.Model {
 
   // base for Interface and Object types
   public abstract class ComplexTypeDef : TypeDefBase {
+    public TypeRole TypeRole;
     public List<FieldDef> Fields = new List<FieldDef>();
-    public ComplexTypeDef(string name, TypeKind kind, Type clrType, IList<Attribute> attrs, GraphQLModule module) 
-       : base(name, kind, clrType, attrs, module) { }
+    public ComplexTypeDef(string name, TypeKind kind, Type clrType, IList<Attribute> attrs, GraphQLModule module, 
+         TypeRole typeRole = TypeRole.Data) 
+       : base(name, kind, clrType, attrs, module) {
+      this.TypeRole = typeRole;
+    }
   }
 
   public class ObjectTypeDef : ComplexTypeDef {
     public List<InterfaceTypeDef> Implements = new List<InterfaceTypeDef>();
-    public ObjectTypeRole TypeRole;
-    public List<TypeMapping> Mappings = new List<TypeMapping>();
+    public EntityMapping Mapping;
 
     public ObjectTypeDef(string name, Type clrType, IList<Attribute> attrs, GraphQLModule module, 
-          ObjectTypeRole typeRole = ObjectTypeRole.Data) 
-             : base(name, TypeKind.Object, clrType, attrs, module) {
-      this.TypeRole = typeRole;
-    }
+          TypeRole typeRole = TypeRole.Data) 
+             : base(name, TypeKind.Object, clrType, attrs, module, typeRole) {  }
   }
 
   public class InterfaceTypeDef : ComplexTypeDef {
@@ -143,11 +144,9 @@ namespace NGraphQL.Model {
     public FieldFlags Flags;
     public IList<InputValueDef> Args = new List<InputValueDef>();
     public MemberInfo ClrMember;
-    public ResolverMethodInfo Resolver_;
-    public Func<object, object> Reader_;
+    public ResolverMethodInfo Resolver;
+    public Func<object, object> Reader;
     public FieldExecutionType ExecutionType;
-
-    public FieldMapping DefaultResolver; 
 
     public FieldDef(ComplexTypeDef ownerType, string name, TypeRef typeRef) {
       OwnerType = ownerType; 

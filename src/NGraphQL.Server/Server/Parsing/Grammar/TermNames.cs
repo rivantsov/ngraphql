@@ -20,6 +20,7 @@ namespace NGraphQL.Server.Parsing {
     public const string AliasedName = "aliasedName";
     public const string Number = "number";
     public const string VarName = "varName";
+    public const string DirName = "dirName";
     public const string NullValue = "nullVal";
     public const string True = "true";
     public const string False = "false";

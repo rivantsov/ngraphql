@@ -93,12 +93,12 @@ namespace NGraphQL.Model.Construction {
 
           case InterfaceTypeDef intfTypeDef:
             loc = DirectiveLocation.Interface;
-            BuildObjectTypeFields(intfTypeDef);
+            BuildComplexTypeFields(intfTypeDef);
             break;
 
           case ObjectTypeDef objTypeDef:
             loc = DirectiveLocation.Object;
-            BuildObjectTypeFields(objTypeDef);
+            BuildComplexTypeFields(objTypeDef);
             break;
 
           case InputObjectTypeDef inpTypeDef:
@@ -121,7 +121,7 @@ namespace NGraphQL.Model.Construction {
     }
 
     // used for interface and Object types
-    private void BuildObjectTypeFields(ComplexTypeDef typeDef) {
+    private void BuildComplexTypeFields(ComplexTypeDef typeDef) {
       var objTypeDef = typeDef as ObjectTypeDef;
       var clrType = typeDef.ClrType;
       var members = clrType.GetFieldsPropsMethods(withMethods: true);
@@ -254,16 +254,16 @@ namespace NGraphQL.Model.Construction {
     }
 
     private void BuildSchemaDef() {
-      _model.QueryType = BuildRootSchemaObject("Query", ObjectTypeRole.Query, ObjectTypeRole.ModuleQuery);
-      _model.MutationType = BuildRootSchemaObject("Mutation", ObjectTypeRole.Mutation, ObjectTypeRole.ModuleMutation);
-      _model.SubscriptionType = BuildRootSchemaObject("Subscription", ObjectTypeRole.Subscription, ObjectTypeRole.Subscription);
+      _model.QueryType = BuildRootSchemaObject("Query", TypeRole.Query, TypeRole.ModuleQuery);
+      _model.MutationType = BuildRootSchemaObject("Mutation", TypeRole.Mutation, TypeRole.ModuleMutation);
+      _model.SubscriptionType = BuildRootSchemaObject("Subscription", TypeRole.Subscription, TypeRole.Subscription);
 
       if (_model.QueryType == null) {
         AddError("No fields are registered for Query root type; must have at least one query field.");
         return; 
       }
       var noAttrs = GraphQLModelObject.EmptyAttributeList;
-      var schemaDef = _model.Schema = new ObjectTypeDef("Schema", null, noAttrs, null, ObjectTypeRole.Schema);
+      var schemaDef = _model.Schema = new ObjectTypeDef("Schema", null, noAttrs, null, TypeRole.Schema);
       RegisterTypeDef(schemaDef);
       schemaDef.Hidden = false; 
       schemaDef.Fields.Add(new FieldDef(schemaDef, "query", _model.QueryType.TypeRefNull));
@@ -273,7 +273,7 @@ namespace NGraphQL.Model.Construction {
         schemaDef.Fields.Add(new FieldDef(schemaDef, "subscription", _model.SubscriptionType.TypeRefNull));
     }
 
-    private ObjectTypeDef BuildRootSchemaObject(string name, ObjectTypeRole typeRole, ObjectTypeRole moduleTypeRole) {
+    private ObjectTypeDef BuildRootSchemaObject(string name, TypeRole typeRole, TypeRole moduleTypeRole) {
       var allFields = _model.Types.OfType<ObjectTypeDef>()
                         .Where(t => t.TypeRole == moduleTypeRole)
                         .SelectMany(t => t.Fields).ToList();

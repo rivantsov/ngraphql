@@ -23,12 +23,13 @@ namespace NGraphQL.Model.Construction {
     private void RegisterAllModuleDirectives() {
       foreach (var module in _server.Modules) {
         foreach (var dirReg in module.RegisteredDirectives) {
-          if (_model.Directives.ContainsKey(dirReg.Name)) {
-            AddError($"Module {module.Name}: directive {dirReg.Name} already registered.");
+          var dirName = dirReg.Name.TrimStart('@');
+          if (_model.Directives.ContainsKey(dirName)) {
+            AddError($"Module {module.Name}: directive @{dirName} already registered.");
             continue;
           }
           if (dirReg.Signature == null && dirReg.AttributeType == null) {
-            AddError($"Module {module.Name}: directive {dirReg.Name} has no Signature method or Attribute type.");
+            AddError($"Module {module.Name}: directive @{dirName} has no Signature method or Attribute type.");
             continue; 
           }
           ICustomAttributeProvider attrSrc;
@@ -36,7 +37,7 @@ namespace NGraphQL.Model.Construction {
             attrSrc = dirReg.AttributeType;
             var constrList = dirReg.AttributeType.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
             if (constrList.Length != 1) {
-              AddError($"Module {module.Name}: directive {dirReg.Name}, the attribute {dirReg.AttributeType} " +
+              AddError($"Module {module.Name}: directive @{dirName}, the attribute {dirReg.AttributeType} " +
                 " must have a single public constructor as a template for directive signature.");
               continue;
             }
@@ -50,10 +51,10 @@ namespace NGraphQL.Model.Construction {
           var prms = dirReg.Signature.GetParameters();
           var argDefs = BuildArgDefs(prms, dirReg.Signature);
           var dirDef = new DirectiveDef() {
-            DirInfo = dirReg, Name = dirReg.Name, Description = dirReg.Description, DeprecatedAttribute = deprAttrSec,
+            DirInfo = dirReg, Name = dirName, Description = dirReg.Description, DeprecatedAttribute = deprAttrSec,
             Args = argDefs
           };
-          _model.Directives[dirReg.Name] = dirDef;
+          _model.Directives[dirName] = dirDef;
         }
       } //foreach module
     }

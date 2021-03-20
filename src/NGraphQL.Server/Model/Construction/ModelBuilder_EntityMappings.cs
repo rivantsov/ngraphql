@@ -25,8 +25,7 @@ namespace NGraphQL.Model.Construction {
             AddError($"Invalid mapping target type {mp.GraphQLType.Name}, must be Object type; module {mname}");
             continue;
           }
-          var typeMapping = new TypeMapping() { SourceEntityMapping = mp };
-          objTypeDef.Mappings.Add(typeMapping);
+          objTypeDef.Mapping = mp;
           _model.TypesByEntityType[mp.EntityType] = objTypeDef;
         }
       }
@@ -37,8 +36,8 @@ namespace NGraphQL.Model.Construction {
       //  Add this mappings explicitly, this will allow building field readers on each
       //  field definition. 
       foreach (var typeDef in _model.Types) {
-        if (typeDef is ObjectTypeDef otd && otd.TypeRole == ObjectTypeRole.Data && otd.Mappings.Count == 0) {
-          otd.AddSelfMap(); 
+        if (typeDef is ObjectTypeDef otd && otd.TypeRole == TypeRole.Data && otd.Mapping == null) {
+          otd.Mapping = new EntityMapping() { EntityType = typeDef.ClrType, GraphQLType = typeDef.ClrType };
           _model.TypesByEntityType[typeDef.ClrType] = otd;
         }
       }

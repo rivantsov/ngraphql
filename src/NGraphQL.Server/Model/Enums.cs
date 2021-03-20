@@ -6,7 +6,7 @@ using NGraphQL.CodeFirst;
 namespace NGraphQL.Model {
 
 
-  public enum ObjectTypeRole {
+  public enum TypeRole {
     // all types defining data (Object type, input type, enum, etc)
     Data,
     // Query, Mutation, Subscription types registered at module level; their role is to define fields that will end up corresponding 

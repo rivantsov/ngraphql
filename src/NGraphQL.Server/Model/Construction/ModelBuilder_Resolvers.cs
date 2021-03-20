@@ -170,10 +170,16 @@ namespace NGraphQL.Model.Construction {
           if (field.ClrMember == null)
             continue; //__typename has no clr member
           var methName = field.ClrMember.Name;
-          var method = allMethods.FirstOrDefault(m => m.Name == methName);
-          if (method == null)
-            continue;
-          SetupFieldResolverMethod(typeDef, field, method, null);
+          var methods = allMethods.Where(m => m.Name == methName).ToList();
+          switch(methods.Count) {
+            case 0: continue;
+            case 1:
+              SetupFieldResolverMethod(typeDef, field, methods[0], null);
+              continue;
+            default:
+              AddError($"Field {typeDef.Name}.{field.Name}: found more than one resolver method ({methName}).");
+              continue; 
+          } //switch
         } //foreach field
       } //foreach typeDef
     }//method
@@ -190,17 +196,15 @@ namespace NGraphQL.Model.Construction {
       if (!CheckReturnTypeCompatible(retType, field, resolverMethod))
         return false; 
 
-      var resMethInfo =  new ResolverMethodInfo() { SourceAttribute = sourceAttr, Method = resolverMethod, 
+      field.Resolver = new ResolverMethodInfo() { SourceAttribute = sourceAttr, Method = resolverMethod, 
             ResolverClass = resolverMethod.DeclaringType,
-          ReturnsTask = returnsTask, TaskResultReader = taskResultReader };
-      var fldResolver = new FieldMapping() { Field = field, ResolverInfo = resMethInfo };
-      field.Resolver = resMethInfo; 
+            ReturnsTask = returnsTask, TaskResultReader = taskResultReader };
       if (returnsTask)
         field.Flags |= FieldFlags.ResolverReturnsTask;
-      if (typeDef is ObjectTypeDef otd && otd.TypeRole == ObjectTypeRole.Data)
-        field.Flags |= FieldFlags.HasParentArg; 
-      ValidateResolverMethodArguments(typeDef, field);
-      
+      if (typeDef is ObjectTypeDef otd && otd.TypeRole == TypeRole.Data)
+        field.Flags |= FieldFlags.HasParentArg;
+      field.ExecutionType = FieldExecutionType.Resolver;
+      ValidateResolverMethodArguments(typeDef, field); 
       return !_model.HasErrors;
     }
 

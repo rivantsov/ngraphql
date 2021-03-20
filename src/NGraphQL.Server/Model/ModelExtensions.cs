@@ -69,10 +69,21 @@ namespace NGraphQL.Model {
     }
 
     public static bool IsDataType(this TypeDefBase typeDef) {
-      if (typeDef is ObjectTypeDef objTypeDef)
-        return objTypeDef.TypeRole == ObjectTypeRole.Data;
+      if (typeDef is ComplexTypeDef cpxTypeDef)
+        return cpxTypeDef.TypeRole == TypeRole.Data;
       return true; // non-object types: Scalars, enums, input types
     }
+
+    public static bool IsModuleTransientType(this TypeDefBase typeDef) {
+      var cpxTypeDef = typeDef as ComplexTypeDef;
+      if (cpxTypeDef == null)
+        return false; 
+      switch(cpxTypeDef.TypeRole) {
+        case TypeRole.ModuleMutation: case TypeRole.ModuleQuery: case TypeRole.ModuleSubscription: return true;
+        default: return false;
+      }
+    }
+
 
     public static bool HasDirectives(this GraphQLModelObject modelObject) {
       return modelObject.Directives != null && modelObject.Directives.Count > 0; 

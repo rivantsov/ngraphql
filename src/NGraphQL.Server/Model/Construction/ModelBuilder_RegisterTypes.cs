@@ -48,15 +48,15 @@ namespace NGraphQL.Model.Construction {
         foreach (var type in module.UnionTypes)
           CreateRegisterTypeDef(type, module, TypeKind.Union);
         // Query, Mutation, Subscription
-        RegisterSpecialObjectTypeIfProvided(module.QueryType, ObjectTypeRole.ModuleQuery, module);
-        RegisterSpecialObjectTypeIfProvided(module.MutationType, ObjectTypeRole.ModuleMutation, module);
-        RegisterSpecialObjectTypeIfProvided(module.SubscriptionType, ObjectTypeRole.ModuleSubscription, module);
+        RegisterSpecialObjectTypeIfProvided(module.QueryType, TypeRole.ModuleQuery, module);
+        RegisterSpecialObjectTypeIfProvided(module.MutationType, TypeRole.ModuleMutation, module);
+        RegisterSpecialObjectTypeIfProvided(module.SubscriptionType, TypeRole.ModuleSubscription, module);
       } // foreach module
 
       return !_model.HasErrors;
     } //method
 
-    private void RegisterSpecialObjectTypeIfProvided(Type type, ObjectTypeRole typeRole, GraphQLModule module) {
+    private void RegisterSpecialObjectTypeIfProvided(Type type, TypeRole typeRole, GraphQLModule module) {
       if (type == null)
         return;
       var typeName = $"{module.Name}_{type.Name}";
@@ -98,7 +98,6 @@ namespace NGraphQL.Model.Construction {
         return;
       }
       _model.TypesByName.Add(typeDef.Name, typeDef);
-
     }
 
     private TypeDefBase CreateTypeDef (Type type, TypeKind typeKind, GraphQLModule module) {

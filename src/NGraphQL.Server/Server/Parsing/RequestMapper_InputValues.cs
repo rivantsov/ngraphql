@@ -11,36 +11,36 @@ namespace NGraphQL.Server.Parsing {
 
   partial class RequestMapper {
 
-    private IList<MappedSelectionFieldArg> MapArguments(IList<InputValue> args, IList<InputValueDef> argDefs, NamedRequestObject owner) {
+    private IList<MappedArg> MapArguments(IList<InputValue> args, IList<InputValueDef> argDefs, NamedRequestObject owner) {
       args ??= InputValue.EmptyList; 
       var hasArgs = args.Count > 0; 
       var hasArgDefs = argDefs.Count > 0; // argDefs are never null
       // some corner cases first
       if(!hasArgDefs && !hasArgs)
-        return MappedSelectionFieldArg.EmptyList;
+        return MappedArg.EmptyList;
       if(!hasArgDefs && hasArgs) {
-        AddError($"No arguments are expected for {owner.Name}", owner);
-        return MappedSelectionFieldArg.EmptyList;
+        AddError($"No arguments are expected for '{owner.Name}'", owner);
+        return MappedArg.EmptyList;
       }
 
       // we have args and argDefs; first check that arg names are valid
       var unknownArgs = args.Where(a => !argDefs.Any(ad => ad.Name == a.Name)).ToList();
       if (unknownArgs.Count > 0) { 
         foreach(var ua in unknownArgs) {
-          AddError($"Field(dir) {owner.Name}: argument {ua.Name} not defined.", ua);
+          AddError($"Field(dir) '{owner.Name}': argument '{ua.Name}' not defined.", ua);
         }
-        return MappedSelectionFieldArg.EmptyList; 
+        return MappedArg.EmptyList; 
       }
 
       // build Mapped Arg list - full list of args in right order matching the resolver method
-      var mappedArgs = new List<MappedSelectionFieldArg>();
+      var mappedArgs = new List<MappedArg>();
       foreach(var argDef in argDefs) {
         var arg = args.FirstOrDefault(a => a.Name == argDef.Name);
         if(arg == null) {
           // nullable args have default value null
           if(argDef.HasDefaultValue || !argDef.TypeRef.IsNotNull) {
             var constValue = CreateConstantInputValue(argDef, owner, argDef.TypeRef, argDef.DefaultValue); 
-            var mappedArg = new MappedSelectionFieldArg() { Anchor = owner, ArgDef = argDef, Evaluator = constValue };
+            var mappedArg = new MappedArg() { Anchor = owner, ArgDef = argDef, Evaluator = constValue };
             mappedArgs.Add(mappedArg);
           } else {
             AddError($"Field(dir) '{owner.Name}': argument '{argDef.Name}' value is missing.", owner);
@@ -50,7 +50,7 @@ namespace NGraphQL.Server.Parsing {
         // arg != null
         try {
           var argEval = GetInputValueEvaluator(argDef, arg.ValueSource, argDef.TypeRef);
-          var outArg = new MappedSelectionFieldArg() { Anchor = arg, ArgDef = argDef, Evaluator = argEval };
+          var outArg = new MappedArg() { Anchor = arg, ArgDef = argDef, Evaluator = argEval };
           mappedArgs.Add(outArg);
         } catch (InvalidInputException bvEx) {
           _requestContext.AddInputError(bvEx);
@@ -121,7 +121,7 @@ namespace NGraphQL.Server.Parsing {
     private VariableRefEvaluator GetVariableRefEvaluator(InputValueDef inputDef, TypeRef resultTypeRef, VariableValueSource varRef) {
       var varDecl = _currentOp.Variables.FirstOrDefault(vd => vd.Name == varRef.VariableName);
       if (varDecl == null)
-        throw new InvalidInputException($"Variable {varRef.VariableName} not defined.", varRef);
+        throw new InvalidInputException($"Variable ${varRef.VariableName} not defined.", varRef);
       // check type compatibility 
       if(!resultTypeRef.IsConvertibleFrom(varDecl.InputDef.TypeRef)) 
         throw new InvalidInputException(

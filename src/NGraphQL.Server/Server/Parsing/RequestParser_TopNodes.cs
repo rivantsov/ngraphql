@@ -116,10 +116,7 @@ namespace NGraphQL.Server.Parsing {
 
       var varList = new List<VariableDef>();
       foreach(var vn in varDefsNode.ChildNodes) {
-        var name = vn.ChildNodes[0].GetText();
-        // remove $ prefix; we define/track var name as a token without $; in Http/Json request variables are referenced without prefix; 
-        //     see https://graphql.org/learn/serving-over-http/#post-request
-        name = name.Substring(1); 
+        var name = vn.ChildNodes[0].ChildNodes[1].Token.Text;
         var typeRef = BuildTypeReference(vn.ChildNodes[1]);
         if(typeRef == null)
           continue; // error already posted

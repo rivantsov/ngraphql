@@ -16,14 +16,14 @@ namespace NGraphQL.Core {
         typeof(UuidScalar), typeof(DecimalScalar)
       });
       // Directives 
-      this.RegisterDirective("@deprecated", typeof(DeprecatedDirAttribute),
+      this.RegisterDirective("deprecated", typeof(DeprecatedDirAttribute),
           DirectiveLocation.TypeSystemLocations, "Marks type system element as deprecated",
           handler: new DeprecatedDirectiveHandler(), listInSchema: false);
-      this.RegisterDirective("@include", nameof(IncludeSkipSignature),
+      this.RegisterDirective("include", nameof(IncludeSkipSignature),
           DirectiveLocation.Field | DirectiveLocation.FragmentSpread | DirectiveLocation.InlineFragment, 
           "Conditional field include.", 
           handler: new IncludeDirectiveHandler() , listInSchema: false);
-      this.RegisterDirective("@skip", nameof(IncludeSkipSignature),
+      this.RegisterDirective("skip", nameof(IncludeSkipSignature),
           DirectiveLocation.Field | DirectiveLocation.FragmentSpread | DirectiveLocation.InlineFragment,
           "Conditional field skip.", 
           handler: new SkipDirectiveHandler(), listInSchema: false);

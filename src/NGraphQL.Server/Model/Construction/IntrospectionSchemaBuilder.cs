@@ -18,7 +18,7 @@ namespace NGraphQL.Model.Construction {
 
       // Create type objects without internal details; for typeDef and its typeRefs
       foreach (var typeDef in _model.Types) {
-        if (!typeDef.IsDataType())
+        if (typeDef.IsModuleTransientType())
           continue; 
         CreateTypeObject(typeDef);
         foreach(var typeRef in typeDef.TypeRefs)

@@ -127,7 +127,7 @@ query myQuery($longVal: Long) {
       vars = new TDict() { { "longVal", 654321 } };
       resp = await ExecuteAsync(query, vars, throwOnError: false);
       Assert.AreEqual(1, resp.Errors.Count, "Expected 1 error(s)");
-      Assert.AreEqual("Variable longValXYZ not defined.", resp.Errors[0].Message);
+      Assert.AreEqual("Variable $longValXYZ not defined.", resp.Errors[0].Message);
 
       TestEnv.LogTestDescr("variable value type mismatch - sending string value for a long var.");
       query = @"
@@ -192,7 +192,7 @@ query {
       resp = await ExecuteAsync(query, throwOnError: false);
       Assert.IsTrue(resp.Errors.Count == 2, "Expected errors");
       err = resp.Errors[0];
-      Assert.AreEqual("Field(dir) echoInputValuesWithNulls: argument boolValXYZ not defined.", err.Message);
+      Assert.AreEqual("Field(dir) 'echoInputValuesWithNulls': argument 'boolValXYZ' not defined.", err.Message);
       Assert.AreEqual(2, err.Path.Count, "Expected 2 elem path");
       Assert.IsTrue(err.Locations != null && err.Locations.Count > 0, "Expected error location.");
 
@@ -213,7 +213,7 @@ query {
 }";
       resp = await ExecuteAsync(query, throwOnError: false);
       Assert.IsTrue(resp.Errors.Count == 1, "Expected 1 error(s)");
-      Assert.AreEqual("Field(dir) @include: argument ifXYZ not defined.", resp.Errors[0].Message);
+      Assert.AreEqual("Field(dir) 'include': argument 'ifXYZ' not defined.", resp.Errors[0].Message);
 
       TestEnv.LogTestDescr("error - passing wrong value types to field args using a literal.");
       query = @"
