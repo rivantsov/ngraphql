@@ -85,8 +85,10 @@ namespace NGraphQL.Model.Construction {
       }
 
       // types
-      var objTypes = SelectTypes<ObjectTypeDef>(TypeKind.Object).Where(td => td.IsDataType()).ToList();
+      var objTypes = SelectTypes<ObjectTypeDef>(TypeKind.Object);
       foreach(var tDef in objTypes) {
+        if (tDef.IsModuleTransientType())
+          continue; // skip module-level Query, Mutation transient types
         AppendDescr(tDef.Description);
         _builder.Append("type " + tDef.Name);
         if(tDef.Implements.Count > 0) {
