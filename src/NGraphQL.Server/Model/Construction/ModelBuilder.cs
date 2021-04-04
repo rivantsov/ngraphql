@@ -10,6 +10,7 @@ using NGraphQL.Model;
 using NGraphQL.Introspection;
 using NGraphQL.Server;
 using NGraphQL.Utilities;
+using NGraphQL.Model;
 
 namespace NGraphQL.Model.Construction {
 
@@ -25,7 +26,7 @@ namespace NGraphQL.Model.Construction {
     }
 
     public void BuildModel() {
-      _model = _server.Model = new GraphQLApiModel(_server);
+      _model = _server.Model = new GraphQLApiModel();
       _modelAdjustments = _server.Modules.SelectMany(m => m.Adjustments).ToList();
 
       // collect,register scalar, data types, query/mutation types, resolvers
@@ -116,7 +117,7 @@ namespace NGraphQL.Model.Construction {
             // we build union types in a separate loop after building other types
             break;
         } //switch
-        td.Directives = BuildDirectivesFromAttributes(td.ClrType, loc, td);
+        td.Directives = BuildDirectivesFromAttributes(td.ClrType, loc);
       } //foreach td
     }
 
@@ -126,7 +127,7 @@ namespace NGraphQL.Model.Construction {
       var clrType = typeDef.ClrType;
       var members = clrType.GetFieldsPropsMethods(withMethods: true);
       foreach (var member in members) {
-        var attrs = GetAllAttributes(member);
+        var attrs = GetAllAttributesAndAdjustments(member);
         var ignoreAttr = attrs.Find<IgnoreAttribute>();
         if (ignoreAttr != null)
           continue;
@@ -137,7 +138,7 @@ namespace NGraphQL.Model.Construction {
         var name = GetGraphQLName(member);
         var descr = _docLoader.GetDocString(member, clrType);
         var fld = new FieldDef(typeDef, name, typeRef) { ClrMember = member, Description = descr, Attributes = attrs };
-        fld.Directives = BuildDirectivesFromAttributes(member, DirectiveLocation.FieldDefinition, fld);
+        fld.Directives = BuildDirectivesFromAttributes(member, DirectiveLocation.FieldDefinition);
         if (attrs.Find<HiddenAttribute>() != null)
           fld.Flags |= FieldFlags.Hidden;
         typeDef.Fields.Add(fld);
@@ -156,7 +157,7 @@ namespace NGraphQL.Model.Construction {
     private IList<InputValueDef> BuildArgDefs(IList<ParameterInfo> parameters, MethodBase method) {
       var argDefs = new List<InputValueDef>();
       foreach (var prm in parameters) {
-        var attrs = GetAllAttributes(prm, method);
+        var attrs = GetAllAttributesAndAdjustments(prm, method);
         var prmTypeRef = GetTypeRef(prm.ParameterType, prm, $"Method {method.Name}, parameter {prm.Name}", method);
         if (prmTypeRef == null)
           continue;
@@ -170,7 +171,7 @@ namespace NGraphQL.Model.Construction {
           Name = GetGraphQLName(prm), TypeRef = prmTypeRef, Attributes = attrs,
           ParamType = prm.ParameterType, HasDefaultValue = prm.HasDefaultValue, DefaultValue = dftValue
         };
-        argDef.Directives = BuildDirectivesFromAttributes(prm, DirectiveLocation.ArgumentDefinition, argDef);
+        argDef.Directives = BuildDirectivesFromAttributes(prm, DirectiveLocation.ArgumentDefinition);
         argDefs.Add(argDef);
       }
       return argDefs;
@@ -195,7 +196,7 @@ namespace NGraphQL.Model.Construction {
     private void BuildInputObjectFields(InputObjectTypeDef inpTypeDef) {
       var members = inpTypeDef.ClrType.GetFieldsProps();
       foreach (var member in members) {
-        var attrs = GetAllAttributes(member);
+        var attrs = GetAllAttributesAndAdjustments(member);
         var mtype = member.GetMemberReturnType();
         var typeRef = GetTypeRef(mtype, member, $"Field {inpTypeDef.Name}.{member.Name}");
         if (typeRef == null)
@@ -220,19 +221,21 @@ namespace NGraphQL.Model.Construction {
           InputObjectClrMember = member,
           Description = _docLoader.GetDocString(member, member.DeclaringType)
         };
-        inpFldDef.Directives = BuildDirectivesFromAttributes(member, DirectiveLocation.InputFieldDefinition, inpFldDef);
+        inpFldDef.Directives = BuildDirectivesFromAttributes(member, DirectiveLocation.InputFieldDefinition);
         inpTypeDef.Fields.Add(inpFldDef);
       } //foreach
     }
 
     private void BuildEnumTypeFields(EnumTypeDef enumTypeDef) {
-      // internal EnumHandler and enum values are already built in EnumTypeDef constructor
-      // all we do is add descriptions and directives if any
-      foreach(var enumV in enumTypeDef.Handler.Values) {
-        enumV.Description = _docLoader.GetDocString(enumV.Field, enumTypeDef.ClrType);
-        enumV.Directives = this.BuildDirectivesFromAttributes(enumV.Field, DirectiveLocation.EnumValue, enumV);
+      enumTypeDef.Handler = new EnumHandler(enumTypeDef.ClrType, enumTypeDef.Module.Adjustments);
+      enumTypeDef.Name = enumTypeDef.Handler.EnumName;
+      // Build fieldDefs from EnumInfo.Values
+      foreach (var vi in enumTypeDef.Handler.Values) {
+        var enumFld = new EnumFieldDef() { Name = vi.Name, ValueInfo = vi };
+        enumFld.Description = _docLoader.GetDocString(enumFld.ValueInfo.Field, enumTypeDef.ClrType);
+        enumFld.Directives = this.BuildDirectivesFromAttributes(enumFld.ValueInfo.Field, DirectiveLocation.EnumValue);
+        enumTypeDef.Fields.Add(enumFld);
       }
-
     }
 
     private void BuildUnionTypes() {

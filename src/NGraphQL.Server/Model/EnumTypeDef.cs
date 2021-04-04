@@ -13,13 +13,16 @@ using NGraphQL.Model;
 
 namespace NGraphQL.Model {
 
+  public class EnumFieldDef: GraphQLModelObject {
+    public EnumValueInfo ValueInfo; 
+  }
+
   public class EnumTypeDef : TypeDefBase {
-    public EnumHandler Handler; 
+    public EnumHandler Handler;
+    public IList<EnumFieldDef> Fields = new List<EnumFieldDef>(); 
 
     public EnumTypeDef(Type type, IList<Attribute> attrs, GraphQLModule module) 
           : base(type.Name, TypeKind.Enum, type, attrs, module) {
-      Handler = new EnumHandler(type, module.Adjustments);
-      base.Name = Handler.EnumName;      
     }
 
     public override object ToOutput(FieldContext context, object value) {

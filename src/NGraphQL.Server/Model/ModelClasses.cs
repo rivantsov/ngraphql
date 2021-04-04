@@ -6,6 +6,7 @@ using System.Reflection;
 using NGraphQL.CodeFirst;
 using NGraphQL.Core;
 using NGraphQL.Core.Scalars;
+using NGraphQL.Model;
 using NGraphQL.Introspection;
 using NGraphQL.Server;
 using NGraphQL.Server.Execution;
@@ -61,6 +62,7 @@ namespace NGraphQL.Model {
     public override string ToString() {
       return Def?.ToString(); 
     }
+    public static IList<ModelDirective> EmptyList = new ModelDirective[] { }; 
   }
 
   public class ScalarTypeDef : TypeDefBase {
@@ -89,7 +91,7 @@ namespace NGraphQL.Model {
 
   public class ObjectTypeDef : ComplexTypeDef {
     public List<InterfaceTypeDef> Implements = new List<InterfaceTypeDef>();
-    public EntityMapping Mapping;
+    public List<ObjectTypeMappingExt> Mappings = new List<ObjectTypeMappingExt>();
 
     public ObjectTypeDef(string name, Type clrType, IList<Attribute> attrs, GraphQLModule module, 
           TypeRole typeRole = TypeRole.Data) 
@@ -144,9 +146,11 @@ namespace NGraphQL.Model {
     public FieldFlags Flags;
     public IList<InputValueDef> Args = new List<InputValueDef>();
     public MemberInfo ClrMember;
+    /* //moved these to ObjectFieldMapping
     public ResolverMethodInfo Resolver;
     public Func<object, object> Reader;
     public FieldExecutionType ExecutionType;
+    */
 
     public FieldDef(ComplexTypeDef ownerType, string name, TypeRef typeRef) {
       OwnerType = ownerType; 

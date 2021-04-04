@@ -3,13 +3,19 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
-using System.Text;
+
 using NGraphQL.CodeFirst;
-using NGraphQL.Introspection;
+using NGraphQL.Utilities;
 
 namespace NGraphQL.Model {
+  /*
+  EnumHandler is more like internal model object, like ObjectTypeDef; so it looks like it should be defined 
+  in NGraphQL.Server assembly along with other model objects. But we place it here in NGraphQL, 
+  to be used by NGraphQL.Client - we need enum value conversions to/from strings.
+  */
 
-  public class EnumValueInfo : GraphQLModelObject {
+  public class EnumValueInfo {
+    public string Name; 
     public FieldInfo Field; 
     public object Value;
     public long LongValue;
@@ -26,7 +32,7 @@ namespace NGraphQL.Model {
     public bool IsFlagSet;
     public List<EnumValueInfo> Values = new List<EnumValueInfo>();
     public Dictionary<string, EnumValueInfo> ValuesLookup = 
-      new Dictionary<string, EnumValueInfo>(StringComparer.OrdinalIgnoreCase);   //let's be forgiving about casing
+             new Dictionary<string, EnumValueInfo>(StringComparer.OrdinalIgnoreCase);   //let's be forgiving about casing
     public Func<object, long> ConvertToLong;
     public object NoneValue;
 
@@ -53,13 +59,10 @@ namespace NGraphQL.Model {
           continue;
         nameAttr = fld.GetAttribute<GraphQLNameAttribute>();
         var name = nameAttr?.Name ?? Utility.ToUnderscoreUpperCase(fld.Name);
-        descAttr = fld.GetAttribute<DescriptionAttribute>();
-        string descr = descAttr?.Description;
         var vInfo = new EnumValueInfo() {
           Field = fld,
           Value = value,
           Name = name,
-          Description = descr,
           LongValue = fldLongValue
         };
         Values.Add(vInfo); 

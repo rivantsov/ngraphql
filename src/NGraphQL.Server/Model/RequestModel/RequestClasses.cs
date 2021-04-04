@@ -124,7 +124,7 @@ namespace NGraphQL.Model.Request {
     public DirectiveDef Def;
     public DirectiveLocation Location; 
     public IList<InputValue> Args;
-    public IList<MappedSelectionFieldArg> MappedArgs;
+    public IList<MappedArg> MappedArgs;
     public RequestDirective() { }
   }
 

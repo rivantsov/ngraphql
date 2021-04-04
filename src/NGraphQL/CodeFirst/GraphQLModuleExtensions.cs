@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
-using NGraphQL.Model;
-using NGraphQL.Core;
+
 using NGraphQL.Introspection;
+using NGraphQL.Model;
 
 namespace NGraphQL.CodeFirst {
   

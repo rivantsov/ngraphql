@@ -6,15 +6,15 @@ using NGraphQL.CodeFirst;
 
 namespace NGraphQL.Model {
 
-  public class EntityMapping {
+  public class ObjectTypeMapping {
     public Type GraphQLType;
     public Type EntityType;
     public LambdaExpression Expression; //might be null; in this case we have mapping using field name matches
-    public EntityMapping() { }
+    public ObjectTypeMapping() { }
   }
 
-  public class EntityMapping<TEntity> : EntityMapping {
-    internal EntityMapping() {
+  public class ObjectTypeMapping<TEntity> : ObjectTypeMapping {
+    internal ObjectTypeMapping() {
       base.EntityType = typeof(TEntity);
     }
     public void To<TGraphQL>(Expression<Func<TEntity, TGraphQL>> expression = null) where TGraphQL : class {

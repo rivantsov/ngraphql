@@ -18,7 +18,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Server\" />
+    <Compile Remove="Server\**" />
+    <EmbeddedResource Remove="Server\**" />
+    <None Remove="Server\**" />
   </ItemGroup>
 
 </Project>

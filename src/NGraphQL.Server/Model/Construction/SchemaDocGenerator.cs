@@ -36,10 +36,10 @@ namespace NGraphQL.Model.Construction {
         _builder.Append("enum " + enumDef.Name);
         AppendDirs(enumDef);
         _builder.AppendLine(" {");
-        foreach(var enumV in enumDef.Handler.Values) {
-          AppendDescr(enumV.Description, true);
-          _builder.Append(Indent + enumV.Name + " ");
-          AppendDirs(enumV);
+        foreach(var enumFld in enumDef.Fields) {
+          AppendDescr(enumFld.Description, true);
+          _builder.Append(Indent + enumFld.Name + " ");
+          AppendDirs(enumFld);
           _builder.AppendLine(); 
         }
         _builder.AppendLine("}");

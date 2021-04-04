@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace NGraphQL.Core {
+namespace NGraphQL.Model {
 
   public abstract class BaseDirectiveAttribute: Attribute {
     public object[] ArgValues { get; }

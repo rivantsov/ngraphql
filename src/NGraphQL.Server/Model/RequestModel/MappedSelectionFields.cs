@@ -23,11 +23,11 @@ namespace NGraphQL.Model.Request {
   public class MappedSelectionField: MappedSelectionItem {
     public readonly SelectionField Field;
     public readonly FieldDef FieldDef;
-    public readonly IList<MappedSelectionFieldArg> Args;
+    public readonly IList<MappedArg> Args;
 
-    public FieldMapping Resolver;
+    public ObjectFieldMapping Resolver;
 
-    public MappedSelectionField(SelectionField field, FieldDef fieldDef, IList<MappedSelectionFieldArg> args): base(field) {
+    public MappedSelectionField(SelectionField field, FieldDef fieldDef, IList<MappedArg> args): base(field) {
       Field = field;
       FieldDef = fieldDef;
       Args = args; 
@@ -46,15 +46,15 @@ namespace NGraphQL.Model.Request {
     }
   }
 
-  // used as MappedField args and request directive args
-  public class MappedSelectionFieldArg {
-    public static readonly IList<MappedSelectionFieldArg> EmptyList = new MappedSelectionFieldArg[] { };
+  // used as MappedSelectionField args and request directive args
+  public class MappedArg {
+    public static readonly IList<MappedArg> EmptyList = new MappedArg[] { };
 
     public RequestObjectBase Anchor; 
     public InputValueDef ArgDef; 
     public InputValueEvaluator Evaluator;
 
-    public MappedSelectionFieldArg() { }
+    public MappedArg() { }
     public override string ToString() => $"{ArgDef.Name}/{ArgDef.TypeRef.Name}";
   }
 

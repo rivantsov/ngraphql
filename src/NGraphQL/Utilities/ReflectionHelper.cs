@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace NGraphQL.Model {
+namespace NGraphQL.Utilities {
+
   public static class ReflectionHelper {
 
     public static object GetDefaultValue(this Type type) {
@@ -72,20 +73,6 @@ namespace NGraphQL.Model {
           return fi.GetValue(obj);
       }
       return null;
-    }
-
-    public static Type GetMemberReturnType(this MemberInfo member) {
-      switch (member) {
-        case PropertyInfo pi:
-          return pi.PropertyType;
-        case FieldInfo fi:
-          return fi.FieldType;
-        case MethodInfo mi:
-          return mi.ReturnType;
-        case ConstructorInfo ci:
-          return null;
-      }
-      throw new Exception($"Invalid argument for GetMemberType: {member.Name}");
     }
 
   }

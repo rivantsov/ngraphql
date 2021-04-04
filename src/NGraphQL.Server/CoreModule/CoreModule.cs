@@ -3,6 +3,7 @@ using NGraphQL.CodeFirst;
 using NGraphQL.Core.Scalars;
 using NGraphQL.Core;
 using NGraphQL.Introspection;
+using NGraphQL.Model;
 
 namespace NGraphQL.Core {
 

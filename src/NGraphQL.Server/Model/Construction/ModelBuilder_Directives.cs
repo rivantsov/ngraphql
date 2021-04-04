@@ -1,16 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 
 using NGraphQL.CodeFirst;
-using NGraphQL.Core;
-using NGraphQL.Model;
 using NGraphQL.Introspection;
 using NGraphQL.Utilities;
 
 namespace NGraphQL.Model.Construction {
+
   partial class ModelBuilder {
 
     private bool BuildRegisteredDirectiveDefinitions() {
@@ -81,15 +78,12 @@ namespace NGraphQL.Model.Construction {
       }
     }
 
-    static object[] _emptyObjectList = new object[] { }; 
-
-    private IList<object> BuildDirectivesFromAttributes(ICustomAttributeProvider clrObjectInfo, 
-                          DirectiveLocation location, GraphQLModelObject owner) {
+    private IList<ModelDirective> BuildDirectivesFromAttributes(ICustomAttributeProvider clrObjectInfo, DirectiveLocation location) {
       var attrList = clrObjectInfo.GetCustomAttributes(inherit: true);
       if (attrList.Length == 0)
-        return _emptyObjectList;
+        return ModelDirective.EmptyList;
 
-      var dirList = new List<object>();
+      var dirList = new List<ModelDirective>();
       foreach (var attr in attrList) {
         if (!(attr is BaseDirectiveAttribute dirAttr))
           continue;

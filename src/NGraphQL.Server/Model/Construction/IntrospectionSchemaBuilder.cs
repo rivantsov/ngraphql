@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using NGraphQL.CodeFirst;
 using NGraphQL.Core;
@@ -103,8 +104,8 @@ namespace NGraphQL.Model.Construction {
 
           case ComplexTypeDef ctd:  // object types and interfaces
             BuildComplexObjectType(ctd);
-            if (ctd.IsDataType())
-              AddTypeNameField(ctd); 
+            if (ctd is ObjectTypeDef otd)
+              AddTypeNameField(otd); 
             break;
 
           case InputObjectTypeDef inpDef:
@@ -122,13 +123,15 @@ namespace NGraphQL.Model.Construction {
       }
     } //method
 
-    private void AddTypeNameField(ComplexTypeDef typeDef) {
-      var fld = new 
-        FieldDef(typeDef, "__typename", _stringNotNull) {
-           DefaultResolver = new FieldMapping() { Reader = t => typeDef.Name }
-      };
+    private void AddTypeNameField(ObjectTypeDef objTypeDef) {
+      var fld = new FieldDef(objTypeDef, "__typename", _stringNotNull);
       fld.Flags |= FieldFlags.Hidden;
-      typeDef.Fields.Add(fld); 
+      objTypeDef.Fields.Add(fld);
+      // field mappings
+      var typeName = objTypeDef.Name;
+      Func<object, object> reader = obj => typeName;
+      foreach (var mp in objTypeDef.Mappings)
+        mp.FieldMappings.Add(new ObjectFieldMapping() { TypeMapping = mp, Field = fld, Reader = reader });
     }
 
     private void BuildScalarType(ScalarTypeDef inpTypeDef) {
@@ -179,11 +182,11 @@ namespace NGraphQL.Model.Construction {
 
     private void BuildEnumType(EnumTypeDef enumTypeDef) {
       var type_ = enumTypeDef.Type_; 
-      foreach(var enumV in enumTypeDef.Handler.Values) {
+      foreach(var fld in enumTypeDef.Fields) {
         var enumV_ = new __EnumValue() {
-          Name = enumV.Name, Description = enumV.Description,
+          Name = fld.Name, Description = fld.Description,
         };
-        enumV.Intro_ = enumV_;
+        fld.Intro_ = enumV_;
         type_.EnumValues.Add(enumV_);
       }
     }

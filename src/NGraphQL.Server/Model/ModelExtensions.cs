@@ -113,8 +113,8 @@ namespace NGraphQL.Model {
           break;
 
         case EnumTypeDef etd:
-          foreach (var enumV in etd.Handler.Values)
-            ApplyToAllRec(enumV, action);
+          foreach (var enumFld in etd.Fields)
+            ApplyToAllRec(enumFld, action);
           break;
 
         case ScalarTypeDef _:

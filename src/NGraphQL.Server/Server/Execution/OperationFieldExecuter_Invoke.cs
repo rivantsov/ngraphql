@@ -107,7 +107,7 @@ namespace NGraphQL.Server.Execution {
       fieldContext.ArgValues = argValues.ToArray();
     }
 
-    private object SafeEvaluateArg(FieldContext fieldContext, MappedSelectionFieldArg arg) {
+    private object SafeEvaluateArg(FieldContext fieldContext, MappedArg arg) {
       try {
         var value = arg.Evaluator.GetValue(_requestContext);
         var convValue = _requestContext.ValidateConvert(value, arg.ArgDef.TypeRef, arg.Anchor);

@@ -5,8 +5,10 @@ using System.Text;
 using NGraphQL.CodeFirst;
 using NGraphQL.Introspection;
 
-namespace NGraphQL.Core {
+namespace NGraphQL.Model {
+
   public static class DirectiveRegistrationExtensions {
+
     public static void RegisterDirective(this GraphQLModule module, string name, string signatureMethodName,
            DirectiveLocation locations, string description = null, IDirectiveHandler handler = null, bool listInSchema = true) {
       var method = module.GetType().GetMethod(signatureMethodName,

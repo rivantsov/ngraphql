@@ -33,15 +33,15 @@ namespace NGraphQL.Server.Parsing {
       }
 
       // build Mapped Arg list - full list of args in right order matching the resolver method
-      var mappedArgs = new List<MappedArg>();
+      var MappedSelectionFieldArgs = new List<MappedArg>();
       foreach(var argDef in argDefs) {
         var arg = args.FirstOrDefault(a => a.Name == argDef.Name);
         if(arg == null) {
           // nullable args have default value null
           if(argDef.HasDefaultValue || !argDef.TypeRef.IsNotNull) {
             var constValue = CreateConstantInputValue(argDef, owner, argDef.TypeRef, argDef.DefaultValue); 
-            var mappedArg = new MappedArg() { Anchor = owner, ArgDef = argDef, Evaluator = constValue };
-            mappedArgs.Add(mappedArg);
+            var MappedSelectionFieldArg = new MappedArg() { Anchor = owner, ArgDef = argDef, Evaluator = constValue };
+            MappedSelectionFieldArgs.Add(MappedSelectionFieldArg);
           } else {
             AddError($"Field(dir) '{owner.Name}': argument '{argDef.Name}' value is missing.", owner);
           }
@@ -51,7 +51,7 @@ namespace NGraphQL.Server.Parsing {
         try {
           var argEval = GetInputValueEvaluator(argDef, arg.ValueSource, argDef.TypeRef);
           var outArg = new MappedArg() { Anchor = arg, ArgDef = argDef, Evaluator = argEval };
-          mappedArgs.Add(outArg);
+          MappedSelectionFieldArgs.Add(outArg);
         } catch (InvalidInputException bvEx) {
           _requestContext.AddInputError(bvEx);
           continue;
@@ -59,7 +59,7 @@ namespace NGraphQL.Server.Parsing {
           throw new InvalidInputException(ex.Message, arg.ValueSource, ex);
         }
       } //foreach argDef
-      return mappedArgs;
+      return MappedSelectionFieldArgs;
     }
 
     internal InputValueEvaluator GetInputValueEvaluator(InputValueDef inputDef, ValueSource valueSource, TypeRef valueTypeRef) {

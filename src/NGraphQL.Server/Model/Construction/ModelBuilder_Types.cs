@@ -29,7 +29,7 @@ namespace NGraphQL.Model.Construction {
     private void RegisterResolverClasses() {
       foreach (var module in _server.Modules) {
         foreach (var resType in module.ResolverTypes)
-          _model.Resolvers.Add(new ResolverClassInfo() { Module = module, Type = resType });
+          _model.ResolverClasses.Add(new ResolverClassInfo() { Module = module, Type = resType });
       }
     }
 
@@ -101,7 +101,7 @@ namespace NGraphQL.Model.Construction {
     }
 
     private TypeDefBase CreateTypeDef (Type type, TypeKind typeKind, GraphQLModule module) {
-      var allAttrs = GetAllAttributes(type);
+      var allAttrs = GetAllAttributesAndAdjustments(type);
       var nameAttr = allAttrs.Find<GraphQLNameAttribute>();
       var typeName = nameAttr?.Name ?? GetGraphQLName(type);
       var moduleName = module.Name;
@@ -164,7 +164,7 @@ namespace NGraphQL.Model.Construction {
     private void UnwrapClrType(Type type, ICustomAttributeProvider attributeSource, out Type baseType, out List<TypeKind> kinds, 
                                   MethodBase paramOwner) {
       kinds = new List<TypeKind>();
-      var attrs = GetAllAttributes(attributeSource, paramOwner);
+      var attrs = GetAllAttributesAndAdjustments(attributeSource, paramOwner);
       bool notNull = attrs.Find<NullAttribute>() == null;
       Type valueTypeUnder;
 

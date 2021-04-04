@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace NGraphQL.Model {
+namespace NGraphQL.Utilities {
 
   internal static class Utility {
     

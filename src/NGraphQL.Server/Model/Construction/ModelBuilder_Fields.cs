@@ -6,10 +6,44 @@ using System.Reflection;
 using System.Text;
 
 using NGraphQL.CodeFirst;
+using NGraphQL.Introspection;
 using NGraphQL.Utilities;
 
 namespace NGraphQL.Model.Construction {
   public partial class ModelBuilder {
+
+
+    IList<ObjectTypeDef> _typesToMapFields;
+
+    private bool MapObjectFields() {
+      // get all object types except root types (Query, Mutation, Schema) that do not have CLR type. 
+      _typesToMapFields = _model.GetTypeDefs<ObjectTypeDef>(TypeKind.Object)
+                              .Where(td => td.ClrType != null).ToList();
+      // 1. Entity mapping expressions
+      ProcessEntityMappingExpressions();
+      if (_model.HasErrors) return false;
+
+      // 2. Map by ResolvesField attribute on resolver methods
+      MapResolversByResolvesFieldAttribute();
+      if (_model.HasErrors) return false;
+
+      // 3. to map by Resolver attribute on field
+      MapFieldsToResolversByResolverAttribute();
+      if (_model.HasErrors) return false;
+
+      // 4. Default mapping to entities by name
+      ProcessMappingForMatchingMembers();
+      if (_model.HasErrors) return false;
+
+      // 5. Map to resolvers by name 
+      MapFieldsToResolversByName();
+      if (_model.HasErrors) return false;
+
+      // 6. Verify all assigned
+      VerifyFieldMappings();
+
+      return !_model.HasErrors;
+    }
 
     private bool AssignMappedEntitiesForObjectTypes() {
       foreach (var module in _server.Modules) {
@@ -37,11 +71,25 @@ namespace NGraphQL.Model.Construction {
       //  field definition. 
       foreach (var typeDef in _model.Types) {
         if (typeDef is ObjectTypeDef otd && otd.TypeRole == TypeRole.Data && otd.Mapping == null) {
-          otd.Mapping = new EntityMapping() { EntityType = typeDef.ClrType, GraphQLType = typeDef.ClrType };
+          otd.Mapping = new ObjectTypeMapping() { EntityType = typeDef.ClrType, GraphQLType = typeDef.ClrType };
           _model.TypesByEntityType[typeDef.ClrType] = otd;
         }
       }
       return !_model.HasErrors;
+    }
+
+    private void VerifyFieldMappings() {
+      foreach (var typeDef in _typesToMapFields) {
+        foreach (var field in typeDef.Fields) {
+          // so far we have only exec type to set, or post error
+          if (field.Reader != null)
+            field.ExecutionType = FieldExecutionType.Reader;
+          else if (field.Resolver != null)
+            field.ExecutionType = FieldExecutionType.Resolver;
+          else
+            AddError($"Field '{typeDef.ClrType.Name}.{field.Name}' (module {typeDef.Module.Name}) has no associated resolver or mapped entity field.");
+        }
+      }
     }
 
     private void ProcessEntityMappingExpressions() {

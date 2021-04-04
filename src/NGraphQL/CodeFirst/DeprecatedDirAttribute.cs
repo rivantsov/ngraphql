@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using NGraphQL.Introspection;
 
-namespace NGraphQL.Core {
+using NGraphQL.Model;
+
+namespace NGraphQL.CodeFirst {
 
   /// <summary>Marks type, field or parameter as deprecated. The element in schema document will appear with @deprecated
   /// directive.</summary>

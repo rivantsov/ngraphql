@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using NGraphQL.Model;
 using NGraphQL.Introspection;
 
 namespace NGraphQL.Model {
@@ -115,9 +116,8 @@ namespace NGraphQL.Model {
       }
     }
 
-    public static TypeMapping AddSelfMap(this ObjectTypeDef objTypeDef) {
-      var entMapping = new EntityMapping() { EntityType = objTypeDef.ClrType, GraphQLType = objTypeDef.ClrType };
-      var typeMapping = new TypeMapping() { SourceEntityMapping = entMapping };
+    public static ObjectTypeMappingExt AddSelfMap(this ObjectTypeDef objTypeDef) {
+      var typeMapping = new ObjectTypeMappingExt(objTypeDef.ClrType);
       objTypeDef.Mappings.Add(typeMapping);
       return typeMapping;
     }

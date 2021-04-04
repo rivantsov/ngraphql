@@ -11,9 +11,7 @@ namespace NGraphQL.Model {
   public class GraphQLModelObject {
     public string Name { get; set; }
     public string Description;
-    // It should be IList<ModelDirective>, but ModelDirective is not available in this assembly, 
-    //  so we use list of objects
-    public IList<object> Directives;
+    public IList<ModelDirective> Directives;
     public IntroObjectBase Intro_;
 
     public override string ToString() => Name;

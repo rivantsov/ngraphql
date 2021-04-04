@@ -3,7 +3,7 @@ using System.Reflection;
 
 using NGraphQL.Introspection;
 
-namespace NGraphQL.Core {
+namespace NGraphQL.Model {
 
   public class DirectiveRegistration {
     public string Name;

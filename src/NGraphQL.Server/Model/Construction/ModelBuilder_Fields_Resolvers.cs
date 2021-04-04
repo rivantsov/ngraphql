@@ -11,56 +11,11 @@ using NGraphQL.Utilities;
 namespace NGraphQL.Model.Construction {
 
   public partial class ModelBuilder {
-    IList<ObjectTypeDef> _typesToMapFields; 
-
-    private bool MapObjectFields() {
-      // get all object types except root types (Query, Mutation, Schema) that do not have CLR type. 
-      _typesToMapFields = _model.GetTypeDefs<ObjectTypeDef>(TypeKind.Object)
-                              .Where(td => td.ClrType != null).ToList();
-      // 1. Entity mapping expressions
-      ProcessEntityMappingExpressions();
-      if (_model.HasErrors) return false; 
-
-      // 2. Map by ResolvesField attribute on resolver methods
-      MapResolversByResolvesFieldAttribute();
-      if (_model.HasErrors) return false;
-
-      // 3. to map by Resolver attribute on field
-      MapFieldsToResolversByResolverAttribute();
-      if (_model.HasErrors) return false;
-
-      // 4. Default mapping to entities by name
-      ProcessMappingForMatchingMembers();
-      if (_model.HasErrors) return false;
-
-      // 5. Map to resolvers by name 
-      MapFieldsToResolversByName();
-      if (_model.HasErrors) return false;
-
-      // 6. Verify all assigned
-      VerifyFieldMappings(); 
-
-      return !_model.HasErrors;
-    }
-
-    private void VerifyFieldMappings() {
-      foreach (var typeDef in _typesToMapFields) {
-        foreach (var field in typeDef.Fields) {
-          // so far we have only exec type to set, or post error
-          if (field.Reader != null)
-            field.ExecutionType = FieldExecutionType.Reader;
-          else if (field.Resolver != null)
-            field.ExecutionType = FieldExecutionType.Resolver;
-          else
-            AddError($"Field '{typeDef.ClrType.Name}.{field.Name}' (module {typeDef.Module.Name}) has no associated resolver or mapped entity field.");
-        }
-      }
-    }
 
     // map resolvers having [ResolvesField] attribute
     private void MapResolversByResolvesFieldAttribute() {
       // go thru resolver classes, find methods with ResolvesField attr
-      foreach(var resClass in _model.Resolvers) {
+      foreach(var resClass in _model.ResolverClasses) {
         var resMethods = resClass.Type.GetMethods(BindingFlags.Instance | BindingFlags.Public);
         foreach(var resMeth in resMethods) {
           var resAttr = resMeth.GetAttribute<ResolvesFieldAttribute>();
@@ -111,7 +66,7 @@ namespace NGraphQL.Model.Construction {
         foreach (var field in typeDef.Fields) {
           if (field.ClrMember == null)
             continue; //__typename has no clr member
-          var resAttr = GetAllAttributes(field.ClrMember).Find<ResolverAttribute>();
+          var resAttr = GetAllAttributesAndAdjustments(field.ClrMember).Find<ResolverAttribute>();
           if (resAttr == null)
             continue; 
           var resolverType = resAttr.ResolverClass;

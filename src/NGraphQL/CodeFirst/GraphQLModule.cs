@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+
 using NGraphQL.Introspection;
-using NGraphQL.Core;
 using NGraphQL.Model;
 
 namespace NGraphQL.CodeFirst {
@@ -23,14 +23,14 @@ namespace NGraphQL.CodeFirst {
     public Type SubscriptionType;
 
     // Server-bound entities
-    public readonly List<EntityMapping> Mappings = new List<EntityMapping>();
+    public readonly List<ObjectTypeMapping> Mappings = new List<ObjectTypeMapping>();
     public readonly List<Type> ResolverTypes = new List<Type>();
 
     public GraphQLModule() {
     }
 
-    public EntityMapping<TEntity> MapEntity<TEntity>() where TEntity : class {
-      var mapping = new EntityMapping<TEntity>();
+    public ObjectTypeMapping<TEntity> MapEntity<TEntity>() where TEntity : class {
+      var mapping = new ObjectTypeMapping<TEntity>();
       Mappings.Add(mapping);
       return mapping;
     }
