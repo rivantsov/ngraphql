@@ -8,7 +8,7 @@ namespace NGraphQL.Server.Execution {
 
   static partial class ExecutionExtensions {
     
-    // returns list of all fields (with expanded fragments), but with regard to @include/@skip directives
+    // returns list of all fields (with expanded fragments), but filtered with regard to @include/@skip directives
     internal static IList<MappedSelectionField> GetIncludedMappedFields(this RequestContext requestContext, SelectionSubSetMapping outSet) {
       var mappedFields = outSet.StaticMappedFields;
       if (mappedFields != null)
@@ -21,35 +21,31 @@ namespace NGraphQL.Server.Execution {
       return mappedFields; 
     }
 
-    private static void AddIncludedMappedFieldsRec(RequestContext requestContext, IList<MappedSelectionItem> items,
-                IList<MappedSelectionField> result, ref bool hasIncludeSkip) {
-      foreach(var item in items) {
-        var dirs = item.Item.Directives;
-        if (dirs != null && dirs.Count > 0) {
-          if (item.HasDirectives && !requestContext.ShouldInclude(item, ref hasIncludeSkip))
-            continue; 
+    private static void AddIncludedMappedFieldsRec(RequestContext requestContext, IList<MappedSelectionItem> mappedSelItems,
+                IList<MappedSelectionField> resultMappedFields, ref bool hasIncludeSkip) {
+      foreach(var mappedItem in mappedSelItems) {
+        if (mappedItem.HasSkipDirectives) {
+          hasIncludeSkip = true;
+          if (!requestContext.ShouldInclude(mappedItem))
+            continue;
         }
-        switch (item) {
+        switch (mappedItem) {
           case MappedSelectionField fld:
-            result.Add(fld);
+            resultMappedFields.Add(fld);
             continue;
           case MappedFragmentSpread spread:
-            AddIncludedMappedFieldsRec(requestContext, spread.Items, result, ref hasIncludeSkip);
+            AddIncludedMappedFieldsRec(requestContext, spread.Items, resultMappedFields, ref hasIncludeSkip);
             continue; 
         }
       }
     }
 
-    private static bool ShouldInclude(this RequestContext requestContext, MappedSelectionItem mappedItem, ref bool hasIncludeSkip) {
-      if (!mappedItem.HasDirectives)
+    private static bool ShouldInclude(this RequestContext requestContext, MappedSelectionItem mappedItem) {
+      if (!mappedItem.HasSkipDirectives)
         return true;
-      foreach (var dir in mappedItem.Directives) {
-        var action = dir.Def.Handler as ISkipDirectiveAction;
-        if (action == null)
-          continue;
-        hasIncludeSkip = true; 
-        var argValues = dir.GetArgValues(requestContext);
-        if (action.ShouldSkip(requestContext, mappedItem, argValues)) 
+      foreach (var skipDir in mappedItem.PreparedSkipDirectives) {
+        var argValues = skipDir.Directive.GetArgValues(requestContext);
+        if (skipDir.Action.ShouldSkip(requestContext, mappedItem, argValues))
           return false;
       }
       return true;

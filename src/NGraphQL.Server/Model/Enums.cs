@@ -29,10 +29,10 @@ namespace NGraphQL.Model {
     Subscription
   }
 
-  public enum FieldExecutionType {
+  public enum ResolverKind {
     NotSet,
-    Reader,
-    Resolver
+    CompiledExpression, //compiled from mapping expression
+    Method
   }
 
   [Flags]

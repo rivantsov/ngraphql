@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -45,7 +43,7 @@ namespace NGraphQL.Server.Execution {
         var opFieldContext = new FieldContext(_requestContext, this, _operationField, _fieldIndex);
         opFieldContext.CurrentScope = _parentScope;
         var result = await InvokeResolverAsync(opFieldContext);
-        var opOutValue = opFieldContext.ConvertToOuputValue(result, false);
+        var opOutValue = opFieldContext.ConvertToOuputValue(result);
         _parentScope.SetValue(_fieldIndex, opOutValue);
         // for fields returning objects, save for further processing of results
         if (opFieldContext.Flags.IsSet(FieldFlags.ReturnsComplexType))
@@ -83,10 +81,10 @@ namespace NGraphQL.Server.Execution {
         case TypeKind.Union:
           // Map every entity object in scopes to ObjectTypeDef, for every scope
           foreach(var scope in scopes) {
-            scope.MappedTypeDef = GetMappedObjectTypeDef(scope);
+            scope.TypeDef = GetMappedObjectTypeDef(scope.Entity);
           }
           // group by ObjectType, and process each sublist
-          var scopesByType = scopes.GroupBy(s => s.MappedTypeDef).ToList();
+          var scopesByType = scopes.GroupBy(s => s.TypeDef).ToList();
           foreach(var grp in scopesByType)
             await ExecuteObjectsSelectionSubsetAsync(grp.ToList(), grp.Key, selSubSet);
           return;
@@ -96,8 +94,7 @@ namespace NGraphQL.Server.Execution {
       }
     }
 
-    private ObjectTypeDef GetMappedObjectTypeDef(OutputObjectScope scope) {
-      object entity = scope.Entity;
+    private ObjectTypeDef GetMappedObjectTypeDef(object entity) {
       var typeDef = _requestContext.ApiModel.GetMappedGraphQLType(entity.GetType());
       if(typeDef == null || typeDef.Kind != TypeKind.Object) {
         // TODO: see if it can happen we can throw better error here
@@ -111,7 +108,7 @@ namespace NGraphQL.Server.Execution {
       var mappedFields = _requestContext.GetIncludedMappedFields(outSetMapping);
       // init scopes
       foreach (var scope in parentScopes)
-        scope.Init(objTypeDef, mappedFields);
+        scope.Initialize(objTypeDef, mappedFields);
 
       for (int fldIndex = 0; fldIndex < mappedFields.Count; fldIndex++) {
         var mappedField = mappedFields[fldIndex];
@@ -127,20 +124,20 @@ namespace NGraphQL.Server.Execution {
           // special case, when parent is Gql type, not entity; in this case just read its property
           if (scope.EntityIsGqlType) {
             result = ReadGraphQLObjectValue(fldDef, scope.Entity);
-          } else {
-            switch (fldDef.ExecutionType) {
-              case FieldExecutionType.Reader:
+          } else { 
+            switch (mappedField.Resolver.ResolverKind) {
+              case ResolverKind.CompiledExpression:
                 result = InvokeFieldReader(fieldContext, fieldContext.CurrentScope.Entity);
                 break;
-              case FieldExecutionType.Resolver:
+              case ResolverKind.Method:
                 result = await InvokeResolverAsync(fieldContext);
                 break;
             }
           } // else
-          var forceGqlTypes = scope.EntityIsGqlType || fldDef.Flags.IsSet(FieldFlags.ResolverReturnsGraphQLObject);
-          var outValue = fieldContext.ConvertToOuputValue(result, forceGqlTypes);
-          if (!fieldContext.BatchResultWasSet)
+          if (!fieldContext.BatchResultWasSet) {
+            var outValue = fieldContext.ConvertToOuputValue(result);
             scope.SetValue(fldIndex, outValue);
+          }
         } //foreach scope
         // if there are any non-null object-type results, add this field context to this special list
         //   to execute selection subsets in the next round. 

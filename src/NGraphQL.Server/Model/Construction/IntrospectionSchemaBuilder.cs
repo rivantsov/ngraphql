@@ -131,7 +131,7 @@ namespace NGraphQL.Model.Construction {
       var typeName = objTypeDef.Name;
       Func<object, object> reader = obj => typeName;
       foreach (var mp in objTypeDef.Mappings)
-        mp.FieldMappings.Add(new ObjectFieldMapping() { TypeMapping = mp, Field = fld, Reader = reader });
+        mp.FieldResolvers.Add(new FieldResolverInfo() { TypeMapping = mp, Field = fld, ResolverFunc = reader });
     }
 
     private void BuildScalarType(ScalarTypeDef inpTypeDef) {

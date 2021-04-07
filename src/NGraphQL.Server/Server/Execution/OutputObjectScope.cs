@@ -17,37 +17,33 @@ namespace NGraphQL.Server.Execution {
   public class OutputObjectScope : IDictionary<string, object> {
     public static readonly IList<OutputObjectScope> EmptyList = new OutputObjectScope[] { };
 
-    public RequestPath Path; 
-    public readonly FieldContext SourceFieldContext;
-    public ObjectTypeDef MappedTypeDef; // when field is union or interface
+    public MappedSelectionField SourceField; 
     public object Entity;
-    public bool EntityIsGqlType; 
+    public RequestPath Path; 
+    public ObjectTypeDef TypeDef; // when field is union or interface
 
     public IList<MappedSelectionField> Fields { get; private set; }
     object[] _values;
-    IBitSet _valuesMask; //indicates if there's a value
 
     // creates root scope
     public OutputObjectScope() {
       Path = new RequestPath(); 
     }
 
-    public OutputObjectScope(FieldContext sourceFieldContext, RequestPath path, object entity, bool entityIsGqlType) {
-      SourceFieldContext = sourceFieldContext;
+    public OutputObjectScope(MappedSelectionField sourceField, object entity, RequestPath path) {
+      SourceField = sourceField; 
       Path = path; 
       Entity = entity;
-      EntityIsGqlType = entityIsGqlType; 
     }
 
     public override string ToString() {
       return Entity?.ToString() ?? "(root)";
     }
 
-    internal void Init(ObjectTypeDef objectTypeDef, IList<MappedSelectionField> fields) {
-      MappedTypeDef = objectTypeDef;
+    internal void Initialize(ObjectTypeDef objectTypeDef, IList<MappedSelectionField> fields) {
+      TypeDef = objectTypeDef;
       Fields = fields;
       _values = new object[fields.Count];
-      _valuesMask = BitSet.Create(fields.Count);
     }
 
     // Here are the only 2 methods actually used 

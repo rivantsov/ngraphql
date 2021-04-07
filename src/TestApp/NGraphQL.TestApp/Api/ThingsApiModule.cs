@@ -40,7 +40,7 @@ namespace NGraphQL.TestApp {
       MapEntity<OtherThing>().To<OtherThing_>(); // engine will automatically map all matching fields
       MapEntity<IThingIntfEntity>().To<ThingForIntfEntity_>();
 
-      this.ResolverTypes.Add(typeof(ThingsResolvers));
+      this.ResolverClasses.Add(typeof(ThingsResolvers));
 
       // testing hide-enum-value feature. Use this if you have no control over enum declaration, but you want to 
       //  remove/hide some members; for ex, some flag enums declare extra flag combinations as enum members (I do this often),

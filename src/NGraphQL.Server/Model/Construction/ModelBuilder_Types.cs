@@ -28,7 +28,7 @@ namespace NGraphQL.Model.Construction {
 
     private void RegisterResolverClasses() {
       foreach (var module in _server.Modules) {
-        foreach (var resType in module.ResolverTypes)
+        foreach (var resType in module.ResolverClasses)
           _model.ResolverClasses.Add(new ResolverClassInfo() { Module = module, Type = resType });
       }
     }

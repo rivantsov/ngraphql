@@ -84,8 +84,8 @@ namespace NGraphQL.Server.Parsing {
           return;
         var oldSets = _pendingSelectionSets;
         _pendingSelectionSets = new List<PendingSelectionSet>();
-        foreach (var info in oldSets)
-          MapSelectionSubSet(info.SubSet, info.OverType, info.Directives);
+        foreach (var selSet in oldSets)
+          MapSelectionSubSet(selSet.SubSet, selSet.OverType, selSet.Directives);
       }// while
     }
 
@@ -94,7 +94,7 @@ namespace NGraphQL.Server.Parsing {
         case ScalarTypeDef _:
         case EnumTypeDef _:
           // that should never happen
-          AddError($"Scalar or Enum may not have selection subset", selSubset);
+          AddError($"Scalar or Enum may not have a selection subset", selSubset);
           break;
 
         case ObjectTypeDef objTypeDef:
@@ -115,15 +115,8 @@ namespace NGraphQL.Server.Parsing {
 
     // Might be called for ObjectType or Interface (for intf - just to check fields exist)
     private void MapObjectSelectionSubset(SelectionSubset selSubset, ObjectTypeDef objectTypeDef, IList<RequestDirective> directives, bool isForUnion = false) {
-      var mappedFields = MapSelectionItems(selSubset.Items, objectTypeDef, directives, isForUnion);
-      selSubset.AddMapping(new SelectionSubSetMapping() { ObjectTypeDef = objectTypeDef, MappedItems = mappedFields });
-    }
-
-    // Might be called for ObjectType or Interface (for intf - just to check fields exist)
-    private List<MappedSelectionItem> MapSelectionItems(IList<SelectionItem> selItems, ObjectTypeDef objectTypeDef,
-              IList<RequestDirective> ownerDirectives = null, bool isForUnion = false) {
       var mappedItems = new List<MappedSelectionItem>();
-      foreach(var item in selItems) {
+      foreach(var item in selSubset.Items) {
 
         switch(item) {
           case SelectionField selFld:
@@ -151,11 +144,9 @@ namespace NGraphQL.Server.Parsing {
             break;
         }//switch
 
-        var allDirs = ownerDirectives.MergeLists(item.Directives);
-
-
       } //foreach item
-      return mappedItems; 
+
+      selSubset.AddMapping(new SelectionSubSetMapping() { ObjectTypeDef = objectTypeDef, MappedItems = mappedItems });
     }
 
     private void AddRuntimeRequestDirectives(MappedSelectionItem mappedItem) {

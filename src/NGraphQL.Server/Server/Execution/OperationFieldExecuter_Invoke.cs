@@ -27,7 +27,7 @@ namespace NGraphQL.Server.Execution {
         if (fldDef.Flags.IsSet(FieldFlags.HasParentArg))
           fieldContext.ArgValues[1] = fieldContext.CurrentScope.Entity;
         var fldResolver = fieldContext.Field.Resolver;  
-        var clrMethod = fldResolver.ResolverInfo.Method;
+        var clrMethod = fldResolver.ResolverMethod.Method;
         var result = clrMethod.Invoke(fieldContext.ResolverClassInstance, fieldContext.ArgValues);
         if(fldDef.Flags.IsSet(FieldFlags.ResolverReturnsTask))
           result = await UnwrapTaskResultAsync(fieldContext, (Task)result);
@@ -65,7 +65,7 @@ namespace NGraphQL.Server.Execution {
           return null; 
         
         case TaskStatus.RanToCompletion:
-          var resReader = fieldContext.Field.Resolver.ResolverInfo.TaskResultReader;
+          var resReader = fieldContext.Field.Resolver.ResolverMethod.TaskResultReader;
           var result = resReader(task);
           return result;
 
@@ -79,7 +79,7 @@ namespace NGraphQL.Server.Execution {
 
     private object InvokeFieldReader(FieldContext fieldContext, object parent) {
       try {
-        var reader = fieldContext.Field.Resolver.Reader;
+        var reader = fieldContext.Field.Resolver.ResolverFunc;
         var result = reader(parent);
         return result;
       } catch(TargetInvocationException tex) {
@@ -127,7 +127,7 @@ namespace NGraphQL.Server.Execution {
 
     // gets cached resolver class instance or creates new one
     private void AssignResolverClassInstance(FieldContext fieldCtx) {
-      var resType = fieldCtx.Field.Resolver.ResolverInfo.ResolverClass;
+      var resType = fieldCtx.Field.Resolver.ResolverMethod.ResolverClass;
       object resolver = null; 
       if (_resolverInstances.Count == 1 && _resolverInstances[0].GetType() == resType) // fast track
         resolver = _resolverInstances[0];

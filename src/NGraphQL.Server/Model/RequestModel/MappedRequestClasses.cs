@@ -4,16 +4,29 @@ namespace NGraphQL.Model.Request {
 
   public abstract class MappedSelectionItem {
     public SelectionItem Item;
-    public List<RuntimeDirectiveBase> Directives; 
+    public List<RuntimeDirectiveBase> Directives;
+    // we extract and keep include/skip directives separately for efficiency
+    public List<PreparedSkipDirective> PreparedSkipDirectives;
     public MappedSelectionItem(SelectionItem item) { Item = item; }
     
     public override string ToString() => Item.ToString();
 
     public void AddDirective(RuntimeDirectiveBase dir) {
       Directives ??= new List<RuntimeDirectiveBase>();
-      Directives.Add(dir); 
+      Directives.Add(dir);
+      var skipAction = dir.Def.Handler as ISkipDirectiveAction;
+      if (skipAction != null) {
+        PreparedSkipDirectives ??= new List<PreparedSkipDirective>();
+        PreparedSkipDirectives.Add(new PreparedSkipDirective() { Directive = dir, Action = skipAction });
+      }
     }
-    public bool HasDirectives => Directives != null && Directives.Count > 0; 
+    public bool HasDirectives => Directives != null;
+    public bool HasSkipDirectives => PreparedSkipDirectives != null; 
+  }
+
+  public class PreparedSkipDirective {
+    public RuntimeDirectiveBase Directive;
+    public ISkipDirectiveAction Action; 
   }
 
   // Mapped field is runtime representation of a selection field in a query.
@@ -25,7 +38,7 @@ namespace NGraphQL.Model.Request {
     public readonly FieldDef FieldDef;
     public readonly IList<MappedArg> Args;
 
-    public ObjectFieldMapping Resolver;
+    public FieldResolverInfo Resolver;
 
     public MappedSelectionField(SelectionField field, FieldDef fieldDef, IList<MappedArg> args): base(field) {
       Field = field;
@@ -61,7 +74,12 @@ namespace NGraphQL.Model.Request {
   public class SelectionSubSetMapping {
     public ObjectTypeDef ObjectTypeDef;
     public IList<MappedSelectionItem> MappedItems = new List<MappedSelectionItem>();
-    public IList<MappedSelectionField> StaticMappedFields; //when there's no @include/@skip directives
+    public OutputFieldSet StaticFieldSet; //when there's no @include/@skip directives
+  }
+
+  public class OutputFieldSet {
+    public SelectionSubSetMapping SubSetMapping; 
+    public IList<MappedSelectionField> Fields; 
   }
 
 }

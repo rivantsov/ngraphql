@@ -45,7 +45,7 @@ namespace NGraphQL.Server.Execution {
     private async Task ExecuteOperationAsync(GraphQLOperation op, OutputObjectScope topScope) {
       var opOutItemSet = op.SelectionSubset.GetMapping(op.OperationTypeDef);
       var topFields = _requestContext.GetIncludedMappedFields(opOutItemSet);
-      topScope.Init(op.OperationTypeDef, topFields);
+      topScope.Initialize(op.OperationTypeDef, topFields);
       var parallel = _parallelQuery && op.OperationType == OperationType.Query && topFields.Count > 1; 
       
       // Note: if we go parallel here, note that the topScope is safe for concurrent thread access; 
@@ -56,7 +56,6 @@ namespace NGraphQL.Server.Execution {
         executers.Add(opExecuter); 
       }
 
-      _requestContext.Metrics.ExecutionThreadCount = executers.Count; 
       if (parallel)
         await ExecuteAllParallel(executers);
       else
@@ -64,6 +63,7 @@ namespace NGraphQL.Server.Execution {
     }
 
     private async Task ExecuteAllParallel(IList<OperationFieldExecuter> executers) {
+      _requestContext.Metrics.ExecutionThreadCount = executers.Count;
       var tasks = new List<Task>(); 
       foreach(var exec in executers) {
         var task = Task.Run(() => exec.ExecuteOperationFieldAsync());
@@ -73,6 +73,7 @@ namespace NGraphQL.Server.Execution {
 
     }
     private async Task ExecuteAllNonParallel(IList<OperationFieldExecuter> executers) {
+      _requestContext.Metrics.ExecutionThreadCount = 1;
       foreach (var exec in executers)
         await exec.ExecuteOperationFieldAsync(); 
     }

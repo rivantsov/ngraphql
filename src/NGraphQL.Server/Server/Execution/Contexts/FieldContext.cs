@@ -2,16 +2,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 
 using NGraphQL.CodeFirst;
-using NGraphQL.Core;
 using NGraphQL.Introspection;
 using NGraphQL.Model;
-using NGraphQL.Server.Parsing;
 using NGraphQL.Model.Request;
-using NGraphQL.Utilities;
 
 namespace NGraphQL.Server.Execution {
 
@@ -50,14 +46,13 @@ namespace NGraphQL.Server.Execution {
 
     public override string ToString() => Field.ToString();
 
-
-    public object ConvertToOuputValue(object result, bool forceGqlTypes) {
+    public object ConvertToOuputValue(object result) {
       // validate result value
       //ValidateFieldResult(field, resultValue);
       if (Flags.IsSet(FieldFlags.ReturnsComplexType)) {
         var rank = this.Field.FieldDef.TypeRef.Rank;
         var path = this.CurrentScope.Path.Append(this.Field.Field.Key);
-        return CreateObjectFieldResultScopes(result, rank, path, forceGqlTypes);
+        return CreateObjectFieldResultScopes(result, rank, path);
       }
       // cover conversions like enums to strings
       var typeDef = Field.FieldDef.TypeRef.TypeDef;
@@ -65,49 +60,41 @@ namespace NGraphQL.Server.Execution {
       return outValue;
     }
 
-    public object CreateObjectFieldResultScopes(object rawResult, int rank, RequestPath path, bool resultIsGraphQLType) {
+    public object CreateObjectFieldResultScopes(object rawResult, int rank, RequestPath path) {
       if (rawResult == null)
         return null;
-      
       // check field depth against quota
       if (path.FieldDepth > _requestContext.Quota.MaxDepth)
         this.ThrowFieldDepthExceededQuota();
+      if (rank > 0)
+        return CreateObjectScopeList(rawResult, rank, path);
 
-      switch (rank) {
-        case 0:
-          var typeDef = Field.FieldDef.TypeRef.TypeDef;
-          // special cases - Union, Interface; extract actual value from box
-          switch (typeDef.Kind) {
-            case TypeKind.Union:
-              if (rawResult is UnionBase ub)
-                rawResult = ub.Value;
-              if (rawResult == null)
-                return null;
-              break;
+        var typeDef = Field.FieldDef.TypeRef.TypeDef;
+        // special case - Union
+        if (typeDef.Kind == TypeKind.Union) {
+          if (rawResult is UnionBase ub)
+            rawResult = ub.Value;
+          if (rawResult == null)
+            return null;
+        }
+        var scope = new OutputObjectScope(this.Field, rawResult, path);
+        AllResultScopes.Add(scope);
+        var newCount = Interlocked.Increment(ref _requestContext.Metrics.OutputObjectCount);
+        // check total count against quota
+        if (newCount > _requestContext.Quota.MaxOutputObjects)
+          this.ThrowObjectCountExceededQuota();
+        return scope;
+    }
 
-            case TypeKind.Interface:
-              if (rawResult == null)
-                return null;
-              break;
-          }
-          var scope = new OutputObjectScope(this, path, rawResult, resultIsGraphQLType);
-          AllResultScopes.Add(scope);
-          var newCount = Interlocked.Increment(ref _requestContext.Metrics.OutputObjectCount);
-          // check total count against quota
-          if (newCount > _requestContext.Quota.MaxOutputObjects)
-            this.ThrowObjectCountExceededQuota();
-          return scope;
-
-        default: // rank > 0, array
-          var list = (IEnumerable) rawResult; 
-          var scopes = new List<object>();
-          var index = 0;
-          foreach(var item in list) {
-            var itemScope = CreateObjectFieldResultScopes(item, rank - 1, path.Append(index++), resultIsGraphQLType);
-            scopes.Add(itemScope); 
-          }
-          return scopes;
+    private IList<object> CreateObjectScopeList(object rawResult, int rank, RequestPath path) {
+      var list = (IEnumerable)rawResult;
+      var scopes = new List<object>();
+      var index = 0;
+      foreach (var item in list) {
+        var itemScope = CreateObjectFieldResultScopes(item, rank - 1, path.Append(index++));
+        scopes.Add(itemScope);
       }
+      return scopes;
     }
 
     public IList<object> GetFullRequestPath() {
@@ -137,7 +124,7 @@ namespace NGraphQL.Server.Execution {
       foreach (var scope in this.AllParentScopes) {
         if (!results.TryGetValue((TEntity)scope.Entity, out var result))
           result = valueForMissingKeys;
-        var outValue = this.ConvertToOuputValue(result, false);
+        var outValue = this.ConvertToOuputValue(result);
         scope.SetValue(this.FieldIndex, outValue);
       }
       this.BatchResultWasSet = true;

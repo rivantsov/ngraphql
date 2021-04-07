@@ -71,7 +71,7 @@ namespace NGraphQL.Model.Construction {
             continue; 
           var resolverType = resAttr.ResolverClass;
           if (resolverType != null) {
-            if (!typeDef.Module.ResolverTypes.Contains(resolverType)) {
+            if (!typeDef.Module.ResolverClasses.Contains(resolverType)) {
               AddError($"Field {typeDef.Name}.{field.Name}: target resolver class {resolverType.Name} is not registered with module. ");
               continue;
             }
@@ -89,7 +89,7 @@ namespace NGraphQL.Model.Construction {
           } else {
             // targetResolver is null
             methods = new List<MethodInfo>();
-            foreach (var resType in typeDef.Module.ResolverTypes) {
+            foreach (var resType in typeDef.Module.ResolverClasses) {
               var mlist = resType.GetResolverMethods(methName);
               methods.AddRange(mlist);
             }
@@ -115,12 +115,12 @@ namespace NGraphQL.Model.Construction {
       foreach (var typeDef in _typesToMapFields) {
         // get all resolver methods from the same module
         var allMethods = new List<MethodInfo>();
-        foreach (var resType in typeDef.Module.ResolverTypes) {
+        foreach (var resType in typeDef.Module.ResolverClasses) {
           var methods = resType.GetMethods();
           allMethods.AddRange(methods);
         }
         foreach (var field in typeDef.Fields) {
-          if (field.ExecutionType != FieldExecutionType.NotSet)
+          if (field.ExecutionType != ResolverKind.NotSet)
             continue;
           if (field.ClrMember == null)
             continue; //__typename has no clr member
@@ -158,7 +158,7 @@ namespace NGraphQL.Model.Construction {
         field.Flags |= FieldFlags.ResolverReturnsTask;
       if (typeDef is ObjectTypeDef otd && otd.TypeRole == TypeRole.Data)
         field.Flags |= FieldFlags.HasParentArg;
-      field.ExecutionType = FieldExecutionType.Resolver;
+      field.ExecutionType = ResolverKind.Method;
       ValidateResolverMethodArguments(typeDef, field); 
       return !_model.HasErrors;
     }

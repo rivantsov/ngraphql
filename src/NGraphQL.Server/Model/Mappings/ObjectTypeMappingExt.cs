@@ -7,7 +7,7 @@ namespace NGraphQL.Model {
 
   public class ObjectTypeMappingExt: ObjectTypeMapping {
     // accessed by field index
-    public List<ObjectFieldMapping> FieldMappings = new List<ObjectFieldMapping>();
+    public List<FieldResolverInfo> FieldResolvers = new List<FieldResolverInfo>();
 
     public ObjectTypeMappingExt(ObjectTypeMapping source) : this(source.EntityType, source.GraphQLType) {
       this.Expression = source.Expression;
@@ -21,12 +21,12 @@ namespace NGraphQL.Model {
     }
   }
 
-  public class ObjectFieldMapping {
+  public class FieldResolverInfo {
     public ObjectTypeMappingExt TypeMapping; 
     public FieldDef Field;
-    public ResolverMethodInfo ResolverInfo; 
-    public Func<object, object> Reader;
-    public FieldExecutionType ExecutionType;
+    public ResolverKind ResolverKind;
+    public Func<object, object> ResolverFunc;
+    public ResolverMethodInfo ResolverMethod;
   }
 
 }

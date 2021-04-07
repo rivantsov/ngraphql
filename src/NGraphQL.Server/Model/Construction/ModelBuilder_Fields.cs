@@ -59,7 +59,7 @@ namespace NGraphQL.Model.Construction {
             AddError($"Invalid mapping target type {mp.GraphQLType.Name}, must be Object type; module {mname}");
             continue;
           }
-          objTypeDef.Mapping = mp;
+          objTypeDef.Mappings.Add(mp);
           _model.TypesByEntityType[mp.EntityType] = objTypeDef;
         }
       }
@@ -83,9 +83,9 @@ namespace NGraphQL.Model.Construction {
         foreach (var field in typeDef.Fields) {
           // so far we have only exec type to set, or post error
           if (field.Reader != null)
-            field.ExecutionType = FieldExecutionType.Reader;
+            field.ExecutionType = ResolverKind.CompiledExpression;
           else if (field.Resolver != null)
-            field.ExecutionType = FieldExecutionType.Resolver;
+            field.ExecutionType = ResolverKind.Method;
           else
             AddError($"Field '{typeDef.ClrType.Name}.{field.Name}' (module {typeDef.Module.Name}) has no associated resolver or mapped entity field.");
         }

@@ -24,7 +24,7 @@ namespace NGraphQL.CodeFirst {
 
     // Server-bound entities
     public readonly List<ObjectTypeMapping> Mappings = new List<ObjectTypeMapping>();
-    public readonly List<Type> ResolverTypes = new List<Type>();
+    public readonly List<Type> ResolverClasses = new List<Type>();
 
     public GraphQLModule() {
     }

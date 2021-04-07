@@ -15,7 +15,7 @@ namespace NGraphQL.Introspection {
         typeof(__Schema), typeof(__Type), typeof(__Field), typeof(__InputValue),
         typeof(__EnumValue), typeof(__Directive)}
       );
-      this.ResolverTypes.Add(typeof(IntrospectionResolvers));
+      this.ResolverClasses.Add(typeof(IntrospectionResolvers));
     }
 
   }
