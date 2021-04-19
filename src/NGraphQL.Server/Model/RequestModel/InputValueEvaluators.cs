@@ -13,8 +13,8 @@ namespace NGraphQL.Model.Request {
     public InputValueDef InputDef; 
     public TypeRef ResultTypeRef; 
     public RequestObjectBase Anchor;
-    public IList<RuntimeModelDirective> Directives = _emptyDirs;
-    private static readonly IList<RuntimeModelDirective> _emptyDirs = new RuntimeModelDirective[] { };
+    public IList<ModelDirective> Directives = _emptyDirs;
+    private static readonly IList<ModelDirective> _emptyDirs = new ModelDirective[] { };
     
     public InputValueEvaluator(InputValueDef inputDef, TypeRef resultTypeRef, RequestObjectBase anchor) {
       InputDef = inputDef; 
@@ -25,7 +25,7 @@ namespace NGraphQL.Model.Request {
         Directives = inputDef.Directives
           .OfType<ModelDirective>()
           .Where(d => d.Def.Handler is IInputValueDirectiveAction)
-          .Select(d => new RuntimeModelDirective(d)).ToList(); 
+          .ToList(); 
     }
     public override string ToString() => InputDef.ToString();
 
@@ -49,7 +49,7 @@ namespace NGraphQL.Model.Request {
       object result = value; 
       foreach(var dir in this.Directives) {
         var action = dir.Def.Handler as IInputValueDirectiveAction;
-        result = action.ProcessValue(context, dir.GetArgValues(context), result);
+        result = action.ProcessValue(context, dir.ModelAttribute.ArgValues, result);
       }
       return result; 
     }

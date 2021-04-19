@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using NGraphQL.CodeFirst;
 using NGraphQL.Introspection;
@@ -46,7 +47,7 @@ namespace NGraphQL.Model.Request {
 
   public class SelectionSubset: RequestObjectBase {
     public List<SelectionItem> Items;
-    IList<SelectionSubSetMapping> _mappings = new List<SelectionSubSetMapping>(); 
+    public readonly IList<SelectionSubSetMapping> Mappings = new List<SelectionSubSetMapping>(); 
 
     public SelectionSubset(RequestObjectBase parent, List<SelectionItem> items, SourceLocation location) {
       Parent = parent; 
@@ -54,12 +55,36 @@ namespace NGraphQL.Model.Request {
       this.SourceLocation = location; 
     }
 
-    public void AddMapping(SelectionSubSetMapping mapping) {
-      _mappings.Add(mapping); 
+    public SelectionSubSetMapping GetMapping(Type fromType, TypeDefBase toTypeDef) {
+      switch(toTypeDef) {
+        case ObjectTypeDef otd: 
+          return GetMapping(fromType);
+        case InterfaceTypeDef itd:
+          return FindMapping(fromType, itd.PossibleTypes);
+        case UnionTypeDef utd:
+          return FindMapping(fromType, utd.PossibleTypes);
+        default:
+          // should never happen
+          throw new Exception($"Invalid target type kind {toTypeDef.Kind}, type {toTypeDef.Name}");
+      }
     }
 
-    public SelectionSubSetMapping GetMapping(ObjectTypeDef objTypeDef) {
-      return _mappings.FirstOrDefault(m => m.ObjectTypeDef == objTypeDef);
+    public SelectionSubSetMapping FindMapping(Type fromType, IList<ObjectTypeDef> typeDefs) {
+      foreach(var otd in typeDefs) {
+        var m = GetMapping(fromType, otd);
+        if (m != null)
+          return m;
+      }
+      return null; 
+    }
+
+    public SelectionSubSetMapping GetMapping(Type fromType) {      
+      for (int i = 0; i < Mappings.Count; i++) {
+        var mp = Mappings[i];
+        if (mp.SourceType == fromType)
+          return mp;
+      }
+      return null; 
     }
   }
 
@@ -122,11 +147,17 @@ namespace NGraphQL.Model.Request {
     public static IList<RequestDirective> EmptyList = new RequestDirective[] { };
 
     public DirectiveDef Def;
-    public DirectiveLocation Location; 
+    public DirectiveLocation Location;
     public IList<InputValue> Args;
     public IList<MappedArg> MappedArgs;
+
     public RequestDirective() { }
+    public override string ToString() => Def.Name;
+    public object[] StaticArgValues;   // dirs that do not use variables
+
+
   }
+
 
   public class ParsedGraphQLRequest {
     public List<GraphQLOperation> Operations = new List<GraphQLOperation>();

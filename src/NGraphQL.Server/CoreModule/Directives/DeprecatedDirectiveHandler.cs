@@ -1,5 +1,4 @@
 ﻿using NGraphQL.Model;
-using NGraphQL.Model;
 
 namespace NGraphQL.Core {
 

@@ -165,7 +165,7 @@ namespace NGraphQL.Model {
   public class DirectiveDef : GraphQLModelObject {
     public DirectiveRegistration DirInfo;
     public DeprecatedDirAttribute DeprecatedAttribute; //if marked
-    public IDirectiveHandler Handler; 
+    public IDirectiveHandler Handler; // this is empty interface
     public IList<InputValueDef> Args = InputValueDef.EmptyList;
     public DirectiveDef() { }
 

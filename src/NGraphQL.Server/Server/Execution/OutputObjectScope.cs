@@ -17,21 +17,24 @@ namespace NGraphQL.Server.Execution {
   public class OutputObjectScope : IDictionary<string, object> {
     public static readonly IList<OutputObjectScope> EmptyList = new OutputObjectScope[] { };
 
-    public MappedSelectionField SourceField; 
-    public object Entity;
-    public RequestPath Path; 
-    public ObjectTypeDef TypeDef; // when field is union or interface
+    public readonly MappedSelectionField SourceField;
+    public readonly object Entity;
+    public readonly RequestPath Path;
 
-    public IList<MappedSelectionField> Fields { get; private set; }
-    object[] _values;
+    public readonly ObjectTypeDef TypeDef;
+
+    IDictionary<string, object> _values = new Dictionary<string, object>();
+
 
     // creates root scope
     public OutputObjectScope() {
       Path = new RequestPath(); 
     }
 
-    public OutputObjectScope(MappedSelectionField sourceField, object entity, RequestPath path) {
-      SourceField = sourceField; 
+    public OutputObjectScope(MappedSelectionField sourceField, ObjectTypeDef typeDef, 
+                           object entity, RequestPath path) {
+      SourceField = sourceField;
+      TypeDef = typeDef;
       Path = path; 
       Entity = entity;
     }
@@ -40,35 +43,22 @@ namespace NGraphQL.Server.Execution {
       return Entity?.ToString() ?? "(root)";
     }
 
-    internal void Initialize(ObjectTypeDef objectTypeDef, IList<MappedSelectionField> fields) {
-      TypeDef = objectTypeDef;
-      Fields = fields;
-      _values = new object[fields.Count];
+    // Method used for top scope and top selection fields;
+    // top fields are executed in parallel, so we must protect from concurrent access
+    //  when we set the result value
+    private object _lock = new object(); 
+    internal void SetValueSafe(string name, object value) {
+      lock(_lock)
+        _values[name] = value;
     }
 
-    // Here are the only 2 methods actually used 
-    // method used by GraphQL engine
-    internal void SetValue(int index, object value) {
-      _values[index] = value;
-      _valuesMask.SetValue(index, true);
-    }
-
-    internal bool HasValue(int index) {
-      return _valuesMask.GetValue(index);
-    }
-
-    internal object GetValue(int index) {
-      return _values[index];
+    internal bool HasValue(string name) {
+      return _values.ContainsKey(name);
     }
 
     // method used by serializer
     public IEnumerator<KeyValuePair<string, object>> GetEnumerator() {
-      if (Fields == null)
-        yield break; 
-      for(int i = 0; i < Fields.Count; i++) {
-        if (_valuesMask.GetValue(i))
-          yield return new KeyValuePair<string, object>(Fields[i].Field.Key, _values[i]);
-      }
+      return _values.GetEnumerator();
     }
 
     // The rest of the methods are never invoked at runtime (only maybe in tests)
@@ -86,41 +76,23 @@ namespace NGraphQL.Server.Execution {
         return null; 
       }
       set {
-        var index = IndexOf(key);
-        if(index >= 0)
-          SetValue(index, value); 
-        else 
-          throw new Exception($"Key {key} is not valid for this scope.");
+        _values[key] = value;  
       }
     }
 
     public bool TryGetValue(string key, out object value) {
-      value = null;
-      var index = IndexOf(key);
-      if(index < 0)
-        return false;
-      value = _values[index];
-      return true; 
-    }
-
-    private int IndexOf(string key) {
-      for(int i = 0; i < Fields.Count; i++) {
-        if (Fields[i].Field.Key == key)
-          return i; 
-      }
-      return -1; 
+      return _values.TryGetValue(key, out value); 
     }
 
     IEnumerator IEnumerable.GetEnumerator() {
       return this.GetEnumerator();
     }
 
-    // we don't care about efficiency in Keys and Values methods
-    public ICollection<string> Keys => Fields.Select(f => f.Field.Key).ToList();
+    public ICollection<string> Keys => _values.Keys;
 
-    public ICollection<object> Values => _values;
+    public ICollection<object> Values => _values.Values;
 
-    public int Count => _values.Length;
+    public int Count => _values.Count;
 
     public bool IsReadOnly => false; 
 
@@ -137,7 +109,7 @@ namespace NGraphQL.Server.Execution {
     }
 
     public bool ContainsKey(string key) {
-      return Fields.Any(f => f.Field.Key == key);
+      return _values.ContainsKey(key);
     }
 
     public void CopyTo(KeyValuePair<string, object>[] array, int arrayIndex) {
@@ -153,5 +125,4 @@ namespace NGraphQL.Server.Execution {
     }
 
   }
-
 }

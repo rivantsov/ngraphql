@@ -22,6 +22,10 @@
     <ProjectReference Include="..\NGraphQL\NGraphQL.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Model\Directives\" />
+  </ItemGroup>
+
     <PropertyGroup>
         <DocumentationFile>bin\NGraphQL.Server.xml</DocumentationFile>
     </PropertyGroup>

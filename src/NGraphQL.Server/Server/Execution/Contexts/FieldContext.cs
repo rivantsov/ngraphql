@@ -21,7 +21,6 @@ namespace NGraphQL.Server.Execution {
     public IRequestContext RequestContext => _requestContext;
 
     public readonly MappedSelectionField Field;
-    public readonly int FieldIndex;
     public FieldFlags Flags => Field.FieldDef.Flags;
 
     internal object[] ArgValues = null;
@@ -31,24 +30,50 @@ namespace NGraphQL.Server.Execution {
     internal IList<OutputObjectScope> AllResultScopes = OutputObjectScope.EmptyList;
     internal bool BatchResultWasSet;
 
-    RequestContext _requestContext;
+    public string Format;
+    public bool Skip; 
 
-    public FieldContext(RequestContext requestContext, IOperationFieldContext rootField, MappedSelectionField field, int fieldIndex,
+    RequestContext _requestContext;
+    IList<RuntimeDirectiveContext> _dirContexts; 
+
+    public FieldContext(RequestContext requestContext, IOperationFieldContext rootField, MappedSelectionField field,
                          IList<OutputObjectScope> allParentScopes = null) {
       _requestContext = requestContext;
       RootField = rootField;
       Field = field;
-      FieldIndex = fieldIndex;
       AllParentScopes = allParentScopes ?? OutputObjectScope.EmptyList;
       if (Flags.IsSet(FieldFlags.ReturnsComplexType))
         AllResultScopes = new List<OutputObjectScope>();
+      // Invoke preview field on dirs; @skip, @include dirs would set the Skip field
+      // the caller should check this field
+      if (Field.HasDirectives) {
+        PrepareDirectiveContexts();
+        foreach (var dirCtx in _dirContexts)
+          dirCtx.Action.PreviewField(this, dirCtx.ArgValues);
+      }
     }
 
     public override string ToString() => Field.ToString();
 
+    private void PrepareDirectiveContexts() {
+      if (Field.HasDirectives) {
+        _dirContexts = new List<RuntimeDirectiveContext>();
+        foreach (var dir in Field.Directives) {
+          var action = dir.Def.Handler as ISelectionItemDirectiveAction;
+          if (action != null) {
+            var argValues = dir.GetArgValues(_requestContext);
+            var dirContext = new RuntimeDirectiveContext() {
+              Directive = dir, Owner = Field.Field, Action = action,
+              ArgValues = argValues, RequestContext = _requestContext
+            };
+            _dirContexts.Add(dirContext);
+          }
+        }
+      }
+    }
+
     public object ConvertToOuputValue(object result) {
       // validate result value
-      //ValidateFieldResult(field, resultValue);
       if (Flags.IsSet(FieldFlags.ReturnsComplexType)) {
         var rank = this.Field.FieldDef.TypeRef.Rank;
         var path = this.CurrentScope.Path.Append(this.Field.Field.Key);
@@ -68,22 +93,28 @@ namespace NGraphQL.Server.Execution {
         this.ThrowFieldDepthExceededQuota();
       if (rank > 0)
         return CreateObjectScopeList(rawResult, rank, path);
+      else
+        return CreateObjectFieldResultScope(rawResult, path);
+    }
 
-        var typeDef = Field.FieldDef.TypeRef.TypeDef;
-        // special case - Union
-        if (typeDef.Kind == TypeKind.Union) {
-          if (rawResult is UnionBase ub)
-            rawResult = ub.Value;
-          if (rawResult == null)
-            return null;
-        }
-        var scope = new OutputObjectScope(this.Field, rawResult, path);
-        AllResultScopes.Add(scope);
-        var newCount = Interlocked.Increment(ref _requestContext.Metrics.OutputObjectCount);
-        // check total count against quota
-        if (newCount > _requestContext.Quota.MaxOutputObjects)
-          this.ThrowObjectCountExceededQuota();
-        return scope;
+    public object CreateObjectFieldResultScope(object rawResult, RequestPath path) {
+      var typeDef = Field.FieldDef.TypeRef.TypeDef;
+      // special case - Union
+      if (typeDef.Kind == TypeKind.Union) {
+        if (rawResult is UnionBase ub)
+          rawResult = ub.Value;
+        if (rawResult == null)
+          return null;
+      }
+      //this.Field.FieldDef.Flags.IsSet(FieldFlags.ResolverReturnsGraphQLObject);
+
+      var scope = new OutputObjectScope(this.Field, rawResult, path);
+      AllResultScopes.Add(scope);
+      var newCount = Interlocked.Increment(ref _requestContext.Metrics.OutputObjectCount);
+      // check total count against quota
+      if (newCount > _requestContext.Quota.MaxOutputObjects)
+        this.ThrowObjectCountExceededQuota();
+      return scope;
     }
 
     private IList<object> CreateObjectScopeList(object rawResult, int rank, RequestPath path) {

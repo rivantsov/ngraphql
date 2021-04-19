@@ -146,7 +146,7 @@ namespace NGraphQL.Server.Parsing {
 
       } //foreach item
 
-      selSubset.AddMapping(new SelectionSubSetMapping() { ObjectTypeDef = objectTypeDef, MappedItems = mappedItems });
+      selSubset.Mappings.Add(new SelectionSubSetMapping() { ObjectTypeDef = objectTypeDef, MappedItems = mappedItems });
     }
 
     private void AddRuntimeRequestDirectives(MappedSelectionItem mappedItem) {
@@ -155,7 +155,7 @@ namespace NGraphQL.Server.Parsing {
       if (selItem.Directives != null) {
         foreach (var dir in selItem.Directives) {
           dir.MappedArgs = MapArguments(dir.Args, dir.Def.Args, dir);
-          mappedItem.AddDirective(new RuntimeRequestDirective(dir));
+          mappedItem.AddDirective(new RuntimeDirective(dir));
         }
       }
     }
@@ -163,12 +163,12 @@ namespace NGraphQL.Server.Parsing {
     private void AddRuntimeModelDirectives(MappedSelectionField mappedField) {
       var fldDef = mappedField.FieldDef;
       if (fldDef.HasDirectives())
-        foreach (ModelDirective fldDir in fldDef.Directives)
-          mappedField.AddDirective(new RuntimeModelDirective(fldDir));
+        foreach (Model.ModelDirective fldDir in fldDef.Directives)
+          mappedField.AddDirective(new Model.Request.ModelDirective(fldDir));
       var typeDef = fldDef.TypeRef.TypeDef;
       if (typeDef.HasDirectives())
-        foreach (ModelDirective tdir in typeDef.Directives)
-          mappedField.AddDirective(new RuntimeModelDirective(tdir));
+        foreach (Model.ModelDirective tdir in typeDef.Directives)
+          mappedField.AddDirective(new Model.Request.ModelDirective(tdir));
     }
 
     private MappedFragmentSpread MapFragmentSpread(FragmentSpread fs, ObjectTypeDef objectTypeDef, bool isForUnion) {

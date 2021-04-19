@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace NGraphQL.Server {
+namespace NGraphQL.Server.Execution {
 
   /// <summary>Request processing metrics data.</summary>
   public class RequestMetrics {

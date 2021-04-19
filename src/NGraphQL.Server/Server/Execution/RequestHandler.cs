@@ -51,8 +51,8 @@ namespace NGraphQL.Server.Execution {
       // Note: if we go parallel here, note that the topScope is safe for concurrent thread access; 
       //   it is only used to save op result value (SetValue method)
       var executers = new List<OperationFieldExecuter>();
-      for(int fieldIndex = 0; fieldIndex < topFields.Count; fieldIndex++) {
-        var opExecuter = new OperationFieldExecuter(_requestContext, topScope, fieldIndex);
+      foreach(var mappedField in topFields) { 
+        var opExecuter = new OperationFieldExecuter(_requestContext, topScope, mappedField);
         executers.Add(opExecuter); 
       }
 

@@ -27,6 +27,7 @@ namespace NGraphQL.Model {
     public ResolverKind ResolverKind;
     public Func<object, object> ResolverFunc;
     public ResolverMethodInfo ResolverMethod;
+    public Type OutType;
   }
 
 }

@@ -86,6 +86,16 @@ namespace NGraphQL.Server.Execution {
       throw new AbortRequestException();
     }
 
+    public static void AbortIfFailed(this RequestContext context) {
+      if (context.Failed)
+        throw new AbortRequestException();
+    }
+
+    public static void AbortIfFailed(this FieldContext context) {
+      if (context.RequestContext.Failed)
+        throw new AbortRequestException();
+    }
+
 
   }
 }
