@@ -164,11 +164,11 @@ namespace NGraphQL.Server.Parsing {
       var fldDef = mappedField.FieldDef;
       if (fldDef.HasDirectives())
         foreach (Model.ModelDirective fldDir in fldDef.Directives)
-          mappedField.AddDirective(new Model.Request.ModelDirective(fldDir));
+          mappedField.AddDirective(new RuntimeDirective(fldDir));
       var typeDef = fldDef.TypeRef.TypeDef;
       if (typeDef.HasDirectives())
         foreach (Model.ModelDirective tdir in typeDef.Directives)
-          mappedField.AddDirective(new Model.Request.ModelDirective(tdir));
+          mappedField.AddDirective(new RuntimeDirective(tdir));
     }
 
     private MappedFragmentSpread MapFragmentSpread(FragmentSpread fs, ObjectTypeDef objectTypeDef, bool isForUnion) {

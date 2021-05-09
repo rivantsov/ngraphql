@@ -59,20 +59,16 @@ namespace NGraphQL.Model.Construction {
             AddError($"Invalid mapping target type {mp.GraphQLType.Name}, must be Object type; module {mname}");
             continue;
           }
-          objTypeDef.Mappings.Add(mp);
+          var mappingExt = new ObjectTypeMappingExt(mp);
+          objTypeDef.Mappings.Add(mappingExt);
           _model.TypesByEntityType[mp.EntityType] = objTypeDef;
         }
       }
-      // Self-mapped object types
-      // if some GraphQL type is not mapped to anything, we assume it is mapped to itself. 
-      // This is the case for introspection types, there are no entities behind them, 
-      //  they are entities themselves. 
-      //  Add this mappings explicitly, this will allow building field readers on each
-      //  field definition. 
+      // Add self-maps to all objects
       foreach (var typeDef in _model.Types) {
-        if (typeDef is ObjectTypeDef otd && otd.TypeRole == TypeRole.Data && otd.Mapping == null) {
-          otd.Mapping = new ObjectTypeMapping() { EntityType = typeDef.ClrType, GraphQLType = typeDef.ClrType };
-          _model.TypesByEntityType[typeDef.ClrType] = otd;
+        if (typeDef is ObjectTypeDef otd && otd.TypeRole == TypeRole.Data) {
+          var mapping = new ObjectTypeMappingExt(otd.ClrType);
+          otd.Mappings.Add(mapping);
         }
       }
       return !_model.HasErrors;
@@ -80,67 +76,86 @@ namespace NGraphQL.Model.Construction {
 
     private void VerifyFieldMappings() {
       foreach (var typeDef in _typesToMapFields) {
-        foreach (var field in typeDef.Fields) {
-          // so far we have only exec type to set, or post error
-          if (field.Reader != null)
-            field.ExecutionType = ResolverKind.CompiledExpression;
-          else if (field.Resolver != null)
-            field.ExecutionType = ResolverKind.Method;
-          else
-            AddError($"Field '{typeDef.ClrType.Name}.{field.Name}' (module {typeDef.Module.Name}) has no associated resolver or mapped entity field.");
-        }
-      }
+        foreach(var mapping in typeDef.Mappings) {
+          foreach (var fres in mapping.FieldResolvers) {
+            // so far we have only exec type to set, or post error
+            if (fres.ResolverFunc != null)
+              fres.ResolverKind = ResolverKind.CompiledExpression;
+            else if (fres.ResolverMethod != null)
+              fres.ResolverKind = ResolverKind.Method;
+            else {
+              var fldName = fres.Field.Name;
+              var fldRef = $"{typeDef.ClrType.Name}.{fldName}, mapping to {mapping.EntityType}, " + 
+                $" (module {typeDef.Module.Name})";
+              AddError($"Field {fldName} has no associated resolver or mapped entity field. Field: {fldRef}");
+            }
+          } // foreach fres
+        } // foreach mapping
+      } // foreach typeDef
     }
 
     private void ProcessEntityMappingExpressions() {
       foreach (var typeDef in _typesToMapFields) {
-        var mapping = typeDef.Mapping;
-        if (mapping?.Expression == null)
-          continue; 
-        var entityPrm = mapping.Expression.Parameters[0];
-        var memberInit = mapping.Expression.Body as MemberInitExpression;
-        if (memberInit == null) {
-          AddError($"Invalid mapping expression for type {mapping.EntityType}->{mapping.GraphQLType.Name}");
-          return;
-        }
-        foreach (var bnd in memberInit.Bindings) {
-          var asmtBnd = bnd as MemberAssignment;
-          var fieldDef = typeDef.Fields.FirstOrDefault(fld => fld.ClrMember == bnd.Member);
-          if (asmtBnd == null || fieldDef == null)
-            continue; //should never happen, but just in case
-          // create lambda reading the source property
-          fieldDef.Reader = CompileFieldReader(fieldDef, entityPrm, asmtBnd.Expression);
-        }
-      }
+        foreach(var mapping in typeDef.Mappings) {
+          if (mapping.Expression == null)
+            continue;
+          var entityPrm = mapping.Expression.Parameters[0];
+          var memberInit = mapping.Expression.Body as MemberInitExpression;
+          if (memberInit == null) {
+            AddError($"Invalid mapping expression for type {mapping.EntityType}->{mapping.GraphQLType.Name}");
+            return;
+          }
+          foreach (var bnd in memberInit.Bindings) {
+            var asmtBnd = bnd as MemberAssignment;
+            var fieldDef = typeDef.Fields.FirstOrDefault(fld => fld.ClrMember == bnd.Member);
+            if (asmtBnd == null || fieldDef == null)
+              continue; //should never happen, but just in case
+           // create lambda reading the source property
+            var resFunc = CompileFieldReader(fieldDef, entityPrm, asmtBnd.Expression);
+            var outType = asmtBnd.Expression.Type;
+            var resInfo = new FieldResolverInfo() {
+              Field = fieldDef, ResolverFunc = resFunc,
+              OutType = outType, TypeMapping = mapping
+            };
+            mapping.FieldResolvers.Add(resInfo);
+          } //foreach bnd
+        } //foreach mapping
+      } //foreach typeDef
     }
 
     // those members that do not have binding expressions, try mapping props with the same name
     private void ProcessMappingForMatchingMembers() {
       foreach (var typeDef in _typesToMapFields) {
-        var mapping = typeDef.Mapping;
-        if (mapping == null)
-          continue; 
-        var entityType = mapping.EntityType;
-        var allEntFldProps = entityType.GetFieldsProps();
-        foreach (var fldDef in typeDef.Fields) {
-          if (fldDef.Resolver != null || fldDef.Reader != null)
-            continue;
-          var memberName = fldDef.ClrMember.Name;
-          MemberInfo entMember = allEntFldProps.Where(m => m.Name.Equals(memberName, StringComparison.OrdinalIgnoreCase))
-            .FirstOrDefault();
-          if (entMember == null)
-            continue;
-          // TODO: maybe change reading to use compiled lambda 
-          switch (entMember) {
-            case FieldInfo fi:
-              fldDef.Reader = (ent) => fi.GetValue(ent);
-              break;
-            case PropertyInfo pi:
-              fldDef.Reader = (ent) => pi.GetValue(ent);
-              break;
-          }
-        } //foreach fldDef
-      }
+        foreach(var mapping in typeDef.Mappings) {
+          var entityType = mapping.EntityType;
+          var allEntFldProps = entityType.GetFieldsProps();
+          foreach (var fldDef in typeDef.Fields) {
+            var res = mapping.FieldResolvers.FirstOrDefault(fr => fr.Field == fldDef);
+            if (res != null)
+              continue;
+            var memberName = fldDef.ClrMember.Name;
+            MemberInfo entMember = allEntFldProps.Where(m => m.Name.Equals(memberName, StringComparison.OrdinalIgnoreCase))
+              .FirstOrDefault();
+            if (entMember == null)
+              continue;
+            // TODO: maybe change reading to use compiled lambda 
+            Func<object, object> resFunc = null;
+            switch (entMember) {
+              case FieldInfo fi:
+                resFunc = (ent) => fi.GetValue(ent);
+                break;
+              case PropertyInfo pi:
+                resFunc = (ent) => pi.GetValue(ent);
+                break;
+              default:
+                continue; // we consider it no match 
+            }
+            var fldRes = new FieldResolverInfo() { Field = fldDef,  OutType = entMember.GetMemberReturnType(), 
+                ResolverKind = ResolverKind.Func, ResolverFunc = resFunc };
+            mapping.FieldResolvers.Add(fldRes); 
+          } //foreach fldDef
+        } // foreach mapping
+      } // foreach typeDef
     }
 
     private Func<object, object> CompileFieldReader(FieldDef field, ParameterExpression entityParam, Expression body) {

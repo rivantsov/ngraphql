@@ -39,7 +39,7 @@ namespace NGraphQL.Model {
       TypeRefs.Add(TypeRefNotNull);
     }
 
-    public virtual object ToOutput(FieldContext context, object value) {
+    public virtual object ToOutput(SelectionItemContext context, object value) {
       return value;
     }
 
@@ -146,7 +146,7 @@ namespace NGraphQL.Model {
     public FieldFlags Flags;
     public IList<InputValueDef> Args = new List<InputValueDef>();
     public MemberInfo ClrMember;
-    /* //moved these to ObjectFieldMapping
+    /* //moved these to 
     public ResolverMethodInfo Resolver;
     public Func<object, object> Reader;
     public FieldExecutionType ExecutionType;

@@ -8,9 +8,13 @@ using NGraphQL.Server.Execution;
 
 namespace NGraphQL.Server.Execution {
 
+  // RuntimeDirective is representation of @dir in request. It is attached to parsed request elements
+  //  Note that parsed request might be cached and reused-reexecuted with different params.
+  //  For each request execution we create RuntimeDirectiveContext instance (full list in RequestContext)
   public class RuntimeDirective {
+    public int Index; // index to lookup DirectiveContext in requestContext
     public object Source; //ModelDirective or RequestDirective 
-
+    public object Owner; // MappedSelectionItem or MappedArg 
     public DirectiveDef Def;
     public DirectiveLocation Location;
     public IList<MappedArg> MappedArgs; //Request directive only

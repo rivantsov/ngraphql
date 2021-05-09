@@ -8,9 +8,9 @@ using NGraphQL.Model.Request;
 namespace NGraphQL.Model {
 
   public interface ISelectionItemDirectiveAction {
-    void PreviewItem(FieldContext context, object[] argValues);
-    void BeforeResolve(FieldContext context, object[] argValues);
-    void AfterResolve(FieldContext context, object[] argValues, ref object value);
+    void PreviewItem(SelectionItemContext context, object[] argValues);
+    void BeforeResolve(SelectionItemContext context, object[] argValues);
+    void AfterResolve(SelectionItemContext context, object[] argValues, ref object value);
   }
 
   public interface IInputValueDirectiveAction {

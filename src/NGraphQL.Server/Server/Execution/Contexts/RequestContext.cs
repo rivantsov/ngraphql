@@ -21,9 +21,12 @@ namespace NGraphQL.Server.Execution {
     public ParsedGraphQLRequest ParsedRequest;
     public GraphQLOperation Operation { get; internal set; }
     public IList<VariableValue> OperationVariables { get; } = new List<VariableValue>();
-    public GraphQLResponse Response { get; } = new GraphQLResponse();
+    // contexts for all directives in the ParsedRequest
+    public IList<DirectiveContext> DirectiveContexts = new List<DirectiveContext>();
     public RequestMetrics Metrics { get; } = new RequestMetrics();
-    public RequestQuota Quota; 
+    public RequestQuota Quota;
+
+    public GraphQLResponse Response { get; } = new GraphQLResponse();
     /// <summary>Dictionary for use by resolvers to pass data around. </summary>
     public IDictionary<string, object> CustomData { get; } = new ConcurrentDictionary<string, object>();
 
@@ -33,11 +36,11 @@ namespace NGraphQL.Server.Execution {
 
 
     internal long StartTimestamp;
-    // see below on CustomTypeRefs
-    internal readonly IList<TypeRef> CustomTypeRefs = new List<TypeRef>();
     public IList<Exception> Exceptions = new List<Exception>();
     public bool Failed { get; internal set; }
     public readonly object Lock = new object();
+    // see comment on GetCreateDerivedTypeRef method for more info
+    internal readonly IList<TypeRef> CustomTypeRefs = new List<TypeRef>();
     // used by http server
     public object HttpContext { get; } 
     // For Http server, original variables
@@ -58,6 +61,7 @@ namespace NGraphQL.Server.Execution {
       _cancellationTokenSource.Token.Register(OnCancelled);
       if (_externalCancellationToken != default)
         _externalCancellationToken.Register(OnExternalTokenCancelled);
+      PrepareDirectiveContexts();
     }
 
 
@@ -87,14 +91,29 @@ namespace NGraphQL.Server.Execution {
     public int GetQuotaTimeMs() {
       return 10000; 
     }
+
+    private void PrepareDirectiveContexts() {
+      DirectiveContexts = new List<DirectiveContext>();
+      foreach (var dir in this.ParsedRequest.AllDirectives) {
+        var action = dir.Def.Handler as IRuntimeDirectiveHandler;
+        if (action != null) {
+          var argValues = dir.GetArgValues(this);
+          var dirContext = new DirectiveContext() {
+            Directive = dir, Handler = action,
+            ArgValues = argValues, RequestContext = this
+          };
+          DirectiveContexts.Add(dirContext);
+        }
+      }
+    }
   }
 
-    /* About custom type refs in RequestContext
-      // when parsing the request, we try to lookup existing typeRef registered with TypeDef in the model; 
-      // we might not find it; for ex - we are looking for type [[int]]!, but Model does not have any field or resolver arg
-      // of this type. Model might have [[int]] type, and this is a legit case. We can create this new TypeRef,
-      // but we cannot register it in typeDef's list - the model is read-only now.
-      // So instead we add it to this request's typeRef list. 
-    */
+  /* About custom type refs in RequestContext
+    // when parsing the request, we try to lookup existing typeRef registered with TypeDef in the model; 
+    // we might not find it; for ex - we are looking for type [[int]]!, but Model does not have any field or resolver arg
+    // of this type. Model might have [[int]] type, and this is a legit case. We can create this new TypeRef,
+    // but we cannot register it in typeDef's list - the model is read-only now.
+    // So instead we add it request's CustomTypeRefs list. 
+  */
 
 }

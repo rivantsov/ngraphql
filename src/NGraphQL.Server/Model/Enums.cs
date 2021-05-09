@@ -32,7 +32,8 @@ namespace NGraphQL.Model {
   public enum ResolverKind {
     NotSet,
     CompiledExpression, //compiled from mapping expression
-    Method
+    Method,
+    Func, // for default name match mapping
   }
 
   [Flags]

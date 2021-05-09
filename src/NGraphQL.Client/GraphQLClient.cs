@@ -39,6 +39,9 @@ namespace NGraphQL.Client {
       DefaultRequestHeaders.Authorization = null;
       DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(scheme, headerValue);
     }
+    public void ClearAuthorizationHeader() {
+      DefaultRequestHeaders.Authorization = null; 
+    }
 
     #endregion
 

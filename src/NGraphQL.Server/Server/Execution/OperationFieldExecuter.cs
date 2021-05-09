@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -28,7 +29,7 @@ namespace NGraphQL.Server.Execution {
     // subsets - we do not do it immediately after executing resolver and getting result objects. 
     // Instead, we save them in this list, and process in a later loop, once all 'current' 
     // resolvers are executed. This is all to make it possible to do batched calls (aka Data Loader)
-    List<FieldContext> _executedObjectFieldContexts = new List<FieldContext>();
+    List<SelectionItemContext> _executedObjectFieldContexts = new List<SelectionItemContext>();
 
     public OperationFieldExecuter(RequestContext requestContext, MappedSelectionField opField, OutputObjectScope parentScope) {
       _requestContext = requestContext;
@@ -38,12 +39,12 @@ namespace NGraphQL.Server.Execution {
 
     public async Task ExecuteOperationFieldAsync() {
       try {
-        var opFieldContext = new FieldContext(_requestContext, this, _operationField);
+        var opFieldContext = new SelectionItemContext(_requestContext, this, _operationField);
         opFieldContext.CurrentScope = _parentScope;
         var result = await InvokeResolverAsync(opFieldContext);
         var opOutValue = opFieldContext.ConvertToOuputValue(result);
         // Safe means with lock, protect concurrent access
-        _parentScope.SetValueSafe(_operationField.Field.Key, opOutValue);
+        _parentScope.SetValue(_operationField.Index, opOutValue);
         // for fields returning objects, save for further processing of results
         if (opFieldContext.Flags.IsSet(FieldFlags.ReturnsComplexType))
           _executedObjectFieldContexts.Add(opFieldContext);
@@ -54,7 +55,7 @@ namespace NGraphQL.Server.Execution {
             opFieldContext.ThrowRequestCancelled();
           // save current list, create new one in the field
           var oldFieldContexts = _executedObjectFieldContexts;
-          _executedObjectFieldContexts = new List<FieldContext>();
+          _executedObjectFieldContexts = new List<SelectionItemContext>();
           foreach (var fldCtx in oldFieldContexts) {
             await ExecuteFieldSelectionSubsetAsync(fldCtx);
           }
@@ -67,14 +68,14 @@ namespace NGraphQL.Server.Execution {
       }
     }
 
-    private async Task ExecuteFieldSelectionSubsetAsync(FieldContext fieldContext) {
+    private async Task ExecuteFieldSelectionSubsetAsync(SelectionItemContext fieldContext) {
       // all scopes have sc.Entity field != null
       var scopes = fieldContext.AllResultScopes;
       var outTypeDef = fieldContext.FieldDef.TypeRef.TypeDef;
-      var selSubSet = fieldContext.Field.Field.SelectionSubset;
+      var selSubSet = fieldContext.MappedField.Field.SelectionSubset;
       switch(outTypeDef.Kind) {
         case TypeKind.Object:
-          await ExecuteObjectsSelectionSubsetAsync(fieldContext.Field, scopes, selSubSet);
+          await ExecuteObjectsSelectionSubsetAsync(fieldContext.MappedField, scopes, selSubSet);
           return;
 
         case TypeKind.Interface:
@@ -110,11 +111,10 @@ namespace NGraphQL.Server.Execution {
       var outSetMapping = subSet.GetMapping(resolverOutType, outTypeDef);
 
       foreach(var mappedItem in outSetMapping.MappedItems) {
-        if (mappedItem.HasDirectives) {
-          ApplyDirectives(mappedItem, parentScopes, out var skip);
-          if (skip)
-            continue;
-        }
+        var fieldContext = new SelectionItemContext(_requestContext, this, mappedItem, parentScopes);
+        
+        // TODO: Invoke event to signal execution of directives
+
         // if it is a fragment spread, make recursive call to process fragment fields
         if (mappedItem is MappedFragmentSpread mappedFragm) {
           await ExecuteObjectsSelectionSubsetAsync(parentField, parentScopes, mappedFragm.Spread.Fragment.SelectionSubset);
@@ -122,33 +122,28 @@ namespace NGraphQL.Server.Execution {
         }
 
         // It is a plain field
-        var mappedField = (MappedSelectionField)mappedItem;
-        var fldDef = mappedField.FieldDef;
+        var mappedField = (MappedSelectionField) mappedItem;
+        var fldDef = fieldContext.FieldDef;
 
         var returnsComplexType = fldDef.Flags.IsSet(FieldFlags.ReturnsComplexType);
-        var fieldContext = new FieldContext(_requestContext, this, mappedField, parentScopes);
         // Process each scope for the field
         foreach (var scope in parentScopes) {
-          if (fieldContext.BatchResultWasSet && scope.HasValue(mappedField.Field.Key))
+          if (fieldContext.BatchResultWasSet && scope.HasValue(mappedField.Index))
             continue; 
           fieldContext.CurrentScope = scope;
           object result = null;
-          // special case, when parent is Gql type, not entity; in this case just read its property
-          if (scope.EntityIsGqlType) {
-            result = ReadGraphQLObjectValue(fldDef, scope.Entity);
-          } else { 
-            switch (mappedField.Resolver.ResolverKind) {
-              case ResolverKind.CompiledExpression:
-                result = InvokeFieldReader(fieldContext, fieldContext.CurrentScope.Entity);
-                break;
-              case ResolverKind.Method:
-                result = await InvokeResolverAsync(fieldContext);
-                break;
-            }
-          } // else
-          if (!fieldContext.BatchResultWasSet && result != null) {
+          switch (mappedField.Resolver.ResolverKind) {
+            case ResolverKind.CompiledExpression:
+              result = InvokeFieldReader(fieldContext, fieldContext.CurrentScope.Entity);
+              break;
+            case ResolverKind.Method:
+              result = await InvokeResolverAsync(fieldContext);
+              break;
+          }
+          // if batched result was not set, set value
+          if (!fieldContext.BatchResultWasSet) {
             var outValue = fieldContext.ConvertToOuputValue(result);
-            scope.SetValue(fldIndex, outValue);
+            scope.SetValue(mappedField.Field.Key, outValue);
           }
         } //foreach scope
         // if there are any non-null object-type results, add this field context to this special list
@@ -156,12 +151,9 @@ namespace NGraphQL.Server.Execution {
         if (returnsComplexType && fieldContext.AllResultScopes.Count > 0) {
           _executedObjectFieldContexts.Add(fieldContext);
         }
-      } //foreach fldIndex
+      } //foreach mappedItem
     } //method
 
-    private void ApplyDirectives(MappedSelectionItem mappedItem, IList<OutputObjectScope> scopes, out bool skip) {
-      skip = true; 
-    }
     private object ReadGraphQLObjectValue(FieldDef fldDef, object obj) {
       return ReflectionHelper.GetMemberValue(fldDef.ClrMember, obj);
     }

@@ -23,7 +23,7 @@ namespace NGraphQL.Server.Execution {
       return argValues;
     }
 
-    public static object[] GetArgValues(this RequestContext context, RequestDirective dir) {
+    public static object[] GetArgValues(this RuntimeDirective dir, RequestContext context) {
       return dir.StaticArgValues ?? context.EvaluateArgs(dir.MappedArgs);
     }
 

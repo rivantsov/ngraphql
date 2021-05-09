@@ -16,6 +16,7 @@ namespace NGraphQL.Model.Request {
 
     public void AddDirective(RuntimeDirective dir) {
       Directives ??= new List<RuntimeDirective>();
+      dir.Index = Directives.Count; 
       Directives.Add(dir);
     }
     public bool HasDirectives => Directives != null;
@@ -26,6 +27,7 @@ namespace NGraphQL.Model.Request {
     public SelectionField Field => (SelectionField)base.Item; 
     public readonly FieldDef FieldDef;
     public readonly IList<MappedArg> Args;
+    public int Index; 
 
     public FieldResolverInfo Resolver;
 

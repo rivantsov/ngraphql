@@ -22,7 +22,7 @@ namespace NGraphQL.Server.Execution {
       return err;
     }
 
-    public static void AddError(this FieldContext fieldContext, Exception exc, string errorType) {
+    public static void AddError(this SelectionItemContext fieldContext, Exception exc, string errorType) {
       var reqCtx = (RequestContext) fieldContext.RequestContext;
       var path = fieldContext.GetFullRequestPath();
       var err = new GraphQLError(exc.Message, path, fieldContext.SelectionField.SourceLocation, type: errorType);
@@ -60,28 +60,28 @@ namespace NGraphQL.Server.Execution {
       return path;
     }
 
-    internal static void ThrowFieldDepthExceededQuota(this FieldContext fieldContext) {
+    internal static void ThrowFieldDepthExceededQuota(this SelectionItemContext fieldContext) {
       var reqCtx = (RequestContext) fieldContext.RequestContext;
       var quota = reqCtx.Quota;
       var err = new GraphQLError($"Query depth exceeded maximum ({quota.MaxDepth}) allowed by quota.",
-        fieldContext.GetFullRequestPath(), fieldContext.SelectionField.SourceLocation, type: "Quota");
+        fieldContext.GetFullRequestPath(), fieldContext.SourceLocation, type: "Quota");
       reqCtx.AddError(err);
       throw new AbortRequestException();
     }
 
-    internal static void ThrowObjectCountExceededQuota(this FieldContext fieldContext) {
+    internal static void ThrowObjectCountExceededQuota(this SelectionItemContext fieldContext) {
       var reqCtx = (RequestContext)fieldContext.RequestContext;
       var quota = reqCtx.Quota;
       var err = new GraphQLError($"Output object count exceeded maximum ({quota.MaxOutputObjects}) allowed by quota.",
-        fieldContext.GetFullRequestPath(), fieldContext.SelectionField.SourceLocation, type: "Quota");
+        fieldContext.GetFullRequestPath(), fieldContext.SourceLocation, type: "Quota");
       reqCtx.AddError(err);
       throw new AbortRequestException();
     }
 
-    internal static void ThrowRequestCancelled(this FieldContext fieldContext) {
+    internal static void ThrowRequestCancelled(this SelectionItemContext fieldContext) {
       var reqCtx = (RequestContext)fieldContext.RequestContext;
       var err = new GraphQLError($"Request cancelled",
-        fieldContext.GetFullRequestPath(), fieldContext.SelectionField.SourceLocation, type: "Cancel");
+        fieldContext.GetFullRequestPath(), fieldContext.SourceLocation, type: "Cancel");
       reqCtx.AddError(err);
       throw new AbortRequestException();
     }
@@ -91,7 +91,7 @@ namespace NGraphQL.Server.Execution {
         throw new AbortRequestException();
     }
 
-    public static void AbortIfFailed(this FieldContext context) {
+    public static void AbortIfFailed(this SelectionItemContext context) {
       if (context.RequestContext.Failed)
         throw new AbortRequestException();
     }

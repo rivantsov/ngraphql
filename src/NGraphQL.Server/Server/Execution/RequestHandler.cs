@@ -28,6 +28,7 @@ namespace NGraphQL.Server.Execution {
       AssignRequestOperation();
       if (_requestContext.Failed)
         return;
+      BuildDirectiveContexts();
 
       // signal to prepare/deserialize variables; in http/web scenario, we cannot parse variables immediately -
       // we do not know variable types yet. Now that we have parsed and prepared query, we have var types;
@@ -42,10 +43,18 @@ namespace NGraphQL.Server.Execution {
       await ExecuteOperationAsync(_requestContext.Operation, topScope);
     }
 
+    private void BuildDirectiveContexts() {
+      foreach (var rDir in _requestContext.ParsedRequest.AllDirectives)
+        _requestContext.DirectiveContexts.Add(new DirectiveContext() { 
+        
+        });
+      throw new NotImplementedException("Finish method BuildDirectiveContexts.");
+    }
+
     private async Task ExecuteOperationAsync(GraphQLOperation op, OutputObjectScope topScope) {
       var opOutItemSet = op.SelectionSubset.GetMapping(op.OperationTypeDef);
       var topFields = _requestContext.GetIncludedMappedFields(opOutItemSet);
-      topScope.Initialize(op.OperationTypeDef, topFields);
+      topScope.Init(op.OperationTypeDef, topFields);
       var parallel = _parallelQuery && op.OperationType == OperationType.Query && topFields.Count > 1; 
       
       // Note: if we go parallel here, note that the topScope is safe for concurrent thread access; 

@@ -11,17 +11,19 @@ using NGraphQL.Model.Request;
 
 namespace NGraphQL.Server.Execution {
 
-  public partial class FieldContext : IFieldContext {
-    // IFieldContext
+  public partial class SelectionItemContext : IFieldContext {
+    public readonly MappedSelectionItem MappedItem;
+    public MappedSelectionField MappedField => (MappedSelectionField)MappedItem;
+    public FieldFlags Flags => MappedField.FieldDef.Flags;
+
+    // IFieldContext members
+    public IRequestContext RequestContext => _requestContext;
     public GraphQLApiModel GetModel() => _requestContext.ApiModel;
-    public ISelectionField SelectionField => Field.Field;
-    public FieldDef FieldDef => Field?.FieldDef;
+    public ISelectionField SelectionField => MappedField.Field;
+    public FieldDef FieldDef => MappedField?.FieldDef;
     public CancellationToken CancellationToken => _requestContext.CancellationToken;
     public IOperationFieldContext RootField { get; }
-    public IRequestContext RequestContext => _requestContext;
-
-    public readonly MappedSelectionField Field;
-    public FieldFlags Flags => Field.FieldDef.Flags;
+    public SourceLocation SourceLocation => MappedItem.Item.SourceLocation;
 
     internal object[] ArgValues = null;
     internal object ResolverClassInstance;
@@ -30,57 +32,33 @@ namespace NGraphQL.Server.Execution {
     internal IList<OutputObjectScope> AllResultScopes = OutputObjectScope.EmptyList;
     internal bool BatchResultWasSet;
 
+    public bool Skip;
     public string Format;
-    public bool Skip; 
 
     RequestContext _requestContext;
-    IList<RuntimeDirectiveContext> _dirContexts; 
 
-    public FieldContext(RequestContext requestContext, IOperationFieldContext rootField, MappedSelectionField field,
+    public SelectionItemContext(RequestContext requestContext, IOperationFieldContext rootField, MappedSelectionItem item,
                          IList<OutputObjectScope> allParentScopes = null) {
       _requestContext = requestContext;
       RootField = rootField;
-      Field = field;
+      MappedItem = item;
       AllParentScopes = allParentScopes ?? OutputObjectScope.EmptyList;
       if (Flags.IsSet(FieldFlags.ReturnsComplexType))
         AllResultScopes = new List<OutputObjectScope>();
-      // Invoke preview field on dirs; @skip, @include dirs would set the Skip field
-      // the caller should check this field
-      if (Field.HasDirectives) {
-        PrepareDirectiveContexts();
-        foreach (var dirCtx in _dirContexts)
-          dirCtx.Action.PreviewField(this, dirCtx.ArgValues);
-      }
     }
 
-    public override string ToString() => Field.ToString();
+    public override string ToString() => MappedField.ToString();
 
-    private void PrepareDirectiveContexts() {
-      if (Field.HasDirectives) {
-        _dirContexts = new List<RuntimeDirectiveContext>();
-        foreach (var dir in Field.Directives) {
-          var action = dir.Def.Handler as ISelectionItemDirectiveAction;
-          if (action != null) {
-            var argValues = dir.GetArgValues(_requestContext);
-            var dirContext = new RuntimeDirectiveContext() {
-              Directive = dir, Owner = Field.Field, Action = action,
-              ArgValues = argValues, RequestContext = _requestContext
-            };
-            _dirContexts.Add(dirContext);
-          }
-        }
-      }
-    }
 
     public object ConvertToOuputValue(object result) {
       // validate result value
       if (Flags.IsSet(FieldFlags.ReturnsComplexType)) {
-        var rank = this.Field.FieldDef.TypeRef.Rank;
-        var path = this.CurrentScope.Path.Append(this.Field.Field.Key);
+        var rank = this.MappedField.FieldDef.TypeRef.Rank;
+        var path = this.CurrentScope.Path.Append(this.MappedField.Field.Key);
         return CreateObjectFieldResultScopes(result, rank, path);
       }
       // cover conversions like enums to strings
-      var typeDef = Field.FieldDef.TypeRef.TypeDef;
+      var typeDef = MappedField.FieldDef.TypeRef.TypeDef;
       var outValue = typeDef.ToOutput(this, result);
       return outValue;
     }
@@ -98,7 +76,7 @@ namespace NGraphQL.Server.Execution {
     }
 
     public object CreateObjectFieldResultScope(object rawResult, RequestPath path) {
-      var typeDef = Field.FieldDef.TypeRef.TypeDef;
+      var typeDef = MappedField.FieldDef.TypeRef.TypeDef;
       // special case - Union
       if (typeDef.Kind == TypeKind.Union) {
         if (rawResult is UnionBase ub)
@@ -108,7 +86,7 @@ namespace NGraphQL.Server.Execution {
       }
       //this.Field.FieldDef.Flags.IsSet(FieldFlags.ResolverReturnsGraphQLObject);
 
-      var scope = new OutputObjectScope(this.Field, rawResult, path);
+      var scope = new OutputObjectScope(this.MappedField, path, rawResult);
       AllResultScopes.Add(scope);
       var newCount = Interlocked.Increment(ref _requestContext.Metrics.OutputObjectCount);
       // check total count against quota
@@ -130,7 +108,7 @@ namespace NGraphQL.Server.Execution {
 
     public IList<object> GetFullRequestPath() {
       var fullPath = CurrentScope.Path.GetFullPath();
-      fullPath.Add(this.Field.Field.Key);
+      fullPath.Add(this.MappedField.Field.Key);
       return fullPath; 
     }
 

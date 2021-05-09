@@ -9,6 +9,7 @@ namespace NGraphQL.CodeFirst {
     IRequestContext RequestContext { get; }
     IOperationFieldContext RootField { get; }
     CancellationToken CancellationToken { get; }
+    SourceLocation SourceLocation { get; }
     IList<object> GetFullRequestPath();
 
     // to be used by resolver methods, to know in advance which fields  to load from db

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NGraphQL.CodeFirst;
 using NGraphQL.Introspection;
+using NGraphQL.Server.Execution;
 
 namespace NGraphQL.Model.Request {
 
@@ -154,14 +155,14 @@ namespace NGraphQL.Model.Request {
     public RequestDirective() { }
     public override string ToString() => Def.Name;
     public object[] StaticArgValues;   // dirs that do not use variables
-
-
   }
 
 
   public class ParsedGraphQLRequest {
     public List<GraphQLOperation> Operations = new List<GraphQLOperation>();
     public List<FragmentDef> Fragments = new List<FragmentDef>();
+    // all directives from all elements
+    public List<RuntimeDirective> AllDirectives = new List<RuntimeDirective>(); 
   }
 
 } //ns

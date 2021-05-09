@@ -47,7 +47,7 @@ namespace NGraphQL.Server.Parsing {
       // we might not find it; for ex - we are looking for type [[int]]!, but Model does not have any field or resolver arg
       // of this type. Model might have [[int]] type, and this is a legit case. We can create this new TypeRef,
       // but we cannot register it in typeDef's list - the model is read-only now.
-      // So instead we add it request's typeRef list. 
+      // So instead we add it request context CustomTypeRefs list. 
     */
     private TypeRef GetCreateDerivedTypeRef(TypeRef typeRef, TypeKind kind) {
       var kinds = new List<TypeKind>(typeRef.KindsPath);

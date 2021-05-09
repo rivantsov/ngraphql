@@ -7,7 +7,7 @@ using NGraphQL.Model.Request;
 
 namespace NGraphQL.Server.Execution {
 
-  public class RuntimeDirectiveContext {
+  public class DirectiveContext {
     public RequestContext RequestContext;
     public RuntimeDirective Directive;
     public IRuntimeDirectiveHandler Handler; 
