@@ -87,7 +87,7 @@ namespace NGraphQL.Server.Execution {
           // group by type, and process each sublist
           var scopesByType = scopes.GroupBy(s => s.Entity.GetType()).ToList();
           foreach(var grp in scopesByType)
-            await ExecuteObjectsSelectionSubsetAsync(grp.ToList(), grp.Key, selSubSet);
+            await ExecuteObjectsSelectionSubsetAsync(fieldContext.MappedField, grp.ToList(), grp.Key, selSubSet);
           return;
 
         default:
@@ -143,7 +143,7 @@ namespace NGraphQL.Server.Execution {
           // if batched result was not set, set value
           if (!fieldContext.BatchResultWasSet) {
             var outValue = fieldContext.ConvertToOuputValue(result);
-            scope.SetValue(mappedField.Field.Key, outValue);
+            scope.SetValue(mappedField.Index, outValue);
           }
         } //foreach scope
         // if there are any non-null object-type results, add this field context to this special list

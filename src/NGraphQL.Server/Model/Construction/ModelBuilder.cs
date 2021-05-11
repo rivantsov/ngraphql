@@ -15,6 +15,7 @@ namespace NGraphQL.Model.Construction {
     GraphQLApiModel _model;
     XmlDocumentationLoader _docLoader;
     IList<ModelAdjustment> _modelAdjustments;
+    IList<ResolverMethodInfo> _allResolvers; 
 
     public ModelBuilder(GraphQLServer server) {
       _server = server;
@@ -29,7 +30,7 @@ namespace NGraphQL.Model.Construction {
       RegisterScalars();
       if (!RegisterGraphQLTypes())
         return;
-      RegisterResolverClasses();
+      RegisterResolverClassesMethods();
 
       if (!BuildRegisteredDirectiveDefinitions())
         return;

@@ -26,6 +26,20 @@ namespace NGraphQL.Utilities {
       return members;
     }
 
+    public static bool MethodReturnsTask(this MethodInfo method) {
+      var retType = method.ReturnType;
+      var returnsTask = retType.IsGenericType && retType.GetGenericTypeDefinition() == typeof(Task<>);
+      return returnsTask; 
+    }
+
+    public static Type GetReturnDataType(this MethodInfo method) {
+      var retType = method.ReturnType;
+      if(retType.IsGenericType && retType.GetGenericTypeDefinition() == typeof(Task<>))
+        retType = retType.GetGenericArguments()[0];
+      return retType;
+    }
+
+
     // Note: interfaces are special; if the entity type is interface (as in VITA, db entities are defined as interfaces),
     //  getting all members must account for this; GetMembers does NOT return members of base interfaces, so we do it explicitly
     private static IList<MemberInfo> GetAllPublicMembers(this Type type) {

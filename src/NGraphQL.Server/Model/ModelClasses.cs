@@ -174,14 +174,18 @@ namespace NGraphQL.Model {
 
   [DisplayName("{Method.Name}")]
   public class ResolverMethodInfo {
+    public GraphQLModule Module; 
     public MethodInfo Method;
     public Attribute SourceAttribute;
-    public Type ResolverClass; 
+    public ResolverClassInfo ResolverClass; 
 
     public bool ReturnsTask;
+    public Type ReturnType;
+    public ResolvesFieldAttribute ResolvesAttribute; 
     public Func<object, object> TaskResultReader; // reads Task<T>.Result
 
-    public override string ToString() => $"{Method.Name}";
+    public ResolverMethodInfo() { }
+    public override string ToString() => $"{Method.DeclaringType}.{Method.Name}";
   }
 
   [DisplayName("{Type}")]

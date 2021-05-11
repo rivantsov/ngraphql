@@ -15,50 +15,46 @@ namespace NGraphQL.Model.Construction {
     // map resolvers having [ResolvesField] attribute
     private void MapResolversByResolvesFieldAttribute() {
       // go thru resolver classes, find methods with ResolvesField attr
-      foreach(var resClass in _model.ResolverClasses) {
-        var resMethods = resClass.Type.GetMethods(BindingFlags.Instance | BindingFlags.Public);
-        foreach(var resMeth in resMethods) {
-          var resAttr = resMeth.GetAttribute<ResolvesFieldAttribute>();
-          if (resAttr == null)
-            continue;
-          var fieldName = resAttr.FieldName.FirstLower();
-          // check target type
-          if (resAttr.TargetType != null) {
-            if(!_model.TypesByClrType.TryGetValue(resAttr.TargetType, out var typeDef) || !(typeDef is ObjectTypeDef objTypeDef)) {
-              AddError($"Resolver method '{resClass.Type}.{resMeth.Name}': target type '{resAttr.TargetType}' not registered or "
-                       + "is not Object type.");
-              continue; 
-            }
-            // match field
-            var fld = objTypeDef.Fields.FirstOrDefault(f => f.Name == fieldName);
-            if (fld == null) {
-              AddError($"Resolver method '{resClass.Type}.{resMeth.Name}': target field '{fieldName}' not found "
-                       + $"on type '{resAttr.TargetType}'.");
-              continue;
-            }
-            SetupFieldResolverMethod(objTypeDef, fld, resMeth, resAttr);
+      foreach(var resInfo in _allResolvers) {
+        var resAttr = resInfo.ResolvesAttribute; 
+        if (resAttr == null)
+          continue;
+        var fieldName = resAttr.FieldName.FirstLower();
+        // check target type
+        if (resAttr.TargetType != null) {
+          if(!_model.TypesByClrType.TryGetValue(resAttr.TargetType, out var typeDef) || !(typeDef is ObjectTypeDef objTypeDef)) {
+            AddError($"Resolver method '{resInfo}': target type '{resAttr.TargetType}' not registered or is not Object type.");
             continue; 
-          } // if TargetType != null
-          // TargetType is null - find match by name only
-          var fields = _typesToMapFields.SelectMany(t => t.Fields).Where(f => f.Name == fieldName).ToList(); 
-          switch(fields.Count) {
-            case 1:
-              var fld = fields[0];
-              SetupFieldResolverMethod((ObjectTypeDef) fld.OwnerType, fld, resMeth, resAttr);
-              break;
-
-            case 0:
-              AddError($"Resolver method '{resClass.Type}.{resMeth.Name}': target field '{fieldName}' not found "
-                       + $"on any object type.");
-              break;
-            
-            default:
-              AddError($"Resolver method '{resClass.Type}.{resMeth.Name}': multipe target fields '{fieldName}' "
-                       + $"found on Object types.");
-              break; 
           }
-        } //foreach resMeth
-      } //foreach resClass
+          // match field
+          var fld = objTypeDef.Fields.FirstOrDefault(f => f.Name == fieldName);
+          if (fld == null) {
+            AddError($"Resolver method '{resInfo}': target field '{fieldName}' not found "
+                      + $"on type '{resAttr.TargetType}'.");
+            continue;
+          }
+          SetupFieldResolverMethod(objTypeDef, fld, resInfo, resAttr);
+          continue; 
+        } // if TargetType != null
+        // TargetType is null - find match by name only
+        var fields = _typesToMapFields.SelectMany(t => t.Fields).Where(f => f.Name == fieldName).ToList(); 
+        switch(fields.Count) {
+          case 1:
+            var fld = fields[0];
+            SetupFieldResolverMethod((ObjectTypeDef) fld.OwnerType, fld, resInfo, resAttr);
+            break;
+
+          case 0:
+            AddError($"Resolver method '{resInfo}': target field '{fieldName}' not found "
+                      + $"on any object type.");
+            break;
+            
+          default:
+            AddError($"Resolver method '{resInfo}': multipe target fields '{fieldName}' "
+                      + $"found on Object types.");
+            break; 
+        }
+      } //foreach resMeth
     }
 
     private void MapFieldsToResolversByResolverAttribute() {
@@ -114,18 +110,13 @@ namespace NGraphQL.Model.Construction {
     private void MapFieldsToResolversByName() {
       foreach (var typeDef in _typesToMapFields) {
         // get all resolver methods from the same module
-        var allMethods = new List<MethodInfo>();
-        foreach (var resType in typeDef.Module.ResolverClasses) {
-          var methods = resType.GetMethods();
-          allMethods.AddRange(methods);
-        }
         foreach (var field in typeDef.Fields) {
           if (field.ExecutionType != ResolverKind.NotSet)
             continue;
           if (field.ClrMember == null)
             continue; //__typename has no clr member
           var methName = field.ClrMember.Name;
-          var methods = allMethods.Where(m => m.Name == methName).ToList();
+          var methods = _allResolvers.Where(res => res.Method.Name == methName).ToList();
           switch(methods.Count) {
             case 0: continue;
             case 1:
@@ -139,22 +130,14 @@ namespace NGraphQL.Model.Construction {
       } //foreach typeDef
     }//method
 
-    private bool SetupFieldResolverMethod(ObjectTypeDef typeDef, FieldDef field, MethodInfo resolverMethod, Attribute sourceAttr) {
-      var retType = resolverMethod.ReturnType;
-      var returnsTask = retType.IsGenericType && retType.GetGenericTypeDefinition() == typeof(Task<>);
-      Func<object, object> taskResultReader = null;
-      if (returnsTask) {
-        retType = retType.GetGenericArguments()[0];
-        taskResultReader = ServerReflectionHelper.CompileTaskResultReader(retType);
-      }
+    private bool SetupFieldResolverMethod(ObjectTypeDef typeDef, FieldDef field, ResolverMethodInfo resolverInfo, Attribute sourceAttr) {
+      var retType = resolverInfo.ReturnType;
       // validate return type
-      if (!CheckReturnTypeCompatible(retType, field, resolverMethod))
-        return false; 
+      if (!CheckReturnTypeCompatible(retType, field, resolverInfo.Method))
+        return false;
 
-      field.Resolver = new ResolverMethodInfo() { SourceAttribute = sourceAttr, Method = resolverMethod, 
-            ResolverClass = resolverMethod.DeclaringType,
-            ReturnsTask = returnsTask, TaskResultReader = taskResultReader };
-      if (returnsTask)
+      field.Resolver = resolverInfo;
+      if (resolverInfo.ReturnsTask)
         field.Flags |= FieldFlags.ResolverReturnsTask;
       if (typeDef is ObjectTypeDef otd && otd.TypeRole == TypeRole.Data)
         field.Flags |= FieldFlags.HasParentArg;

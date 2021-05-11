@@ -61,7 +61,7 @@ namespace NGraphQL.Server.Execution {
       //   it is only used to save op result value (SetValue method)
       var executers = new List<OperationFieldExecuter>();
       foreach(var mappedField in topFields) { 
-        var opExecuter = new OperationFieldExecuter(_requestContext, topScope, mappedField);
+        var opExecuter = new OperationFieldExecuter(_requestContext, mappedField, topScope);
         executers.Add(opExecuter); 
       }
 
