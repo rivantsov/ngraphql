@@ -61,7 +61,7 @@ namespace NGraphQL.Model.Construction {
       if (_model.HasErrors)
         return;
 
-      MapObjectFields();
+      AssignObjectFieldResolvers();
       if (_model.HasErrors)
         return;
 

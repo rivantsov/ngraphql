@@ -127,7 +127,7 @@ namespace NGraphQL.Server.Execution {
 
     // gets cached resolver class instance or creates new one
     private void AssignResolverClassInstance(SelectionItemContext fieldCtx) {
-      var resType = fieldCtx.MappedField.Resolver.ResolverMethod.ResolverClass;
+      var resType = fieldCtx.MappedField.Resolver.ResolverMethod.ResolverClass.Type;
       object resolver = null; 
       if (_resolverInstances.Count == 1 && _resolverInstances[0].GetType() == resType) // fast track
         resolver = _resolverInstances[0];

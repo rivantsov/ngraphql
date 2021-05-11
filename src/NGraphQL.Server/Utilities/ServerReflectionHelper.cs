@@ -43,6 +43,7 @@ namespace NGraphQL.Utilities {
     // Note: interfaces are special; if the entity type is interface (as in VITA, db entities are defined as interfaces),
     //  getting all members must account for this; GetMembers does NOT return members of base interfaces, so we do it explicitly
     private static IList<MemberInfo> GetAllPublicMembers(this Type type) {
+      Util.Check(false, "Implement get-inherited-members!");
       var flags = BindingFlags.Public | BindingFlags.Instance;
       var members = type.GetMembers(flags).ToList();
       if (type.IsInterface) {
@@ -54,6 +55,7 @@ namespace NGraphQL.Utilities {
     }
 
     public static IList<MemberInfo> GetFieldsProps(this Type type) {
+      Util.Check(false, "Implement get-inherited-members!");
       return type.GetFieldsPropsMethods(withMethods: false); 
     }
 

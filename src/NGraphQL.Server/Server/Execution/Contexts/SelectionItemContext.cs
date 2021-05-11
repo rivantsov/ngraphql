@@ -134,7 +134,7 @@ namespace NGraphQL.Server.Execution {
         if (!results.TryGetValue((TEntity)scope.Entity, out var result))
           result = valueForMissingKeys;
         var outValue = this.ConvertToOuputValue(result);
-        scope.SetValue(this.FieldIndex, outValue);
+        scope.SetValue(this.MappedField.Index, outValue);
       }
       this.BatchResultWasSet = true;
     }
