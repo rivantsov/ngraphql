@@ -39,7 +39,7 @@ namespace NGraphQL.Model {
       TypeRefs.Add(TypeRefNotNull);
     }
 
-    public virtual object ToOutput(SelectionItemContext context, object value) {
+    public virtual object ToOutput(FieldContext context, object value) {
       return value;
     }
 

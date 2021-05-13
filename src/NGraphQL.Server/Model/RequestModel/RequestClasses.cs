@@ -27,6 +27,7 @@ namespace NGraphQL.Model.Request {
     public IList<InputValue> Args;
     public SelectionSubset SelectionSubset;
     public readonly IList<MappedArg> MappedArgs;
+    public FieldResolverInfo DefaultResolver; 
 
     public override string ToString() => $"{Key}";
   }

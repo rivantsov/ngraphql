@@ -8,28 +8,28 @@ using NGraphQL.CodeFirst;
 using NGraphQL.Introspection;
 using NGraphQL.Model;
 using NGraphQL.Model.Request;
+using NGraphQL.Utilities;
 
 namespace NGraphQL.Server.Execution {
 
-  public partial class SelectionItemContext : IFieldContext {
+  public partial class FieldContext : IFieldContext {
     // IFieldContext members
+    ISelectionField IFieldContext.SelectionField => this.SelectionField;
     public IRequestContext RequestContext => _requestContext;
-    public GraphQLApiModel GetModel() => _requestContext.ApiModel;
-    public ISelectionField SelectionField => this.SelField;
-    public FieldDef FieldDef => CurrentFieldDef;
-    public CancellationToken CancellationToken => _requestContext.CancellationToken;
     public IOperationFieldContext RootField { get; }
-    public SourceLocation SourceLocation => Item.SourceLocation;
+    public CancellationToken CancellationToken => _requestContext.CancellationToken;
+    // GetFullRequestPath - see below
 
-    public readonly SelectionItem Item;
-    public SelectionField SelField => (SelectionField)Item;
-    public ObjectTypeMappingExt ParentMapping; 
+
+    internal OutputObjectScope CurrentParentScope => _currentParentScope;
+    internal FieldResolverInfo CurrentResolver => _currentResolver;
+    internal FieldDef CurrentFieldDef => _currentResolver?.Field;
+
+    internal SelectionField SelectionField;
+    internal ObjectTypeMappingExt ParentMapping; 
 
     internal object[] ArgValues = null;
     internal object ResolverClassInstance;
-    internal OutputObjectScope CurrentParentScope => _currentParentScope;
-    internal FieldResolverInfo CurrentResolver => _currentResolver;
-    internal FieldDef CurrentFieldDef => _currentResolver?.Field; 
     internal IList<OutputObjectScope> AllParentScopes = OutputObjectScope.EmptyList;
     internal IList<OutputObjectScope> AllResultScopes = OutputObjectScope.EmptyList;
     internal bool BatchResultWasSet;
@@ -41,42 +41,58 @@ namespace NGraphQL.Server.Execution {
     OutputObjectScope _currentParentScope;
     FieldResolverInfo _currentResolver; 
 
-    public SelectionItemContext(RequestContext requestContext, IOperationFieldContext rootField, SelectionItem item,
+    public FieldContext(RequestContext requestContext, IOperationFieldContext rootField, SelectionField selField,
                          IList<OutputObjectScope> allParentScopes = null) {
       _requestContext = requestContext;
       RootField = rootField;
-      Item = item;
+      this.SelectionField = selField;
       AllParentScopes = allParentScopes ?? OutputObjectScope.EmptyList;
-      if (Flags.IsSet(FieldFlags.ReturnsComplexType))
+      if (selField.SelectionSubset != null)
         AllResultScopes = new List<OutputObjectScope>();
     }
 
     public override string ToString() => SelectionField.ToString();
 
     internal void SetCurrentParentScope(OutputObjectScope scope) {
-      var typeChange = _currentParentScope?.Entity.GetType() != scope.Entity.GetType(); 
+      var typeChangeOrNull = _currentParentScope?.Entity.GetType() != scope.Entity.GetType(); 
       _currentParentScope = scope;
-      if (typeChange)
+      if (typeChangeOrNull)
         SetupResolver();
     }
 
+    // Called to setup resolver after new _currentParentScope was set. 
+    // the keyword here is efficiency, we do not want to search for resolver if previous one is OK (prev for prev scope/entity type)
     private void SetupResolver() {
-      var field = SelField;
-      _currentResolver = field.DefaultResolver;
-      _currentResolver = _currentParentScope.Mapping.FieldResolvers
+      // Try default resolver in SelectionField
+      var sc = _currentParentScope;
+      var scopeTypeDef = sc.Mapping.TypeDef;
+      var defaultRes = this.SelectionField.DefaultResolver;
+      if (defaultRes != null) {
+        if (defaultRes.TypeMapping == sc.Mapping) {
+          _currentResolver = defaultRes;
+          return; 
+        }
+      }
+      // find it in type mapping for current scope 
+      _currentResolver = sc.Mapping.FieldResolvers
         .FirstOrDefault(fr => fr.Field.Name == this.SelectionField.Name);
-
+      if (_currentResolver == null)
+        throw new FatalServerException(
+          $"Failed to find resolver for field {SelectionField.Name}, target type: {sc.Mapping.TypeDef.Name}, entity type: {sc.Entity.GetType()}");
+      // set as default resolver in sel field if not set
+      SelectionField.DefaultResolver ??= _currentResolver;
     }
 
     public object ConvertToOuputValue(object result) {
       // validate result value
-      if (Flags.IsSet(FieldFlags.ReturnsComplexType)) {
-        var rank = this.SelectionField.FieldDef.TypeRef.Rank;
-        var path = this.CurrentParentScope.Path.Append(this.SelectionField.Field.Key);
+      var fldDef = _currentResolver.Field; 
+      if (fldDef.Flags.IsSet(FieldFlags.ReturnsComplexType)) {
+        var rank = fldDef.TypeRef.Rank;
+        var path = this.CurrentParentScope.Path.Append(this.SelectionField.Key);
         return CreateObjectFieldResultScopes(result, rank, path);
       }
       // cover conversions like enums to strings
-      var typeDef = _fieldDef. Field.FieldDef.TypeRef.TypeDef;
+      var typeDef = fldDef.TypeRef.TypeDef;
       var outValue = typeDef.ToOutput(this, result);
       return outValue;
     }
@@ -94,7 +110,7 @@ namespace NGraphQL.Server.Execution {
     }
 
     public object CreateObjectFieldResultScope(object entity, RequestPath path) {
-      var typeDef = _fieldDef.TypeRef.TypeDef;
+      var typeDef = _currentResolver.Field.TypeRef.TypeDef;
       // special case - Union
       if (typeDef.Kind == TypeKind.Union) {
         if (entity is UnionBase ub)
@@ -126,7 +142,7 @@ namespace NGraphQL.Server.Execution {
 
     public IList<object> GetFullRequestPath() {
       var fullPath = CurrentParentScope.Path.GetFullPath();
-      fullPath.Add(this.SelectionField.Field.Key);
+      fullPath.Add(this.SelectionField.Key);
       return fullPath; 
     }
 
@@ -152,7 +168,7 @@ namespace NGraphQL.Server.Execution {
         if (!results.TryGetValue((TEntity)scope.Entity, out var result))
           result = valueForMissingKeys;
         var outValue = this.ConvertToOuputValue(result);
-        scope.SetValue(this.SelectionField.Field.Key, outValue);
+        scope.SetValue(this.SelectionField.Key, outValue);
       }
       this.BatchResultWasSet = true;
     }

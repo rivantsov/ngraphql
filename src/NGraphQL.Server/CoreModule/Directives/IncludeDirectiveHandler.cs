@@ -5,14 +5,14 @@ using NGraphQL.Model.Request;
 namespace NGraphQL.Core {
 
   public class IncludeDirectiveHandler: IDirectiveHandler, ISelectionItemDirectiveAction {
-    public void AfterResolve(SelectionItemContext context, object[] argValues, ref object value) {
+    public void AfterResolve(FieldContext context, object[] argValues, ref object value) {
     }
 
-    public void BeforeResolve(SelectionItemContext context, object[] argValues) {
+    public void BeforeResolve(FieldContext context, object[] argValues) {
       context.Skip |= !(bool)argValues[0];
     }
 
-    public void PreviewItem(SelectionItemContext context, object[] argValues) {
+    public void PreviewItem(FieldContext context, object[] argValues) {
     }
   }
 

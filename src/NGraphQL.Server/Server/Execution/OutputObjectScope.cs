@@ -17,7 +17,7 @@ namespace NGraphQL.Server.Execution {
   public class OutputObjectScope : IDictionary<string, object> {
     public static readonly IList<OutputObjectScope> EmptyList = new OutputObjectScope[] { };
 
-    public readonly MappedSelectionField SourceField;
+    public readonly SelectionField SourceField;
     public RequestPath Path;
     public object Entity;
     public ObjectTypeMappingExt Mapping;
@@ -30,7 +30,7 @@ namespace NGraphQL.Server.Execution {
       Path = new RequestPath();
     }
 
-    public OutputObjectScope(MappedSelectionField sourceField, RequestPath path, object entity, ObjectTypeMappingExt mapping) {
+    public OutputObjectScope(SelectionField sourceField, RequestPath path, object entity, ObjectTypeMappingExt mapping) {
       SourceField = sourceField;
       Path = path;
       Entity = entity;

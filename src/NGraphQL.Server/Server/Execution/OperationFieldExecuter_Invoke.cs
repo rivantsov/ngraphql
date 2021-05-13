@@ -14,16 +14,16 @@ namespace NGraphQL.Server.Execution {
 
   partial class OperationFieldExecuter {
 
-    private async Task<object> InvokeResolverAsync(SelectionItemContext fieldContext) {
+    private async Task<object> InvokeResolverAsync(FieldContext fieldContext) {
       try {
-        var fldResolver = fieldContext.GetResolver();
+        var fldResolver = fieldContext.CurrentResolver;
         if (fieldContext.ResolverClassInstance == null)
           AssignResolverClassInstance(fieldContext, fldResolver);
         if(fieldContext.ArgValues == null)
           BuildResolverArguments(fieldContext);
         // we might have encountered errors when evaluating args; if so, abort all
         this.AbortIfFailed();
-        var fldDef = fieldContext.FieldDef;
+        var fldDef = fieldContext.CurrentFieldDef;
         // set current parentEntity arg
         if (fldDef.Flags.IsSet(FieldFlags.HasParentArg))
           fieldContext.ArgValues[1] = fieldContext.CurrentParentScope.Entity;
@@ -51,9 +51,10 @@ namespace NGraphQL.Server.Execution {
       }
     }
 
-    private object InvokeFieldReader(SelectionItemContext fieldContext, object parent) {
+    // merge with prev method InvokeResolverAsync 
+    private object InvokeFieldReader(FieldContext fieldContext, object parent) {
       try {
-        var reader = fieldContext.GetResolver().ResolverFunc;
+        var reader = fieldContext.CurrentResolver.ResolverFunc;
         var result = reader(parent);
         return result;
       } catch (TargetInvocationException tex) {
@@ -65,7 +66,7 @@ namespace NGraphQL.Server.Execution {
     }
 
 
-    private async Task<object> UnwrapTaskResultAsync(SelectionItemContext fieldContext, FieldResolverInfo fieldResolver, Task task) {
+    private async Task<object> UnwrapTaskResultAsync(FieldContext fieldContext, FieldResolverInfo fieldResolver, Task task) {
       if (!task.IsCompleted)
         await task; 
       switch(task.Status) {
@@ -91,24 +92,24 @@ namespace NGraphQL.Server.Execution {
       }
     }
 
-    private void BuildResolverArguments(SelectionItemContext fieldContext) {
+    private void BuildResolverArguments(FieldContext fieldContext) {
       // arguments
-      var field = fieldContext.SelectionField;
       var argValues = new List<object>();
       // special arguments: context, parent      
       argValues.Add(fieldContext);
-      if(field.FieldDef.Flags.IsSet(FieldFlags.HasParentArg))
-        argValues.Add(fieldContext.CurrentParentScope.Entity); 
+      if(fieldContext.CurrentFieldDef.Flags.IsSet(FieldFlags.HasParentArg))
+        argValues.Add(fieldContext.CurrentParentScope.Entity);
       //regular arguments
-      for(int i = 0; i < field.MappedArgs.Count; i++) {
-        var arg = field.MappedArgs[i];
+      var selField = fieldContext.SelectionField;
+      for (int i = 0; i < selField.MappedArgs.Count; i++) {
+        var arg = selField.MappedArgs[i];
         var argValue = SafeEvaluateArg(fieldContext, arg);
         argValues.Add(argValue);
       }
       fieldContext.ArgValues = argValues.ToArray();
     }
 
-    private object SafeEvaluateArg(SelectionItemContext fieldContext, MappedArg arg) {
+    private object SafeEvaluateArg(FieldContext fieldContext, MappedArg arg) {
       try {
         var value = arg.Evaluator.GetValue(_requestContext);
         var convValue = _requestContext.ValidateConvert(value, arg.ArgDef.TypeRef, arg.Anchor);
@@ -127,7 +128,7 @@ namespace NGraphQL.Server.Execution {
     }
 
     // gets cached resolver class instance or creates new one
-    private void AssignResolverClassInstance(SelectionItemContext fieldCtx, FieldResolverInfo fieldResolver) {
+    private void AssignResolverClassInstance(FieldContext fieldCtx, FieldResolverInfo fieldResolver) {
       var resClassType = fieldResolver.ResolverMethod.ResolverClass.Type;
       object resInstance = null; 
       if (_resolverInstances.Count == 1 && _resolverInstances[0].GetType() == resClassType) // fast track

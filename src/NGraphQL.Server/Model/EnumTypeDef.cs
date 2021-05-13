@@ -25,7 +25,7 @@ namespace NGraphQL.Model {
           : base(type.Name, TypeKind.Enum, type, attrs, module) {
     }
 
-    public override object ToOutput(SelectionItemContext context, object value) {
+    public override object ToOutput(FieldContext context, object value) {
       return ToOutputRec(context, context.FieldDef.TypeRef, value); 
     }
 
@@ -34,7 +34,7 @@ namespace NGraphQL.Model {
     }
 
     // Recursive method, for high-rank arrays
-    private object ToOutputRec(SelectionItemContext context, TypeRef typeRef, object value) {
+    private object ToOutputRec(FieldContext context, TypeRef typeRef, object value) {
       if (value == null)
         return null;
       if (typeRef.Kind == TypeKind.NonNull)
@@ -46,7 +46,7 @@ namespace NGraphQL.Model {
       return Handler.ConvertEnumValueToOutputString(value);
     }
 
-    private object ArrayToOutputRec(SelectionItemContext context, TypeRef typeRef, object value) {
+    private object ArrayToOutputRec(FieldContext context, TypeRef typeRef, object value) {
       if (value == null)
         return null;
       var list = value as IList;
