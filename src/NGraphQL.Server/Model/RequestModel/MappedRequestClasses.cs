@@ -26,14 +26,14 @@ namespace NGraphQL.Model.Request {
   public class MappedSelectionField: MappedSelectionItem {
     public SelectionField Field => (SelectionField)base.Item; 
     public readonly FieldDef FieldDef;
-    public readonly IList<MappedArg> Args;
+    public readonly IList<MappedArg> MappedArgs;
     public int Index; 
 
-    public FieldResolverInfo Resolver;
+    //public FieldResolverInfo Resolver;
 
-    public MappedSelectionField(SelectionField field, FieldDef fieldDef, IList<MappedArg> args): base(field) {
+    public MappedSelectionField(SelectionField field, FieldDef fieldDef, int index, IList<MappedArg> args): base(field) {
       FieldDef = fieldDef; 
-      Args = args; 
+      MappedArgs = args;
     }
 
     public override string ToString() => $"{Field.Key}";
@@ -61,16 +61,10 @@ namespace NGraphQL.Model.Request {
     public override string ToString() => $"{ArgDef.Name}/{ArgDef.TypeRef.Name}";
   }
 
-  public class SelectionSubSetMapping {
+  public class MappedSelectionSubSet {
     public ObjectTypeDef ObjectTypeDef;
     public Type SourceType; 
     public IList<MappedSelectionItem> MappedItems = new List<MappedSelectionItem>();
-    public OutputFieldSet StaticFieldSet; // when there's no @include/@skip directives
-  }
-
-  public class OutputFieldSet {
-    public SelectionSubSetMapping SubSetMapping; 
-    public IList<MappedSelectionField> Fields; 
   }
 
 }

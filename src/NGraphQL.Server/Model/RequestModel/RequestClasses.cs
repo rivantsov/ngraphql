@@ -26,6 +26,7 @@ namespace NGraphQL.Model.Request {
     public string Key => Alias ?? Name;    //alias or name
     public IList<InputValue> Args;
     public SelectionSubset SelectionSubset;
+    public readonly IList<MappedArg> MappedArgs;
 
     public override string ToString() => $"{Key}";
   }
@@ -48,7 +49,7 @@ namespace NGraphQL.Model.Request {
 
   public class SelectionSubset: RequestObjectBase {
     public List<SelectionItem> Items;
-    public readonly IList<SelectionSubSetMapping> Mappings = new List<SelectionSubSetMapping>(); 
+    public readonly IList<MappedSelectionSubSet> MappedSubSets = new List<MappedSelectionSubSet>(); 
 
     public SelectionSubset(RequestObjectBase parent, List<SelectionItem> items, SourceLocation location) {
       Parent = parent; 
@@ -56,37 +57,6 @@ namespace NGraphQL.Model.Request {
       this.SourceLocation = location; 
     }
 
-    public SelectionSubSetMapping GetMapping(Type fromType, TypeDefBase toTypeDef) {
-      switch(toTypeDef) {
-        case ObjectTypeDef otd: 
-          return GetMapping(fromType);
-        case InterfaceTypeDef itd:
-          return FindMapping(fromType, itd.PossibleTypes);
-        case UnionTypeDef utd:
-          return FindMapping(fromType, utd.PossibleTypes);
-        default:
-          // should never happen
-          throw new Exception($"Invalid target type kind {toTypeDef.Kind}, type {toTypeDef.Name}");
-      }
-    }
-
-    public SelectionSubSetMapping FindMapping(Type fromType, IList<ObjectTypeDef> typeDefs) {
-      foreach(var otd in typeDefs) {
-        var m = GetMapping(fromType, otd);
-        if (m != null)
-          return m;
-      }
-      return null; 
-    }
-
-    public SelectionSubSetMapping GetMapping(Type fromType) {      
-      for (int i = 0; i < Mappings.Count; i++) {
-        var mp = Mappings[i];
-        if (mp.SourceType == fromType)
-          return mp;
-      }
-      return null; 
-    }
   }
 
   public class InputValue : NamedRequestObject {
@@ -102,13 +72,6 @@ namespace NGraphQL.Model.Request {
   public class VariableDef : NamedRequestObject {
 
     public InputValueDef InputDef; 
-    /*
-    public TypeRef TypeRef;
-    public bool HasDefaultValue;
-    public object DefaultValue;
-    public IList<Directive> Directives { get; set; }
-    */
-
     public ValueSource ParsedDefaultValue;
     public IList<RequestDirective> DirectiveRefs;
 

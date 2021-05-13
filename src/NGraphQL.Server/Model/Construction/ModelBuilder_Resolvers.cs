@@ -12,47 +12,51 @@ using NGraphQL.Utilities;
 namespace NGraphQL.Model.Construction {
   public partial class ModelBuilder {
 
-
-    IList<ObjectTypeDef> _typesToAssignResolvers;
-
     private bool AssignObjectFieldResolvers() {
+      if (_model.HasErrors) 
+        return false;
+
       // get all object types except root types (Query, Mutation, Schema) that do not have CLR type. 
-      _typesToAssignResolvers = _model.GetTypeDefs<ObjectTypeDef>(TypeKind.Object)
+      var objectTypes = _model.GetTypeDefs<ObjectTypeDef>(TypeKind.Object)
                               .Where(td => td.ClrType != null).ToList();
-      // 1. Compile mapping expressions
-      AssignResolversFromCompiledMappingExpressions();
-      if (_model.HasErrors) return false;
+      // 1. Map by ResolvesField attribute on resolver methods
+      AssignResolversByMethodsResolvesFieldAttribute(objectTypes);
 
-      // 2. Map by ResolvesField attribute on resolver methods
-      AssignResolversByMethodsResolvesFieldAttribute();
-      if (_model.HasErrors) return false;
+      // from now on, iterate on types, mappings and setup resolvers for each mapping
+      foreach (var typeDef in objectTypes) {
+        foreach (var mapping in typeDef.Mappings) {
+          // 2. Compile mapping expressions
+          AssignResolversFromCompiledMappingExpressions(mapping);
 
-      // 3. to map by Resolver attribute on field
-      AssignResolversByFieldResolverAttribute();
-      if (_model.HasErrors) return false;
+          // 3. to map by Resolver attribute on field
+          AssignResolversByFieldResolverAttribute(mapping);
 
-      // 4. Default mapping to entities by name
-      AssignResolversByEntityPropertyNameMatch();
-      if (_model.HasErrors) return false;
+          // 4. Default mapping to entities by name
+          AssignResolversByEntityPropertyNameMatch(mapping);
 
-      // 5. Map to resolvers by name 
-      AssignResolversToMatchingResolverMethods();
-      if (_model.HasErrors) return false;
+          // 5. Map to resolvers by name 
+          AssignResolversToMatchingResolverMethods(mapping);
 
-      // 6. Verify all assigned
-      VerifyAllResolversAssigned();
+          // 6. Verify all assigned
+          VerifyAllResolversAssigned(mapping);
+
+          if (_model.Errors.Count > 20)
+            return false; // cut off at 20
+        }
+      }
 
       return !_model.HasErrors;
     }
 
     // setup resolvers having [ResolvesField] attribute
-    private void AssignResolversByMethodsResolvesFieldAttribute() {
+    private void AssignResolversByMethodsResolvesFieldAttribute(IList<ObjectTypeDef> types) {
       // go thru resolver classes, find methods with ResolvesField attr
       foreach (var resInfo in _allResolvers) {
         var resAttr = resInfo.ResolvesAttribute;
         if (resAttr == null)
           continue;
         var fieldName = resAttr.FieldName.FirstLower();
+        FieldDef field = null;
         // check target type
         if (resAttr.TargetType != null) {
           if (!_model.TypesByClrType.TryGetValue(resAttr.TargetType, out var typeDef) || !(typeDef is ObjectTypeDef objTypeDef)) {
@@ -60,102 +64,65 @@ namespace NGraphQL.Model.Construction {
             continue;
           }
           // match field
-          var fld = objTypeDef.Fields.FirstOrDefault(f => f.Name == fieldName);
-          if (fld == null) {
+          field = objTypeDef.Fields.FirstOrDefault(f => f.Name == fieldName);
+          if (field == null) {
             AddError($"Resolver method '{resInfo}': target field '{fieldName}' not found "
                       + $"on type '{resAttr.TargetType}'.");
             continue;
           }
-          SetupFieldResolverMethod(objTypeDef, fld, resInfo, resAttr);
-          continue;
-        } // if TargetType != null
-        // TargetType is null - find match by name only
-        var fields = _typesToAssignResolvers.SelectMany(t => t.Fields).Where(f => f.Name == fieldName).ToList();
-        switch (fields.Count) {
-          case 1:
-            var fld = fields[0];
-            SetupFieldResolverMethod((ObjectTypeDef)fld.OwnerType, fld, resInfo, resAttr);
-            break;
-
-          case 0:
-            AddError($"Resolver method '{resInfo}': target field '{fieldName}' not found "
-                      + $"on any object type.");
-            break;
-
-          default:
-            AddError($"Resolver method '{resInfo}': multipe target fields '{fieldName}' "
-                      + $"found on Object types.");
-            break;
+        } else {
+          // TargetType is null - find match by name only
+          var fields = types.SelectMany(t => t.Fields).Where(f => f.Name == fieldName).ToList();
+          switch (fields.Count) {
+            case 1:
+              field = fields[0];
+              break;
+            case 0:
+              AddError($"Resolver method '{resInfo}': target field '{fieldName}' not found on any object type.");
+              continue; 
+            default:
+              AddError($"Resolver method '{resInfo}': multipe target fields '{fieldName}' found on Object types.");
+              continue;
+          }
         }
+        // We have a field; verify method is compatible
+        VerifyFieldResolverMethod(field, resInfo);
+        // get parent arg type and find mapping
+
       } //foreach resMeth
-    }
+    } //method
 
 
-    private void AssignResolversFromCompiledMappingExpressions() {
-      foreach (var typeDef in _typesToAssignResolvers) {
-        foreach (var mapping in typeDef.Mappings) {
-          if (mapping.Expression == null)
-            continue;
-          var entityPrm = mapping.Expression.Parameters[0];
-          var memberInit = mapping.Expression.Body as MemberInitExpression;
-          if (memberInit == null) {
-            AddError($"Invalid mapping expression for type {mapping.EntityType}->{mapping.GraphQLType.Name}");
-            return;
-          }
-          foreach (var bnd in memberInit.Bindings) {
-            var asmtBnd = bnd as MemberAssignment;
-            var fieldDef = typeDef.Fields.FirstOrDefault(fld => fld.ClrMember == bnd.Member);
-            if (asmtBnd == null || fieldDef == null)
-              continue; //should never happen, but just in case
-                        // create lambda reading the source property
-            var resFunc = CompileResolverExpression(fieldDef, entityPrm, asmtBnd.Expression);
-            var outType = asmtBnd.Expression.Type;
-            var resInfo = new FieldResolverInfo() {
-              Field = fieldDef, ResolverFunc = resFunc,
-              OutType = outType, TypeMapping = mapping
-            };
-            mapping.FieldResolvers.Add(resInfo);
-          } //foreach bnd
-        } //foreach mapping
-      } //foreach typeDef
-    }
-
-    private bool AssignMappedEntitiesForObjectTypes() {
-      foreach (var module in _server.Modules) {
-        var mname = module.GetType().Name;
-        foreach (var mp in module.Mappings) {
-          var typeDef = _model.LookupTypeDef(mp.GraphQLType);
-          if (typeDef == null) {
-            AddError($"Mapping target type {mp.GraphQLType.Name} is not registered; module {mname}");
-            continue;
-          }
-          
-          if (!(typeDef is ObjectTypeDef objTypeDef)) {
-            AddError($"Invalid mapping target type {mp.GraphQLType.Name}, must be Object type; module {mname}");
-            continue;
-          }
-          var mappingExt = new ObjectTypeMappingExt(mp);
-          objTypeDef.Mappings.Add(mappingExt);
-          _model.TypesByEntityType[mp.EntityType] = objTypeDef;
+    private void AssignResolversFromCompiledMappingExpressions(ObjectTypeMappingExt mapping) {
+        if (mapping.Expression == null)
+          return;
+        var entityPrm = mapping.Expression.Parameters[0];
+        var memberInit = mapping.Expression.Body as MemberInitExpression;
+        if (memberInit == null) {
+          AddError($"Invalid mapping expression for type {mapping.EntityType}->{mapping.GraphQLType.Name}");
+          return;
         }
-      }
-      // Add self-maps to all objects
-      foreach (var typeDef in _model.Types) {
-        if (typeDef is ObjectTypeDef otd && otd.TypeRole == TypeRole.Data) {
-          var mapping = new ObjectTypeMappingExt(otd.ClrType);
-          otd.Mappings.Add(mapping);
-        }
-      }
-      return !_model.HasErrors;
+        foreach (var bnd in memberInit.Bindings) {
+          var asmtBnd = bnd as MemberAssignment;
+          var fieldDef = mapping.TypeDef.Fields.FirstOrDefault(fld => fld.ClrMember == bnd.Member);
+          if (asmtBnd == null || fieldDef == null)
+            continue; //should never happen, but just in case
+                      // create lambda reading the source property
+          var resFunc = CompileResolverExpression(fieldDef, entityPrm, asmtBnd.Expression);
+          var outType = asmtBnd.Expression.Type;
+          var resInfo = new FieldResolverInfo() {
+            Field = fieldDef, ResolverFunc = resFunc,
+            OutType = outType, TypeMapping = mapping
+          };
+          mapping.FieldResolvers.Add(resInfo);
+        } //foreach bnd
     }
 
     // those members that do not have binding expressions, try mapping props with the same name
-    private void AssignResolversByEntityPropertyNameMatch() {
-      foreach (var typeDef in _typesToAssignResolvers) {
-        foreach(var mapping in typeDef.Mappings) {
+    private void AssignResolversByEntityPropertyNameMatch(ObjectTypeMappingExt mapping) {
           var entityType = mapping.EntityType;
           var allEntFldProps = entityType.GetFieldsProps();
-          foreach (var fldDef in typeDef.Fields) {
+          foreach (var fldDef in mapping.TypeDef.Fields) {
             var res = mapping.FieldResolvers.FirstOrDefault(fr => fr.Field == fldDef);
             if (res != null)
               continue;
@@ -180,82 +147,68 @@ namespace NGraphQL.Model.Construction {
                 ResolverKind = ResolverKind.Func, ResolverFunc = resFunc };
             mapping.FieldResolvers.Add(fldRes); 
           } //foreach fldDef
-        } // foreach mapping
-      } // foreach typeDef
     }
 
-    private void AssignResolversByFieldResolverAttribute() {
-      foreach (var typeDef in _typesToAssignResolvers) {
-        foreach (var field in typeDef.Fields) {
-          if (field.ClrMember == null)
-            continue; //__typename has no clr member
-          var resAttr = GetAllAttributesAndAdjustments(field.ClrMember).Find<ResolverAttribute>();
-          if (resAttr == null)
+    private void AssignResolversByFieldResolverAttribute(ObjectTypeMappingExt mapping) {
+      var typeDef = mapping.TypeDef;
+      foreach (var field in typeDef.Fields) {
+        if (field.ClrMember == null)
+          continue; //__typename has no clr member
+        var resAttr = GetAllAttributesAndAdjustments(field.ClrMember).Find<ResolverAttribute>();
+        if (resAttr == null)
+          continue;
+        var resolverType = resAttr.ResolverClass;
+        if (resolverType != null) {
+          if (!typeDef.Module.ResolverClasses.Contains(resolverType)) {
+            AddError($"Field {typeDef.Name}.{field.Name}: target resolver class {resolverType.Name} is not registered with module. ");
             continue;
-          var resolverType = resAttr.ResolverClass;
-          if (resolverType != null) {
-            if (!typeDef.Module.ResolverClasses.Contains(resolverType)) {
-              AddError($"Field {typeDef.Name}.{field.Name}: target resolver class {resolverType.Name} is not registered with module. ");
-              continue;
-            }
           }
-          // 
-          var methName = resAttr.MethodName ?? field.ClrMember.Name;
-          List<MethodInfo> methods;
-          if (resolverType != null) {
-            methods = resolverType.GetResolverMethods(methName);
-            // with explicit resolver, if method not found - it is error
-            if (methods.Count == 0) {
-              AddError($"Field {typeDef.Name}.{field.Name}: failed to match resolver method; target resolver class {resolverType.Name}.");
-              continue;
-            }
-          } else {
-            // targetResolver is null
-            methods = new List<MethodInfo>();
-            foreach (var resType in typeDef.Module.ResolverClasses) {
-              var mlist = resType.GetResolverMethods(methName);
-              methods.AddRange(mlist);
-            }
-          }
-          switch (methods.Count) {
-            case 0:
-              AddError($"Field {typeDef.Name}.{field.Name}: failed to find resolver method {methName}. ");
-              break;
-
-            case 1:
-              SetupFieldResolverMethod(typeDef, field, methods[0], resAttr);
-              break;
-
-            default:
-              AddError($"Field {typeDef.Name}.{field.Name}: found more than one resolver method ({methName}).");
-              break;
-          }
-        } //foreach field
-      } //foreach typeDef
+        }
+        // 
+        var methName = resAttr.MethodName ?? field.ClrMember.Name;
+        var resolverInfos = FindResolvers(methName, resolverType);
+        switch (resolverInfos.Count) {
+          case 1:
+            break;
+          case 0:
+            AddError($"Field {typeDef.Name}.{field.Name}: failed to find resolver method {methName}. ");
+            continue; //next field
+          default:
+            AddError($"Field {typeDef.Name}.{field.Name}: found more than one resolver method ({methName}).");
+            continue; //next field
+        }
+        // we have single matching resolver
+        var resInfo = resolverInfos[0];
+        VerifyFieldResolverMethod(field, resInfo);
+        SetupFieldResolverMethod(typeDef, field, resInfo, resAttr);
+      } //foreach field
     }//method
 
-    private void AssignResolversToMatchingResolverMethods() {
-      foreach (var typeDef in _typesToAssignResolvers) {
-        // get all resolver methods from the same module
-        foreach (var field in typeDef.Fields) {
-          if (field.ExecutionType != ResolverKind.NotSet)
+    private void AssignResolversToMatchingResolverMethods(ObjectTypeMappingExt mapping) {
+      var typeDef = mapping.TypeDef; 
+      foreach (var field in typeDef.Fields) {
+        var fRes = mapping.FieldResolvers.FirstOrDefault(fr => fr.Field == field);
+        if (fRes != null)
+          continue;
+        if (field.ClrMember == null)
+          continue; //__typename has no clr member
+        var methName = field.ClrMember.Name;
+        var resolverInfos =  _allResolvers.Where(res => res.Method.Name == methName).ToList();
+        switch (resolverInfos.Count) {
+          case 0: 
+            continue; // no match
+          case 1:
+            break;
+          default:
+            AddError($"Field {typeDef.Name}.{field.Name}: found more than one resolver method ({methName}).");
             continue;
-          if (field.ClrMember == null)
-            continue; //__typename has no clr member
-          var methName = field.ClrMember.Name;
-          var methods = _allResolvers.Where(res => res.Method.Name == methName).ToList();
-          switch (methods.Count) {
-            case 0: continue;
-            case 1:
-              SetupFieldResolverMethod(typeDef, field, methods[0], null);
-              continue;
-            default:
-              AddError($"Field {typeDef.Name}.{field.Name}: found more than one resolver method ({methName}).");
-              continue;
-          } //switch
-        } //foreach field
-      } //foreach typeDef
+        } //switch
+        var resInfo = resolverInfos[0];
+        VerifyFieldResolverMethod(field, resInfo);
+        SetupFieldResolverMethod(typeDef, field, resInfo);
+      } //foreach field
     }//method
+
 
   }
 }

@@ -15,7 +15,7 @@ namespace NGraphQL.Model.Construction {
     GraphQLApiModel _model;
     XmlDocumentationLoader _docLoader;
     IList<ModelAdjustment> _modelAdjustments;
-    IList<ResolverMethodInfo> _allResolvers; 
+    IList<ResolverMethodInfo> _allResolvers = new List<ResolverMethodInfo>();
 
     public ModelBuilder(GraphQLServer server) {
       _server = server;
@@ -30,12 +30,13 @@ namespace NGraphQL.Model.Construction {
       RegisterScalars();
       if (!RegisterGraphQLTypes())
         return;
+
+      if (!InitializeTypeMappings())
+        return;
+
       RegisterResolverClassesMethods();
 
       if (!BuildRegisteredDirectiveDefinitions())
-        return;
-
-      if (!AssignMappedEntitiesForObjectTypes())
         return;
 
       BuildTypesInternalsFromClrType();
@@ -71,15 +72,33 @@ namespace NGraphQL.Model.Construction {
       VerifyModel();
     }
 
-    private void ApplyDirectives(GraphQLModelObject obj) {
-      if (!obj.HasDirectives())
-        return;
-      foreach (ModelDirective dir in obj.Directives) {
-        var action = dir.Def.Handler as IModelDirectiveAction;
-        if (action == null)
-          continue;
-        action.Apply(_model, obj, dir.ModelAttribute.ArgValues);
+    private bool InitializeTypeMappings() {
+      foreach (var module in _server.Modules) {
+        var mname = module.GetType().Name;
+        foreach (var mapping in module.Mappings) {
+          var typeDef = _model.LookupTypeDef(mapping.GraphQLType);
+          if (typeDef == null) {
+            AddError($"Mapping target type {mapping.GraphQLType.Name} is not registered; module {mname}");
+            continue;
+          }
+
+          if (!(typeDef is ObjectTypeDef objTypeDef)) {
+            AddError($"Invalid mapping target type {mapping.GraphQLType.Name}, must be Object type; module {mname}");
+            continue;
+          }
+          var mappingExt = new ObjectTypeMappingExt(mapping);
+          objTypeDef.Mappings.Add(mappingExt);
+          _model.TypesByEntityType[mapping.EntityType] = objTypeDef;
+        } // foreach mapping
       }
+      // Add self-maps to all objects
+      foreach (var typeDef in _model.Types) {
+        if (typeDef is ObjectTypeDef otd && otd.TypeRole == TypeRole.Data) {
+          var mappingExt = new ObjectTypeMappingExt(otd.ClrType);
+          otd.Mappings.Add(mappingExt);
+        }
+      }
+      return !_model.HasErrors;
     }
 
     private void BuildTypesInternalsFromClrType() {
@@ -116,62 +135,6 @@ namespace NGraphQL.Model.Construction {
         } //switch
         td.Directives = BuildDirectivesFromAttributes(td.ClrType, loc);
       } //foreach td
-    }
-
-    // used for interface and Object types
-    private void BuildComplexTypeFields(ComplexTypeDef typeDef) {
-      var objTypeDef = typeDef as ObjectTypeDef;
-      var clrType = typeDef.ClrType;
-      var members = clrType.GetFieldsPropsMethods(withMethods: true);
-      foreach (var member in members) {
-        var attrs = GetAllAttributesAndAdjustments(member);
-        var ignoreAttr = attrs.Find<IgnoreAttribute>();
-        if (ignoreAttr != null)
-          continue;
-        var mtype = member.GetMemberReturnType();
-        var typeRef = GetTypeRef(mtype, member, $"Field {clrType.Name}.{member.Name}");
-        if (typeRef == null)
-          continue; //error should be logged already
-        var name = GetGraphQLName(member);
-        var descr = _docLoader.GetDocString(member, clrType);
-        var fld = new FieldDef(typeDef, name, typeRef) { ClrMember = member, Description = descr, Attributes = attrs };
-        fld.Directives = BuildDirectivesFromAttributes(member, DirectiveLocation.FieldDefinition);
-        if (attrs.Find<HiddenAttribute>() != null)
-          fld.Flags |= FieldFlags.Hidden;
-        typeDef.Fields.Add(fld);
-        if (member is MethodInfo method)
-          BuildFieldArguments(fld, method);
-      }
-    }
-
-    private void BuildFieldArguments(FieldDef fieldDef, MethodInfo resMethod) {
-      var prms = resMethod.GetParameters();
-      if (prms == null || prms.Length == 0)
-        return;
-      fieldDef.Args = BuildArgDefs(prms, resMethod);
-    }
-
-    private IList<InputValueDef> BuildArgDefs(IList<ParameterInfo> parameters, MethodBase method) {
-      var argDefs = new List<InputValueDef>();
-      foreach (var prm in parameters) {
-        var attrs = GetAllAttributesAndAdjustments(prm, method);
-        var prmTypeRef = GetTypeRef(prm.ParameterType, prm, $"Method {method.Name}, parameter {prm.Name}", method);
-        if (prmTypeRef == null)
-          continue;
-        if (prmTypeRef.IsList && !prmTypeRef.TypeDef.IsEnumFlagArray())
-          VerifyListParameterType(prm.ParameterType, method, prm.Name);
-        var dftValue = prm.DefaultValue == DBNull.Value ? null : prm.DefaultValue;
-        // special case: if default value is null, it is nullable
-        if (prm.HasDefaultValue && dftValue == null && prmTypeRef.Kind == TypeKind.NonNull)
-          prmTypeRef = prmTypeRef.Inner; // nullable
-        var argDef = new InputValueDef() {
-          Name = GetGraphQLName(prm), TypeRef = prmTypeRef, Attributes = attrs,
-          ParamType = prm.ParameterType, HasDefaultValue = prm.HasDefaultValue, DefaultValue = dftValue
-        };
-        argDef.Directives = BuildDirectivesFromAttributes(prm, DirectiveLocation.ArgumentDefinition);
-        argDefs.Add(argDef);
-      }
-      return argDefs;
     }
 
     private void LinkImplementedInterfaces() {

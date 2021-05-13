@@ -10,6 +10,17 @@ namespace NGraphQL.Model.Construction {
 
   partial class ModelBuilder {
 
+    private void ApplyDirectives(GraphQLModelObject obj) {
+      if (!obj.HasDirectives())
+        return;
+      foreach (ModelDirective dir in obj.Directives) {
+        var action = dir.Def.Handler as IModelDirectiveAction;
+        if (action == null)
+          continue;
+        action.Apply(_model, obj, dir.ModelAttribute.ArgValues);
+      }
+    }
+
     private bool BuildRegisteredDirectiveDefinitions() {
       RegisterAllModuleDirectives();
       // in a separate loop, after all dirs are registered, map directive handlers

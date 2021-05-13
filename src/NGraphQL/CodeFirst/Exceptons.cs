@@ -12,5 +12,4 @@ namespace NGraphQL {
     public AbortRequestException() : base("aborted") { }
   }
 
-
 }

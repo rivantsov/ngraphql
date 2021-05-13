@@ -25,7 +25,7 @@ namespace NGraphQL.Server.Execution {
     public static void AddError(this SelectionItemContext fieldContext, Exception exc, string errorType) {
       var reqCtx = (RequestContext) fieldContext.RequestContext;
       var path = fieldContext.GetFullRequestPath();
-      var err = new GraphQLError(exc.Message, path, fieldContext.SelectionField.SourceLocation, type: errorType);
+      var err = new GraphQLError(exc.Message, path, fieldContext.SelField.SourceLocation, type: errorType);
       var withDet = reqCtx.Server.Settings.Options.IsSet(GraphQLServerOptions.ReturnExceptionDetails);
       if (withDet)
         err.Extensions["Details"] = exc.ToText();
@@ -84,6 +84,10 @@ namespace NGraphQL.Server.Execution {
         fieldContext.GetFullRequestPath(), fieldContext.SourceLocation, type: "Cancel");
       reqCtx.AddError(err);
       throw new AbortRequestException();
+    }
+
+    internal static void ThrowFatal(this SelectionItemContext fieldContext, string message) {
+      throw new FatalServerException(message); 
     }
 
     public static void AbortIfFailed(this RequestContext context) {

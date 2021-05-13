@@ -15,15 +15,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Model\Directives\**" />
+    <EmbeddedResource Remove="Model\Directives\**" />
+    <None Remove="Model\Directives\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Irony" Version="1.1.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\NGraphQL\NGraphQL.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Model\Directives\" />
   </ItemGroup>
 
     <PropertyGroup>

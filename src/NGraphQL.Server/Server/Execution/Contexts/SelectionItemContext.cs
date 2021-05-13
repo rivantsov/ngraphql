@@ -12,22 +12,24 @@ using NGraphQL.Model.Request;
 namespace NGraphQL.Server.Execution {
 
   public partial class SelectionItemContext : IFieldContext {
-    public readonly MappedSelectionItem MappedItem;
-    public MappedSelectionField MappedField => (MappedSelectionField)MappedItem;
-    public FieldFlags Flags => MappedField.FieldDef.Flags;
-
     // IFieldContext members
     public IRequestContext RequestContext => _requestContext;
     public GraphQLApiModel GetModel() => _requestContext.ApiModel;
-    public ISelectionField SelectionField => MappedField.Field;
-    public FieldDef FieldDef => MappedField?.FieldDef;
+    public ISelectionField SelectionField => this.SelField;
+    public FieldDef FieldDef => CurrentFieldDef;
     public CancellationToken CancellationToken => _requestContext.CancellationToken;
     public IOperationFieldContext RootField { get; }
-    public SourceLocation SourceLocation => MappedItem.Item.SourceLocation;
+    public SourceLocation SourceLocation => Item.SourceLocation;
+
+    public readonly SelectionItem Item;
+    public SelectionField SelField => (SelectionField)Item;
+    public ObjectTypeMappingExt ParentMapping; 
 
     internal object[] ArgValues = null;
     internal object ResolverClassInstance;
-    internal OutputObjectScope CurrentScope;
+    internal OutputObjectScope CurrentParentScope => _currentParentScope;
+    internal FieldResolverInfo CurrentResolver => _currentResolver;
+    internal FieldDef CurrentFieldDef => _currentResolver?.Field; 
     internal IList<OutputObjectScope> AllParentScopes = OutputObjectScope.EmptyList;
     internal IList<OutputObjectScope> AllResultScopes = OutputObjectScope.EmptyList;
     internal bool BatchResultWasSet;
@@ -36,29 +38,45 @@ namespace NGraphQL.Server.Execution {
     public string Format;
 
     RequestContext _requestContext;
+    OutputObjectScope _currentParentScope;
+    FieldResolverInfo _currentResolver; 
 
-    public SelectionItemContext(RequestContext requestContext, IOperationFieldContext rootField, MappedSelectionItem item,
+    public SelectionItemContext(RequestContext requestContext, IOperationFieldContext rootField, SelectionItem item,
                          IList<OutputObjectScope> allParentScopes = null) {
       _requestContext = requestContext;
       RootField = rootField;
-      MappedItem = item;
+      Item = item;
       AllParentScopes = allParentScopes ?? OutputObjectScope.EmptyList;
       if (Flags.IsSet(FieldFlags.ReturnsComplexType))
         AllResultScopes = new List<OutputObjectScope>();
     }
 
-    public override string ToString() => MappedField.ToString();
+    public override string ToString() => SelectionField.ToString();
 
+    internal void SetCurrentParentScope(OutputObjectScope scope) {
+      var typeChange = _currentParentScope?.Entity.GetType() != scope.Entity.GetType(); 
+      _currentParentScope = scope;
+      if (typeChange)
+        SetupResolver();
+    }
+
+    private void SetupResolver() {
+      var field = SelField;
+      _currentResolver = field.DefaultResolver;
+      _currentResolver = _currentParentScope.Mapping.FieldResolvers
+        .FirstOrDefault(fr => fr.Field.Name == this.SelectionField.Name);
+
+    }
 
     public object ConvertToOuputValue(object result) {
       // validate result value
       if (Flags.IsSet(FieldFlags.ReturnsComplexType)) {
-        var rank = this.MappedField.FieldDef.TypeRef.Rank;
-        var path = this.CurrentScope.Path.Append(this.MappedField.Field.Key);
+        var rank = this.SelectionField.FieldDef.TypeRef.Rank;
+        var path = this.CurrentParentScope.Path.Append(this.SelectionField.Field.Key);
         return CreateObjectFieldResultScopes(result, rank, path);
       }
       // cover conversions like enums to strings
-      var typeDef = MappedField.FieldDef.TypeRef.TypeDef;
+      var typeDef = _fieldDef. Field.FieldDef.TypeRef.TypeDef;
       var outValue = typeDef.ToOutput(this, result);
       return outValue;
     }
@@ -75,18 +93,18 @@ namespace NGraphQL.Server.Execution {
         return CreateObjectFieldResultScope(rawResult, path);
     }
 
-    public object CreateObjectFieldResultScope(object rawResult, RequestPath path) {
-      var typeDef = MappedField.FieldDef.TypeRef.TypeDef;
+    public object CreateObjectFieldResultScope(object entity, RequestPath path) {
+      var typeDef = _fieldDef.TypeRef.TypeDef;
       // special case - Union
       if (typeDef.Kind == TypeKind.Union) {
-        if (rawResult is UnionBase ub)
-          rawResult = ub.Value;
-        if (rawResult == null)
+        if (entity is UnionBase ub)
+          entity = ub.Value;
+        if (entity == null)
           return null;
       }
-      //this.Field.FieldDef.Flags.IsSet(FieldFlags.ResolverReturnsGraphQLObject);
 
-      var scope = new OutputObjectScope(this.MappedField, path, rawResult);
+      var mapping = typeDef.FindMapping(entity.GetType());
+      var scope = new OutputObjectScope(this.SelectionField, path, entity, mapping);
       AllResultScopes.Add(scope);
       var newCount = Interlocked.Increment(ref _requestContext.Metrics.OutputObjectCount);
       // check total count against quota
@@ -107,8 +125,8 @@ namespace NGraphQL.Server.Execution {
     }
 
     public IList<object> GetFullRequestPath() {
-      var fullPath = CurrentScope.Path.GetFullPath();
-      fullPath.Add(this.MappedField.Field.Key);
+      var fullPath = CurrentParentScope.Path.GetFullPath();
+      fullPath.Add(this.SelectionField.Field.Key);
       return fullPath; 
     }
 
@@ -134,7 +152,7 @@ namespace NGraphQL.Server.Execution {
         if (!results.TryGetValue((TEntity)scope.Entity, out var result))
           result = valueForMissingKeys;
         var outValue = this.ConvertToOuputValue(result);
-        scope.SetValue(this.MappedField.Index, outValue);
+        scope.SetValue(this.SelectionField.Field.Key, outValue);
       }
       this.BatchResultWasSet = true;
     }

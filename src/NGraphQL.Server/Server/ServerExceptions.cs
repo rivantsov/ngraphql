@@ -38,6 +38,10 @@ namespace NGraphQL.Server {
     }
   }
 
+  public class FatalServerException : GraphQLException {
+    public FatalServerException(string message, Exception ex = null) : base(message, null) { }
+  }
+
 
 
 }

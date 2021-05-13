@@ -39,14 +39,13 @@ namespace NGraphQL.Server.Execution {
 
     public async Task ExecuteOperationFieldAsync() {
       try {
-        var opFieldContext = new SelectionItemContext(_requestContext, this, _operationField);
-        opFieldContext.CurrentScope = _parentScope;
+        var opFieldContext = new SelectionItemContext(_requestContext, this, _operationField.Field);
+        opFieldContext.SetCurrentParentScope(_parentScope);
         var result = await InvokeResolverAsync(opFieldContext);
         var opOutValue = opFieldContext.ConvertToOuputValue(result);
-        // Safe means with lock, protect concurrent access
-        _parentScope.SetValue(_operationField.Index, opOutValue);
+        _parentScope.SetValue(_operationField.Field.Key, opOutValue);
         // for fields returning objects, save for further processing of results
-        if (opFieldContext.Flags.IsSet(FieldFlags.ReturnsComplexType))
+        if (opFieldContext.SelField.SelectionSubset != null)
           _executedObjectFieldContexts.Add(opFieldContext);
 
         // process object field results until no more
@@ -72,22 +71,18 @@ namespace NGraphQL.Server.Execution {
       // all scopes have sc.Entity field != null
       var scopes = fieldContext.AllResultScopes;
       var outTypeDef = fieldContext.FieldDef.TypeRef.TypeDef;
-      var selSubSet = fieldContext.MappedField.Field.SelectionSubset;
+      var selSubSet = fieldContext.SelectionField.Field.SelectionSubset;
       switch(outTypeDef.Kind) {
         case TypeKind.Object:
-          await ExecuteObjectsSelectionSubsetAsync(fieldContext.MappedField, scopes, selSubSet);
+          await ExecuteObjectsSelectionSubsetAsync(fieldContext.SelectionField, scopes, selSubSet);
           return;
 
         case TypeKind.Interface:
         case TypeKind.Union:
-          // Map every entity object in scopes to ObjectTypeDef, for every scope
-          foreach(var scope in scopes) {
-            scope.TypeDef = GetMappedObjectTypeDef(scope.Entity);
-          }
           // group by type, and process each sublist
           var scopesByType = scopes.GroupBy(s => s.Entity.GetType()).ToList();
           foreach(var grp in scopesByType)
-            await ExecuteObjectsSelectionSubsetAsync(fieldContext.MappedField, grp.ToList(), grp.Key, selSubSet);
+            await ExecuteObjectsSelectionSubsetAsync(fieldContext.SelectionField, grp.ToList(), selSubSet);
           return;
 
         default:
@@ -105,36 +100,32 @@ namespace NGraphQL.Server.Execution {
 
     private async Task ExecuteObjectsSelectionSubsetAsync(MappedSelectionField parentField, 
                  IList<OutputObjectScope> parentScopes, SelectionSubset subSet) {
-      var resolverOutType = parentField.Resolver.OutType;
-      var outTypeDef = (ObjectTypeDef) parentField.FieldDef.TypeRef.TypeDef;
 
-      var outSetMapping = subSet.GetMapping(resolverOutType, outTypeDef);
-
-      foreach(var mappedItem in outSetMapping.MappedItems) {
-        var fieldContext = new SelectionItemContext(_requestContext, this, mappedItem, parentScopes);
+      foreach(var selItem in subSet.Items) {
         
         // TODO: Invoke event to signal execution of directives
-
+        
         // if it is a fragment spread, make recursive call to process fragment fields
-        if (mappedItem is MappedFragmentSpread mappedFragm) {
-          await ExecuteObjectsSelectionSubsetAsync(parentField, parentScopes, mappedFragm.Spread.Fragment.SelectionSubset);
+        if (selItem is FragmentSpread spread) {
+          await ExecuteObjectsSelectionSubsetAsync(parentField, parentScopes, spread.Fragment.SelectionSubset);
           continue; 
         }
 
         // It is a plain field
-        var mappedField = (MappedSelectionField) mappedItem;
+        var selField = (SelectionField) selItem;
+        var fieldContext = new SelectionItemContext(_requestContext, this, selItem, parentScopes);
         var fldDef = fieldContext.FieldDef;
 
         var returnsComplexType = fldDef.Flags.IsSet(FieldFlags.ReturnsComplexType);
         // Process each scope for the field
         foreach (var scope in parentScopes) {
-          if (fieldContext.BatchResultWasSet && scope.HasValue(mappedField.Index))
+          if (fieldContext.BatchResultWasSet && scope.ContainsKey(mappedField.Field.Key))
             continue; 
-          fieldContext.CurrentScope = scope;
+          fieldContext.CurrentParentScope = scope;
           object result = null;
-          switch (mappedField.Resolver.ResolverKind) {
+          switch (fieldContext.CurrentResolver.ResolverKind) {
             case ResolverKind.CompiledExpression:
-              result = InvokeFieldReader(fieldContext, fieldContext.CurrentScope.Entity);
+              result = InvokeFieldReader(fieldContext, fieldContext.CurrentParentScope.Entity);
               break;
             case ResolverKind.Method:
               result = await InvokeResolverAsync(fieldContext);
@@ -143,7 +134,7 @@ namespace NGraphQL.Server.Execution {
           // if batched result was not set, set value
           if (!fieldContext.BatchResultWasSet) {
             var outValue = fieldContext.ConvertToOuputValue(result);
-            scope.SetValue(mappedField.Index, outValue);
+            scope.SetValue(mappedField.Field.Key, outValue);
           }
         } //foreach scope
         // if there are any non-null object-type results, add this field context to this special list

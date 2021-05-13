@@ -36,36 +36,70 @@ namespace NGraphQL.Model.Construction {
       return func;
     }
 
-    private bool SetupFieldResolverMethod(ObjectTypeDef typeDef, FieldResolverInfo fieldRes, ResolverMethodInfo resolverInfo, Attribute sourceAttr) {
-      var retType = resolverInfo.ReturnType;
-      // validate return type
-      if (!CheckReturnTypeCompatible(retType, fieldRes, resolverInfo.Method))
+    private bool VerifyFieldResolverMethod(FieldDef field, ResolverMethodInfo resolverMethod) {
+      if (!VerifyResolverMethodReturnTypeCompatible(field, resolverMethod.Method))
         return false;
-        
-      fieldRes.ResolverMethod = resolverInfo;
+      if (!ValidateResolverMethodArguments(field, resolverMethod))
+        return false;
+      /*
       if (resolverInfo.ReturnsTask)
         fieldRes.Flags |= FieldFlags.ResolverReturnsTask;
       if (typeDef is ObjectTypeDef otd && otd.TypeRole == TypeRole.Data)
         field.Flags |= FieldFlags.HasParentArg;
       field.ExecutionType = ResolverKind.Method;
-
-      if (!ValidateResolverMethodArguments(typeDef, fieldRes))
-        return false;
+      */
       return !_model.HasErrors;
     }
 
-    private bool ValidateResolverMethodArguments(ComplexTypeDef typeDef, FieldResolverInfo fieldRes) {
-      var resMethod = fieldRes.ResolverMethod.Method; 
+    private bool VerifyResolverMethodReturnTypeCompatible(FieldDef field, MethodInfo method) {
+      Type returnType = method.ReturnType;
+      UnwrapClrType(returnType, method, out var retBaseType, out var kinds, null);
+      var retTypeRank = kinds.GetListRank();
+      var fldTypeRef = field.TypeRef;
+      var fldTypeRank = fldTypeRef.Rank;
+      if (field.TypeRef.TypeDef.IsEnumFlagArray())
+        fldTypeRank--;
+      if (retTypeRank != fldTypeRank) {
+        AddError($"Resolver method {method.GetFullRef()}: return type {returnType.Name} (rank {retTypeRank}) is not compatible with type " +
+                 $" {field.TypeRef.Name} of  field '{field.Name}'; list rank mismatch.");
+        return false;
+      }
+      var withBaseType = fldTypeRef.TypeDef.ClrType;
+      switch (fldTypeRef.TypeDef) {
+        case ScalarTypeDef _:
+        case EnumTypeDef _:
+          if (retBaseType != withBaseType) {
+            AddError($"Resolver method {method.GetFullRef()}: return type is incompatible with type {fldTypeRef.Name} of  field '{field.Name}'.");
+            return false;
+          }
+          return true;
+
+        case ObjectTypeDef objTypeDef:
+          var mappedTypeDef = _model.GetMappedGraphQLType(retBaseType);
+          if (mappedTypeDef != objTypeDef) {
+            AddError($"Resolver method {method.GetFullRef()}: return type is incompatible with field type {fldTypeRef.Name}");
+            return false;
+          }
+          return true;
+
+        case UnionTypeDef _:
+        case InterfaceTypeDef _:
+          //TODO: implement later
+          return true;
+      }
+      return true;
+    }
+
+    private bool ValidateResolverMethodArguments(FieldDef fieldDef, ResolverMethodInfo resolverMethod) {
+      var resMethod = resolverMethod.Method; 
       // Check first parameter - must be IFieldContext
       var prms = resMethod.GetParameters();
       if (prms.Length == 0 || prms[0].ParameterType != typeof(IFieldContext)) {
         AddError($"Resolver method {resMethod.GetFullRef()}: the first parameter must be of type '{nameof(IFieldContext)}'.");
         return false;
       }
-
       // compare list of field parameters with list of resolver method parameters; 
       //  resolver method has extra FieldContext and Parent parameters
-      var fieldDef = fieldRes.Field; 
       var argCountDiff = 1;
       if (fieldDef.Flags.IsSet(FieldFlags.HasParentArg))
         argCountDiff = 2;
@@ -92,64 +126,29 @@ namespace NGraphQL.Model.Construction {
         AddError($"Method {method.GetFullRef()}: Invalid list parameter type - must be array or IList<T>; parameter {paramName}. ");
     }
 
-    private bool CheckReturnTypeCompatible(Type returnType, FieldDef field, MethodInfo method) {
-      UnwrapClrType(returnType, method, out var retBaseType, out var kinds, null);
-      var retTypeRank = kinds.GetListRank();
-      var fldTypeRef = field.TypeRef; 
-      var fldTypeRank = fldTypeRef.Rank;
-      if (field.TypeRef.TypeDef.IsEnumFlagArray())
-        fldTypeRank--;
-      if (retTypeRank != fldTypeRank) {
-        AddError($"Resolver method {method.GetFullRef()}: return type {returnType.Name} (rank {retTypeRank}) is not compatible with type " + 
-                 $" {field.TypeRef.Name} of  field '{field.Name}'; list rank mismatch.");
-        return false; 
-      }
-      var withBaseType = fldTypeRef.TypeDef.ClrType; 
-      switch (fldTypeRef.TypeDef) {
-        case ScalarTypeDef _:
-        case EnumTypeDef _:
-          if(retBaseType != withBaseType) {
-            AddError($"Resolver method {method.GetFullRef()}: return type is incompatible with type {fldTypeRef.Name} of  field '{field.Name}'.");
-            return false; 
-          }
-          return true;
-
-        case ObjectTypeDef objTypeDef:
-          var mappedTypeDef = _model.GetMappedGraphQLType(retBaseType);
-          if (mappedTypeDef != objTypeDef) {
-            AddError($"Resolver method {method.GetFullRef()}: return type is incompatible with field type {fldTypeRef.Name}");
-            return false;
-          }
-          return true;
-
-        case UnionTypeDef _:
-        case InterfaceTypeDef _:
-          //TODO: implement later
-          return true; 
-      }
-      return true;  
+    private void VerifyAllResolversAssigned(ObjectTypeMappingExt mapping) {
+      foreach (var fres in mapping.FieldResolvers) {
+        // so far we have only exec type to set, or post error
+        if (fres.ResolverFunc != null)
+          fres.ResolverKind = ResolverKind.CompiledExpression;
+        else if (fres.ResolverMethod != null)
+          fres.ResolverKind = ResolverKind.Method;
+        else {
+          var fldName = fres.Field.Name;
+          var typeDef = mapping.TypeDef;          
+          var fldRef = $"{typeDef.ClrType.Name}.{fldName}, mapping to {mapping.EntityType}, " +
+            $" (module {typeDef.Module.Name})";
+          AddError($"Field {fldName} has no associated resolver or mapped entity field. Field: {fldRef}");
+        }
+      } // foreach fres
     }
 
-    private void VerifyAllResolversAssigned() {
-      foreach (var typeDef in _typesToAssignResolvers) {
-        foreach (var mapping in typeDef.Mappings) {
-          foreach (var fres in mapping.FieldResolvers) {
-            // so far we have only exec type to set, or post error
-            if (fres.ResolverFunc != null)
-              fres.ResolverKind = ResolverKind.CompiledExpression;
-            else if (fres.ResolverMethod != null)
-              fres.ResolverKind = ResolverKind.Method;
-            else {
-              var fldName = fres.Field.Name;
-              var fldRef = $"{typeDef.ClrType.Name}.{fldName}, mapping to {mapping.EntityType}, " +
-                $" (module {typeDef.Module.Name})";
-              AddError($"Field {fldName} has no associated resolver or mapped entity field. Field: {fldRef}");
-            }
-          } // foreach fres
-        } // foreach mapping
-      } // foreach typeDef
+    private IList<ResolverMethodInfo> FindResolvers(string name, Type resType = null) {
+      var list = _allResolvers
+        .Where(ri => ri.Method.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
+        .Where(ri => resType == null || ri.ResolverClass.Type == resType)
+        .ToList();
+      return list; 
     }
-
-
   }
 }

@@ -142,6 +142,7 @@ namespace NGraphQL.Model {
     public readonly ComplexTypeDef OwnerType; 
     public TypeRef TypeRef;
     public IList<Attribute> Attributes;
+    public int Index; // index in Object's Fields list
 
     public FieldFlags Flags;
     public IList<InputValueDef> Args = new List<InputValueDef>();

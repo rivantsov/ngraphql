@@ -128,10 +128,10 @@ namespace NGraphQL.Server.Parsing {
               continue; 
             }
             var mappedArgs = MapArguments(selFld.Args, fldDef.Args, selFld);
-            var mappedFld = new MappedSelectionField(selFld, fldDef, mappedArgs);
+            var mappedFld = new MappedSelectionField(selFld, fldDef, mappedItems.Count, mappedArgs);
+            mappedItems.Add(mappedFld);
             AddRuntimeModelDirectives(mappedFld);
             AddRuntimeRequestDirectives(mappedFld); 
-            mappedItems.Add(mappedFld);
             ValidateMappedFieldAndProcessSubset(mappedFld);
             break;
 
@@ -146,7 +146,7 @@ namespace NGraphQL.Server.Parsing {
 
       } //foreach item
 
-      selSubset.Mappings.Add(new SelectionSubSetMapping() { ObjectTypeDef = objectTypeDef, MappedItems = mappedItems });
+      selSubset.MappedSubSets.Add(new MappedSelectionSubSet() { ObjectTypeDef = objectTypeDef, MappedItems = mappedItems });
     }
 
     private void AddRuntimeRequestDirectives(MappedSelectionItem mappedItem) {
@@ -189,7 +189,7 @@ namespace NGraphQL.Server.Parsing {
         MapObjectSelectionSubset(fs.Fragment.SelectionSubset, objectTypeDef, fs.Directives, isForUnion);
       }
       // there must be mapped field set now
-      var mappedFragmItemSet = fs.Fragment.SelectionSubset.GetMapping(objectTypeDef);
+      var mappedFragmItemSet = fs.Fragment.SelectionSubset.GetMappedSubSet(objectTypeDef.ClrType);
       if (mappedFragmItemSet == null) {
         AddError($"FATAL: Could not retrieve mapped item list for fragment spread {fs.Name}", fs, ErrorCodes.ServerError);
         return null;

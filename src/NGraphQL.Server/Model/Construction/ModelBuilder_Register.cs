@@ -27,12 +27,11 @@ namespace NGraphQL.Model.Construction {
     }
 
     private void RegisterResolverClassesMethods() {
-      var flags = BindingFlags.Public | BindingFlags.Instance;
       foreach (var module in _server.Modules) {
         foreach (var resClass in module.ResolverClasses) {
           var resClassInfo = new ResolverClassInfo() { Module = module, Type = resClass };
           _model.ResolverClasses.Add(resClassInfo);
-          var methods = resClass.GetMethods(flags);
+          var methods = resClass.GetPublicMethods();
           foreach(var m in methods) {
             var resAttr = m.GetAttribute<ResolvesFieldAttribute>();
             var resInfo = new ResolverMethodInfo() {
@@ -40,7 +39,7 @@ namespace NGraphQL.Model.Construction {
               ReturnType = m.GetReturnDataType(), ResolvesAttribute = resAttr
             };
             if (resInfo.ReturnsTask)
-              resInfo.TaskResultReader = ServerReflectionHelper.CompileTaskResultReader(m.ReturnType);
+              resInfo.TaskResultReader = ServerReflectionHelper.CompileTaskResultReader(m.ReturnType);            
             _allResolvers.Add(resInfo);
           }
         }

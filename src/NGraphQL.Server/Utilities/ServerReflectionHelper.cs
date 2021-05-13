@@ -26,6 +26,17 @@ namespace NGraphQL.Utilities {
       return members;
     }
 
+    public static List<MethodInfo> GetPublicMethods(this Type type) {
+      var methods = type.GetMembers(BindingFlags.Public | BindingFlags.Instance)
+        .Where(m => m.MemberType == MemberTypes.Method)
+        .Where(m => m.DeclaringType != typeof(object))
+        .Where(m => !(m is MethodInfo mi && mi.IsSpecialName)) //filter out getters/setters
+        .OfType<MethodInfo>()
+        .ToList();
+      return methods;
+    }
+
+
     public static bool MethodReturnsTask(this MethodInfo method) {
       var retType = method.ReturnType;
       var returnsTask = retType.IsGenericType && retType.GetGenericTypeDefinition() == typeof(Task<>);
@@ -57,15 +68,6 @@ namespace NGraphQL.Utilities {
     public static IList<MemberInfo> GetFieldsProps(this Type type) {
       Util.Check(false, "Implement get-inherited-members!");
       return type.GetFieldsPropsMethods(withMethods: false); 
-    }
-
-    public static List<MethodInfo> GetResolverMethods(this Type type, string name) {
-      var methods = type.GetMember(name, BindingFlags.Public | BindingFlags.Instance)
-        .Where(m => m.MemberType == MemberTypes.Method)
-        .Where(m => m.DeclaringType != typeof(object))
-        .OfType<MethodInfo>()
-        .ToList();
-      return methods;
     }
 
     public static Type GetMemberReturnType(this MemberInfo member) {

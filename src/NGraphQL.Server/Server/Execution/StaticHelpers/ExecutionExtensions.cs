@@ -27,7 +27,7 @@ namespace NGraphQL.Server.Execution {
       return dir.StaticArgValues ?? context.EvaluateArgs(dir.MappedArgs);
     }
 
-    public static object[] TryEvaluateStaticArgValues(this List<MappedArg> mappedArgs) {
+    public static object[] TryEvaluateStaticArgValues(this IList<MappedArg> mappedArgs) {
       if (mappedArgs == null || mappedArgs.Count == 0)
         return _emptyArray;
       if (mappedArgs.Any(a => !a.Evaluator.IsConst()))

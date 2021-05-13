@@ -6,6 +6,7 @@ using NGraphQL.Model;
 namespace NGraphQL.Model {
 
   public class ObjectTypeMappingExt: ObjectTypeMapping {
+    public ObjectTypeDef TypeDef; 
     // accessed by field index
     public List<FieldResolverInfo> FieldResolvers = new List<FieldResolverInfo>();
 
