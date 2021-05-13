@@ -18,7 +18,7 @@ namespace NGraphQL.Server.Execution {
   public partial class OperationFieldExecuter : IOperationFieldContext {
     RequestContext _requestContext;
     OutputObjectScope _parentScope; 
-    MappedSelectionField _operationField; 
+    SelectionField _operationField; 
     List<object> _resolverInstances = new List<object>();
     // this is a flag indicating failure of this operation field; we have more global flag in RequestContext,
     //  but it is for ALL operation fields executing concurrently. We track individual oper field in this _failed
@@ -31,7 +31,7 @@ namespace NGraphQL.Server.Execution {
     // resolvers are executed. This is all to make it possible to do batched calls (aka Data Loader)
     List<FieldContext> _executedObjectFieldContexts = new List<FieldContext>();
 
-    public OperationFieldExecuter(RequestContext requestContext, MappedSelectionField opField, OutputObjectScope parentScope) {
+    public OperationFieldExecuter(RequestContext requestContext, SelectionField opField, OutputObjectScope parentScope) {
       _requestContext = requestContext;
       _parentScope = parentScope;
       _operationField = opField;
@@ -39,11 +39,11 @@ namespace NGraphQL.Server.Execution {
 
     public async Task ExecuteOperationFieldAsync() {
       try {
-        var opFieldContext = new FieldContext(_requestContext, this, _operationField.Field);
+        var opFieldContext = new FieldContext(_requestContext, this, _operationField);
         opFieldContext.SetCurrentParentScope(_parentScope);
         var result = await InvokeResolverAsync(opFieldContext);
         var opOutValue = opFieldContext.ConvertToOuputValue(result);
-        _parentScope.SetValue(_operationField.Field.Key, opOutValue);
+        _parentScope.SetValue(_operationField.Key, opOutValue);
         // for fields returning objects, save for further processing of results
         if (opFieldContext.SelectionField.SelectionSubset != null)
           _executedObjectFieldContexts.Add(opFieldContext);
@@ -163,7 +163,7 @@ namespace NGraphQL.Server.Execution {
     }
 
     // IOperationFieldContext members
-    public string OperationFieldName => _operationField.FieldDef.Name;
+    public string OperationFieldName => _operationField.Name;
 
     public bool Failed => _failed;
 

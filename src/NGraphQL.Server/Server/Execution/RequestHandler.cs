@@ -52,15 +52,20 @@ namespace NGraphQL.Server.Execution {
     }
 
     private async Task ExecuteOperationAsync(GraphQLOperation op, OutputObjectScope topScope) {
-      var mappedSubSet = op.SelectionSubset.MappedSubSets[0]; // there's a single mapping on top objects
-      var topItems = mappedSubSet.MappedItems;
+      var topItems = op.SelectionSubset.Items;
       var parallel = _parallelQuery && op.OperationType == OperationType.Query && topItems.Count > 1; 
       
       // Note: if we go parallel here, note that the topScope is safe for concurrent thread access; 
       //   it is only used to save op result value (SetValue method)
       var executers = new List<OperationFieldExecuter>();
-      foreach(var mappedItem in topItems) { 
-        var opExecuter = new OperationFieldExecuter(_requestContext, mappedField, topScope);
+      foreach(var selItem in topItems) {
+        var selField = selItem as SelectionField;
+        if (selField == null) {
+          _requestContext.AddInputError($"Top selection items may not be fragments", selItem);
+          return; 
+        }
+
+        var opExecuter = new OperationFieldExecuter(_requestContext, selField, topScope);
         executers.Add(opExecuter); 
       }
 
