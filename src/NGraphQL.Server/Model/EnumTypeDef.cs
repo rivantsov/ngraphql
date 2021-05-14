@@ -26,7 +26,7 @@ namespace NGraphQL.Model {
     }
 
     public override object ToOutput(FieldContext context, object value) {
-      return ToOutputRec(context, context.FieldDef.TypeRef, value); 
+      return ToOutputRec(context, context.CurrentFieldDef.TypeRef, value); 
     }
 
     public override string ToSchemaDocString(object value) {

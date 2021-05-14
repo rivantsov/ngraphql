@@ -180,7 +180,8 @@ namespace NGraphQL.Model.Construction {
         // we have single matching resolver
         var resInfo = resolverInfos[0];
         VerifyFieldResolverMethod(field, resInfo);
-        SetupFieldResolverMethod(typeDef, field, resInfo, resAttr);
+        var fldRes = mapping.GetResolver(field);
+        fldRes.ResolverMethod = resInfo; 
       } //foreach field
     }//method
 
@@ -205,7 +206,8 @@ namespace NGraphQL.Model.Construction {
         } //switch
         var resInfo = resolverInfos[0];
         VerifyFieldResolverMethod(field, resInfo);
-        SetupFieldResolverMethod(typeDef, field, resInfo);
+        var fldRes = mapping.GetResolver(field);
+        fldRes.ResolverMethod = resInfo;
       } //foreach field
     }//method
 

@@ -136,11 +136,13 @@ namespace NGraphQL.Server.Parsing {
             break;
 
           case FragmentSpread fs:
+            /*
             var mappedSpread = MapFragmentSpread(fs, objectTypeDef, isForUnion);
             if (mappedSpread != null) {// null is indicator of error
               AddRuntimeRequestDirectives(mappedSpread);
               mappedItems.Add(mappedSpread);
             }
+            */
             break;
         }//switch
 
@@ -171,6 +173,7 @@ namespace NGraphQL.Server.Parsing {
           mappedField.AddDirective(new RuntimeDirective(tdir));
     }
 
+    /*
     private MappedFragmentSpread MapFragmentSpread(FragmentSpread fs, ObjectTypeDef objectTypeDef, bool isForUnion) {
       // if it is not inline fragment, it might need to map to FragmentDef; inline fragments are auto-mapped at construction
       if (fs.Fragment == null)
@@ -188,6 +191,7 @@ namespace NGraphQL.Server.Parsing {
           return null; 
         MapObjectSelectionSubset(fs.Fragment.SelectionSubset, objectTypeDef, fs.Directives, isForUnion);
       }
+
       // there must be mapped field set now
       var mappedFragmItemSet = fs.Fragment.SelectionSubset.GetMappedSubSet(objectTypeDef.ClrType);
       if (mappedFragmItemSet == null) {
@@ -197,6 +201,7 @@ namespace NGraphQL.Server.Parsing {
       var mappedSpread = new MappedFragmentSpread(fs, mappedFragmItemSet.MappedItems);
       return mappedSpread;
     }
+    */
 
     private void ValidateMappedFieldAndProcessSubset(MappedSelectionField mappedField) {
       var typeDef = mappedField.FieldDef.TypeRef.TypeDef;

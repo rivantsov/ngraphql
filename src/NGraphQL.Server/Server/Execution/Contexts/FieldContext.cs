@@ -26,7 +26,6 @@ namespace NGraphQL.Server.Execution {
     internal FieldDef CurrentFieldDef => _currentResolver?.Field;
 
     internal SelectionField SelectionField;
-    internal ObjectTypeMappingExt ParentMapping; 
 
     internal object[] ArgValues = null;
     internal object ResolverClassInstance;

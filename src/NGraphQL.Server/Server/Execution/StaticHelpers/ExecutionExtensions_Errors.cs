@@ -64,7 +64,7 @@ namespace NGraphQL.Server.Execution {
       var reqCtx = (RequestContext) fieldContext.RequestContext;
       var quota = reqCtx.Quota;
       var err = new GraphQLError($"Query depth exceeded maximum ({quota.MaxDepth}) allowed by quota.",
-        fieldContext.GetFullRequestPath(), fieldContext.SourceLocation, type: "Quota");
+        fieldContext.GetFullRequestPath(), fieldContext.SelectionField.SourceLocation, type: "Quota");
       reqCtx.AddError(err);
       throw new AbortRequestException();
     }
@@ -73,7 +73,7 @@ namespace NGraphQL.Server.Execution {
       var reqCtx = (RequestContext)fieldContext.RequestContext;
       var quota = reqCtx.Quota;
       var err = new GraphQLError($"Output object count exceeded maximum ({quota.MaxOutputObjects}) allowed by quota.",
-        fieldContext.GetFullRequestPath(), fieldContext.SourceLocation, type: "Quota");
+        fieldContext.GetFullRequestPath(), fieldContext.SelectionField.SourceLocation, type: "Quota");
       reqCtx.AddError(err);
       throw new AbortRequestException();
     }
@@ -81,7 +81,7 @@ namespace NGraphQL.Server.Execution {
     internal static void ThrowRequestCancelled(this FieldContext fieldContext) {
       var reqCtx = (RequestContext)fieldContext.RequestContext;
       var err = new GraphQLError($"Request cancelled",
-        fieldContext.GetFullRequestPath(), fieldContext.SourceLocation, type: "Cancel");
+        fieldContext.GetFullRequestPath(), fieldContext.SelectionField.SourceLocation, type: "Cancel");
       reqCtx.AddError(err);
       throw new AbortRequestException();
     }

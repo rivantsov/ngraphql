@@ -42,6 +42,7 @@ namespace NGraphQL.Server.Execution {
       return null; 
     }
 
+    /*
     public static MappedSelectionSubSet GetMappedSubSet(this SelectionSubset subSet, Type fromType, TypeDefBase toTypeDef) {
       switch (toTypeDef) {
         case ObjectTypeDef otd:
@@ -68,7 +69,7 @@ namespace NGraphQL.Server.Execution {
     public static MappedSelectionSubSet GetMappedSubSet(this SelectionSubset subSet, Type fromType) {
       return subSet.MappedSubSets.FirstOrDefault(m => m.SourceType == fromType);
     }
-
+    */
 
   }
 }
