@@ -137,7 +137,7 @@ namespace NGraphQL.Model {
       } //switch
     }
 
-    public static FieldResolverInfo GetResolver(this ObjectTypeMappingExt mapping, FieldDef fieldDef) {
+    public static FieldResolverInfo GetResolver(this ObjectTypeMapping mapping, FieldDef fieldDef) {
       var res = mapping.FieldResolvers.FirstOrDefault(r => r.Field == fieldDef);
       return res; 
     }

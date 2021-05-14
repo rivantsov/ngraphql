@@ -20,7 +20,7 @@ namespace NGraphQL.Server.Execution {
     public readonly SelectionField SourceField;
     public RequestPath Path;
     public object Entity;
-    public ObjectTypeMappingExt Mapping;
+    public ObjectTypeMapping Mapping;
 
     IList<KeyValuePair<string, object>> _keysValues = new List<KeyValuePair<string, object>>();
     HashSet<string> _keys = new HashSet<string>(); 
@@ -30,7 +30,7 @@ namespace NGraphQL.Server.Execution {
       Path = new RequestPath();
     }
 
-    public OutputObjectScope(SelectionField sourceField, RequestPath path, object entity, ObjectTypeMappingExt mapping) {
+    public OutputObjectScope(SelectionField sourceField, RequestPath path, object entity, ObjectTypeMapping mapping) {
       SourceField = sourceField;
       Path = path;
       Entity = entity;

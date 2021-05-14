@@ -116,12 +116,5 @@ namespace NGraphQL.Model {
       }
     }
 
-    public static ObjectTypeMappingExt AddSelfMap(this ObjectTypeDef objTypeDef) {
-      var typeMapping = new ObjectTypeMappingExt(objTypeDef.ClrType);
-      objTypeDef.Mappings.Add(typeMapping);
-      return typeMapping;
-    }
-
-
   }
 }

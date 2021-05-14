@@ -10,6 +10,7 @@ using NGraphQL.Model;
 using NGraphQL.Introspection;
 using NGraphQL.Server;
 using NGraphQL.Server.Execution;
+using System.Linq.Expressions;
 
 namespace NGraphQL.Model {
 
@@ -91,7 +92,7 @@ namespace NGraphQL.Model {
 
   public class ObjectTypeDef : ComplexTypeDef {
     public List<InterfaceTypeDef> Implements = new List<InterfaceTypeDef>();
-    public List<ObjectTypeMappingExt> Mappings = new List<ObjectTypeMappingExt>();
+    public List<ObjectTypeMapping> Mappings = new List<ObjectTypeMapping>();
 
     public ObjectTypeDef(string name, Type clrType, IList<Attribute> attrs, GraphQLModule module, 
           TypeRole typeRole = TypeRole.Data) 
@@ -248,6 +249,32 @@ namespace NGraphQL.Model {
     }
 
     public override int GetHashCode() => Name.GetHashCode();
+  }
+
+  public class ObjectTypeMapping {
+    public readonly ObjectTypeDef TypeDef;
+    public Type EntityType;
+    public LambdaExpression Expression;
+    // accessed by field index
+    public readonly List<FieldResolverInfo> FieldResolvers = new List<FieldResolverInfo>();
+
+    public ObjectTypeMapping(ObjectTypeDef typeDef, Type entityType) {
+      TypeDef = typeDef;
+      this.EntityType = entityType;
+    }
+
+    public override string ToString() => $"{EntityType}->{TypeDef.Name}";
+  }
+
+  public class FieldResolverInfo {
+    public ObjectTypeMapping TypeMapping;
+    public FieldDef Field;
+    public ResolverKind ResolverKind;
+    public Func<object, object> ResolverFunc;
+    public ResolverMethodInfo ResolverMethod;
+    public Type OutType;
+
+    public override string ToString() => $"->{Field.Name}";
   }
 
 }

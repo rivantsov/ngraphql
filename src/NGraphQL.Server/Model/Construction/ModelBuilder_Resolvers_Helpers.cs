@@ -126,7 +126,7 @@ namespace NGraphQL.Model.Construction {
         AddError($"Method {method.GetFullRef()}: Invalid list parameter type - must be array or IList<T>; parameter {paramName}. ");
     }
 
-    private void VerifyAllResolversAssigned(ObjectTypeMappingExt mapping) {
+    private void VerifyAllResolversAssigned(ObjectTypeMapping mapping) {
       foreach (var fres in mapping.FieldResolvers) {
         // so far we have only exec type to set, or post error
         if (fres.ResolverFunc != null)
@@ -136,9 +136,9 @@ namespace NGraphQL.Model.Construction {
         else {
           var fldName = fres.Field.Name;
           var typeDef = mapping.TypeDef;          
-          var fldRef = $"{typeDef.ClrType.Name}.{fldName}, mapping to {mapping.EntityType}, " +
-            $" (module {typeDef.Module.Name})";
-          AddError($"Field {fldName} has no associated resolver or mapped entity field. Field: {fldRef}");
+          var fldRef = $"'{typeDef.ClrType.Name}.{fldName}', mapping from (entity) type '{mapping.EntityType}', " +
+                       $" (module '{typeDef.Module.Name}')";
+          AddError($"Field '{fldName}' has no associated resolver or mapped entity field. Field: {fldRef}.");
         }
       } // foreach fres
     }

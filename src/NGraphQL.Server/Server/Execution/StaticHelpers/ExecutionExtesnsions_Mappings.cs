@@ -9,8 +9,8 @@ namespace NGraphQL.Server.Execution {
 
   static partial class ExecutionExtensions {
 
-    public static ObjectTypeMappingExt FindMapping(this TypeDefBase typeDef, Type fromType) {
-      ObjectTypeMappingExt mapping = null; 
+    public static ObjectTypeMapping FindMapping(this TypeDefBase typeDef, Type fromType) {
+      ObjectTypeMapping mapping = null; 
       switch (typeDef) {
         case ObjectTypeDef otd:
           mapping = otd.FindMapping(fromType);
@@ -28,12 +28,12 @@ namespace NGraphQL.Server.Execution {
       return mapping; 
     }
 
-    public static ObjectTypeMappingExt FindObjectTypeMapping(this ObjectTypeDef typeDef, Type fromType) {
+    public static ObjectTypeMapping FindObjectTypeMapping(this ObjectTypeDef typeDef, Type fromType) {
       var mapping = typeDef.Mappings.FirstOrDefault(m => m.EntityType == fromType);
       return mapping; 
     }
 
-    public static ObjectTypeMappingExt FindObjectTypeMapping(IList<ObjectTypeDef> typeDefs, Type fromType) {
+    public static ObjectTypeMapping FindObjectTypeMapping(IList<ObjectTypeDef> typeDefs, Type fromType) {
       foreach(var typeDef in typeDefs) {
         var mapping = typeDef.Mappings.FirstOrDefault(m => m.EntityType == fromType);
         if (mapping != null)

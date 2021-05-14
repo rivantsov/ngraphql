@@ -23,15 +23,15 @@ namespace NGraphQL.CodeFirst {
     public Type SubscriptionType;
 
     // Server-bound entities
-    public readonly List<ObjectTypeMapping> Mappings = new List<ObjectTypeMapping>();
+    public readonly List<EntityMapping> EntityMappings = new List<EntityMapping>();
     public readonly List<Type> ResolverClasses = new List<Type>();
 
     public GraphQLModule() {
     }
 
-    public ObjectTypeMapping<TEntity> MapEntity<TEntity>() where TEntity : class {
-      var mapping = new ObjectTypeMapping<TEntity>();
-      Mappings.Add(mapping);
+    public EntityMapping<TEntity> MapEntity<TEntity>() where TEntity : class {
+      var mapping = new EntityMapping<TEntity>();
+      EntityMappings.Add(mapping);
       return mapping;
     }
 

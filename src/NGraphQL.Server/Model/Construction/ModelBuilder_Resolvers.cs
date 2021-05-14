@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 
 using NGraphQL.CodeFirst;
@@ -15,6 +16,9 @@ namespace NGraphQL.Model.Construction {
     private bool AssignObjectFieldResolvers() {
       if (_model.HasErrors) 
         return false;
+
+      // create all resolvers in all mappings
+      InitFieldResolvers();
 
       // get all object types except root types (Query, Mutation, Schema) that do not have CLR type. 
       var objectTypes = _model.GetTypeDefs<ObjectTypeDef>(TypeKind.Object)
@@ -37,15 +41,22 @@ namespace NGraphQL.Model.Construction {
           // 5. Map to resolvers by name 
           AssignResolversToMatchingResolverMethods(mapping);
 
-          // 6. Verify all assigned
+          // 7. Verify all assigned
           VerifyAllResolversAssigned(mapping);
 
           if (_model.Errors.Count > 20)
             return false; // cut off at 20
         }
       }
-
       return !_model.HasErrors;
+}
+    private void InitFieldResolvers() {
+      var objTypes = _model.Types.Where(tdef => tdef.Kind == TypeKind.Object).OfType<ObjectTypeDef>(); 
+      foreach(var typeDef in objTypes)
+        foreach(var mapping in typeDef.Mappings) {
+          var resolvers = typeDef.Fields.Select(f => new FieldResolverInfo() { Field = f, TypeMapping = mapping }).ToList();
+          mapping.FieldResolvers.AddRange(resolvers); 
+        }
     }
 
     // setup resolvers having [ResolvesField] attribute
@@ -93,13 +104,13 @@ namespace NGraphQL.Model.Construction {
     } //method
 
 
-    private void AssignResolversFromCompiledMappingExpressions(ObjectTypeMappingExt mapping) {
+    private void AssignResolversFromCompiledMappingExpressions(ObjectTypeMapping mapping) {
         if (mapping.Expression == null)
           return;
         var entityPrm = mapping.Expression.Parameters[0];
         var memberInit = mapping.Expression.Body as MemberInitExpression;
         if (memberInit == null) {
-          AddError($"Invalid mapping expression for type {mapping.EntityType}->{mapping.GraphQLType.Name}");
+          AddError($"Invalid mapping expression for type {mapping.EntityType}->{mapping.TypeDef.Name}");
           return;
         }
         foreach (var bnd in memberInit.Bindings) {
@@ -118,38 +129,7 @@ namespace NGraphQL.Model.Construction {
         } //foreach bnd
     }
 
-    // those members that do not have binding expressions, try mapping props with the same name
-    private void AssignResolversByEntityPropertyNameMatch(ObjectTypeMappingExt mapping) {
-          var entityType = mapping.EntityType;
-          var allEntFldProps = entityType.GetFieldsProps();
-          foreach (var fldDef in mapping.TypeDef.Fields) {
-            var res = mapping.FieldResolvers.FirstOrDefault(fr => fr.Field == fldDef);
-            if (res != null)
-              continue;
-            var memberName = fldDef.ClrMember.Name;
-            MemberInfo entMember = allEntFldProps.Where(m => m.Name.Equals(memberName, StringComparison.OrdinalIgnoreCase))
-              .FirstOrDefault();
-            if (entMember == null)
-              continue;
-            // TODO: maybe change reading to use compiled lambda 
-            Func<object, object> resFunc = null;
-            switch (entMember) {
-              case FieldInfo fi:
-                resFunc = (ent) => fi.GetValue(ent);
-                break;
-              case PropertyInfo pi:
-                resFunc = (ent) => pi.GetValue(ent);
-                break;
-              default:
-                continue; // we consider it no match 
-            }
-            var fldRes = new FieldResolverInfo() { Field = fldDef,  OutType = entMember.GetMemberReturnType(), 
-                ResolverKind = ResolverKind.Func, ResolverFunc = resFunc };
-            mapping.FieldResolvers.Add(fldRes); 
-          } //foreach fldDef
-    }
-
-    private void AssignResolversByFieldResolverAttribute(ObjectTypeMappingExt mapping) {
+    private void AssignResolversByFieldResolverAttribute(ObjectTypeMapping mapping) {
       var typeDef = mapping.TypeDef;
       foreach (var field in typeDef.Fields) {
         if (field.ClrMember == null)
@@ -185,7 +165,7 @@ namespace NGraphQL.Model.Construction {
       } //foreach field
     }//method
 
-    private void AssignResolversToMatchingResolverMethods(ObjectTypeMappingExt mapping) {
+    private void AssignResolversToMatchingResolverMethods(ObjectTypeMapping mapping) {
       var typeDef = mapping.TypeDef; 
       foreach (var field in typeDef.Fields) {
         var fRes = mapping.FieldResolvers.FirstOrDefault(fr => fr.Field == field);
@@ -193,8 +173,8 @@ namespace NGraphQL.Model.Construction {
           continue;
         if (field.ClrMember == null)
           continue; //__typename has no clr member
-        var methName = field.ClrMember.Name;
-        var resolverInfos =  _allResolvers.Where(res => res.Method.Name == methName).ToList();
+        var methName = field.Name; //.ClrMember.Name;
+        var resolverInfos =  _allResolvers.Where(res => res.Method.Name.Equals(methName, StringComparison.OrdinalIgnoreCase)).ToList();
         switch (resolverInfos.Count) {
           case 0: 
             continue; // no match
@@ -211,6 +191,33 @@ namespace NGraphQL.Model.Construction {
       } //foreach field
     }//method
 
+    // those members that do not have binding expressions, try mapping props with the same name
+    private void AssignResolversByEntityPropertyNameMatch(ObjectTypeMapping mapping) {
+      var entityType = mapping.EntityType;
+      var allEntFldProps = entityType.GetFieldsProps();
+      foreach (var fldDef in mapping.TypeDef.Fields) {
+        var res = mapping.FieldResolvers.FirstOrDefault(fr => fr.Field == fldDef);
+        Util.Check(res != null, $"FATAL: resolver for field {fldDef.Name}, type {fldDef.TypeRef.TypeDef.Name} not created. ");
+        if (res.ResolverFunc != null || res.ResolverMethod != null)
+          continue; //already set
+        var memberName = fldDef.Name;
+        MemberInfo entMember = allEntFldProps.Where(m => m.Name.Equals(memberName, StringComparison.OrdinalIgnoreCase))
+          .FirstOrDefault();
+        if (entMember == null)
+          continue;
+        // TODO: maybe change reading to use compiled lambda 
+        switch (entMember) {
+          case FieldInfo fi:
+            res.ResolverFunc = (ent) => fi.GetValue(ent);
+            break;
+          case PropertyInfo pi:
+            res.ResolverFunc = (ent) => pi.GetValue(ent);
+            break;
+          default:
+            continue; // we consider it no match 
+        }
+      } //foreach fldDef
+    }
 
   }
 }

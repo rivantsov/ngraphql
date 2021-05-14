@@ -31,14 +31,13 @@ namespace NGraphQL.Model.Construction {
       if (!RegisterGraphQLTypes())
         return;
 
-      if (!InitializeTypeMappings())
-        return;
-
       RegisterResolverClassesMethods();
 
       if (!BuildRegisteredDirectiveDefinitions())
         return;
 
+      if (!InitializeTypeMappings())
+        return;
       BuildTypesInternalsFromClrType();
       if (_model.HasErrors)
         return;
@@ -52,6 +51,10 @@ namespace NGraphQL.Model.Construction {
       if (_model.HasErrors)
         return;
 
+      AssignObjectFieldResolvers();
+      if (_model.HasErrors)
+        return;
+
       var introSchemaBuilder = new IntrospectionSchemaBuilder();
       introSchemaBuilder.Build(_model);
       if (_model.HasErrors)
@@ -59,10 +62,6 @@ namespace NGraphQL.Model.Construction {
 
       // apply directives to all model objects in the model
       _model.ApplyToAllModelObjects(this.ApplyDirectives);
-      if (_model.HasErrors)
-        return;
-
-      AssignObjectFieldResolvers();
       if (_model.HasErrors)
         return;
 
@@ -75,7 +74,7 @@ namespace NGraphQL.Model.Construction {
     private bool InitializeTypeMappings() {
       foreach (var module in _server.Modules) {
         var mname = module.GetType().Name;
-        foreach (var mapping in module.Mappings) {
+        foreach (var mapping in module.EntityMappings) {
           var typeDef = _model.LookupTypeDef(mapping.GraphQLType);
           if (typeDef == null) {
             AddError($"Mapping target type {mapping.GraphQLType.Name} is not registered; module {mname}");
@@ -86,7 +85,7 @@ namespace NGraphQL.Model.Construction {
             AddError($"Invalid mapping target type {mapping.GraphQLType.Name}, must be Object type; module {mname}");
             continue;
           }
-          var mappingExt = new ObjectTypeMappingExt(mapping);
+          var mappingExt = new ObjectTypeMapping(objTypeDef, mapping.EntityType);
           objTypeDef.Mappings.Add(mappingExt);
           _model.TypesByEntityType[mapping.EntityType] = objTypeDef;
         } // foreach mapping
@@ -94,7 +93,7 @@ namespace NGraphQL.Model.Construction {
       // Add self-maps to all objects
       foreach (var typeDef in _model.Types) {
         if (typeDef is ObjectTypeDef otd && otd.TypeRole == TypeRole.Data) {
-          var mappingExt = new ObjectTypeMappingExt(otd.ClrType);
+          var mappingExt = new ObjectTypeMapping(otd, otd.ClrType);
           otd.Mappings.Add(mappingExt);
         }
       }

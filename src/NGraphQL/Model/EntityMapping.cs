@@ -1,25 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using NGraphQL.CodeFirst;
 
 namespace NGraphQL.Model {
 
-  public class ObjectTypeMapping {
+  public class EntityMapping {
     public Type GraphQLType;
     public Type EntityType;
     public LambdaExpression Expression; //might be null; in this case we have mapping using field name matches
-    public ObjectTypeMapping() { }
+    public EntityMapping() { }
   }
 
-  public class ObjectTypeMapping<TEntity> : ObjectTypeMapping {
-    internal ObjectTypeMapping() {
+  public class EntityMapping<TEntity> : EntityMapping {
+    internal EntityMapping() {
       base.EntityType = typeof(TEntity);
     }
     public void To<TGraphQL>(Expression<Func<TEntity, TGraphQL>> expression = null) where TGraphQL : class {
       GraphQLType = typeof(TGraphQL);
       Expression = expression;
-    }
+     }
+
+    public override string ToString() => $"{EntityType}->{GraphQLType}";
   }
 }
