@@ -85,7 +85,7 @@ namespace NGraphQL.Model.Construction {
             AddError($"Invalid mapping target type {mapping.GraphQLType.Name}, must be Object type; module {mname}");
             continue;
           }
-          var mappingExt = new ObjectTypeMapping(objTypeDef, mapping.EntityType);
+          var mappingExt = new ObjectTypeMapping(objTypeDef, mapping.EntityType, mapping.Expression);
           objTypeDef.Mappings.Add(mappingExt);
           _model.TypesByEntityType[mapping.EntityType] = objTypeDef;
         } // foreach mapping

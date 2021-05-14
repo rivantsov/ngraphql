@@ -25,7 +25,7 @@ namespace NGraphQL.Server.Execution {
         this.AbortIfFailed();
         var fldDef = fieldContext.CurrentFieldDef;
         // set current parentEntity arg
-        if (fldDef.Flags.IsSet(FieldFlags.HasParentArg))
+        if (!fldDef.Flags.IsSet(FieldFlags.Static))
           fieldContext.ArgValues[1] = fieldContext.CurrentParentScope.Entity;
         var clrMethod = fldResolver.ResolverMethod.Method;
         var result = clrMethod.Invoke(fieldContext.ResolverClassInstance, fieldContext.ArgValues);
@@ -97,7 +97,7 @@ namespace NGraphQL.Server.Execution {
       var argValues = new List<object>();
       // special arguments: context, parent      
       argValues.Add(fieldContext);
-      if(fieldContext.CurrentFieldDef.Flags.IsSet(FieldFlags.HasParentArg))
+      if(!fieldContext.CurrentFieldDef.Flags.IsSet(FieldFlags.Static))
         argValues.Add(fieldContext.CurrentParentScope.Entity);
       //regular arguments
       var selField = fieldContext.SelectionField;

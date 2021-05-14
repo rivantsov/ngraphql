@@ -158,9 +158,11 @@ namespace NGraphQL.Model {
       OwnerType = ownerType; 
       Name = name;
       TypeRef = typeRef;
-      if (typeRef.TypeDef.IsComplexReturnType()) {
+      var typeDef = TypeRef.TypeDef;
+      if (typeDef.IsComplexReturnType())
         Flags |= FieldFlags.ReturnsComplexType;
-      }
+      if (ownerType.TypeRole != TypeRole.Data)
+        Flags |= FieldFlags.Static; 
     }
   }
 
@@ -258,9 +260,10 @@ namespace NGraphQL.Model {
     // accessed by field index
     public readonly List<FieldResolverInfo> FieldResolvers = new List<FieldResolverInfo>();
 
-    public ObjectTypeMapping(ObjectTypeDef typeDef, Type entityType) {
+    public ObjectTypeMapping(ObjectTypeDef typeDef, Type entityType, LambdaExpression expr = null) {
       TypeDef = typeDef;
       this.EntityType = entityType;
+      Expression = expr; 
     }
 
     public override string ToString() => $"{EntityType}->{TypeDef.Name}";

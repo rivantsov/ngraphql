@@ -101,7 +101,7 @@ namespace NGraphQL.Model.Construction {
       // compare list of field parameters with list of resolver method parameters; 
       //  resolver method has extra FieldContext and Parent parameters
       var argCountDiff = 1;
-      if (fieldDef.Flags.IsSet(FieldFlags.HasParentArg))
+      if (!fieldDef.Flags.IsSet(FieldFlags.Static))
         argCountDiff = 2;
       var expectedPrmCount = fieldDef.Args.Count + argCountDiff;
       if (expectedPrmCount != prms.Length) {

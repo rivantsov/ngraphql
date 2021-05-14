@@ -105,28 +105,26 @@ namespace NGraphQL.Model.Construction {
 
 
     private void AssignResolversFromCompiledMappingExpressions(ObjectTypeMapping mapping) {
-        if (mapping.Expression == null)
-          return;
-        var entityPrm = mapping.Expression.Parameters[0];
-        var memberInit = mapping.Expression.Body as MemberInitExpression;
-        if (memberInit == null) {
-          AddError($"Invalid mapping expression for type {mapping.EntityType}->{mapping.TypeDef.Name}");
-          return;
-        }
-        foreach (var bnd in memberInit.Bindings) {
-          var asmtBnd = bnd as MemberAssignment;
-          var fieldDef = mapping.TypeDef.Fields.FirstOrDefault(fld => fld.ClrMember == bnd.Member);
-          if (asmtBnd == null || fieldDef == null)
-            continue; //should never happen, but just in case
-                      // create lambda reading the source property
-          var resFunc = CompileResolverExpression(fieldDef, entityPrm, asmtBnd.Expression);
-          var outType = asmtBnd.Expression.Type;
-          var resInfo = new FieldResolverInfo() {
-            Field = fieldDef, ResolverFunc = resFunc,
-            OutType = outType, TypeMapping = mapping
-          };
-          mapping.FieldResolvers.Add(resInfo);
-        } //foreach bnd
+      if (mapping.Expression == null)
+        return;
+      var entityPrm = mapping.Expression.Parameters[0];
+      var memberInit = mapping.Expression.Body as MemberInitExpression;
+      if (memberInit == null) {
+        AddError($"Invalid mapping expression for type {mapping.EntityType}->{mapping.TypeDef.Name}");
+        return;
+      }
+      foreach (var bnd in memberInit.Bindings) {
+        var asmtBnd = bnd as MemberAssignment;
+        var fieldDef = mapping.TypeDef.Fields.FirstOrDefault(fld => fld.ClrMember == bnd.Member);
+        if (asmtBnd == null || fieldDef == null)
+          continue; //should never happen, but just in case
+                    // create lambda reading the source property
+        var resInfo = mapping.FieldResolvers.FirstOrDefault(r => r.Field == fieldDef);
+        if (resInfo == null)
+          continue; 
+        resInfo.ResolverFunc = CompileResolverExpression(fieldDef, entityPrm, asmtBnd.Expression);
+        var outType = asmtBnd.Expression.Type;
+      } //foreach bnd
     }
 
     private void AssignResolversByFieldResolverAttribute(ObjectTypeMapping mapping) {

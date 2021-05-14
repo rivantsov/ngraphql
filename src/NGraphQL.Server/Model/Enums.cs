@@ -41,8 +41,8 @@ namespace NGraphQL.Model {
     None = 0,
     Nullable = 1,
     Hidden = 1 << 1,
-    // indicator of parent arg in resolver method for the field
-    HasParentArg = 1 << 2,
+    // indicator of top-level fields, without arg in resolver method for the field
+    Static = 1 << 2,
 
     ReturnsComplexType = 1 << 4,
     ResolverReturnsGraphQLObject = 1 << 5,
