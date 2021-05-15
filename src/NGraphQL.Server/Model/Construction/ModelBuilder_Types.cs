@@ -109,9 +109,7 @@ namespace NGraphQL.Model.Construction {
           AddError($"{location}: scalar type {scalarAttr.ScalarName} is not defined. ");
           return null;
         }
-      } else if (_model.TypesByEntityType.TryGetValue(baseType, out var mappedTypeDef))
-        typeDef = mappedTypeDef;
-      else if (!_model.TypesByClrType.TryGetValue(baseType, out typeDef)) {
+      } else if (!_model.TypesByClrType.TryGetValue(baseType, out typeDef)) {
         AddError($"{location}: type {baseType} is not registered. ");
         return null;
       }

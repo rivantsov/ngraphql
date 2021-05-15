@@ -52,7 +52,7 @@ namespace NGraphQL.Model.Construction {
     }
 
     private bool VerifyResolverMethodReturnTypeCompatible(FieldDef field, MethodInfo method) {
-      Type returnType = method.ReturnType;
+      Type returnType = method.GetMemberReturnType(); 
       UnwrapClrType(returnType, method, out var retBaseType, out var kinds, null);
       var retTypeRank = kinds.GetListRank();
       var fldTypeRef = field.TypeRef;

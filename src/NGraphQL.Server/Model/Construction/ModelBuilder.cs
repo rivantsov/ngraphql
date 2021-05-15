@@ -87,7 +87,7 @@ namespace NGraphQL.Model.Construction {
           }
           var mappingExt = new ObjectTypeMapping(objTypeDef, mapping.EntityType, mapping.Expression);
           objTypeDef.Mappings.Add(mappingExt);
-          _model.TypesByEntityType[mapping.EntityType] = objTypeDef;
+          _model.TypesByClrType[mapping.EntityType] = objTypeDef;
         } // foreach mapping
       }
       // Add self-maps to all objects

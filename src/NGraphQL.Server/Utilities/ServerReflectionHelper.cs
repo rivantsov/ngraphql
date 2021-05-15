@@ -75,7 +75,10 @@ namespace NGraphQL.Utilities {
         case FieldInfo fi:
           return fi.FieldType;
         case MethodInfo mi:
-          return mi.ReturnType;
+          var retType = mi.ReturnType;
+          if (retType.IsGenericType && retType.GetGenericTypeDefinition() == typeof(Task<>))
+            retType = retType.GetGenericArguments()[0];
+          return retType; 
       }
       throw new Exception($"Invalid argument for {nameof(GetMemberReturnType)}: {member.Name}");
     }

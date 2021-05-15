@@ -163,16 +163,19 @@ namespace NGraphQL.Model.Construction {
       } //foreach field
     }//method
 
+    // we try to match field defined as method, by member/method name, even if GraphQL name is different; match: GraphQL ObjType.Member => Resolver.Member
     private void AssignResolversToMatchingResolverMethods(ObjectTypeMapping mapping) {
       var typeDef = mapping.TypeDef; 
       foreach (var field in typeDef.Fields) {
         var fRes = mapping.FieldResolvers.FirstOrDefault(fr => fr.Field == field);
-        if (fRes != null)
+        if (fRes == null)
           continue;
         if (field.ClrMember == null)
           continue; //__typename has no clr member
-        var methName = field.Name; //.ClrMember.Name;
-        var resolverInfos =  _allResolvers.Where(res => res.Method.Name.Equals(methName, StringComparison.OrdinalIgnoreCase)).ToList();
+        var methName = field.ClrMember.Name;
+        var resolverInfos =  _allResolvers
+          .Where(res => res.Module == mapping.TypeDef.Module) // in the same module!
+          .Where(res =>  res.Method.Name.Equals(methName, StringComparison.OrdinalIgnoreCase)).ToList();
         switch (resolverInfos.Count) {
           case 0: 
             continue; // no match

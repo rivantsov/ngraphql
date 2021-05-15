@@ -18,7 +18,6 @@ namespace NGraphQL.Model {
     public List<TypeDefBase> Types = new List<TypeDefBase>();
     public Dictionary<string, TypeDefBase> TypesByName = new Dictionary<string, TypeDefBase>(StringComparer.OrdinalIgnoreCase);
     public Dictionary<Type, TypeDefBase> TypesByClrType = new Dictionary<Type, TypeDefBase>();
-    public Dictionary<Type, ComplexTypeDef> TypesByEntityType = new Dictionary<Type, ComplexTypeDef>();
 
     public IList<ResolverClassInfo> ResolverClasses = new List<ResolverClassInfo>();
     public Dictionary<string, DirectiveDef> Directives = new Dictionary<string, DirectiveDef>();

@@ -15,7 +15,7 @@ namespace NGraphQL.Model {
     }
 
     public static TypeDefBase GetMappedGraphQLType(this GraphQLApiModel model, Type entityType) {
-      if (model.TypesByEntityType.TryGetValue(entityType, out var typeDef))
+      if (model.TypesByClrType.TryGetValue(entityType, out var typeDef))
         return typeDef;
       return null;
     }
