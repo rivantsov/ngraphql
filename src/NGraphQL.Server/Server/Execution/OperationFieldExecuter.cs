@@ -90,14 +90,6 @@ namespace NGraphQL.Server.Execution {
       }
     }
 
-    private ObjectTypeDef GetMappedObjectTypeDef(object entity) {
-      var typeDef = _requestContext.ApiModel.GetMappedGraphQLType(entity.GetType());
-      if(typeDef == null || typeDef.Kind != TypeKind.Object) {
-        // TODO: see if it can happen we can throw better error here
-      }
-      return (ObjectTypeDef)typeDef;
-    }
-
     private async Task ExecuteObjectsSelectionSubsetAsync(SelectionField parentField, 
                  IList<OutputObjectScope> parentScopes, SelectionSubset subSet) {
 

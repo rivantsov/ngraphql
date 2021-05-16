@@ -34,6 +34,17 @@ namespace NGraphQL.Model {
       }
     }
 
+    public static bool TypeIsTransient(this TypeRole typeRole) {
+      switch(typeRole) {
+        case TypeRole.ModuleQuery:
+        case TypeRole.ModuleMutation:
+        case TypeRole.ModuleSubscription:
+          return true;
+        default:
+          return false; 
+      }
+    }
+
     public static IList<T> GetTypeDefs<T>(this GraphQLApiModel model, TypeKind kind, 
                                            bool excludeHidden = false) where T : TypeDefBase {
       var temp = model.Types.Where(td => td.Kind == kind)
@@ -42,21 +53,16 @@ namespace NGraphQL.Model {
       return temp.OfType<T>().ToList();
     }
 
-    public static TypeDefBase GetTypeDef(this GraphQLApiModel model, Type type) {
-      if(model.TypesByClrType.TryGetValue(type, out var typeDef))
-        return typeDef;
-      return null;
-    }
-
     public static ScalarTypeDef GetScalarTypeDef(this GraphQLApiModel model, Type type) {
       return (ScalarTypeDef)model.GetTypeDef(type); 
     }
 
-    public static ScalarTypeDef GetScalarTypeDef(this GraphQLApiModel model, string name) {
+    public static TypeDefBase LookupTypeDef(this GraphQLApiModel model, string name) {
       if(model.TypesByName.TryGetValue(name, out var typeDef))
-        return (ScalarTypeDef)typeDef;
+        return typeDef;
       return null;
     }
+
 
     public static bool IsEnumFlagArray(this TypeDefBase typeDef) {
       return typeDef.Kind == TypeKind.Enum && (typeDef is EnumTypeDef etd && etd.Handler.IsFlagSet);

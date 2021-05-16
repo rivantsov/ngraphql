@@ -70,7 +70,8 @@ namespace NGraphQL.Model.Construction {
         FieldDef field = null;
         // check target type
         if (resAttr.TargetType != null) {
-          if (!_model.TypesByClrType.TryGetValue(resAttr.TargetType, out var typeDef) || !(typeDef is ObjectTypeDef objTypeDef)) {
+          var typeDef = _model.GetTypeDef(resAttr.TargetType);
+          if (!(typeDef is ObjectTypeDef objTypeDef)) {
             AddError($"Resolver method '{resInfo}': target type '{resAttr.TargetType}' not registered or is not Object type.");
             continue;
           }

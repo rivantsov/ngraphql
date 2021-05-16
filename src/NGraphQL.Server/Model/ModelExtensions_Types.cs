@@ -7,15 +7,8 @@ using NGraphQL.Introspection;
 namespace NGraphQL.Model {
   public static partial class ModelExtensions {
 
-    public static TypeDefBase LookupTypeDef(this GraphQLApiModel model, Type clrType) {
-      var baseType = clrType;
-      if(model.TypesByClrType.TryGetValue(baseType, out var typeDef))
-        return typeDef;
-      return null;
-    }
-
-    public static TypeDefBase GetMappedGraphQLType(this GraphQLApiModel model, Type entityType) {
-      if (model.TypesByClrType.TryGetValue(entityType, out var typeDef))
+    public static TypeDefBase GetTypeDef(this GraphQLApiModel model, Type clrType) {
+      if(model.TypesByClrType.TryGetValue(clrType, out var typeDef))
         return typeDef;
       return null;
     }

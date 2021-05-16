@@ -113,5 +113,16 @@ namespace NGraphQL.Model.Construction {
       _model.TypesByName.Add(typeDef.Name, typeDef);
     }
 
+    private void RegisterTypeMapping(ObjectTypeMapping mapping) {
+      // register in ObjectTypeDef
+      mapping.TypeDef.Mappings.Add(mapping); 
+      // register in global dict by entity type
+      if (!_model.EntityMappings.TryGetValue(mapping.EntityType, out var mapList)) {
+        mapList = new List<ObjectTypeMapping>();
+        _model.EntityMappings[mapping.EntityType] = mapList; 
+      }
+      mapList.Add(mapping); 
+    }
+
   }//class
 }

@@ -53,7 +53,8 @@ namespace NGraphQL.Server.Execution {
     public override string ToString() => SelectionField.ToString();
 
     internal void SetCurrentParentScope(OutputObjectScope scope) {
-      var typeChangeOrNull = _currentParentScope?.Entity.GetType() != scope.Entity.GetType(); 
+      // Root scope has no entity!
+      var typeChangeOrNull = scope.Entity == null || _currentParentScope?.Entity.GetType() != scope.Entity.GetType(); 
       _currentParentScope = scope;
       if (typeChangeOrNull)
         SetupResolver();
@@ -119,7 +120,7 @@ namespace NGraphQL.Server.Execution {
       }
 
       var mapping = typeDef.FindMapping(entity.GetType());
-      var scope = new OutputObjectScope(this.SelectionField, path, entity, mapping);
+      var scope = new OutputObjectScope(path, entity, mapping);
       AllResultScopes.Add(scope);
       var newCount = Interlocked.Increment(ref _requestContext.Metrics.OutputObjectCount);
       // check total count against quota

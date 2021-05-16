@@ -75,12 +75,16 @@ namespace NGraphQL.Utilities {
         case FieldInfo fi:
           return fi.FieldType;
         case MethodInfo mi:
-          var retType = mi.ReturnType;
-          if (retType.IsGenericType && retType.GetGenericTypeDefinition() == typeof(Task<>))
-            retType = retType.GetGenericArguments()[0];
-          return retType; 
+          return mi.ReturnType.UnwrapTaskType();
       }
       throw new Exception($"Invalid argument for {nameof(GetMemberReturnType)}: {member.Name}");
+    }
+
+    public static Type UnwrapTaskType(this Type type) {
+      if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Task<>))
+        return type.GetGenericArguments()[0];
+      return type;
+
     }
 
     public static void SetMember(this MemberInfo member, object obj, object value) {

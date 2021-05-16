@@ -17,7 +17,6 @@ namespace NGraphQL.Server.Execution {
   public class OutputObjectScope : IDictionary<string, object> {
     public static readonly IList<OutputObjectScope> EmptyList = new OutputObjectScope[] { };
 
-    public readonly SelectionField SourceField;
     public RequestPath Path;
     public object Entity;
     public ObjectTypeMapping Mapping;
@@ -25,13 +24,7 @@ namespace NGraphQL.Server.Execution {
     IList<KeyValuePair<string, object>> _keysValues = new List<KeyValuePair<string, object>>();
     HashSet<string> _keys = new HashSet<string>(); 
 
-    // creates root scope
-    public OutputObjectScope() {
-      Path = new RequestPath();
-    }
-
-    public OutputObjectScope(SelectionField sourceField, RequestPath path, object entity, ObjectTypeMapping mapping) {
-      SourceField = sourceField;
+    public OutputObjectScope(RequestPath path, object entity, ObjectTypeMapping mapping) {
       Path = path;
       Entity = entity;
       Mapping = mapping; 

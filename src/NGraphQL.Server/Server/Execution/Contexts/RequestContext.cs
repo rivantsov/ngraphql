@@ -61,7 +61,6 @@ namespace NGraphQL.Server.Execution {
       _cancellationTokenSource.Token.Register(OnCancelled);
       if (_externalCancellationToken != default)
         _externalCancellationToken.Register(OnExternalTokenCancelled);
-      PrepareDirectiveContexts();
     }
 
 
@@ -92,20 +91,6 @@ namespace NGraphQL.Server.Execution {
       return 10000; 
     }
 
-    private void PrepareDirectiveContexts() {
-      DirectiveContexts = new List<DirectiveContext>();
-      foreach (var dir in this.ParsedRequest.AllDirectives) {
-        var action = dir.Def.Handler as IRuntimeDirectiveHandler;
-        if (action != null) {
-          var argValues = dir.GetArgValues(this);
-          var dirContext = new DirectiveContext() {
-            Directive = dir, Handler = action,
-            ArgValues = argValues, RequestContext = this
-          };
-          DirectiveContexts.Add(dirContext);
-        }
-      }
-    }
   }
 
   /* About custom type refs in RequestContext

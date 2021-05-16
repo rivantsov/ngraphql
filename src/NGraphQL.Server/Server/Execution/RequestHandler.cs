@@ -38,17 +38,27 @@ namespace NGraphQL.Server.Execution {
       if(_requestContext.Failed)
         return;
 
-      var topScope = new OutputObjectScope(); // we do not count it as an 'output object', so no incr of object count in metrics
+      var opMapping = _requestContext.Operation.OperationTypeDef.Mappings[0];
+      var topScope = new OutputObjectScope(new RequestPath(), null, opMapping); 
       _requestContext.Response.Data = topScope;
       await ExecuteOperationAsync(_requestContext.Operation, topScope);
     }
 
     private void BuildDirectiveContexts() {
-      foreach (var rDir in _requestContext.ParsedRequest.AllDirectives)
-        _requestContext.DirectiveContexts.Add(new DirectiveContext() { 
-        
-        });
-      throw new NotImplementedException("Finish method BuildDirectiveContexts.");
+      var allDirs = _requestContext.ParsedRequest.AllDirectives;
+      if (allDirs.Count == 0)
+        return;
+      foreach (var dir in allDirs) {
+        var action = dir.Def.Handler as IRuntimeDirectiveHandler;
+        if (action != null) {
+          var argValues = dir.GetArgValues(_requestContext);
+          var dirContext = new DirectiveContext() {
+            Directive = dir, Handler = action,
+            ArgValues = argValues, RequestContext = _requestContext
+          };
+          _requestContext.DirectiveContexts.Add(dirContext);
+        }
+      }
     }
 
     private async Task ExecuteOperationAsync(GraphQLOperation op, OutputObjectScope topScope) {

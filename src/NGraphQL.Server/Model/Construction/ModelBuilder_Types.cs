@@ -51,8 +51,8 @@ namespace NGraphQL.Model.Construction {
         var ignoreAttr = attrs.Find<IgnoreAttribute>();
         if (ignoreAttr != null)
           continue;
-        var mtype = member.GetMemberReturnType();
-        var typeRef = GetTypeRef(mtype, member, $"Field {clrType.Name}.{member.Name}");
+        var retType = member.GetMemberReturnType(); //unwraps Task<t>
+        var typeRef = GetMemberGraphQLTypeRef(retType, member, $"Field {clrType.Name}.{member.Name}");
         if (typeRef == null)
           continue; //error should be logged already
         var name = GetGraphQLName(member);
@@ -78,7 +78,7 @@ namespace NGraphQL.Model.Construction {
       var argDefs = new List<InputValueDef>();
       foreach (var prm in parameters) {
         var attrs = GetAllAttributesAndAdjustments(prm, method);
-        var prmTypeRef = GetTypeRef(prm.ParameterType, prm, $"Method {method.Name}, parameter {prm.Name}", method);
+        var prmTypeRef = GetMemberGraphQLTypeRef(prm.ParameterType, prm, $"Method {method.Name}, parameter {prm.Name}", method);
         if (prmTypeRef == null)
           continue;
         if (prmTypeRef.IsList && !prmTypeRef.TypeDef.IsEnumFlagArray())
@@ -97,19 +97,19 @@ namespace NGraphQL.Model.Construction {
       return argDefs;
     }
 
-    private TypeRef GetTypeRef(Type type, ICustomAttributeProvider attributeSource, string location, MethodBase paramOwner = null) {
+    private TypeRef GetMemberGraphQLTypeRef(Type type, ICustomAttributeProvider attributeSource, string location, MethodBase paramOwner = null) {
       var scalarAttr = attributeSource.GetAttribute<ScalarAttribute>();
 
       UnwrapClrType(type, attributeSource, out var baseType, out var kinds, paramOwner);
 
       TypeDefBase typeDef;
       if (scalarAttr != null) {
-        typeDef = _model.GetScalarTypeDef(scalarAttr.ScalarName);
+        typeDef = _model.LookupTypeDef(scalarAttr.ScalarName);
         if (type == null) {
-          AddError($"{location}: scalar type {scalarAttr.ScalarName} is not defined. ");
+          AddError($"{location}: type {scalarAttr.ScalarName} is not defined. ");
           return null;
         }
-      } else if (!_model.TypesByClrType.TryGetValue(baseType, out typeDef)) {
+      } else if (null == (typeDef = _model.GetTypeDef(baseType))) {
         AddError($"{location}: type {baseType} is not registered. ");
         return null;
       }

@@ -36,18 +36,21 @@ namespace NGraphQL.Model.Construction {
       if (!BuildRegisteredDirectiveDefinitions())
         return;
 
-      if (!InitializeTypeMappings())
-        return;
+
       BuildTypesInternalsFromClrType();
       if (_model.HasErrors)
         return;
 
-      LinkImplementedInterfaces();
-      BuildUnionTypes();
+      BuildSchemaDef();
       if (_model.HasErrors)
         return;
 
-      BuildSchemaDef();
+      if (!InitializeTypeMappings())
+        return;
+
+
+      LinkImplementedInterfaces();
+      BuildUnionTypes();
       if (_model.HasErrors)
         return;
 
@@ -74,25 +77,24 @@ namespace NGraphQL.Model.Construction {
     private bool InitializeTypeMappings() {
       foreach (var module in _server.Modules) {
         var mname = module.GetType().Name;
-        foreach (var mapping in module.EntityMappings) {
-          var typeDef = _model.LookupTypeDef(mapping.GraphQLType);
+        foreach (var entMapping in module.EntityMappings) {
+          var typeDef = _model.GetTypeDef(entMapping.GraphQLType);
           if (typeDef == null) {
-            AddError($"Mapping target type {mapping.GraphQLType.Name} is not registered; module {mname}");
+            AddError($"Mapping target type {entMapping.GraphQLType.Name} is not registered; module {mname}");
             continue;
           }
 
           if (!(typeDef is ObjectTypeDef objTypeDef)) {
-            AddError($"Invalid mapping target type {mapping.GraphQLType.Name}, must be Object type; module {mname}");
+            AddError($"Invalid mapping target type {entMapping.GraphQLType.Name}, must be Object type; module {mname}");
             continue;
           }
-          var mappingExt = new ObjectTypeMapping(objTypeDef, mapping.EntityType, mapping.Expression);
-          objTypeDef.Mappings.Add(mappingExt);
-          _model.TypesByClrType[mapping.EntityType] = objTypeDef;
+          var typeMapping = new ObjectTypeMapping(objTypeDef, entMapping.EntityType, entMapping.Expression);
+          RegisterTypeMapping(typeMapping);
         } // foreach mapping
       }
-      // Add self-maps to all objects
+      // Add self-maps to all objects, including top Query, Mutation, Subscription types
       foreach (var typeDef in _model.Types) {
-        if (typeDef is ObjectTypeDef otd && otd.TypeRole == TypeRole.Data) {
+        if (typeDef is ObjectTypeDef otd && !otd.TypeRole.TypeIsTransient()) {
           var mappingExt = new ObjectTypeMapping(otd, otd.ClrType);
           otd.Mappings.Add(mappingExt);
         }
@@ -143,7 +145,7 @@ namespace NGraphQL.Model.Construction {
           continue;
         var intTypes = typeDef.ClrType.GetInterfaces();
         foreach (var iType in intTypes) {
-          var iTypeDef = (InterfaceTypeDef)_model.LookupTypeDef(iType);
+          var iTypeDef = (InterfaceTypeDef)_model.GetTypeDef(iType);
           if (iTypeDef != null) {
             typeDef.Implements.Add(iTypeDef);
             iTypeDef.PossibleTypes.Add(typeDef);
@@ -157,7 +159,7 @@ namespace NGraphQL.Model.Construction {
       foreach (var member in members) {
         var attrs = GetAllAttributesAndAdjustments(member);
         var mtype = member.GetMemberReturnType();
-        var typeRef = GetTypeRef(mtype, member, $"Field {inpTypeDef.Name}.{member.Name}");
+        var typeRef = GetMemberGraphQLTypeRef(mtype, member, $"Field {inpTypeDef.Name}.{member.Name}");
         if (typeRef == null)
           return; // error found, it is already logged
         if (typeRef.IsList && !typeRef.TypeDef.IsEnumFlagArray()) {
@@ -202,7 +204,7 @@ namespace NGraphQL.Model.Construction {
       foreach(UnionTypeDef utDef in unionTypes) {
         var objTypes = utDef.ClrType.BaseType.GetGenericArguments();
         foreach(var objType in objTypes) {
-          var typeDef = _model.LookupTypeDef(objType);
+          var typeDef = _model.GetTypeDef(objType);
           if(typeDef == null) {
             AddError($"Union type {utDef.Name}: type {objType} is not registered.");
             continue;
@@ -216,8 +218,8 @@ namespace NGraphQL.Model.Construction {
     }
 
     private void BuildSchemaDef() {
-      _model.QueryType = BuildRootSchemaObject("Query", TypeRole.Query, TypeRole.ModuleQuery);
-      _model.MutationType = BuildRootSchemaObject("Mutation", TypeRole.Mutation, TypeRole.ModuleMutation);
+      _model.QueryType = BuildRootSchemaObject("Query", TypeRole.Query, TypeRole.Query);
+      _model.MutationType = BuildRootSchemaObject("Mutation", TypeRole.Mutation, TypeRole.Mutation);
       _model.SubscriptionType = BuildRootSchemaObject("Subscription", TypeRole.Subscription, TypeRole.Subscription);
 
       if (_model.QueryType == null) {

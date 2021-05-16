@@ -75,9 +75,9 @@ namespace NGraphQL.Model.Construction {
           return true;
 
         case ObjectTypeDef objTypeDef:
-          var mappedTypeDef = _model.GetMappedGraphQLType(retBaseType);
-          if (mappedTypeDef != objTypeDef) {
-            AddError($"Resolver method {method.GetFullRef()}: return type is incompatible with field type {fldTypeRef.Name}");
+          var mapping = objTypeDef.Mappings.Find(m => m.EntityType == retBaseType);
+          if (mapping == null) {
+            AddError($"Resolver method '{method.GetFullRef()}' return type '{retBaseType}' is not mapped to field type {fldTypeRef.Name}");
             return false;
           }
           return true;

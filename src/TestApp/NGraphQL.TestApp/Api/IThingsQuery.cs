@@ -47,9 +47,9 @@ namespace NGraphQL.TestApp {
 
     string EchoIntListRank2(int[][] values);
 
-    Thing[] GetThingsList();
+    Thing_[] GetThingsList();
 
-    Thing[][] GetThingsListRank2();
+    Thing_[][] GetThingsListRank2();
 
     // test of sending, receiving Flag sets
     TheFlags EchoFlags(TheFlags? flags);
