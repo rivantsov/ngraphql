@@ -66,17 +66,19 @@ namespace NGraphQL.Model.Construction {
         var resAttr = resInfo.ResolvesAttribute;
         if (resAttr == null)
           continue;
+        var module = resInfo.Module;
         var fieldName = resAttr.FieldName.FirstLower();
         FieldDef field = null;
+        var typeDefs = types.Where(t => t.Module == resInfo.Module).OfType<ObjectTypeDef>();
         // check target type
         if (resAttr.TargetType != null) {
-          var typeDef = _model.GetTypeDef(resAttr.TargetType);
-          if (!(typeDef is ObjectTypeDef objTypeDef)) {
+          var typeDef = typeDefs.FirstOrDefault(td => td.ClrType == resAttr.TargetType);
+          if (typeDef == null) {
             AddError($"Resolver method '{resInfo}': target type '{resAttr.TargetType}' not registered or is not Object type.");
             continue;
           }
           // match field
-          field = objTypeDef.Fields.FirstOrDefault(f => f.Name == fieldName);
+          field = typeDef.Fields.FirstOrDefault(f => f.Name == fieldName);
           if (field == null) {
             AddError($"Resolver method '{resInfo}': target field '{fieldName}' not found "
                       + $"on type '{resAttr.TargetType}'.");
@@ -84,7 +86,7 @@ namespace NGraphQL.Model.Construction {
           }
         } else {
           // TargetType is null - find match by name only
-          var fields = types.SelectMany(t => t.Fields).Where(f => f.Name == fieldName).ToList();
+          var fields = typeDefs.SelectMany(t => t.Fields).Where(f => f.Name == fieldName).ToList();
           switch (fields.Count) {
             case 1:
               field = fields[0];
@@ -100,10 +102,40 @@ namespace NGraphQL.Model.Construction {
         // We have a field; verify method is compatible
         VerifyFieldResolverMethod(field, resInfo);
         // get parent arg type and find mapping
+        var objTypeDef = (ObjectTypeDef)field.OwnerType;
+        ObjectTypeMapping mapping = null; 
+        switch(objTypeDef.TypeRole) {
+          
+          case TypeRole.ModuleQuery: case TypeRole.ModuleMutation: case TypeRole.ModuleSubscription:
+            mapping = objTypeDef.Mappings[0]; 
+            break;
+          
+          case TypeRole.Data:
+            var prms = resInfo.Method.GetParameters();
+            if (prms.Length < 2) {
+              AddError($"Resolver method '{resInfo}', expected at least 2 parameters - field context and parent entity.");
+              continue; 
+            }
+            var parentEntType = prms[1].ParameterType;
+            mapping = objTypeDef.Mappings.FirstOrDefault(m => m.EntityType.IsAssignableFrom(parentEntType));
+            if (mapping == null) {
+              AddError($"Resolver method '{resInfo}', parent entity argument type '{parentEntType}' is not mapped to output GraphQL type '{objTypeDef.Name}'.");
+              continue; 
+            }
+            break;
 
+          default:
+            AddError($"Resolver method '{resInfo}', invalid target GraphQL type: '{objTypeDef.Name}'.");
+            continue;
+        }//switch
+        var fres = mapping.FieldResolvers.FirstOrDefault(fr => fr.Field == field);
+        if (fres == null) {
+          AddError($"FATAL: resolver method '{resInfo}', failed to match to field resolver in type '{objTypeDef.Name}'.");
+          continue; 
+        }
+        fres.ResolverMethod = resInfo; //assign resolver
       } //foreach resMeth
     } //method
-
 
     private void AssignResolversFromCompiledMappingExpressions(ObjectTypeMapping mapping) {
       if (mapping.Expression == null)

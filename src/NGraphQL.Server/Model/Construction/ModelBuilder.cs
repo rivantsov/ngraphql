@@ -41,10 +41,6 @@ namespace NGraphQL.Model.Construction {
       if (_model.HasErrors)
         return;
 
-      BuildSchemaDef();
-      if (_model.HasErrors)
-        return;
-
       if (!InitializeTypeMappings())
         return;
 
@@ -55,6 +51,10 @@ namespace NGraphQL.Model.Construction {
         return;
 
       AssignObjectFieldResolvers();
+      if (_model.HasErrors)
+        return;
+
+      BuildSchemaDef();
       if (_model.HasErrors)
         return;
 
@@ -92,9 +92,9 @@ namespace NGraphQL.Model.Construction {
           RegisterTypeMapping(typeMapping);
         } // foreach mapping
       }
-      // Add self-maps to all objects, including top Query, Mutation, Subscription types
+      // Add self-maps to all objects, including module-level Query, Mutation types
       foreach (var typeDef in _model.Types) {
-        if (typeDef is ObjectTypeDef otd && !otd.TypeRole.TypeIsTransient()) {
+        if (typeDef is ObjectTypeDef otd) {
           var mappingExt = new ObjectTypeMapping(otd, otd.ClrType);
           otd.Mappings.Add(mappingExt);
         }
@@ -218,9 +218,9 @@ namespace NGraphQL.Model.Construction {
     }
 
     private void BuildSchemaDef() {
-      _model.QueryType = BuildRootSchemaObject("Query", TypeRole.Query, TypeRole.Query);
-      _model.MutationType = BuildRootSchemaObject("Mutation", TypeRole.Mutation, TypeRole.Mutation);
-      _model.SubscriptionType = BuildRootSchemaObject("Subscription", TypeRole.Subscription, TypeRole.Subscription);
+      _model.QueryType = BuildRootSchemaObject("Query", TypeRole.Query, TypeRole.ModuleQuery);
+      _model.MutationType = BuildRootSchemaObject("Mutation", TypeRole.Mutation, TypeRole.ModuleMutation);
+      _model.SubscriptionType = BuildRootSchemaObject("Subscription", TypeRole.Subscription, TypeRole.ModuleSubscription);
 
       if (_model.QueryType == null) {
         AddError("No fields are registered for Query root type; must have at least one query field.");
@@ -238,17 +238,29 @@ namespace NGraphQL.Model.Construction {
     }
 
     private ObjectTypeDef BuildRootSchemaObject(string name, TypeRole typeRole, TypeRole moduleTypeRole) {
-      var allFields = _model.Types.OfType<ObjectTypeDef>()
+      var allModuleAggrTypes = _model.Types.OfType<ObjectTypeDef>()
                         .Where(t => t.TypeRole == moduleTypeRole)
-                        .SelectMany(t => t.Fields).ToList();
-      if (allFields.Count == 0)
+                        .ToList();
+      if (allModuleAggrTypes.Count == 0)
         return null;
-      // TODO: add check for name duplicates
-      var rootObj = new ObjectTypeDef(name, null, GraphQLModelObject.EmptyAttributeList, null, typeRole);
-      rootObj.Fields.AddRange(allFields);
-      RegisterTypeDef(rootObj);
-      rootObj.Hidden = false; 
-      return rootObj;
+      // create root object (ex: Query type)
+      var rootObjTypeDef = new ObjectTypeDef(name, null, GraphQLModelObject.EmptyAttributeList, null, typeRole);
+      RegisterTypeDef(rootObjTypeDef);
+      var mapping = new ObjectTypeMapping(rootObjTypeDef, null);
+      rootObjTypeDef.Mappings.Add(mapping); 
+      // copy resolvers
+      foreach (var aggrType in allModuleAggrTypes) 
+        mapping.FieldResolvers.AddRange(aggrType.Mappings[0].FieldResolvers);
+      // collect all fields from resolvers
+      var allFields = mapping.FieldResolvers.Select(fr => fr.Field).ToList();
+      rootObjTypeDef.Fields.AddRange(allFields);
+      // check for name duplicates
+      var fieldNameDupes = rootObjTypeDef.Fields.Select(f => f.Name).GroupBy(fn => fn).Where(g => g.Count() > 1).ToList();
+      if (fieldNameDupes.Count > 0) {
+        string dupesAll = string.Join(",", fieldNameDupes.Select(g => g.Key));
+        AddError($"Duplicate fields defined at top-level type {typeRole}, field names: {dupesAll}");
+      }
+      return rootObjTypeDef;
     }
 
     private void VerifyModel() {
