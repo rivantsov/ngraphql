@@ -36,7 +36,7 @@ namespace NGraphQL.Server.Execution {
     // Here are the only 2 methods actually used 
     // method used by GraphQL engine
     internal void SetValue(string key, object value) {
-      if (!_keys.Add(key)) 
+      if (_keys.Add(key)) 
         _keysValues.Add(new KeyValuePair<string, object>(key, value));
     }
 

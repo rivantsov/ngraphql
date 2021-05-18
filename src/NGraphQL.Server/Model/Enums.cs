@@ -29,13 +29,6 @@ namespace NGraphQL.Model {
     Subscription
   }
 
-  public enum ResolverKind {
-    NotSet,
-    CompiledExpression, //compiled from mapping expression
-    Method,
-    Func, // for default name match mapping
-  }
-
   [Flags]
   public enum FieldFlags {
     None = 0,
@@ -46,7 +39,6 @@ namespace NGraphQL.Model {
 
     ReturnsComplexType = 1 << 4,
     ResolverReturnsGraphQLObject = 1 << 5,
-    ResolverReturnsTask = 1 << 6,
   }
 
 }

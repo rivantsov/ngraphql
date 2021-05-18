@@ -13,7 +13,7 @@ namespace NGraphQL.Server.Execution {
       ObjectTypeMapping mapping = null; 
       switch (typeDef) {
         case ObjectTypeDef otd:
-          mapping = otd.FindMapping(fromType);
+          mapping = otd.FindObjectTypeMapping(fromType);
           break; 
         case InterfaceTypeDef itd:
           mapping = FindObjectTypeMapping(itd.PossibleTypes, fromType);

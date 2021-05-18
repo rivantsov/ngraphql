@@ -14,19 +14,19 @@ namespace NGraphQL.Server.Execution {
   public class RuntimeDirective {
     public int Index; // index to lookup DirectiveContext in requestContext
     public object Source; //ModelDirective or RequestDirective 
-    public object Owner; // MappedSelectionItem or MappedArg 
+    public object Owner; //  SelectionItem or MappedArg 
     public DirectiveDef Def;
     public DirectiveLocation Location;
-    public IList<MappedArg> MappedArgs; //Request directive only
 
+    public IList<MappedArg> MappedArgs;
     public object[] StaticArgValues;   // dirs that do not use variables, or model directives
 
     public RuntimeDirective(RequestDirective reqDir) {
       Source = reqDir;
       Def = reqDir.Def;
       Location = reqDir.Location;
-      MappedArgs = reqDir.MappedArgs; 
-      StaticArgValues = MappedArgs.TryEvaluateStaticArgValues(); 
+      MappedArgs = reqDir.MappedArgs;
+      StaticArgValues = reqDir.MappedArgs.TryEvaluateStaticArgValues(); 
     }
 
     public RuntimeDirective(ModelDirective modelDir) {

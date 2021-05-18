@@ -113,15 +113,7 @@ namespace NGraphQL.Server.Execution {
             continue; 
           fieldContext.SetCurrentParentScope(scope);
           var fldDef = fieldContext.CurrentFieldDef;
-          object result = null;
-          switch (fieldContext.CurrentResolver.ResolverKind) {
-            case ResolverKind.CompiledExpression:
-              result = InvokeFieldReader(fieldContext, fieldContext.CurrentParentScope.Entity);
-              break;
-            case ResolverKind.Method:
-              result = await InvokeResolverAsync(fieldContext);
-              break;
-          }
+          object result = await InvokeResolverAsync(fieldContext);
           // if batched result was not set, set value
           if (!fieldContext.BatchResultWasSet) {
             var outValue = fieldContext.ConvertToOuputValue(result);

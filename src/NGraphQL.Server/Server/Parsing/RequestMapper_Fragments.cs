@@ -36,7 +36,7 @@ namespace NGraphQL.Server.Parsing {
       if (_requestContext.Failed)
         return;
       // Map fields
-      Fragments_MapFragmentFields(); 
+      // Fragments_MapFragmentFields(); 
     }
 
     private void Fragments_MapOnTypeReferences() {
@@ -187,6 +187,7 @@ namespace NGraphQL.Server.Parsing {
       } //foreach fragm
     }
 
+    /*
     private void Fragments_MapFragmentFields() {
       // Step 1 - order fragments by depencency level
       Fragments_OrderByDependencyTreeLevel();
@@ -202,6 +203,7 @@ namespace NGraphQL.Server.Parsing {
       // Step 3 - mapp all pending subsets
       MapPendingSelectionSubsets(); 
     }
+    */
 
     private void Fragments_OrderByDependencyTreeLevel() {
       // we know there is no circular references among fragments at top-level fragment spreads, so it is a tree, 

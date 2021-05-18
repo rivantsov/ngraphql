@@ -129,11 +129,7 @@ namespace NGraphQL.Model.Construction {
     private void VerifyAllResolversAssigned(ObjectTypeMapping mapping) {
       foreach (var fres in mapping.FieldResolvers) {
         // so far we have only exec type to set, or post error
-        if (fres.ResolverFunc != null)
-          fres.ResolverKind = ResolverKind.CompiledExpression;
-        else if (fres.ResolverMethod != null)
-          fres.ResolverKind = ResolverKind.Method;
-        else {
+        if (fres.ResolverFunc == null && fres.ResolverMethod == null) {
           var fldName = fres.Field.Name;
           var typeDef = mapping.TypeDef;          
           var fldRef = $"'{typeDef.ClrType.Name}.{fldName}', mapping from (entity) type '{mapping.EntityType}', " +

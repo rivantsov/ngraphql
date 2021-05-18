@@ -30,8 +30,10 @@ query {
       var things = resp.Data["things"];
       Assert.IsNotNull(things, "Expected result");
 
+      /*
+      // Disabling this test - now __typename at top level is allowed, returns 'Mutation'
+      
       TestEnv.LogTestDescr(@"Repro issue #4 - crash with NullRef when using _typename at top level.");
-
       query = @"
 mutation {
   __typename  # causes error
@@ -46,6 +48,7 @@ mutation {
       Assert.AreEqual(1, resp.Errors.Count, "Expected 1 result");
       var err0 = resp.Errors[0];
       Assert.IsTrue(err0.Message.Contains(@"Field '__typename' not found"), "Invalid error message"); 
+      */ 
     }
 
   }

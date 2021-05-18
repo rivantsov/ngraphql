@@ -15,21 +15,30 @@ namespace NGraphQL.Server.Execution {
   partial class OperationFieldExecuter {
 
     private async Task<object> InvokeResolverAsync(FieldContext fieldContext) {
+      if (fieldContext.CurrentResolver.ResolverFunc != null)
+        return InvokeResolverFunc(fieldContext);
+      else
+        return await InvokeResolverMethodAsync(fieldContext); 
+    }
+
+    private async Task<object> InvokeResolverMethodAsync(FieldContext fieldContext) {
       try {
         var fldResolver = fieldContext.CurrentResolver;
-        if (fieldContext.ResolverClassInstance == null)
-          AssignResolverClassInstance(fieldContext, fldResolver);
+        var fldDef = fldResolver.Field;
         if(fieldContext.ArgValues == null)
           BuildResolverArguments(fieldContext);
         // we might have encountered errors when evaluating args; if so, abort all
         this.AbortIfFailed();
-        var fldDef = fieldContext.CurrentFieldDef;
+        if (fieldContext.ResolverClassInstance == null)
+          AssignResolverClassInstance(fieldContext, fldResolver);
         // set current parentEntity arg
-        if (!fldDef.Flags.IsSet(FieldFlags.Static))
+        var isStatic = fldDef.Flags.IsSet(FieldFlags.Static);
+        if (!isStatic) {
           fieldContext.ArgValues[1] = fieldContext.CurrentParentScope.Entity;
-        var clrMethod = fldResolver.ResolverMethod.Method;
+        }
+        var clrMethod = fldResolver.ResolverMethod.Method; 
         var result = clrMethod.Invoke(fieldContext.ResolverClassInstance, fieldContext.ArgValues);
-        if(fldDef.Flags.IsSet(FieldFlags.ResolverReturnsTask))
+        if(fldResolver.ResolverMethod.ReturnsTask)
           result = await UnwrapTaskResultAsync(fieldContext, fldResolver, (Task)result);
         Interlocked.Increment(ref _requestContext.Metrics.ResolverCallCount);
         // Note: result might be null, but batched result might be set.
@@ -52,10 +61,11 @@ namespace NGraphQL.Server.Execution {
     }
 
     // merge with prev method InvokeResolverAsync 
-    private object InvokeFieldReader(FieldContext fieldContext, object parent) {
+    private object InvokeResolverFunc(FieldContext fieldContext) {
       try {
-        var reader = fieldContext.CurrentResolver.ResolverFunc;
-        var result = reader(parent);
+        var func = fieldContext.CurrentResolver.ResolverFunc;
+        var parent = fieldContext.CurrentParentScope.Entity; 
+        var result = func(parent);
         return result;
       } catch (TargetInvocationException tex) {
         // sync call goes here
@@ -93,6 +103,11 @@ namespace NGraphQL.Server.Execution {
     }
 
     private void BuildResolverArguments(FieldContext fieldContext) {
+      var selField = fieldContext.SelectionField;
+      if (selField.MappedArgs == null) {
+        var reqMapper = new Parsing.RequestMapper(_requestContext);
+        selField.MappedArgs = reqMapper.MapArguments(selField.Args, fieldContext.CurrentFieldDef.Args, selField); 
+      }
       // arguments
       var argValues = new List<object>();
       // special arguments: context, parent      
@@ -100,7 +115,6 @@ namespace NGraphQL.Server.Execution {
       if(!fieldContext.CurrentFieldDef.Flags.IsSet(FieldFlags.Static))
         argValues.Add(fieldContext.CurrentParentScope.Entity);
       //regular arguments
-      var selField = fieldContext.SelectionField;
       for (int i = 0; i < selField.MappedArgs.Count; i++) {
         var arg = selField.MappedArgs[i];
         var argValue = SafeEvaluateArg(fieldContext, arg);

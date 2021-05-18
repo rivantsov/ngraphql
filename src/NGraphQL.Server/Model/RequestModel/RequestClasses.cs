@@ -26,7 +26,7 @@ namespace NGraphQL.Model.Request {
     public string Key => Alias ?? Name;    //alias or name
     public IList<InputValue> Args;
     public SelectionSubset SelectionSubset;
-    public readonly IList<MappedArg> MappedArgs;
+    public IList<MappedArg> MappedArgs;
     public FieldResolverInfo DefaultResolver; 
 
     public override string ToString() => $"{Key}";
@@ -50,7 +50,7 @@ namespace NGraphQL.Model.Request {
 
   public class SelectionSubset: RequestObjectBase {
     public List<SelectionItem> Items;
-    public readonly IList<MappedSelectionSubSet> MappedSubSets = new List<MappedSelectionSubSet>(); 
+    // public readonly IList<MappedSelectionSubSet> MappedSubSets = new List<MappedSelectionSubSet>(); 
 
     public SelectionSubset(RequestObjectBase parent, List<SelectionItem> items, SourceLocation location) {
       Parent = parent; 

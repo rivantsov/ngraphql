@@ -4,6 +4,19 @@ using NGraphQL.Server.Execution;
 
 namespace NGraphQL.Model.Request {
 
+  public class MappedArg {
+    public static readonly IList<MappedArg> EmptyList = new MappedArg[] { };
+
+    public RequestObjectBase Anchor;
+    public InputValueDef ArgDef;
+    public InputValueEvaluator Evaluator;
+    public List<RuntimeDirective> Directives;
+
+    public MappedArg() { }
+    public override string ToString() => $"{ArgDef.Name}/{ArgDef.TypeRef.Name}";
+  }
+
+  /*
   public abstract class MappedSelectionItem {
     public SelectionItem Item;
     public List<RuntimeDirective> Directives;
@@ -47,24 +60,12 @@ namespace NGraphQL.Model.Request {
       Items = items; 
     }
   }
-
-  // used as MappedSelectionField args and request directive args
-  public class MappedArg {
-    public static readonly IList<MappedArg> EmptyList = new MappedArg[] { };
-
-    public RequestObjectBase Anchor; 
-    public InputValueDef ArgDef; 
-    public InputValueEvaluator Evaluator;
-    public List<RuntimeDirective> Directives;
-
-    public MappedArg() { }
-    public override string ToString() => $"{ArgDef.Name}/{ArgDef.TypeRef.Name}";
-  }
-
   public class MappedSelectionSubSet {
     public ObjectTypeDef ObjectTypeDef;
     public Type SourceType; 
     public IList<MappedSelectionItem> MappedItems = new List<MappedSelectionItem>();
   }
 
+  */
+  // used as MappedSelectionField args and request directive args
 }

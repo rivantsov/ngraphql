@@ -15,6 +15,7 @@ namespace NGraphQL.Server.Parsing {
     RequestContext _requestContext;
     GraphQLOperation _currentOp;
 
+    /*
     #region pending selection sets list
     // for certain reasons (coming from Fragments and their inter-dependencies) we traverse 
     // the selection tree in wide-first manner; so when we encounter a field with a selection subset,
@@ -28,7 +29,7 @@ namespace NGraphQL.Server.Parsing {
       public IList<RequestDirective> Directives;
     }
     #endregion
-
+    */
     public RequestMapper(RequestContext requestContext) {
       _requestContext = requestContext;
       _model = _requestContext.ApiModel;
@@ -44,34 +45,11 @@ namespace NGraphQL.Server.Parsing {
         op.OperationTypeDef = _model.GetOperationDef(op.OperationType);
         _currentOp = op;
         CalcVariableDefaultValues(op);
-        MapOperation(op);
+        // MapOperation(op);
       }
       _currentOp = null;
     }
-
-    private void CalcVariableDefaultValues(GraphQLOperation op) {
-      foreach (var varDef in op.Variables) {
-        if (varDef.ParsedDefaultValue == null)
-          continue;
-        var inpDef = varDef.InputDef;        
-        var typeRef = inpDef.TypeRef;
-        var eval = GetInputValueEvaluator(inpDef, varDef.ParsedDefaultValue, typeRef);
-        if (!eval.IsConst()) {
-          // somewhere inside there's reference to variable, this is not allowed
-          AddError($"Default value cannot reference variables.", varDef);
-          continue;
-        }
-        var value = eval.GetValue(_requestContext);
-        if (value != null && value.GetType() != typeRef.TypeDef.ClrType) {
-          // TODO: fix that, add type conversion, for now throwing exception; or maybe it's not needed, value will be converted at time of use
-          // but spec also allows auto casting like  int => int[]
-          AddError($"Detected type mismatch for default value '{value}' of variable {varDef.Name} of type {typeRef.Name}", varDef);
-        }
-        inpDef.DefaultValue = value;
-        inpDef.HasDefaultValue = true; 
-      } // foreach varDef
-    }
-
+    /*
     private void MapOperation(GraphQLOperation op) {
       MapSelectionSubSet(op.SelectionSubset, op.OperationTypeDef, op.Directives);
       if (_pendingSelectionSets.Count > 0)
@@ -113,6 +91,7 @@ namespace NGraphQL.Server.Parsing {
       }
     }
 
+    
     // Might be called for ObjectType or Interface (for intf - just to check fields exist)
     private void MapObjectSelectionSubset(SelectionSubset selSubset, ObjectTypeDef objectTypeDef, IList<RequestDirective> directives, bool isForUnion = false) {
       var mappedItems = new List<MappedSelectionItem>();
@@ -136,13 +115,11 @@ namespace NGraphQL.Server.Parsing {
             break;
 
           case FragmentSpread fs:
-            /*
             var mappedSpread = MapFragmentSpread(fs, objectTypeDef, isForUnion);
             if (mappedSpread != null) {// null is indicator of error
               AddRuntimeRequestDirectives(mappedSpread);
               mappedItems.Add(mappedSpread);
             }
-            */
             break;
         }//switch
 
@@ -150,28 +127,7 @@ namespace NGraphQL.Server.Parsing {
 
       selSubset.MappedSubSets.Add(new MappedSelectionSubSet() { ObjectTypeDef = objectTypeDef, MappedItems = mappedItems });
     }
-
-    private void AddRuntimeRequestDirectives(MappedSelectionItem mappedItem) {
-      var selItem = mappedItem.Item;
-      // request directives first; map dir args
-      if (selItem.Directives != null) {
-        foreach (var dir in selItem.Directives) {
-          dir.MappedArgs = MapArguments(dir.Args, dir.Def.Args, dir);
-          mappedItem.AddDirective(new RuntimeDirective(dir));
-        }
-      }
-    }
-
-    private void AddRuntimeModelDirectives(MappedSelectionField mappedField) {
-      var fldDef = mappedField.FieldDef;
-      if (fldDef.HasDirectives())
-        foreach (Model.ModelDirective fldDir in fldDef.Directives)
-          mappedField.AddDirective(new RuntimeDirective(fldDir));
-      var typeDef = fldDef.TypeRef.TypeDef;
-      if (typeDef.HasDirectives())
-        foreach (Model.ModelDirective tdir in typeDef.Directives)
-          mappedField.AddDirective(new RuntimeDirective(tdir));
-    }
+*/
 
     /*
     private MappedFragmentSpread MapFragmentSpread(FragmentSpread fs, ObjectTypeDef objectTypeDef, bool isForUnion) {
@@ -201,7 +157,6 @@ namespace NGraphQL.Server.Parsing {
       var mappedSpread = new MappedFragmentSpread(fs, mappedFragmItemSet.MappedItems);
       return mappedSpread;
     }
-    */
 
     private void ValidateMappedFieldAndProcessSubset(MappedSelectionField mappedField) {
       var typeDef = mappedField.FieldDef.TypeRef.TypeDef;
@@ -226,6 +181,9 @@ namespace NGraphQL.Server.Parsing {
           break;
       }
     }
+
+
+    */
 
     private void AddError(string message, RequestObjectBase item, string errorType = ErrorCodes.BadRequest) {
       var path = item.GetRequestObjectPath();

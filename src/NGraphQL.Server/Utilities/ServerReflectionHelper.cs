@@ -131,8 +131,8 @@ namespace NGraphQL.Utilities {
       return result;
     }
 
-    public static Func<object, object> CompileTaskResultReader(Type resultType) {
-      var taskType = typeof(Task<>).MakeGenericType(resultType);
+    public static Func<object, object> CompileTaskResultReader(Type taskType) {
+      //var taskType = typeof(Task<>).MakeGenericType(resultType);
       var resultProp = taskType.GetProperty("Result");
       var prm = Expression.Parameter(typeof(object));
       var taskExpr = Expression.Convert(prm, taskType);

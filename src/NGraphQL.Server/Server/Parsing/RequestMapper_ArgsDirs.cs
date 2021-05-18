@@ -11,7 +11,53 @@ namespace NGraphQL.Server.Parsing {
 
   partial class RequestMapper {
 
-    private IList<MappedArg> MapArguments(IList<InputValue> args, IList<InputValueDef> argDefs, NamedRequestObject owner) {
+    private void CalcVariableDefaultValues(GraphQLOperation op) {
+      foreach (var varDef in op.Variables) {
+        if (varDef.ParsedDefaultValue == null)
+          continue;
+        var inpDef = varDef.InputDef;
+        var typeRef = inpDef.TypeRef;
+        var eval = GetInputValueEvaluator(inpDef, varDef.ParsedDefaultValue, typeRef);
+        if (!eval.IsConst()) {
+          // somewhere inside there's reference to variable, this is not allowed
+          AddError($"Default value cannot reference variables.", varDef);
+          continue;
+        }
+        var value = eval.GetValue(_requestContext);
+        if (value != null && value.GetType() != typeRef.TypeDef.ClrType) {
+          // TODO: fix that, add type conversion, for now throwing exception; or maybe it's not needed, value will be converted at time of use
+          // but spec also allows auto casting like  int => int[]
+          AddError($"Detected type mismatch for default value '{value}' of variable {varDef.Name} of type {typeRef.Name}", varDef);
+        }
+        inpDef.DefaultValue = value;
+        inpDef.HasDefaultValue = true;
+      } // foreach varDef
+    }
+
+
+    private void AddRuntimeRequestDirectives(SelectionItem selItem) {
+      // request directives first; map dir args
+      if (selItem.Directives != null) {
+        foreach (var dir in selItem.Directives) {
+          var rtDir = new RuntimeDirective(dir);
+          rtDir.MappedArgs = MapArguments(dir.Args, dir.Def.Args, dir);
+          _requestContext.ParsedRequest.AllDirectives.Add(rtDir); 
+        }
+      }
+    }
+
+    private void AddRuntimeModelDirectives(FieldDef fldDef) {
+      if (fldDef.HasDirectives())
+        foreach (Model.ModelDirective fldDir in fldDef.Directives)
+          _requestContext.ParsedRequest.AllDirectives.Add(new RuntimeDirective(fldDir));
+      var typeDef = fldDef.TypeRef.TypeDef;
+      if (typeDef.HasDirectives())
+        foreach (Model.ModelDirective tdir in typeDef.Directives)
+          _requestContext.ParsedRequest.AllDirectives.Add(new RuntimeDirective(tdir));
+    }
+
+
+    public IList<MappedArg> MapArguments(IList<InputValue> args, IList<InputValueDef> argDefs, NamedRequestObject owner) {
       args ??= InputValue.EmptyList; 
       var hasArgs = args.Count > 0; 
       var hasArgDefs = argDefs.Count > 0; // argDefs are never null
@@ -33,7 +79,7 @@ namespace NGraphQL.Server.Parsing {
       }
 
       // build Mapped Arg list - full list of args in right order matching the resolver method
-      var MappedSelectionFieldArgs = new List<MappedArg>();
+      var mappedArgs = new List<MappedArg>();
       foreach(var argDef in argDefs) {
         var arg = args.FirstOrDefault(a => a.Name == argDef.Name);
         if(arg == null) {
@@ -41,7 +87,7 @@ namespace NGraphQL.Server.Parsing {
           if(argDef.HasDefaultValue || !argDef.TypeRef.IsNotNull) {
             var constValue = CreateConstantInputValue(argDef, owner, argDef.TypeRef, argDef.DefaultValue); 
             var MappedSelectionFieldArg = new MappedArg() { Anchor = owner, ArgDef = argDef, Evaluator = constValue };
-            MappedSelectionFieldArgs.Add(MappedSelectionFieldArg);
+            mappedArgs.Add(MappedSelectionFieldArg);
           } else {
             AddError($"Field(dir) '{owner.Name}': argument '{argDef.Name}' value is missing.", owner);
           }
@@ -51,7 +97,7 @@ namespace NGraphQL.Server.Parsing {
         try {
           var argEval = GetInputValueEvaluator(argDef, arg.ValueSource, argDef.TypeRef);
           var outArg = new MappedArg() { Anchor = arg, ArgDef = argDef, Evaluator = argEval };
-          MappedSelectionFieldArgs.Add(outArg);
+          mappedArgs.Add(outArg);
         } catch (InvalidInputException bvEx) {
           _requestContext.AddInputError(bvEx);
           continue;
@@ -59,7 +105,7 @@ namespace NGraphQL.Server.Parsing {
           throw new InvalidInputException(ex.Message, arg.ValueSource, ex);
         }
       } //foreach argDef
-      return MappedSelectionFieldArgs;
+      return mappedArgs;
     }
 
     internal InputValueEvaluator GetInputValueEvaluator(InputValueDef inputDef, ValueSource valueSource, TypeRef valueTypeRef) {
