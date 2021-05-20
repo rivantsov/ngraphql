@@ -15,7 +15,7 @@ namespace NGraphQL.Server.Execution {
   partial class OperationFieldExecuter {
 
     private async Task<object> InvokeResolverAsync(FieldContext fieldContext) {
-      if (fieldContext.CurrentResolver.ResolverFunc != null)
+      if (fieldContext.MappedField.Resolver.ResolverFunc != null)
         return InvokeResolverFunc(fieldContext);
       else
         return await InvokeResolverMethodAsync(fieldContext); 
@@ -23,7 +23,7 @@ namespace NGraphQL.Server.Execution {
 
     private async Task<object> InvokeResolverMethodAsync(FieldContext fieldContext) {
       try {
-        var fldResolver = fieldContext.CurrentResolver;
+        var fldResolver = fieldContext.MappedField.Resolver;
         var fldDef = fldResolver.Field;
         if(fieldContext.ArgValues == null)
           BuildResolverArguments(fieldContext);
@@ -63,7 +63,7 @@ namespace NGraphQL.Server.Execution {
     // merge with prev method InvokeResolverAsync 
     private object InvokeResolverFunc(FieldContext fieldContext) {
       try {
-        var func = fieldContext.CurrentResolver.ResolverFunc;
+        var func = fieldContext.MappedField.Resolver.ResolverFunc;
         var parent = fieldContext.CurrentParentScope.Entity; 
         var result = func(parent);
         return result;
@@ -103,20 +103,15 @@ namespace NGraphQL.Server.Execution {
     }
 
     private void BuildResolverArguments(FieldContext fieldContext) {
-      var selField = fieldContext.SelectionField;
-      if (selField.MappedArgs == null) {
-        var reqMapper = new Parsing.RequestMapper(_requestContext);
-        selField.MappedArgs = reqMapper.MapArguments(selField.Args, fieldContext.CurrentFieldDef.Args, selField); 
-      }
-      // arguments
+      var mappedArgs = fieldContext.MappedField.MappedArgs;
       var argValues = new List<object>();
       // special arguments: context, parent      
       argValues.Add(fieldContext);
-      if(!fieldContext.CurrentFieldDef.Flags.IsSet(FieldFlags.Static))
+      if(!fieldContext.FieldDef.Flags.IsSet(FieldFlags.Static))
         argValues.Add(fieldContext.CurrentParentScope.Entity);
       //regular arguments
-      for (int i = 0; i < selField.MappedArgs.Count; i++) {
-        var arg = selField.MappedArgs[i];
+      for (int i = 0; i < mappedArgs.Count; i++) {
+        var arg = mappedArgs[i];
         var argValue = SafeEvaluateArg(fieldContext, arg);
         argValues.Add(argValue);
       }

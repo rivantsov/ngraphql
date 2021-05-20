@@ -11,10 +11,6 @@ namespace NGraphQL.Server.Parsing {
 
   /// <summary>RequestMapper takes request tree and maps its objects to API model; for ex: selection field is mapped to field definition</summary>
   public partial class RequestMapper {
-    GraphQLApiModel _model;
-    RequestContext _requestContext;
-    GraphQLOperation _currentOp;
-
     /*
     #region pending selection sets list
     // for certain reasons (coming from Fragments and their inter-dependencies) we traverse 
@@ -29,27 +25,7 @@ namespace NGraphQL.Server.Parsing {
       public IList<RequestDirective> Directives;
     }
     #endregion
-    */
-    public RequestMapper(RequestContext requestContext) {
-      _requestContext = requestContext;
-      _model = _requestContext.ApiModel;
-    }
 
-
-
-    public void MapAndValidateRequest() {
-      Fragments_MapValidate();
-      if (_requestContext.Failed)
-        return;
-      foreach (var op in _requestContext.ParsedRequest.Operations) {
-        op.OperationTypeDef = _model.GetOperationDef(op.OperationType);
-        _currentOp = op;
-        CalcVariableDefaultValues(op);
-        // MapOperation(op);
-      }
-      _currentOp = null;
-    }
-    /*
     private void MapOperation(GraphQLOperation op) {
       MapSelectionSubSet(op.SelectionSubset, op.OperationTypeDef, op.Directives);
       if (_pendingSelectionSets.Count > 0)
@@ -127,9 +103,7 @@ namespace NGraphQL.Server.Parsing {
 
       selSubset.MappedSubSets.Add(new MappedSelectionSubSet() { ObjectTypeDef = objectTypeDef, MappedItems = mappedItems });
     }
-*/
 
-    /*
     private MappedFragmentSpread MapFragmentSpread(FragmentSpread fs, ObjectTypeDef objectTypeDef, bool isForUnion) {
       // if it is not inline fragment, it might need to map to FragmentDef; inline fragments are auto-mapped at construction
       if (fs.Fragment == null)
@@ -184,12 +158,6 @@ namespace NGraphQL.Server.Parsing {
 
 
     */
-
-    private void AddError(string message, RequestObjectBase item, string errorType = ErrorCodes.BadRequest) {
-      var path = item.GetRequestObjectPath();
-      var err = new GraphQLError(message, path, item.SourceLocation, errorType);
-      _requestContext.AddError(err);
-    }
 
   } // class
 }

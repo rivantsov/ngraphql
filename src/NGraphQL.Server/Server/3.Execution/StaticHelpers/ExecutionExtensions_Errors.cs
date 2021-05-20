@@ -25,7 +25,8 @@ namespace NGraphQL.Server.Execution {
     public static void AddError(this FieldContext fieldContext, Exception exc, string errorType) {
       var reqCtx = (RequestContext) fieldContext.RequestContext;
       var path = fieldContext.GetFullRequestPath();
-      var err = new GraphQLError(exc.Message, path, fieldContext.SelectionField.SourceLocation, type: errorType);
+      var sourceLoc = fieldContext.SourceLocation;
+      var err = new GraphQLError(exc.Message, path, sourceLoc, type: errorType);
       var withDet = reqCtx.Server.Settings.Options.IsSet(GraphQLServerOptions.ReturnExceptionDetails);
       if (withDet)
         err.Extensions["Details"] = exc.ToText();
@@ -63,8 +64,9 @@ namespace NGraphQL.Server.Execution {
     internal static void ThrowFieldDepthExceededQuota(this FieldContext fieldContext) {
       var reqCtx = (RequestContext) fieldContext.RequestContext;
       var quota = reqCtx.Quota;
+      var sourceLoc = fieldContext.SourceLocation;
       var err = new GraphQLError($"Query depth exceeded maximum ({quota.MaxDepth}) allowed by quota.",
-        fieldContext.GetFullRequestPath(), fieldContext.SelectionField.SourceLocation, type: "Quota");
+        fieldContext.GetFullRequestPath(), sourceLoc, type: "Quota");
       reqCtx.AddError(err);
       throw new AbortRequestException();
     }
@@ -73,7 +75,7 @@ namespace NGraphQL.Server.Execution {
       var reqCtx = (RequestContext)fieldContext.RequestContext;
       var quota = reqCtx.Quota;
       var err = new GraphQLError($"Output object count exceeded maximum ({quota.MaxOutputObjects}) allowed by quota.",
-        fieldContext.GetFullRequestPath(), fieldContext.SelectionField.SourceLocation, type: "Quota");
+        fieldContext.GetFullRequestPath(), fieldContext.SourceLocation, type: "Quota");
       reqCtx.AddError(err);
       throw new AbortRequestException();
     }
@@ -81,7 +83,7 @@ namespace NGraphQL.Server.Execution {
     internal static void ThrowRequestCancelled(this FieldContext fieldContext) {
       var reqCtx = (RequestContext)fieldContext.RequestContext;
       var err = new GraphQLError($"Request cancelled",
-        fieldContext.GetFullRequestPath(), fieldContext.SelectionField.SourceLocation, type: "Cancel");
+                  fieldContext.GetFullRequestPath(), fieldContext.SourceLocation, type: "Cancel");
       reqCtx.AddError(err);
       throw new AbortRequestException();
     }

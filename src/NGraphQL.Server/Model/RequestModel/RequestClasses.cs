@@ -7,6 +7,11 @@ using NGraphQL.Server.Execution;
 
 namespace NGraphQL.Model.Request {
 
+  public enum SelectionItemKind {
+    Field,
+    FragmentSpread,
+  }
+
   public abstract class RequestObjectBase {
     public RequestObjectBase Parent; 
     public SourceLocation SourceLocation { get; internal set; } 
@@ -18,7 +23,11 @@ namespace NGraphQL.Model.Request {
   }
 
   public abstract class SelectionItem : NamedRequestObject {
+    public SelectionItemKind Kind; 
     public IList<RequestDirective> Directives { get; internal set; }
+    public SelectionItem(SelectionItemKind kind) { 
+      Kind = kind; 
+    }
   }
 
   public class SelectionField : SelectionItem, ISelectionField {
@@ -26,8 +35,8 @@ namespace NGraphQL.Model.Request {
     public string Key => Alias ?? Name;    //alias or name
     public IList<InputValue> Args;
     public SelectionSubset SelectionSubset;
-    public IList<MappedArg> MappedArgs;
-    public FieldResolverInfo DefaultResolver; 
+
+    public SelectionField() : base(SelectionItemKind.Field) { }
 
     public override string ToString() => $"{Key}";
   }
@@ -45,12 +54,12 @@ namespace NGraphQL.Model.Request {
     public bool IsInline; 
     public FragmentDef Fragment; // might be inline fragment
 
-    public FragmentSpread() { }
+    public FragmentSpread(): base(SelectionItemKind.FragmentSpread) { }
   }
 
   public class SelectionSubset: RequestObjectBase {
     public List<SelectionItem> Items;
-    // public readonly IList<MappedSelectionSubSet> MappedSubSets = new List<MappedSelectionSubSet>(); 
+    public readonly IList<MappedSelectionSubSet> MappedSubSets = new List<MappedSelectionSubSet>(); 
 
     public SelectionSubset(RequestObjectBase parent, List<SelectionItem> items, SourceLocation location) {
       Parent = parent; 
