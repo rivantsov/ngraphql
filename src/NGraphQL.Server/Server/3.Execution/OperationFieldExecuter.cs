@@ -17,8 +17,8 @@ namespace NGraphQL.Server.Execution {
   /// OperationFieldExecuter instances. </remarks>
   public partial class OperationFieldExecuter : IOperationFieldContext {
     RequestContext _requestContext;
-    OutputObjectScope _parentScope; 
-    MappedSelectionField _mappedOpField; 
+    OutputObjectScope _parentScope;
+    MappedSelectionField _mappedOpField;
     List<object> _resolverInstances = new List<object>();
     // this is a flag indicating failure of this operation field; we have more global flag in RequestContext,
     //  but it is for ALL operation fields executing concurrently. We track individual oper field in this _failed
@@ -70,32 +70,60 @@ namespace NGraphQL.Server.Execution {
     private async Task ExecuteFieldSelectionSubsetAsync(FieldContext parentFieldContext) {
       // all scopes have scope.Entity != null
       var scopes = parentFieldContext.AllResultScopes;
+      if (scopes.Count == 0)
+        return; 
       var outTypeDef = parentFieldContext.TypeDef;
       var selSubSet = parentFieldContext.MappedField.Field.SelectionSubset;
-      switch(outTypeDef.Kind) {
-        case TypeKind.Object:
-          var mappedSubSet = selSubSet.MappedSubSets.FirstOrDefault(ms => ms.Mapping.TypeDef == outTypeDef);
-          Util.Check(mappedSubSet != null, 
-            $"FATAL: Failed to find mapped selection subset for field '{parentFieldContext.FieldDef.Name}' on type '{outTypeDef.Name}'");
-          await ExecuteObjectsSelectionSubsetAsync(parentFieldContext.MappedField, scopes, mappedSubSet);
+      switch (outTypeDef) {
+        case ObjectTypeDef objectTypeDef:
+          await ExecuteObjectsSelectionSubsetAsync(parentFieldContext.MappedField, scopes, objectTypeDef);
           return;
 
-        case TypeKind.Interface:
-        case TypeKind.Union:
-          // group by type, and process each sublist
-          var scopesByType = scopes.GroupBy(s => s.Entity.GetType()).ToList();
-          foreach(var grp in scopesByType) {
-            var entType = grp.Key.GetType();
-            var mappedSubSet2 = selSubSet.MappedSubSets.FirstOrDefault(ms => ms.Mapping.EntityType == entType);
-            Util.Check(mappedSubSet2 != null, 
-              $"FATAL: Failed to find mapped selection subset for field '{parentFieldContext.FieldDef.Name}' for entity type '{entType.Name}'");
-            await ExecuteObjectsSelectionSubsetAsync(parentFieldContext.MappedField, grp.ToList(), mappedSubSet2);
-          }
+        case InterfaceTypeDef itd:
+          foreach(var objTypeDef in itd.PossibleTypes)
+            await ExecuteObjectsSelectionSubsetAsync(parentFieldContext.MappedField, scopes, objTypeDef);
+          return;
+
+        case UnionTypeDef utd:
+          foreach (var objTypeDef in utd.PossibleTypes)
+            await ExecuteObjectsSelectionSubsetAsync(parentFieldContext.MappedField, scopes, objTypeDef);
           return;
 
         default:
           return; //never happens
       }
+    }
+
+    private async Task ExecuteObjectsSelectionSubsetAsync(MappedSelectionField parentField,
+               IList<OutputObjectScope> parentScopes, ObjectTypeDef objectTypeDef) {
+      // fast path, all the same type;  scopes.Count is always > 0
+      var selSubset = parentField.Field.SelectionSubset;
+      var entType = parentScopes[0].Entity.GetType();
+      var allSameType = parentScopes.Count == 1 || parentScopes.All(ps => ps.Entity.GetType() == entType);
+      if (allSameType) {
+        var mappedSubSet = GetMappedSubset(selSubset, objectTypeDef, entType, parentField.Field);
+        await ExecuteObjectsSelectionSubsetAsync(parentField, parentScopes, mappedSubSet);
+        return; 
+      }
+      // multiple entity types
+      var scopesByType = parentScopes.GroupBy(s => s.Entity.GetType()).ToList();
+      foreach (var grp in scopesByType) {
+        entType = grp.Key;
+        var mappedSubSet = GetMappedSubset(selSubset, objectTypeDef, entType, parentField.Field);
+        await ExecuteObjectsSelectionSubsetAsync(parentField, parentScopes, mappedSubSet);
+      }
+    }
+
+    private MappedSelectionSubSet GetMappedSubset(SelectionSubset subSet, ObjectTypeDef objectTypeDef, Type entityType, 
+                                                             NamedRequestObject requestObj) {
+      var mappedSubset = subSet.MappedSubSets.FirstOrDefault(ms => ms.Mapping.TypeDef == objectTypeDef && 
+                                                                   ms.Mapping.EntityType == entityType);
+      if (mappedSubset == null) {
+        this._requestContext.AddError($"Failed to find mapping from entity type {entityType} to GraphQLType {objectTypeDef.Name}",
+          requestObj);
+        AbortRequest(); 
+      }
+      return mappedSubset; 
     }
 
     private async Task ExecuteObjectsSelectionSubsetAsync(MappedSelectionField parentField, 
@@ -110,7 +138,8 @@ namespace NGraphQL.Server.Execution {
           var mappedSpread = (MappedFragmentSpread) mappedItem;
           var objTypeDef = mappedSubSet.Mapping.TypeDef;
           var fragmSelSubset = mappedSpread.Spread.Fragment.SelectionSubset;
-          var mappedFragmSubset = fragmSelSubset.MappedSubSets.FirstOrDefault(ms => ms.Mapping.TypeDef == objTypeDef);
+          var entType = mappedSubSet.Mapping.EntityType;
+          var mappedFragmSubset = GetMappedSubset(fragmSelSubset, objTypeDef, entType, mappedSpread.Spread);
           await ExecuteObjectsSelectionSubsetAsync(parentField, parentScopes, mappedFragmSubset); //call self recursively
           continue; 
         }

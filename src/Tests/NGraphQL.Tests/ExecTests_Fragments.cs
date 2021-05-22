@@ -72,6 +72,7 @@ fragment ThingDetails on Thing {
     }
 }
 ";
+      Assert.IsTrue(false, "Fix this: self-ref fragment crashes the test process.");
       resp = await ExecuteAsync(query, throwOnError: false);
       Assert.AreEqual(0, resp.Errors.Count, "Expected no errors.");
 
