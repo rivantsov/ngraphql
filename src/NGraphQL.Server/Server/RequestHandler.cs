@@ -8,11 +8,11 @@ using NGraphQL.CodeFirst;
 using NGraphQL.Model;
 using NGraphQL.Server.Parsing;
 using NGraphQL.Model.Request;
-using NGraphQL.Server;
+using NGraphQL.Server.Execution;
 
-namespace NGraphQL.Server.Execution {
+namespace NGraphQL.Server {
 
-  public class RequestHandler {
+  internal class RequestHandler {
     GraphQLServer _server; 
     RequestContext _requestContext;
     bool _parallelQuery = true;
@@ -109,14 +109,11 @@ namespace NGraphQL.Server.Execution {
       if (_server.RequestCache.TryLookupParsedRequest(_requestContext))
         return true;
 
-      // Parse
-      var parseTree = ParseRequest();
-      if (_requestContext.Failed)
-        return false;
       // parse/build request
       var reqBuilder = new RequestParser(_requestContext);
-      if (!reqBuilder.BuildRequest(parseTree))
+      if (!reqBuilder.ParseRequest())
         return false;
+
       // Map and validate
       var mapper = new RequestMapper(_requestContext);
       mapper.MapAndValidateRequest();
@@ -128,23 +125,6 @@ namespace NGraphQL.Server.Execution {
       if (success && !_requestContext.Metrics.FromCache)
         _server.RequestCache.AddParsedRequest(_requestContext);
       return success; 
-    }
-
-    private ParseTree ParseRequest() {
-      var text = _requestContext.RawRequest.Query;
-      var syntaxParser = _server.Grammar.CreateRequestParser();
-      var parseTree = syntaxParser.Parse(text);
-      if (parseTree.HasErrors()) {
-        // copy errors to response and return
-        foreach (var errMsg in parseTree.ParserMessages) {
-          var loc = errMsg.Location.ToLocation();
-          // we cannot retrieve path here, parser failed early, so no parse tree - this is Irony's limitation, to be fixed
-          IList<object> noPath = null;
-          var err = new GraphQLError("Query parsing failed: " + errMsg.Message, noPath, loc, ErrorCodes.Syntax);
-          _requestContext.AddError(err);
-        }
-      }
-      return parseTree;
     }
 
     private bool AssignRequestOperation() {

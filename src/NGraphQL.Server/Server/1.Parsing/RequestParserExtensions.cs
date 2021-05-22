@@ -58,13 +58,6 @@ namespace NGraphQL.Server.Parsing {
       return new SourceLocation() { Line = srcLoc.Line + 1, Column = srcLoc.Column + 1 };
     }
 
-    public static int ComputeDependencyTreeLevel(this FragmentDef fragment) {
-      if (fragment.DependencyTreeLevel < 0)
-        fragment.DependencyTreeLevel = (fragment.UsesFragmentsAll.Count == 0) ? 
-          0 :
-          fragment.UsesFragmentsAll.Max(f => f.ComputeDependencyTreeLevel()) + 1;
-      return fragment.DependencyTreeLevel;
-    }
 
 
 

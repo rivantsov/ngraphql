@@ -14,17 +14,15 @@ namespace NGraphQL.Model.Request {
 
   // Mapped field is a runtime representation of a selection field in a query.
   public class MappedSelectionField: MappedSelectionItem {
-    public readonly SelectionField Field; 
+    public readonly SelectionField Field;
     public readonly FieldResolverInfo Resolver;
-    public readonly IList<MappedArg> MappedArgs;
     public int Index; 
 
     //public FieldResolverInfo Resolver;
 
-    public MappedSelectionField(SelectionField field, FieldResolverInfo resolver, int index, IList<MappedArg> args): base( SelectionItemKind.Field) {
+    public MappedSelectionField(SelectionField field, FieldResolverInfo resolver, int index) : base( SelectionItemKind.Field) {
       Field = field; 
-      Resolver = resolver; 
-      MappedArgs = args;
+      Resolver = resolver;
     }
 
     public override string ToString() => $"{Field.Key}";

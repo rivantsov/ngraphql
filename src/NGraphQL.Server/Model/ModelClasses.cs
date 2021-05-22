@@ -148,11 +148,6 @@ namespace NGraphQL.Model {
     public FieldFlags Flags;
     public IList<InputValueDef> Args = new List<InputValueDef>();
     public MemberInfo ClrMember;
-    /* //moved these to 
-    public ResolverMethodInfo Resolver;
-    public Func<object, object> Reader;
-    public FieldExecutionType ExecutionType;
-    */
 
     public FieldDef(ComplexTypeDef ownerType, string name, TypeRef typeRef) {
       OwnerType = ownerType; 
@@ -164,6 +159,8 @@ namespace NGraphQL.Model {
       if (ownerType.TypeRole != TypeRole.Data)
         Flags |= FieldFlags.Static; 
     }
+
+    public override string ToString() => $"{OwnerType.Name}.{Name}";
   }
 
   public class DirectiveDef : GraphQLModelObject {

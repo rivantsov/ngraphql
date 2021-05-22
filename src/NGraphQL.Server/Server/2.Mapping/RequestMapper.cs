@@ -21,14 +21,14 @@ namespace NGraphQL.Server.Parsing {
     }
 
     public void MapAndValidateRequest() {
-      Fragments_MapValidate();
+      var fragmAnalyzer = new FragmentAnalyzer(_requestContext);
+      fragmAnalyzer.Analyze();
       if (_requestContext.Failed)
         return;
       foreach (var op in _requestContext.ParsedRequest.Operations) {
         op.OperationTypeDef = _model.GetOperationDef(op.OperationType);
-        _currentOp = op;
+        MapOperation(op);
         CalcVariableDefaultValues(op);
-        // MapOperation(op);
       }
       _currentOp = null;
     }

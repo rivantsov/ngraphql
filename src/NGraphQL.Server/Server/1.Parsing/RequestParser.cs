@@ -20,7 +20,7 @@ namespace NGraphQL.Server.Parsing {
        * variable values for variables defined by selected operation
   */
 
-  /// <summary>RequestBuilder builds the request object (tree of request elements) from the syntax tree produced by Irony parser.
+  /// <summary>RequestParser builds the request object (tree of request elements) from the syntax tree produced by Irony parser.
   /// This tree is not mapped yet to API model (types, fields to field defs), this is the job of the RequestMapper. </summary>
   public partial class RequestParser {
     public static readonly Irony.Parsing.SourceLocation StartSourceLocation = new Irony.Parsing.SourceLocation() { Line = 1, Column = 1 };
@@ -32,8 +32,12 @@ namespace NGraphQL.Server.Parsing {
       _requestContext = context;
     }
 
-    public bool BuildRequest(ParseTree parseTree) {
-
+    public bool ParseRequest() {
+      // the first step is syntactic parsing, to convert text into parse tree using Irony parser
+      var query = _requestContext.RawRequest.Query;
+      ParseTree parseTree = ParseToSyntaxTree(query);
+      if (_requestContext.Failed)
+        return false;
       _requestContext.ParsedRequest = new ParsedGraphQLRequest();
       var requestDocNode = parseTree.Root;
       var rootTerm = requestDocNode.Term.Name;
@@ -56,6 +60,22 @@ namespace NGraphQL.Server.Parsing {
         BuildFragments(topItems.Fragments);
 
       return !_requestContext.Failed;
+    }
+
+    private ParseTree ParseToSyntaxTree(string query) {
+      var syntaxParser = _requestContext.Server.Grammar.CreateRequestParser();
+      var parseTree = syntaxParser.Parse(query);
+      if (parseTree.HasErrors()) {
+        // copy errors to response and return
+        foreach (var errMsg in parseTree.ParserMessages) {
+          var loc = errMsg.Location.ToLocation();
+          // we cannot retrieve path here, parser failed early, so no parse tree - this is Irony's limitation, to be fixed
+          IList<object> noPath = null;
+          var err = new GraphQLError("Query parsing failed: " + errMsg.Message, noPath, loc, ErrorCodes.Syntax);
+          _requestContext.AddError(err);
+        }
+      }
+      return parseTree;
     }
 
     // In request builder we only map type refs and directives; strictly speaking it belongs to mapper,

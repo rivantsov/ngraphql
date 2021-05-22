@@ -102,6 +102,5 @@ namespace NGraphQL.Server.Execution {
         throw new AbortRequestException();
     }
 
-
   }
 }

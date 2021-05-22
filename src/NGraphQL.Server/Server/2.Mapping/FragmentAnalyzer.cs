@@ -1,29 +1,42 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using NGraphQL.Introspection;
 using NGraphQL.Model;
 using NGraphQL.Server.Parsing;
 using NGraphQL.Model.Request;
+using NGraphQL.Server.Execution;
+using NGraphQL.CodeFirst;
 
 namespace NGraphQL.Server.Parsing {
 
-  public partial class RequestMapper {
-    IList<FragmentDef> _allFragments; 
+  public class FragmentAnalyzer {
+    RequestContext _requestContext;
     IList<FragmentDef> _namedFragments; // non inline fragments
+
+
+    public FragmentAnalyzer(RequestContext context) {
+      _requestContext = context;
+    }
+
+    private void AddError(string message, RequestObjectBase item, string errorType = ErrorCodes.BadRequest) {
+      _requestContext.AddError(message, item, errorType);
+    }
+
 
     private FragmentDef GetFragmentDef(string name) {
       var fragm = _requestContext.ParsedRequest.Fragments.FirstOrDefault(fd => fd.Name == name);
       return fragm;
     }
 
+
     // analyzes refs to fragments inside fragments; checks circular refs
-    private void Fragments_MapValidate() {
-      _namedFragments = FragmentDef.EmptyList;
-      _allFragments = _requestContext.ParsedRequest.Fragments;
-      if (_allFragments.Count == 0)
+    public void Analyze() {
+      var allFragments = _requestContext.ParsedRequest.Fragments;
+      if (allFragments.Count == 0)
         return; 
-      // select named fragments (exclued inline fragments) 
-      _namedFragments = _allFragments.Where(f => !f.IsInline).ToList();
+      // select named fragments (exclude inline fragments) 
+      _namedFragments = allFragments.Where(f => !f.IsInline).ToList();
       // Map references in fragmentSpreads, OnType references
       Fragments_MapOnTypeReferences();
       if (_requestContext.Failed)
@@ -35,17 +48,16 @@ namespace NGraphQL.Server.Parsing {
       Fragments_ValidateFragmentFieldsForTargetType();
       if (_requestContext.Failed)
         return;
-      // Map fields
-      // Fragments_MapFragmentFields(); 
     }
 
     private void Fragments_MapOnTypeReferences() {
-      foreach (var fragm in _allFragments) {
+      var typesByName = _requestContext.Server.Model.TypesByName;
+      foreach (var fragm in _requestContext.ParsedRequest.Fragments) {
         if (fragm.OnTypeRef == null)
           continue; 
         // resolve OnType reference
         var onTypeName = fragm.OnTypeRef.Name;
-        if (!_model.TypesByName.TryGetValue(onTypeName, out var onTypeDef)) {
+        if (!typesByName.TryGetValue(onTypeName, out var onTypeDef)) {
           AddError($"On-type target type '{onTypeName}' not defined.", fragm.OnTypeRef);
           continue;
         }
@@ -188,22 +200,22 @@ namespace NGraphQL.Server.Parsing {
     }
 
     /*
+    // TODO: move it to request mapper
     private void Fragments_MapFragmentFields() {
       // Step 1 - order fragments by depencency level
       Fragments_OrderByDependencyTreeLevel();
 
       // Step 2 - map only top-level fields, do not go into field selection subsets if any
       //   there are no circular dependencies at top level, and we ordered dependencies
-      _pendingSelectionSets.Clear(); 
-      foreach (var fragm in _namedFragments) 
+      _pendingSelectionSets.Clear();
+      foreach (var fragm in _namedFragments)
         MapSelectionSubSet(fragm.SelectionSubset, fragm.OnTypeRef.TypeDef, fragm.Directives);
       // there could be errors
       if (_requestContext.Failed)
         return;
       // Step 3 - mapp all pending subsets
-      MapPendingSelectionSubsets(); 
+      MapPendingSelectionSubsets();
     }
-    */
 
     private void Fragments_OrderByDependencyTreeLevel() {
       // we know there is no circular references among fragments at top-level fragment spreads, so it is a tree, 
@@ -214,6 +226,15 @@ namespace NGraphQL.Server.Parsing {
       // 2. Sort by dependency index in asc order
       _namedFragments = _namedFragments.OrderBy(f => f.DependencyTreeLevel).ToList();
     }
+
+    public static int ComputeDependencyTreeLevel(this FragmentDef fragment) {
+      if (fragment.DependencyTreeLevel < 0)
+        fragment.DependencyTreeLevel = (fragment.UsesFragmentsAll.Count == 0) ?
+          0 :
+          fragment.UsesFragmentsAll.Max(f => f.ComputeDependencyTreeLevel()) + 1;
+      return fragment.DependencyTreeLevel;
+    }
+    */
 
   }
 }

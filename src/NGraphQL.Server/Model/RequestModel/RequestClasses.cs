@@ -35,6 +35,7 @@ namespace NGraphQL.Model.Request {
     public string Key => Alias ?? Name;    //alias or name
     public IList<InputValue> Args;
     public SelectionSubset SelectionSubset;
+    public IList<MappedArg> MappedArgs;
 
     public SelectionField() : base(SelectionItemKind.Field) { }
 

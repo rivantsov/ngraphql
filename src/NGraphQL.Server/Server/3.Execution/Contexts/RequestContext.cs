@@ -78,6 +78,12 @@ namespace NGraphQL.Server.Execution {
       }
     }
 
+    public void AddError(string message, RequestObjectBase item, string errorType = ErrorCodes.BadRequest) {
+      var path = item.GetRequestObjectPath();
+      var err = new GraphQLError(message, path, item.SourceLocation, errorType);
+      AddError(err);
+    }
+
     public void AddError(GraphQLError error, Exception sourceException = null) {
       lock (this.Lock) {
         this.Response.Errors.Add(error);
