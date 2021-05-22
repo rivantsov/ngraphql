@@ -14,10 +14,10 @@ namespace NGraphQL.Server.Parsing {
 
     private void MapOperation(GraphQLOperation op) {
       _currentOp = op; 
-      MapSelectionSubSet(op.SelectionSubset, op.OperationTypeDef, op.Directives);
+      MapSelectionSubSet(op.SelectionSubset, op.OperationTypeDef);
     }
 
-    private void MapSelectionSubSet(SelectionSubset selSubset, TypeDefBase typeDef, IList<RequestDirective> directives) {
+    private void MapSelectionSubSet(SelectionSubset selSubset, TypeDefBase typeDef) {
       switch(typeDef) {
         case ScalarTypeDef _:
         case EnumTypeDef _:
@@ -26,23 +26,23 @@ namespace NGraphQL.Server.Parsing {
           break;
 
         case ObjectTypeDef objTypeDef:
-          MapObjectSelectionSubset(selSubset, objTypeDef, directives);
+          MapObjectSelectionSubset(selSubset, objTypeDef);
           break;
 
         case InterfaceTypeDef intTypeDef:
           foreach(var objType in intTypeDef.PossibleTypes)
-            MapObjectSelectionSubset(selSubset, objType, directives);
+            MapObjectSelectionSubset(selSubset, objType);
           break;
 
         case UnionTypeDef unionTypeDef:
           foreach(var objType in unionTypeDef.PossibleTypes)
-            MapObjectSelectionSubset(selSubset, objType, directives, isForUnion: true);
+            MapObjectSelectionSubset(selSubset, objType, isForUnion: true);
           break;
       }
     }
     
     // Might be called for ObjectType or Interface (for intf - just to check fields exist)
-    private void MapObjectSelectionSubset(SelectionSubset selSubset, ObjectTypeDef objectTypeDef, IList<RequestDirective> directives, bool isForUnion = false) {
+    private void MapObjectSelectionSubset(SelectionSubset selSubset, ObjectTypeDef objectTypeDef, bool isForUnion = false) {
       // Map arguments on fields, add directives, map fragments 
       foreach (var item in selSubset.Items) {
         AddRuntimeRequestDirectives(item);
@@ -92,7 +92,7 @@ namespace NGraphQL.Server.Parsing {
               var skip = onType != null && onType != objectTypeDef;
               if (skip)
                 continue;
-              MapObjectSelectionSubset(fs.Fragment.SelectionSubset, objectTypeDef, fs.Directives, isForUnion);
+              MapObjectSelectionSubset(fs.Fragment.SelectionSubset, objectTypeDef, isForUnion);
               var mappedSpread = new MappedFragmentSpread(fs);
               mappedItems.Add(mappedSpread);
               break;
@@ -126,9 +126,7 @@ namespace NGraphQL.Server.Parsing {
             AddError($"Field '{selField.Key}' of type '{typeName}' must have a selection subset.", selField);
             return; 
           }
-          _pendingSelectionSets.Add(new PendingSelectionSet() {
-            SubSet = selSubset, OverType = typeDef, Directives = selField.Directives
-          });
+          MapSelectionSubSet(selSubset, typeDef);
           break;
       }
     }
