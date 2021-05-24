@@ -61,7 +61,8 @@ namespace NGraphQL.Server.Parsing {
             break;
 
           case FragmentSpread fspread:
-            if (fspread.Fragment == null) { //for named fragments
+            // Named fragment refs are NOT set by parser; parser sets only Inline fragmDefs; we need to match named fragms here
+            if (!fspread.IsInline && fspread.Fragment == null) { 
               fspread.Fragment = GetFragmentDef(fspread.Name);
               if (fspread.Fragment == null)
                 AddError($"Fragment {fspread.Name} not defined.", fspread);
@@ -92,7 +93,11 @@ namespace NGraphQL.Server.Parsing {
               var skip = onType != null && onType != objectTypeDef;
               if (skip)
                 continue;
-              MapObjectSelectionSubset(fs.Fragment.SelectionSubset, objectTypeDef, isForUnion);
+              if (fs.IsInline) { // only inline fragments should be mapped from here; named fragments are mapped separately.
+                MapObjectSelectionSubset(fs.Fragment.SelectionSubset, objectTypeDef, isForUnion);
+              } else {
+
+              }
               var mappedSpread = new MappedFragmentSpread(fs);
               mappedItems.Add(mappedSpread);
               break;

@@ -25,15 +25,6 @@ namespace NGraphQL.Model {
       return $"{member.DeclaringType.Name}.{member.Name}";
     }
 
-    public static ObjectTypeDef GetOperationDef(this GraphQLApiModel model, OperationType opType) {
-      switch(opType) {
-        case OperationType.Query: return model.QueryType;
-        case OperationType.Mutation: return model.MutationType;
-        default:
-        case OperationType.Subscription: return model.SubscriptionType; 
-      }
-    }
-
     public static bool TypeIsTransient(this TypeRole typeRole) {
       switch(typeRole) {
         case TypeRole.ModuleQuery:

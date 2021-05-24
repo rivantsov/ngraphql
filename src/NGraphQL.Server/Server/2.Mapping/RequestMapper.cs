@@ -25,12 +25,36 @@ namespace NGraphQL.Server.Parsing {
       fragmAnalyzer.Analyze();
       if (_requestContext.Failed)
         return;
+      foreach(var fragm in _requestContext.ParsedRequest.Fragments) {
+        MapFragment(fragm); 
+      }
+
       foreach (var op in _requestContext.ParsedRequest.Operations) {
-        op.OperationTypeDef = _model.GetOperationDef(op.OperationType);
+        if (!AssignOperationDef(op))
+          continue; 
         MapOperation(op);
         CalcVariableDefaultValues(op);
       }
       _currentOp = null;
+    }
+
+    private bool AssignOperationDef(GraphQLOperation op) {
+      ObjectTypeDef opDef = null;
+      switch (op.OperationType) {
+        case OperationType.Query: opDef = _model.QueryType; break;
+        case OperationType.Mutation: opDef = _model.MutationType; break;
+        case OperationType.Subscription: opDef = _model.SubscriptionType; break;
+      }
+      if (opDef == null) {
+        AddError($"Operation '{op.OperationType}' is not defined in schema. Operation: '{op.Name}'.", op);
+        return false; 
+      }
+      op.OperationTypeDef = opDef; 
+      return true;
+    }
+
+    private void MapFragment(FragmentDef fragm) {
+      MapSelectionSubSet(fragm.SelectionSubset, fragm.OnTypeRef.TypeDef);
     }
 
     private void AddError(string message, RequestObjectBase item, string errorType = ErrorCodes.BadRequest) {
