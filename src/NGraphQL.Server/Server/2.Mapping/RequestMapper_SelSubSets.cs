@@ -57,6 +57,7 @@ namespace NGraphQL.Server.Parsing {
             }
             selFld.MappedArgs = MapArguments(selFld.Args, fldDef.Args, selFld);
             AddRuntimeModelDirectives(fldDef);
+            MapSelectionFieldSubsetIfPresent(selFld, fldDef.TypeRef.TypeDef);
             break;
 
           case FragmentSpread fspread:
@@ -84,7 +85,6 @@ namespace NGraphQL.Server.Parsing {
                 continue;
               var mappedFld = new MappedSelectionField(selFld, fldResolver, mappedItems.Count);
               mappedItems.Add(mappedFld);
-              ValidateMappedFieldAndProcessSubset(mappedFld);
               break;
 
             case FragmentSpread fs:
@@ -109,24 +109,21 @@ namespace NGraphQL.Server.Parsing {
       return fragm; 
     } 
 
-    private void ValidateMappedFieldAndProcessSubset(MappedSelectionField mappedField) {
-      var typeDef = mappedField.Resolver.Field.TypeRef.TypeDef;
-      var selField = mappedField.Field;
+    private void MapSelectionFieldSubsetIfPresent(SelectionField selField, TypeDefBase fieldType) {
       var selSubset = selField.SelectionSubset;
-      var typeName = typeDef.Name; 
-      switch(typeDef) {
+      switch(fieldType) {
         case ScalarTypeDef _:
         case EnumTypeDef _:
           if (selSubset != null)
-            AddError($"Field '{selField.Key}' of type '{typeName}' may not have a selection subset.", selSubset);
+            AddError($"Field '{selField.Key}' of type '{fieldType.Name}' may not have a selection subset.", selSubset);
           break;
         
         default: // ObjectType, Union or Interface 
           if (selSubset == null) {
-            AddError($"Field '{selField.Key}' of type '{typeName}' must have a selection subset.", selField);
+            AddError($"Field '{selField.Key}' of type '{fieldType.Name}' must have a selection subset.", selField);
             return; 
           }
-          MapSelectionSubSet(selSubset, typeDef);
+          MapSelectionSubSet(selSubset, fieldType);
           break;
       }
     }

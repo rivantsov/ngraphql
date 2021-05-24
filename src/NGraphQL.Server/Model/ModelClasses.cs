@@ -21,6 +21,7 @@ namespace NGraphQL.Model {
     public Type ClrType;
     public bool Hidden;
     public bool IsDefaultForClrType = true; // false for ID type, to skip registration
+    public virtual IList<ObjectTypeDef> PossibleOutTypes => null;
 
     public __Type Type_ => (__Type)Intro_; 
     // Default type refs
@@ -93,10 +94,15 @@ namespace NGraphQL.Model {
   public class ObjectTypeDef : ComplexTypeDef {
     public List<InterfaceTypeDef> Implements = new List<InterfaceTypeDef>();
     public List<ObjectTypeMapping> Mappings = new List<ObjectTypeMapping>();
+    ObjectTypeDef[] _possibleOutTypes;
 
     public ObjectTypeDef(string name, Type clrType, IList<Attribute> attrs, GraphQLModule module, 
           TypeRole typeRole = TypeRole.Data) 
-             : base(name, TypeKind.Object, clrType, attrs, module, typeRole) {  }
+             : base(name, TypeKind.Object, clrType, attrs, module, typeRole) {
+      _possibleOutTypes = new ObjectTypeDef[] { this };
+    }
+    
+    public override IList<ObjectTypeDef> PossibleOutTypes => _possibleOutTypes;
   }
 
   public class InterfaceTypeDef : ComplexTypeDef {
@@ -104,7 +110,8 @@ namespace NGraphQL.Model {
 
     public InterfaceTypeDef(string name, Type clrType, IList<Attribute> attrs, GraphQLModule module) 
       : base(name, TypeKind.Interface, clrType, attrs, module) { }
-    
+
+    public override IList<ObjectTypeDef> PossibleOutTypes => PossibleTypes;
   }
 
   public class UnionTypeDef : TypeDefBase {
@@ -112,6 +119,8 @@ namespace NGraphQL.Model {
 
     public UnionTypeDef(string name, Type clrType, IList<Attribute> attrs, GraphQLModule module) 
         : base(name, TypeKind.Union, clrType, attrs, module) { }
+
+    public override IList<ObjectTypeDef> PossibleOutTypes => PossibleTypes;
   }
 
   public class InputObjectTypeDef : TypeDefBase {
