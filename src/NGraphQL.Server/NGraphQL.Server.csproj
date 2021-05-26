@@ -21,6 +21,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="_deprecated\DirectiveActionInterfaces_Disabled.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="_deprecated\DirectiveActionInterfaces_Disabled.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Irony" Version="1.1.0" />
   </ItemGroup>
 

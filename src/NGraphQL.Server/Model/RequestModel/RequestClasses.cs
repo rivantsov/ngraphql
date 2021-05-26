@@ -25,8 +25,20 @@ namespace NGraphQL.Model.Request {
   public abstract class SelectionItem : NamedRequestObject {
     public SelectionItemKind Kind; 
     public IList<RequestDirective> Directives { get; internal set; }
+    
+    public event EventHandler<SelectionItemExecutingEventArgs> Executing;
+    
     public SelectionItem(SelectionItemKind kind) { 
       Kind = kind; 
+    }
+
+    internal bool OnExecuting(out SelectionItemExecutingEventArgs args) {
+      args = null;
+      if (Executing == null)
+        return false;
+      args = new SelectionItemExecutingEventArgs();
+      Executing(this, args);
+      return true; 
     }
   }
 

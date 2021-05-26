@@ -8,8 +8,8 @@ using NGraphQL.Server.Execution;
 
 namespace NGraphQL.Server.Execution {
 
-  public interface IRuntimeDirectiveHandler {
-    void RequestParsed(RuntimeDirective directive, ParsedGraphQLRequest request, GraphQLApiModel model);
+  public interface IRuntimeDirectiveHandler: IDirectiveHandler {
+    void RequestParsed(DirectiveContext context);
   }
 
 }

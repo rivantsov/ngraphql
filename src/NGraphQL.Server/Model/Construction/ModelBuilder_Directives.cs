@@ -14,10 +14,6 @@ namespace NGraphQL.Model.Construction {
       if (!obj.HasDirectives())
         return;
       foreach (ModelDirective dir in obj.Directives) {
-        var action = dir.Def.Handler as IModelDirectiveAction;
-        if (action == null)
-          continue;
-        action.Apply(_model, obj, dir.ModelAttribute.ArgValues);
       }
     }
 
