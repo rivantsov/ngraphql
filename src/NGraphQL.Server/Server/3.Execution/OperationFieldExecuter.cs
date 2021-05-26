@@ -15,7 +15,10 @@ namespace NGraphQL.Server.Execution {
   /// <remarks> We put these methods into a separate class (and not in a RequestHandler) to be able to create 
   /// multiple instances to execute top query fields in parallel. So there will be one RequestHandler and multiple 
   /// OperationFieldExecuter instances. </remarks>
-  public partial class OperationFieldExecuter : IOperationFieldContext {
+  public partial class OperationFieldExecuter  {
+    public object Result;
+    public string ResultKey => _mappedOpField.Field.Key; 
+
     RequestContext _requestContext;
     OutputObjectScope _parentScope;
     MappedSelectionField _mappedOpField;
@@ -31,19 +34,22 @@ namespace NGraphQL.Server.Execution {
     // resolvers are executed. This is all to make it possible to do batched calls (aka Data Loader)
     List<FieldContext> _executedObjectFieldContexts = new List<FieldContext>();
 
-    public OperationFieldExecuter(RequestContext requestContext, MappedSelectionField opField, OutputObjectScope parentScope) {
+    public OperationFieldExecuter(RequestContext requestContext, MappedSelectionField mappedOpField, OutputObjectScope parentScope) {
       _requestContext = requestContext;
       _parentScope = parentScope;
-      _mappedOpField = opField;
+      _mappedOpField = mappedOpField;
     }
 
     public async Task ExecuteOperationFieldAsync() {
       try {
         var opFieldContext = new FieldContext(_requestContext, this, _mappedOpField);
         opFieldContext.SetCurrentParentScope(_parentScope);
-        var result = await InvokeResolverAsync(opFieldContext);
-        var opOutValue = opFieldContext.ConvertToOuputValue(result);
-        _parentScope.SetValue(_mappedOpField.Field.Key, opOutValue);
+        var resolverResult = await InvokeResolverAsync(opFieldContext);
+        // We do not save result in parent top-level context: we maybe executing in parallel with other top-level fields;
+        // we need synchronization(lock), and also op fields might finish out of order. So we save result in a field, and 
+        //  RequestHandler will save all results from executers in proper order. 
+        //_parentScope.SetValue(_mappedOpField.Field.Key, opOutValue); -- do not do this
+        this.Result = opFieldContext.ConvertToOutputValue(resolverResult); //save it for later
         // for fields returning objects, save for further processing of results
         if (opFieldContext.MappedField.Field.SelectionSubset != null)
           _executedObjectFieldContexts.Add(opFieldContext);
@@ -127,7 +133,7 @@ namespace NGraphQL.Server.Execution {
           object result = await InvokeResolverAsync(fieldContext);
           // if batched result was not set, set value
           if (!fieldContext.BatchResultWasSet) {
-            var outValue = fieldContext.ConvertToOuputValue(result);
+            var outValue = fieldContext.ConvertToOutputValue(result);
             scope.SetValue(selFieldKey, outValue);
           }
         } //foreach scope

@@ -39,7 +39,7 @@ namespace NGraphQL.Model.Construction {
               ReturnType = m.GetReturnDataType(), ResolvesAttribute = resAttr
             };
             if (resInfo.ReturnsTask)
-              resInfo.TaskResultReader = ServerReflectionHelper.CompileTaskResultReader(m.ReturnType);            
+              resInfo.TaskResultReader = ExpressionHelper.CompileTaskResultReader(m.ReturnType);            
             _allResolvers.Add(resInfo);
           }
         }

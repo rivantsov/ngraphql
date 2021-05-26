@@ -7,9 +7,11 @@ namespace NGraphQL.CodeFirst {
   public interface IFieldContext {
     ISelectionField SelectionField { get; }
     IRequestContext RequestContext { get; }
-    IOperationFieldContext RootField { get; }
+    string OperationFieldName { get; }
     CancellationToken CancellationToken { get; }
     IList<object> GetFullRequestPath();
+    bool Failed { get; }
+    void AddError(GraphQLError error); 
 
     // to be used by resolver methods, to know in advance which fields  to load from db
     // IList<string> GetAllSelectionSubsetFieldNames();

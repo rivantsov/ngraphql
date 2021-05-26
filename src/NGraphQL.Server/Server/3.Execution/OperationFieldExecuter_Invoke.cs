@@ -63,14 +63,14 @@ namespace NGraphQL.Server.Execution {
     // merge with prev method InvokeResolverAsync 
     private object InvokeResolverFunc(FieldContext fieldContext) {
       try {
-        var func = fieldContext.MappedField.Resolver.ResolverFunc;
-        var parent = fieldContext.CurrentParentScope.Entity; 
-        var result = func(parent);
+        var propReader = fieldContext.MappedField.Resolver.ResolverFunc;
+        var entity = fieldContext.CurrentParentScope.Entity; 
+        var result = propReader(entity);
         return result;
-      } catch (TargetInvocationException tex) {
+      } catch (Exception ex) {
         // sync call goes here
-        var origExc = tex.InnerException ?? tex;
-        fieldContext.AddError(origExc, ErrorCodes.ResolverError);
+        // var origExc = tex.InnerException ?? tex;
+        fieldContext.AddError(ex, ErrorCodes.ResolverError);
         throw new AbortRequestException();
       }
     }

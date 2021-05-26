@@ -131,18 +131,6 @@ namespace NGraphQL.Utilities {
       return result;
     }
 
-    public static Func<object, object> CompileTaskResultReader(Type taskType) {
-      //var taskType = typeof(Task<>).MakeGenericType(resultType);
-      var resultProp = taskType.GetProperty("Result");
-      var prm = Expression.Parameter(typeof(object));
-      var taskExpr = Expression.Convert(prm, taskType);
-      var readPropExpr = Expression.MakeMemberAccess(taskExpr, resultProp);
-      var resultExpr = Expression.Convert(readPropExpr, typeof(object));
-      var lambda = Expression.Lambda(resultExpr, prm);
-      var func = (Func<object, object>)lambda.Compile();
-      return func;
-    }
-
     public static Func<object, long> GetEnumToLongConverter(this Type enumType) {
       if (!enumType.IsEnum)
         throw new Exception($"Invalid type {enumType}, expected enum.");
@@ -169,5 +157,7 @@ namespace NGraphQL.Utilities {
     public static IList CreateTypedArray(this Type elemType, int length) {
       return Array.CreateInstance(elemType, length); 
     }
+
+
   }
 }

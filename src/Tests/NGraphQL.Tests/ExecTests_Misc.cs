@@ -110,9 +110,9 @@ query {
 
 }";
       resp = await ExecuteAsync(query, throwOnError: false);
-      Assert.AreEqual(3, resp.Errors.Count, "Expected 2 error(s)");
+      Assert.AreEqual(3, resp.Errors.Count, "Expected 3 error(s)");
       var expected = new List<string>() { 
-             "Exception thrown by NameOrThrow.", 
+            "Exception thrown by NameOrThrow.", 
             "Exception thrown by GetNameOrThrowAsync.",
             "Exception thrown by GetNameOrThrow."
       };

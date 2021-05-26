@@ -155,7 +155,7 @@ namespace NGraphQL.Model.Construction {
         var resInfo = mapping.FieldResolvers.FirstOrDefault(r => r.Field == fieldDef);
         if (resInfo == null)
           continue; 
-        resInfo.ResolverFunc = CompileResolverExpression(fieldDef, entityPrm, asmtBnd.Expression);
+        resInfo.ResolverFunc = CompileResolverExpression(entityPrm, asmtBnd.Expression);
         var outType = asmtBnd.Expression.Type;
       } //foreach bnd
     }
@@ -239,17 +239,7 @@ namespace NGraphQL.Model.Construction {
           .FirstOrDefault();
         if (entMember == null)
           continue;
-        // TODO: maybe change reading to use compiled lambda 
-        switch (entMember) {
-          case FieldInfo fi:
-            res.ResolverFunc = (ent) => fi.GetValue(ent);
-            break;
-          case PropertyInfo pi:
-            res.ResolverFunc = (ent) => pi.GetValue(ent);
-            break;
-          default:
-            continue; // we consider it no match 
-        }
+        res.ResolverFunc = ExpressionHelper.CompileMemberReader(entMember);
       } //foreach fldDef
     }
 

@@ -139,8 +139,6 @@ namespace NGraphQL.Model {
         return value.ToString();
       }
     }
-
-
     #endregion
   }
 }

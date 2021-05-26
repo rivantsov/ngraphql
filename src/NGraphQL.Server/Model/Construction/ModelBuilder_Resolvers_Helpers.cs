@@ -14,7 +14,7 @@ namespace NGraphQL.Model.Construction {
 
   public partial class ModelBuilder {
 
-    private Func<object, object> CompileResolverExpression(FieldDef field, ParameterExpression entityParam, Expression body) {
+    private Func<object, object> CompileResolverExpression(ParameterExpression entityParam, Expression body) {
 
       // check if body is a MapTo func - return the source entity, mapping will be handled by the caller
       var methCall = body as MethodCallExpression;
@@ -22,18 +22,7 @@ namespace NGraphQL.Model.Construction {
                              methCall.Method.Name == nameof(GraphQLModule.FromMap);
       if (usesFromMapFunc)
         body = methCall.Arguments[0];
-      else
-        field.Flags |= FieldFlags.ResolverReturnsGraphQLObject;
-      // TODO: add return type validation
-      var baseLambda = Expression.Lambda(body, entityParam);
-      var newParentPrm = Expression.Parameter(typeof(object));
-      var parentObj = Expression.Convert(newParentPrm, entityParam.Type);
-      var invokeBaseLambdaExpr = Expression.Invoke(baseLambda, parentObj);
-      var convResultExpr = Expression.Convert(invokeBaseLambdaExpr, typeof(object));
-      var newLambda = Expression.Lambda(convResultExpr, newParentPrm);
-      var compiledLambda = newLambda.Compile();
-      var func = (Func<object, object>)compiledLambda;
-      return func;
+      return ExpressionHelper.CompileResolverExpression(entityParam, body);
     }
 
     private bool VerifyFieldResolverMethod(FieldDef field, ResolverMethodInfo resolverMethod) {
@@ -41,13 +30,6 @@ namespace NGraphQL.Model.Construction {
         return false;
       if (!ValidateResolverMethodArguments(field, resolverMethod))
         return false;
-      /*
-      if (resolverInfo.ReturnsTask)
-        fieldRes.Flags |= FieldFlags.ResolverReturnsTask;
-      if (typeDef is ObjectTypeDef otd && otd.TypeRole == TypeRole.Data)
-        field.Flags |= FieldFlags.HasParentArg;
-      field.ExecutionType = ResolverKind.Method;
-      */
       return !_model.HasErrors;
     }
 

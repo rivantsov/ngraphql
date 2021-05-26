@@ -34,7 +34,7 @@ namespace NGraphQL.Server.Execution {
     }
 
 
-    public static void AddInputError (this IRequestContext context, InvalidInputException exc) {
+    public static void AddInputError (this RequestContext context, InvalidInputException exc) {
       var path = exc.Anchor.GetRequestObjectPath();
       var loc = exc.Anchor.SourceLocation; 
       var err = new GraphQLError(exc.Message, path, loc, ErrorCodes.InputError);
@@ -92,13 +92,13 @@ namespace NGraphQL.Server.Execution {
       throw new FatalServerException(message); 
     }
 
-    public static void AbortIfFailed(this RequestContext context) {
+    public static void AbortIfFailed(this FieldContext context) {
       if (context.Failed)
         throw new AbortRequestException();
     }
 
-    public static void AbortIfFailed(this FieldContext context) {
-      if (context.RequestContext.Failed)
+    public static void AbortIfFailed(this RequestContext context) {
+      if (context.Failed)
         throw new AbortRequestException();
     }
 

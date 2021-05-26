@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace NGraphQL.CodeFirst {
+namespace NGraphQL.Model.Request {
 
   /// <summary>Tracks the code path in the request source. Used for reporting path in Error objects
   /// according to GraphQL spec. </summary>

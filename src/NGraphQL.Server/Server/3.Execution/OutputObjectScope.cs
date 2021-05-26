@@ -60,7 +60,8 @@ namespace NGraphQL.Server.Execution {
         return null;
       }
       set {
-          SetValue(key, value);
+        //SetValue(key, value);
+        throw new NotImplementedException();
       }
     }
 

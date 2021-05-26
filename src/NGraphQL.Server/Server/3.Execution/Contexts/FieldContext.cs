@@ -16,9 +16,10 @@ namespace NGraphQL.Server.Execution {
     // IFieldContext members
     ISelectionField IFieldContext.SelectionField => this.MappedField.Field;
     public IRequestContext RequestContext => _requestContext;
-    public IOperationFieldContext RootField { get; }
     public CancellationToken CancellationToken => _requestContext.CancellationToken;
-    // GetFullRequestPath - see below
+    public string OperationFieldName => _executer.OperationFieldName;
+    public bool Failed => _executer.Failed; 
+    // GetFullRequestPath, AddError - see below
 
 
     internal OutputObjectScope CurrentParentScope => _currentParentScope;
@@ -34,6 +35,7 @@ namespace NGraphQL.Server.Execution {
     internal IList<OutputObjectScope> AllParentScopes = OutputObjectScope.EmptyList;
     internal IList<OutputObjectScope> AllResultScopes = OutputObjectScope.EmptyList;
     internal bool BatchResultWasSet;
+    OperationFieldExecuter _executer { get; }
 
     public bool Skip;
     public string Format;
@@ -41,10 +43,10 @@ namespace NGraphQL.Server.Execution {
     RequestContext _requestContext;
     OutputObjectScope _currentParentScope;
 
-    public FieldContext(RequestContext requestContext, IOperationFieldContext rootField, MappedSelectionField mappedField,
+    public FieldContext(RequestContext requestContext, OperationFieldExecuter fieldExecuter, MappedSelectionField mappedField,
                          IList<OutputObjectScope> allParentScopes = null) {
       _requestContext = requestContext;
-      RootField = rootField;
+      _executer = fieldExecuter;
       MappedField = mappedField;
       FieldDef = MappedField.Resolver.Field;
       TypeDef = FieldDef.TypeRef.TypeDef;
@@ -55,11 +57,15 @@ namespace NGraphQL.Server.Execution {
 
     public override string ToString() => MappedField.ToString();
 
+    public void AddError(GraphQLError error) {
+      _executer.AddError(error); 
+    }
+
     internal void SetCurrentParentScope(OutputObjectScope scope) {
       _currentParentScope = scope;
     }
 
-    public object ConvertToOuputValue(object result) {
+    public object ConvertToOutputValue(object result) {
       // validate result value
       if (this.FieldDef.Flags.IsSet(FieldFlags.ReturnsComplexType)) {
         var rank = this.FieldDef.TypeRef.Rank;
@@ -142,7 +148,7 @@ namespace NGraphQL.Server.Execution {
       foreach (var scope in this.AllParentScopes) {
         if (!results.TryGetValue((TEntity)scope.Entity, out var result))
           result = valueForMissingKeys;
-        var outValue = this.ConvertToOuputValue(result);
+        var outValue = this.ConvertToOutputValue(result);
         scope.SetValue(this.MappedField.Field.Key, outValue);
       }
       this.BatchResultWasSet = true;

@@ -202,7 +202,6 @@ fragment UnionFields on ThingsUnion {
     }
 
 
-
     [TestMethod]
     public async Task Test_FragmentsInline() {
       TestEnv.LogTestMethodStart();

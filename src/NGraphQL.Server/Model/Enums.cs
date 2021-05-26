@@ -38,7 +38,6 @@ namespace NGraphQL.Model {
     Static = 1 << 2,
 
     ReturnsComplexType = 1 << 4,
-    ResolverReturnsGraphQLObject = 1 << 5,
   }
 
 }

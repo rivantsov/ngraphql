@@ -9,7 +9,7 @@ namespace NGraphQL.CodeFirst {
       var loc = fieldContext.SelectionField.SourceLocation;
       var path = fieldContext.GetFullRequestPath();
       var err = new GraphQLError(message, path, loc, type);
-      fieldContext.RootField.AddError(err);
+      fieldContext.AddError(err);
       return err;
     }
 
@@ -29,8 +29,7 @@ namespace NGraphQL.CodeFirst {
     }
 
     public static void AbortIfErrors (this IFieldContext context) {
-      if (!context.RootField.Failed)
-        return; 
+      if (context.Failed)
       throw new AbortRequestException();
     }
 
