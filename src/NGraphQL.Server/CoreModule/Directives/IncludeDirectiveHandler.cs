@@ -5,13 +5,18 @@ using NGraphQL.Model.Request;
 namespace NGraphQL.Core {
 
   public class IncludeDirectiveHandler: IDirectiveHandler {
+
     public void ModelDirectiveApply(GraphQLApiModel model, GraphQLModelObject element, object[] argValues) {   }
 
-    public void RequestParsed(DirectiveContext context) {
-      var selItem = context.Directive.Owner as SelectionItem;
-      var skip = !(bool)context.ArgValues[0];
+    public void RequestParsed(RuntimeDirective dir) {
+      var reqDir = dir.Source as RequestDirective;
+      if (reqDir == null)
+        return; 
+      var selItem = reqDir.Parent as SelectionItem;
       selItem.Executing += (sender, args) => {
-        args.Skip |= skip;
+        var argValues = dir.StaticArgValues ?? args.Context.EvaluateArgs(dir.MappedArgs);
+        var inc = (bool)argValues[0];
+        args.Skip |= !inc;
       };
     }
   }

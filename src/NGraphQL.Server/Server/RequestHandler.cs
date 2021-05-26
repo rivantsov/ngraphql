@@ -28,7 +28,6 @@ namespace NGraphQL.Server {
       AssignRequestOperation();
       if (_requestContext.Failed)
         return;
-      BuildDirectiveContexts();
 
       // signal to prepare/deserialize variables; in http/web scenario, we cannot parse variables immediately -
       // we do not know variable types yet. Now that we have parsed and prepared query, we have var types;
@@ -37,6 +36,8 @@ namespace NGraphQL.Server {
       BuildOperationVariables();
       if(_requestContext.Failed)
         return;
+
+      BuildDirectiveContexts();
 
       var opMapping = _requestContext.Operation.OperationTypeDef.Mappings[0];
       var topScope = new OutputObjectScope(new RequestPath(), null, opMapping); 
@@ -74,7 +75,6 @@ namespace NGraphQL.Server {
             var opExecuter = new OperationFieldExecuter(_requestContext, mappedField, topScope);
             executers.Add(opExecuter);
             break; 
-
         }
       }
 
@@ -122,11 +122,20 @@ namespace NGraphQL.Server {
       if (_requestContext.Failed)
         return false;
 
+      PrepareDirectives(); 
+
       var success = !_requestContext.Failed;
 
       if (success && !_requestContext.Metrics.FromCache)
         _server.RequestCache.AddParsedRequest(_requestContext);
       return success; 
+    }
+
+    private void PrepareDirectives() {
+      var allDirs = _requestContext.ParsedRequest.AllDirectives;
+      foreach(var dir in allDirs) {
+        dir.Def.Handler.RequestParsed(dir);
+      }
     }
 
     private bool AssignRequestOperation() {

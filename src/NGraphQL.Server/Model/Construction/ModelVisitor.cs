@@ -15,8 +15,8 @@ namespace NGraphQL.Model.Construction {
       foreach (var dirDef in _model.Directives.Values)
         Visit(dirDef, action);
       foreach (var typeDef in _model.Types) {
-        if (!typeDef.IsDataType()) // skip utility types like Query, Mutation etc 
-          continue;
+        // if (!typeDef.IsDataType()) // skip utility types like Query, Mutation etc 
+        //  continue;
         Visit(typeDef, action);
       }
     } //method

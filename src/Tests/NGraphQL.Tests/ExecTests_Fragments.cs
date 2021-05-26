@@ -170,7 +170,7 @@ query myQuery ($inc: Boolean) {
       TestEnv.LogTestDescr("same but with @include(if:false)");
       vars = new TDict() { { "inc", false } };
       resp = await ExecuteAsync(query, vars);
-      // check that id does not appear in the output; GetValue should return 0 (default int)
+      // check that id does not appear in the output; GetValue should return 0 (default for int)
       id = resp.Data.GetValue<int>("getThing/id");
       Assert.AreEqual(0, id, "id expected == 0");
 

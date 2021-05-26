@@ -27,18 +27,28 @@ namespace NGraphQL.Model.Request {
     public IList<RequestDirective> Directives { get; internal set; }
     
     public event EventHandler<SelectionItemExecutingEventArgs> Executing;
-    
+    public event EventHandler<SelectionItemExecutingEventArgs> Executed;
+
     public SelectionItem(SelectionItemKind kind) { 
       Kind = kind; 
     }
 
-    internal bool OnExecuting(out SelectionItemExecutingEventArgs args) {
+    internal bool OnExecuting(RequestContext context, out SelectionItemExecutingEventArgs args) {
       args = null;
       if (Executing == null)
         return false;
-      args = new SelectionItemExecutingEventArgs();
+      args = new SelectionItemExecutingEventArgs(context);
       Executing(this, args);
       return true; 
+    }
+
+    internal bool OnExecuted(RequestContext context, out SelectionItemExecutingEventArgs args) {
+      args = null;
+      if (Executed == null)
+        return false;
+      args = new SelectionItemExecutingEventArgs(context);
+      Executed(this, args);
+      return true;
     }
   }
 
@@ -138,7 +148,9 @@ namespace NGraphQL.Model.Request {
     public IList<InputValue> Args;
     public IList<MappedArg> MappedArgs;
 
-    public RequestDirective() { }
+    public RequestDirective() {
+    }
+
     public override string ToString() => Def.Name;
     public object[] StaticArgValues;   // dirs that do not use variables
   }

@@ -22,7 +22,7 @@ namespace NGraphQL.Server.Execution {
     public ObjectTypeMapping Mapping;
 
     IList<KeyValuePair<string, object>> _keysValues = new List<KeyValuePair<string, object>>();
-    HashSet<string> _keys = new HashSet<string>(); 
+    //HashSet<string> _keys = new HashSet<string>(); 
 
     public OutputObjectScope(RequestPath path, object entity, ObjectTypeMapping mapping) {
       Path = path;
@@ -36,8 +36,9 @@ namespace NGraphQL.Server.Execution {
     // Here are the only 2 methods actually used 
     // method used by GraphQL engine
     internal void SetValue(string key, object value) {
-      if (_keys.Add(key)) 
-        _keysValues.Add(new KeyValuePair<string, object>(key, value));
+      if (value == DBNull.Value)
+        return; 
+      _keysValues.Add(new KeyValuePair<string, object>(key, value));
     }
 
     // method used by serializer
@@ -67,9 +68,9 @@ namespace NGraphQL.Server.Execution {
 
     public bool TryGetValue(string key, out object value) {
       value = null; 
-      if (!_keys.Contains(key))
-        return false;
-      var kv = _keysValues.First(kv => kv.Key == key);
+      var kv = _keysValues.FirstOrDefault(kv => kv.Key == key);
+      if (kv.Key == null)
+        return false; // key not found; keyValue is struct so it returns default
       value = kv.Value;
       return true;
     }
@@ -79,7 +80,7 @@ namespace NGraphQL.Server.Execution {
     }
 
     // we don't care about efficiency in Keys and Values methods
-    public ICollection<string> Keys => _keys;
+    public ICollection<string> Keys => _keysValues.Select(kv => kv.Key).ToList();
 
     public ICollection<object> Values => _keysValues.Select(kv => kv.Value).ToList();
 
@@ -100,7 +101,7 @@ namespace NGraphQL.Server.Execution {
     }
 
     public bool ContainsKey(string key) {
-      return _keys.Contains(key);
+      return _keysValues.Any(kv => kv.Key == key);
     }
 
     public void CopyTo(KeyValuePair<string, object>[] array, int arrayIndex) {

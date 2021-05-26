@@ -4,8 +4,9 @@ using NGraphQL.Server.Execution;
 
 namespace NGraphQL.Core {
 
+  // The only thing to do for deprecated dir is to put values into introspection object for schema element. 
   public class DeprecatedDirectiveHandler: IDirectiveHandler {
-
+    
     public void ModelDirectiveApply(GraphQLApiModel model, GraphQLModelObject element, object[] argValues) {
       var intro = element.Intro_;
       if (intro == null)
@@ -14,7 +15,7 @@ namespace NGraphQL.Core {
       intro.DeprecationReason = (string) argValues[0]; 
     }
 
-    public void RequestParsed(DirectiveContext context) { }
+    public void RequestParsed(RuntimeDirective dir) { }
 
   }
 

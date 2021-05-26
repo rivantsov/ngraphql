@@ -5,10 +5,10 @@ using NGraphQL.Server.Execution;
 namespace NGraphQL.Model.Request {
 
   public abstract class MappedSelectionItem {
-    public readonly SelectionItemKind Kind;
+    public readonly SelectionItem Item; 
 
-    public MappedSelectionItem(SelectionItemKind kind) { 
-      Kind = kind; 
+    public MappedSelectionItem(SelectionItem item) {
+      Item = item; 
     }
   }
 
@@ -20,7 +20,7 @@ namespace NGraphQL.Model.Request {
 
     //public FieldResolverInfo Resolver;
 
-    public MappedSelectionField(SelectionField field, FieldResolverInfo resolver, int index) : base( SelectionItemKind.Field) {
+    public MappedSelectionField(SelectionField field, FieldResolverInfo resolver, int index) : base(field) {
       Field = field; 
       Resolver = resolver;
     }
@@ -31,7 +31,7 @@ namespace NGraphQL.Model.Request {
 
   public class MappedFragmentSpread: MappedSelectionItem {
     public readonly FragmentSpread Spread;
-    public MappedFragmentSpread(FragmentSpread spread): base(SelectionItemKind.FragmentSpread) {
+    public MappedFragmentSpread(FragmentSpread spread): base(spread) {
       Spread = spread;
     }
   }

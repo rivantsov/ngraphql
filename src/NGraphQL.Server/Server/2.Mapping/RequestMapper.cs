@@ -26,7 +26,8 @@ namespace NGraphQL.Server.Parsing {
       if (_requestContext.Failed)
         return;
       foreach(var fragm in _requestContext.ParsedRequest.Fragments) {
-        MapFragment(fragm); 
+        if (!fragm.IsInline)
+          MapFragment(fragm); 
       }
 
       foreach (var op in _requestContext.ParsedRequest.Operations) {

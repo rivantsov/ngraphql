@@ -23,7 +23,8 @@ namespace NGraphQL.Server.Execution {
 
     public RuntimeDirective(RequestDirective reqDir, int index) {
       Source = reqDir;
-      Index = index; 
+      Index = index;
+      Owner = reqDir.Parent;
       Def = reqDir.Def;
       Location = reqDir.Location;
       MappedArgs = reqDir.MappedArgs;

@@ -42,6 +42,10 @@ namespace NGraphQL.Server.Execution {
 
     public async Task ExecuteOperationFieldAsync() {
       try {
+        if (_mappedOpField.Field.OnExecuting(_requestContext, out var args) && args.Skip) {
+          Result = DBNull.Value; // it's a signal to skip value in output
+          return;
+        }
         var opFieldContext = new FieldContext(_requestContext, this, _mappedOpField);
         opFieldContext.SetCurrentParentScope(_parentScope);
         var resolverResult = await InvokeResolverAsync(opFieldContext);
@@ -104,11 +108,14 @@ namespace NGraphQL.Server.Execution {
                                                                 IList<OutputObjectScope> parentScopes) {
 
       foreach(var mappedItem in mappedSubSet.MappedItems) {
-        
+
         // TODO: Invoke event to signal execution of directives
-        
+        if (mappedItem.Item.OnExecuting(_requestContext, out var args) && args.Skip) {
+          continue;
+        }
+
         // if it is a fragment spread, make recursive call to process fragment fields
-        if (mappedItem.Kind == SelectionItemKind.FragmentSpread) {
+        if (mappedItem.Item.Kind == SelectionItemKind.FragmentSpread) {
           
           var mappedSpread = (MappedFragmentSpread) mappedItem;
           var objTypeDef = mappedSubSet.Mapping.TypeDef;

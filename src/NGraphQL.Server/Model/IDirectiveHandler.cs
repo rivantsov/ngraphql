@@ -10,7 +10,7 @@ namespace NGraphQL.Model {
   public interface IDirectiveHandler {
     // model directives only
     void ModelDirectiveApply(GraphQLApiModel model, GraphQLModelObject element, object[] argValues);
-    void RequestParsed(DirectiveContext context);
+    void RequestParsed(RuntimeDirective dir);
   }
 
 }
