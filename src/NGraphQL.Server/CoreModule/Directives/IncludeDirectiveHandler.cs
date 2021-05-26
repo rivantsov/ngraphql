@@ -4,7 +4,8 @@ using NGraphQL.Model.Request;
 
 namespace NGraphQL.Core {
 
-  public class IncludeDirectiveHandler: IRuntimeDirectiveHandler {
+  public class IncludeDirectiveHandler: IDirectiveHandler {
+    public void ModelDirectiveApply(GraphQLApiModel model, GraphQLModelObject element, object[] argValues) {   }
 
     public void RequestParsed(DirectiveContext context) {
       var selItem = context.Directive.Owner as SelectionItem;

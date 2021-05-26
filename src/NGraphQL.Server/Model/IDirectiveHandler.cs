@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using NGraphQL.Introspection;
 using NGraphQL.Model;
-using NGraphQL.Model.Request;
 using NGraphQL.Server.Execution;
 
-namespace NGraphQL.Server.Execution {
+namespace NGraphQL.Model {
 
-  public interface IRuntimeDirectiveHandler: IDirectiveHandler {
+  public interface IDirectiveHandler {
+    // model directives only
+    void ModelDirectiveApply(GraphQLApiModel model, GraphQLModelObject element, object[] argValues);
     void RequestParsed(DirectiveContext context);
   }
 

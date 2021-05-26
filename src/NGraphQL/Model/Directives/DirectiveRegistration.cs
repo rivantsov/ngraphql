@@ -12,7 +12,14 @@ namespace NGraphQL.Model {
     public Type AttributeType; // for type system directives defined by attributes
     public MethodBase Signature; // for query directives, defined by method signature
     public bool ListInSchema;
-    public IDirectiveHandler Handler; 
+  }
+
+  // Directive handler (implementation) is defined separately from directive itself.
+  //  this allows handlers to use/reference heavy server-side logic/types, while directive itself 
+  //  can be light and used in shared model definitions. 
+  public class DirectiveHandlerInfo {
+    public string Name;
+    public Type Type; 
   }
 
 }

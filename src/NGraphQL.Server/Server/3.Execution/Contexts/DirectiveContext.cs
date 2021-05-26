@@ -10,7 +10,7 @@ namespace NGraphQL.Server.Execution {
   public class DirectiveContext {
     public RequestContext RequestContext;
     public RuntimeDirective Directive;
-    public IRuntimeDirectiveHandler Handler; 
+    public IDirectiveHandler Handler => Directive.Def.Handler; 
     public object[] ArgValues;
     public object CustomData; 
   }

@@ -49,15 +49,11 @@ namespace NGraphQL.Server {
       if (allDirs.Count == 0)
         return;
       foreach (var dir in allDirs) {
-        var action = dir.Def.Handler as IRuntimeDirectiveHandler;
-        if (action != null) {
-          var argValues = dir.GetArgValues(_requestContext);
-          var dirContext = new DirectiveContext() {
-            Directive = dir, Handler = action,
-            ArgValues = argValues, RequestContext = _requestContext
-          };
-          _requestContext.DirectiveContexts.Add(dirContext);
-        }
+        var argValues = dir.GetArgValues(_requestContext);
+        var dirContext = new DirectiveContext() {
+          Directive = dir, ArgValues = argValues, RequestContext = _requestContext
+        };
+        _requestContext.DirectiveContexts.Add(dirContext);
       }
     }
 

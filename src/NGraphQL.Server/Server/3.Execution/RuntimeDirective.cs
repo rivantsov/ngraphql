@@ -21,19 +21,21 @@ namespace NGraphQL.Server.Execution {
     public IList<MappedArg> MappedArgs;
     public object[] StaticArgValues;   // dirs that do not use variables, or model directives
 
-    public RuntimeDirective(RequestDirective reqDir) {
+    public RuntimeDirective(RequestDirective reqDir, int index) {
       Source = reqDir;
+      Index = index; 
       Def = reqDir.Def;
       Location = reqDir.Location;
       MappedArgs = reqDir.MappedArgs;
       StaticArgValues = reqDir.MappedArgs.TryEvaluateStaticArgValues(); 
     }
 
-    public RuntimeDirective(ModelDirective modelDir) {
+    public RuntimeDirective(ModelDirective modelDir, int index) {
       Source = modelDir;
+      Index = index; 
       Def = modelDir.Def;
       Location = modelDir.Location;
-      StaticArgValues = _emptyArray; 
+      StaticArgValues = modelDir.ArgValues; 
     }
     private static object[] _emptyArray = Array.Empty<object>();
 

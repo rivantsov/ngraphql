@@ -15,12 +15,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Model\Directives\**" />
-    <EmbeddedResource Remove="Model\Directives\**" />
-    <None Remove="Model\Directives\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Compile Remove="_deprecated\DirectiveActionInterfaces_Disabled.cs" />
   </ItemGroup>
 
@@ -34,6 +28,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\NGraphQL\NGraphQL.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Model\Directives\" />
   </ItemGroup>
 
     <PropertyGroup>

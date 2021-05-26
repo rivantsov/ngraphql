@@ -36,24 +36,25 @@ namespace NGraphQL.Server.Parsing {
 
 
     private void AddRuntimeRequestDirectives(SelectionItem selItem) {
-      // request directives first; map dir args
-      if (selItem.Directives != null) {
-        foreach (var dir in selItem.Directives) {
-          var rtDir = new RuntimeDirective(dir);
-          rtDir.MappedArgs = MapArguments(dir.Args, dir.Def.Args, dir);
-          _requestContext.ParsedRequest.AllDirectives.Add(rtDir); 
-        }
+      if (selItem.Directives == null || selItem.Directives.Count == 0)
+        return;
+      var allReqDirs = _requestContext.ParsedRequest.AllDirectives;
+      foreach (var dir in selItem.Directives) {
+        var rtDir = new RuntimeDirective(dir, allReqDirs.Count);
+        rtDir.MappedArgs = MapArguments(dir.Args, dir.Def.Args, dir);
+        allReqDirs.Add(rtDir); 
       }
     }
 
     private void AddRuntimeModelDirectives(FieldDef fldDef) {
+      var allReqDirs = _requestContext.ParsedRequest.AllDirectives;
       if (fldDef.HasDirectives())
         foreach (Model.ModelDirective fldDir in fldDef.Directives)
-          _requestContext.ParsedRequest.AllDirectives.Add(new RuntimeDirective(fldDir));
+          allReqDirs.Add(new RuntimeDirective(fldDir, allReqDirs.Count));
       var typeDef = fldDef.TypeRef.TypeDef;
       if (typeDef.HasDirectives())
         foreach (Model.ModelDirective tdir in typeDef.Directives)
-          _requestContext.ParsedRequest.AllDirectives.Add(new RuntimeDirective(tdir));
+          allReqDirs.Add(new RuntimeDirective(tdir, allReqDirs.Count));
     }
 
 

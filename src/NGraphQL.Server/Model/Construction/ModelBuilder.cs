@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
 
 using NGraphQL.CodeFirst;
 using NGraphQL.Introspection;
@@ -63,8 +64,9 @@ namespace NGraphQL.Model.Construction {
       if (_model.HasErrors)
         return;
 
-      // apply directives to all model objects in the model
-      _model.ApplyToAllModelObjects(this.ApplyDirectives);
+      // apply model directives to all model objects in the model
+      
+      ApplyModelDirectives();
       if (_model.HasErrors)
         return;
 
@@ -72,6 +74,21 @@ namespace NGraphQL.Model.Construction {
       _model.SchemaDoc = schemaGen.GenerateSchema(_model);
 
       VerifyModel();
+    }
+
+    private void ApplyModelDirectives() {
+      var visitor = new ModelVisitor(_model);
+      visitor.Visit(ApplyDirectives);
+    }
+
+    
+    private void ApplyDirectives(GraphQLModelObject modelObj) {
+      if (!modelObj.HasDirectives())
+        return;
+      foreach (var dir in modelObj.Directives) {
+          dir.Def.Handler.ModelDirectiveApply(_model, modelObj, dir.ArgValues);
+      }
+
     }
 
     private bool InitializeTypeMappings() {

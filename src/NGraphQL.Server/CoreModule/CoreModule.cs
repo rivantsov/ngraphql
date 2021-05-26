@@ -19,15 +19,15 @@ namespace NGraphQL.Core {
       // Directives 
       this.RegisterDirective("deprecated", typeof(DeprecatedDirAttribute),
           DirectiveLocation.TypeSystemLocations, "Marks type system element as deprecated",
-          handler: new DeprecatedDirectiveHandler(), listInSchema: false);
+          handlerType: typeof(DeprecatedDirectiveHandler), listInSchema: false);
       this.RegisterDirective("include", nameof(IncludeSkipSignature),
           DirectiveLocation.Field | DirectiveLocation.FragmentSpread | DirectiveLocation.InlineFragment, 
           "Conditional field include.", 
-          handler: new IncludeDirectiveHandler() , listInSchema: false);
+          handlerType: typeof(IncludeDirectiveHandler) , listInSchema: false);
       this.RegisterDirective("skip", nameof(IncludeSkipSignature),
           DirectiveLocation.Field | DirectiveLocation.FragmentSpread | DirectiveLocation.InlineFragment,
           "Conditional field skip.", 
-          handler: new SkipDirectiveHandler(), listInSchema: false);
+          handlerType: typeof(SkipDirectiveHandler), listInSchema: false);
     }
 
     internal static void DeprecatedSignature(string reason) { }

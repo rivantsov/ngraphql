@@ -16,7 +16,8 @@ namespace NGraphQL.CodeFirst {
     public readonly List<Type> InputTypes = new List<Type>();
     public readonly List<Type> InterfaceTypes = new List<Type>();
     public readonly List<Type> UnionTypes = new List<Type>();
-    public readonly List<DirectiveRegistration> RegisteredDirectives = new List<DirectiveRegistration>(); 
+    public readonly List<DirectiveRegistration> Directives = new List<DirectiveRegistration>();
+    public readonly List<DirectiveHandlerInfo> DirectiveHandlers = new List<DirectiveHandlerInfo>(); 
     public readonly List<ModelAdjustment> Adjustments = new List<ModelAdjustment>();
     public Type QueryType;
     public Type MutationType;

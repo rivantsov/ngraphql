@@ -4,7 +4,8 @@ using NGraphQL.Model.Request;
 
 namespace NGraphQL.Core {
 
-  public class SkipDirectiveHandler: IRuntimeDirectiveHandler {
+  public class SkipDirectiveHandler: IDirectiveHandler {
+    public void ModelDirectiveApply(GraphQLApiModel model, GraphQLModelObject element, object[] argValues) { }
 
     public void RequestParsed(DirectiveContext context) {
       var selItem = context.Directive.Owner as SelectionItem;
@@ -14,16 +15,5 @@ namespace NGraphQL.Core {
       };
     }
 
-
-    public void AfterResolve(FieldContext context, object[] argValues, ref object value) {
-    }
-
-    public void BeforeResolve(FieldContext context, object[] argValues) {
-      context.Skip |= (bool)argValues[0];
-    }
-
-    public void PreviewItem(FieldContext context, object[] argValues) {
-    }
   }
-
 }

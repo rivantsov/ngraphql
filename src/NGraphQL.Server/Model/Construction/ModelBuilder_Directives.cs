@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -10,12 +11,6 @@ namespace NGraphQL.Model.Construction {
 
   partial class ModelBuilder {
 
-    private void ApplyDirectives(GraphQLModelObject obj) {
-      if (!obj.HasDirectives())
-        return;
-      foreach (ModelDirective dir in obj.Directives) {
-      }
-    }
 
     private bool BuildRegisteredDirectiveDefinitions() {
       RegisterAllModuleDirectives();
@@ -26,7 +21,7 @@ namespace NGraphQL.Model.Construction {
 
     private void RegisterAllModuleDirectives() {
       foreach (var module in _server.Modules) {
-        foreach (var dirReg in module.RegisteredDirectives) {
+        foreach (var dirReg in module.Directives) {
           var dirName = dirReg.Name.TrimStart('@');
           if (_model.Directives.ContainsKey(dirName)) {
             AddError($"Module {module.Name}: directive @{dirName} already registered.");
@@ -55,7 +50,7 @@ namespace NGraphQL.Model.Construction {
           var prms = dirReg.Signature.GetParameters();
           var argDefs = BuildArgDefs(prms, dirReg.Signature);
           var dirDef = new DirectiveDef() {
-            DirInfo = dirReg, Name = dirName, Description = dirReg.Description, DeprecatedAttribute = deprAttrSec,
+            Registration = dirReg, Name = dirName, Description = dirReg.Description, DeprecatedAttribute = deprAttrSec,
             Args = argDefs
           };
           _model.Directives[dirName] = dirDef;
@@ -65,19 +60,28 @@ namespace NGraphQL.Model.Construction {
 
     private void MapModuleDirectiveHandlers() {
       foreach (var module in _server.Modules) {
-        foreach (var dirReg in module.RegisteredDirectives) {
-          var dirName = dirReg.Name;
+        foreach (var dirInfo in module.DirectiveHandlers) {
+          var dirName = dirInfo.Name;
           if (!_model.Directives.TryGetValue(dirName, out var dirDef)) {
             AddError($"Module {module.Name}: directive handler targets directive {dirName} which is not registered.");
             continue;
           }
           if (dirDef.Handler != null) {
-            AddError($"Module {module.Name}: handler for directive {dirName} is already registered.");
-
+            AddError($"Module {module.Name}: handler type for directive {dirName} is already registered.");
+            continue; 
           }
-          dirDef.Handler = dirReg.Handler;
+          if (dirInfo.Type == null) {
+            AddError($"Module {module.Name}: handler type for directive {dirName} may not be null.");
+            continue;
+          }
+          dirDef.Handler = Activator.CreateInstance(dirInfo.Type) as IDirectiveHandler;
+          if (dirDef.Handler == null) {
+            AddError($"Module {module.Name}: handler type for directive {dirName} is invalid, does not implement {nameof(IDirectiveHandler)} interface.");
+          }
         }
       } //foreach module
+      if (_model.HasErrors)
+        return; 
       // now check that all directives have handlers
       foreach(var dirDef in _model.Directives.Values) {
         if (dirDef.Handler == null)
@@ -95,12 +99,12 @@ namespace NGraphQL.Model.Construction {
         if (!(attr is BaseDirectiveAttribute dirAttr))
           continue;
         var dirAttrType = dirAttr.GetType(); 
-        var dirDef = _model.Directives.Values.FirstOrDefault(def => def.DirInfo.AttributeType == dirAttrType);
+        var dirDef = _model.Directives.Values.FirstOrDefault(def => def.Registration.AttributeType == dirAttrType);
         if (dirDef == null) {
           AddError($"{clrObjectInfo}: directive attribute {dirAttrType} not registered.");
           continue;
         }
-        var dir = new ModelDirective() { Def = dirDef, ModelAttribute = dirAttr, Location = location };
+        var dir = new ModelDirective() { Def = dirDef, ModelAttribute = dirAttr, Location = location, ArgValues = dirAttr.ArgValues }; 
         dirList.Add(dir);
       }
       return dirList;

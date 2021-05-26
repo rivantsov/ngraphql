@@ -34,8 +34,8 @@ namespace NGraphQL.Server.Parsing {
         var dirDef = LookupDirective(dirName, dirNode);
         if(dirDef == null) 
           return null; // error is already logged
-        if(!dirDef.DirInfo.Locations.IsSet(atLocation)) {
-          AddError($"Directive @{dirName} may not be placed at this location ({atLocation}). Valid locations: [{dirDef.DirInfo.Locations}].", dirNode);
+        if(!dirDef.Registration.Locations.IsSet(atLocation)) {
+          AddError($"Directive @{dirName} may not be placed at this location ({atLocation}). Valid locations: [{dirDef.Registration.Locations}].", dirNode);
           return null;
         }
         var dir = new RequestDirective() { Def = dirDef, Location = atLocation, Name = dirName, SourceLocation = dirNode.GetLocation(), Parent = parent };

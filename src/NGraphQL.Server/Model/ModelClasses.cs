@@ -59,7 +59,8 @@ namespace NGraphQL.Model {
   public class ModelDirective {
     public DirectiveDef Def;
     public DirectiveLocation Location; 
-    public BaseDirectiveAttribute ModelAttribute; 
+    public BaseDirectiveAttribute ModelAttribute;
+    public object[] ArgValues; 
 
     public override string ToString() {
       return Def?.ToString(); 
@@ -173,7 +174,7 @@ namespace NGraphQL.Model {
   }
 
   public class DirectiveDef : GraphQLModelObject {
-    public DirectiveRegistration DirInfo;
+    public DirectiveRegistration Registration;
     public DeprecatedDirAttribute DeprecatedAttribute; //if marked
     public IDirectiveHandler Handler; // this is empty interface
     public IList<InputValueDef> Args = InputValueDef.EmptyList;
