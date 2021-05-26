@@ -42,7 +42,6 @@ namespace NGraphQL.Server.Parsing {
       foreach (var dir in selItem.Directives) {
         dir.MappedArgs = MapArguments(dir.Args, dir.Def.Args, dir);
         var rtDir = new RuntimeDirective(dir, allReqDirs.Count);
-        rtDir.MappedArgs = MapArguments(dir.Args, dir.Def.Args, dir);
         allReqDirs.Add(rtDir); 
       }
     }
