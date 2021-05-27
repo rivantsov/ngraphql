@@ -28,9 +28,9 @@ namespace NGraphQL.Utilities {
     }
 
     private static object GetByKeyOrIndex(object data, string key) {
+      if (data == null)
+        throw new Exception($"Value is null, cannot lookup value by key '{key}'.");
       if (key.StartsWith("#")) {
-        if(data == null)
-          throw new Exception($"Value is null, cannot lookup value by key '{key}'; expected list.");
         var index = int.Parse(key.Substring(1));
         if(data is IList list)
           return list[index];

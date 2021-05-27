@@ -6,6 +6,7 @@ using NGraphQL.Model;
 using NGraphQL.Server.Execution;
 using NGraphQL.Model.Request;
 using NGraphQL.Utilities;
+using NGraphQL.Introspection;
 
 namespace NGraphQL.Server.Parsing {
 
@@ -90,7 +91,7 @@ namespace NGraphQL.Server.Parsing {
 
             case FragmentSpread fs:
               var onType = fs.Fragment.OnTypeRef?.TypeDef;
-              var skip = onType != null && onType != objectTypeDef;
+              var skip = onType != null && onType.Kind == TypeKind.Object && onType != objectTypeDef;
               if (skip)
                 continue;
               if (fs.IsInline) { // only inline fragments should be mapped from here; named fragments are mapped separately.

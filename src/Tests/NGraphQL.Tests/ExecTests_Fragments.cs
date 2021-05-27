@@ -72,7 +72,7 @@ fragment ThingDetails on Thing {
     }
 }
 ";
-//      Assert.IsTrue(false, "Fix this: self-ref fragment crashes the test process.");
+      //      Assert.IsTrue(false, "Fix this: self-ref fragment crashes the test process.");
       resp = await ExecuteAsync(query, throwOnError: false);
       Assert.AreEqual(0, resp.Errors.Count, "Expected no errors.");
 
@@ -173,7 +173,14 @@ query myQuery ($inc: Boolean) {
       // check that id does not appear in the output; GetValue should return 0 (default for int)
       id = resp.Data.GetValue<int>("getThing/id");
       Assert.AreEqual(0, id, "id expected == 0");
+    }
 
+
+    [TestMethod]
+    public async Task Test_Fragments_Inline() {
+      TestEnv.LogTestMethodStart();
+      string query;
+      GraphQLResponse resp;
 
       TestEnv.LogTestDescr("query on union with fragment with conditional-on-type inline fragments ");
       query = @"
@@ -199,15 +206,8 @@ fragment UnionFields on ThingsUnion {
       Assert.IsNotNull(nextName, "Expected nextName");
       var idStr = resp.GetValue<string>("uList/#1/idStr");
       Assert.IsNotNull(idStr, "Expected idStr");
-    }
 
-
-    [TestMethod]
-    public async Task Test_FragmentsInline() {
-      TestEnv.LogTestMethodStart();
-      string query;
-      GraphQLResponse resp;
-      TestEnv.LogTestDescr("Testing inline fragment");
+      TestEnv.LogTestDescr("Testing inline fragment on interface output");
 
       query = @"
 query  { 
