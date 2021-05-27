@@ -19,7 +19,8 @@ namespace NGraphQL.Model {
     public FieldInfo Field; 
     public object Value;
     public long LongValue;
- }
+    public override string ToString() => $"{Name}/{LongValue}";
+  }
 
   /// <summary>Handles conversions of enum values: to/from CLR enums vs stings and string arrays in GraphQL. </summary>
   public class EnumHandler {
@@ -47,13 +48,11 @@ namespace NGraphQL.Model {
       ConvertToLong = enumType.GetEnumToLongConverter();
       NoneValue = enumType.GetDefaultValue();
       // build enum value infos
-      var values = Enum.GetValues(enumType);
       var fields = enumType.GetFields(BindingFlags.Static | BindingFlags.Public);
-      for (int i = 0; i < fields.Length; i++) {
-        var fld = fields[i];
+      foreach (var fld in fields) {
         if (fld.HasAttribute<IgnoreAttribute>() || HasAttribute<IgnoreAttribute>(fld, adjustments))
           continue;
-        var value = values.GetValue(i);
+        var value = fld.GetValue(null);
         var fldLongValue = ConvertToLong(value);
         if (IsFlagSet && fldLongValue == 0) //Flags enum values with 0 value (like NONE) are ignored.
           continue;
