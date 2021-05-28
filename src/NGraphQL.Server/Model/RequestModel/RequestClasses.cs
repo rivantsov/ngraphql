@@ -89,14 +89,11 @@ namespace NGraphQL.Model.Request {
       Items = items;
       this.SourceLocation = location; 
     }
-
+    public override string ToString() => $"{Items.Count} sel items";
   }
 
   public class InputValue : NamedRequestObject {
     public ValueSource ValueSource;
-    // indicates that argument is for field on Union; the target owner field (function) depends on specific instance/type returned as union member; 
-    // ArgDef is null in this case, so it should be looked up at execution time when evaluation argument
-    public bool NonStatic; 
 
     public InputValue() { }
     public static readonly InputValue[] EmptyList = new InputValue[] { };
@@ -154,7 +151,6 @@ namespace NGraphQL.Model.Request {
     public override string ToString() => Def.Name;
     public object[] StaticArgValues;   // dirs that do not use variables
   }
-
 
   public class ParsedGraphQLRequest {
     public List<GraphQLOperation> Operations = new List<GraphQLOperation>();

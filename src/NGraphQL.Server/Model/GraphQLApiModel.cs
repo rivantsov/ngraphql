@@ -6,7 +6,6 @@ using NGraphQL.Server;
 namespace NGraphQL.Model {
 
   public class GraphQLApiModel {
-
     public ObjectTypeDef QueryType;
     public ObjectTypeDef MutationType;
     public ObjectTypeDef SubscriptionType;

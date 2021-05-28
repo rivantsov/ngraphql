@@ -11,6 +11,8 @@ using NGraphQL.Introspection;
 using NGraphQL.Server;
 using NGraphQL.Server.Execution;
 using System.Linq.Expressions;
+using System.Xml.Linq;
+using NGraphQL.Utilities;
 
 namespace NGraphQL.Model {
 
@@ -52,8 +54,8 @@ namespace NGraphQL.Model {
       return value.ToString();
     }
 
-    public override string ToString() => $"{Name}/{Kind}";
     public virtual void Init(GraphQLServer server) { }
+    public override string ToString() => $"{Name}/{Kind}";
   }
 
   public class ModelDirective {
@@ -62,10 +64,8 @@ namespace NGraphQL.Model {
     public BaseDirectiveAttribute ModelAttribute;
     public object[] ArgValues; 
 
-    public override string ToString() {
-      return Def?.ToString(); 
-    }
-    public static IList<ModelDirective> EmptyList = new ModelDirective[] { }; 
+    public static IList<ModelDirective> EmptyList = new ModelDirective[] { };
+    public override string ToString() => $"{Def}";
   }
 
   public class ScalarTypeDef : TypeDefBase {
@@ -84,7 +84,7 @@ namespace NGraphQL.Model {
   // base for Interface and Object types
   public abstract class ComplexTypeDef : TypeDefBase {
     public TypeRole TypeRole;
-    public List<FieldDef> Fields = new List<FieldDef>();
+    public HybridDictionary<FieldDef> Fields = new  HybridDictionary<FieldDef>();
     public ComplexTypeDef(string name, TypeKind kind, Type clrType, IList<Attribute> attrs, GraphQLModule module, 
          TypeRole typeRole = TypeRole.Data) 
        : base(name, kind, clrType, attrs, module) {
@@ -149,7 +149,7 @@ namespace NGraphQL.Model {
   }
 
   [DisplayName("{Name}/{TypeRef.Name}")]
-  public class FieldDef : GraphQLModelObject {
+  public class FieldDef : GraphQLModelObject, INamedObject {
     public readonly ComplexTypeDef OwnerType; 
     public TypeRef TypeRef;
     public IList<Attribute> Attributes;
@@ -180,7 +180,8 @@ namespace NGraphQL.Model {
     public IList<InputValueDef> Args = InputValueDef.EmptyList;
     public DirectiveDef() { }
 
-    public static IList<DirectiveDef> EmptyList = new DirectiveDef[] { }; 
+    public static IList<DirectiveDef> EmptyList = new DirectiveDef[] { };
+    public override string ToString() => $"@{Registration.Name}";
   }
 
   [DisplayName("{Method.Name}")]
@@ -202,7 +203,8 @@ namespace NGraphQL.Model {
   [DisplayName("{Type}")]
   public class ResolverClassInfo {
     public GraphQLModule Module;
-    public Type Type; 
+    public Type Type;
+    public override string ToString() => $"{Type}(resolver class)";
   }
 
   [DisplayName("{Name}/{Kind}")]

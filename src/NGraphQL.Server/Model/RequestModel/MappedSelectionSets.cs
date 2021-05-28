@@ -10,6 +10,7 @@ namespace NGraphQL.Model.Request {
     public MappedSelectionItem(SelectionItem item) {
       Item = item; 
     }
+    public override string ToString() => $"{Item.Name}";
   }
 
   // Mapped field is a runtime representation of a selection field in a query.
@@ -17,8 +18,6 @@ namespace NGraphQL.Model.Request {
     public readonly SelectionField Field;
     public readonly FieldResolverInfo Resolver;
     public int Index; 
-
-    //public FieldResolverInfo Resolver;
 
     public MappedSelectionField(SelectionField field, FieldResolverInfo resolver, int index) : base(field) {
       Field = field; 
@@ -39,6 +38,7 @@ namespace NGraphQL.Model.Request {
   public class MappedSelectionSubSet {
     public ObjectTypeMapping Mapping;
     public IList<MappedSelectionItem> MappedItems = new List<MappedSelectionItem>();
+    public override string ToString() => $"Mapping:{Mapping.EntityType}=>{Mapping.TypeDef}";
   }
 
 }

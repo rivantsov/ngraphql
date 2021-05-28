@@ -13,7 +13,7 @@ namespace NGraphQL.Model.Request {
     public List<RuntimeDirective> Directives;
 
     public MappedArg() { }
-    public override string ToString() => $"{ArgDef.Name}/{ArgDef.TypeRef.Name}";
+    public override string ToString() => $"{ArgDef.Name}({ArgDef.TypeRef.Name})";
   }
 
 }

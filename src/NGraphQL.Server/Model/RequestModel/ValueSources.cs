@@ -6,7 +6,7 @@ namespace NGraphQL.Model.Request {
 
   // equiv of Value in Gql spec
   public abstract class ValueSource : RequestObjectBase {
-    public virtual bool IsConstNull() => false; 
+    public virtual bool IsConstNull() => false;
   }
 
   public class VariableValueSource : ValueSource {
@@ -23,7 +23,7 @@ namespace NGraphQL.Model.Request {
 
   public class ListValueSource : ValueSource {
     public ValueSource[] Values;
-    public override string ToString() => "(array)";
+    public override string ToString() => $"(Count {Values?.Length})";
   }
 
   public class ObjectValueSource : ValueSource {
