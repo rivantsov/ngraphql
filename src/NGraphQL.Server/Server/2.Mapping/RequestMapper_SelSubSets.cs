@@ -7,6 +7,7 @@ using NGraphQL.Server.Execution;
 using NGraphQL.Model.Request;
 using NGraphQL.Utilities;
 using NGraphQL.Introspection;
+using System;
 
 namespace NGraphQL.Server.Mapping {
 
@@ -77,6 +78,10 @@ namespace NGraphQL.Server.Mapping {
 
       // Now create mappings for all possible entity types
       foreach (var typeMapping in objectTypeDef.Mappings) {
+        // It is possible mapped set already exists (with unions and especially fragments)
+        var existing = selSubset.MappedSubSets.FirstOrDefault(ms => ms.Mapping == typeMapping);
+        if(existing != null)
+          continue; 
         var mappedItems = new List<MappedSelectionItem>();
         foreach (var item in selSubset.Items) {
 
@@ -86,7 +91,7 @@ namespace NGraphQL.Server.Mapping {
               if (fldDef == null)
                 // it is not error, it should have been caught earlier; it is unmatch for union
                 continue;
-              var fldResolver = typeMapping.FieldResolvers[fldDef.Index];
+              var fldResolver = typeMapping.GetResolver(fldDef);
                 //.FirstOrDefault(fr => fr.Field.Name == selFld.Name);
               var mappedFld = new MappedSelectionField(selFld, fldResolver);
               mappedItems.Add(mappedFld);
@@ -97,11 +102,8 @@ namespace NGraphQL.Server.Mapping {
               var skip = onType != null && onType.Kind == TypeKind.Object && onType != objectTypeDef;
               if (skip)
                 continue;
-              if (fs.IsInline) { // only inline fragments should be mapped from here; named fragments are mapped separately.
+              if (fs.IsInline)  // only inline fragments should be mapped from here; named fragments are mapped separately, upfront
                 MapObjectSelectionSubset(fs.Fragment.SelectionSubset, objectTypeDef, isForUnion);
-              } else {
-
-              }
               var mappedSpread = new MappedFragmentSpread(fs);
               mappedItems.Add(mappedSpread);
               break;

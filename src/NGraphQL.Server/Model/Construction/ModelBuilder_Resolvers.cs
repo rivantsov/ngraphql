@@ -130,7 +130,7 @@ namespace NGraphQL.Model.Construction {
             AddError($"Resolver method '{resInfo}', invalid target GraphQL type: '{objTypeDef.Name}'.");
             continue;
         }//switch
-        var fres = mapping.FieldResolvers.FirstOrDefault(fr => fr.Field == field);
+        var fres = mapping.GetResolver(field);
         if (fres == null) {
           AddError($"FATAL: resolver method '{resInfo}', failed to match to field resolver in type '{objTypeDef.Name}'.");
           continue; 
@@ -154,7 +154,7 @@ namespace NGraphQL.Model.Construction {
         if (asmtBnd == null || fieldDef == null)
           continue; //should never happen, but just in case
                     // create lambda reading the source property
-        var resInfo = mapping.FieldResolvers.FirstOrDefault(r => r.Field == fieldDef);
+        var resInfo = mapping.GetResolver(fieldDef);
         if (resInfo == null)
           continue; 
         resInfo.ResolverFunc = CompileResolverExpression(entityPrm, asmtBnd.Expression);
@@ -202,7 +202,7 @@ namespace NGraphQL.Model.Construction {
     private void AssignResolversToMatchingResolverMethods(ObjectTypeMapping mapping) {
       var typeDef = mapping.TypeDef; 
       foreach (var field in typeDef.Fields) {
-        var fRes = mapping.FieldResolvers.FirstOrDefault(fr => fr.Field == field);
+        var fRes = mapping.GetResolver(field);
         if (fRes == null)
           continue;
         if (field.ClrMember == null)
@@ -232,8 +232,7 @@ namespace NGraphQL.Model.Construction {
       var entityType = mapping.EntityType;
       var allEntFldProps = entityType.GetFieldsProps();
       foreach (var fldDef in mapping.TypeDef.Fields) {
-        var res = mapping.FieldResolvers.FirstOrDefault(fr => fr.Field == fldDef);
-        Util.Check(res != null, $"FATAL: resolver for field {fldDef.Name}, type {fldDef.TypeRef.TypeDef.Name} not created. ");
+        var res = mapping.GetResolver(fldDef);
         if (res.ResolverFunc != null || res.ResolverMethod != null)
           continue; //already set
         var memberName = fldDef.Name;

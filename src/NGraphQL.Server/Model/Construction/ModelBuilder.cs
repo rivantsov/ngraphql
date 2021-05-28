@@ -265,7 +265,7 @@ namespace NGraphQL.Model.Construction {
       // copy resolvers
       foreach (var aggrType in allModuleAggrTypes) 
         mapping.FieldResolvers.AddRange(aggrType.Mappings[0].FieldResolvers);
-      // collect all fields from resolvers
+      // collect all fields from collected resolvers
       var allFields = mapping.FieldResolvers.Select(fr => fr.Field).ToList();
       rootObjTypeDef.Fields.AddRange(allFields);
       // check for name duplicates
