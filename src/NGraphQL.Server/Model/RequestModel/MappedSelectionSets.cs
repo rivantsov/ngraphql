@@ -17,9 +17,8 @@ namespace NGraphQL.Model.Request {
   public class MappedSelectionField: MappedSelectionItem {
     public readonly SelectionField Field;
     public readonly FieldResolverInfo Resolver;
-    public int Index; 
 
-    public MappedSelectionField(SelectionField field, FieldResolverInfo resolver, int index) : base(field) {
+    public MappedSelectionField(SelectionField field, FieldResolverInfo resolver) : base(field) {
       Field = field; 
       Resolver = resolver;
     }

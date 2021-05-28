@@ -34,6 +34,7 @@ namespace NGraphQL.TestApp {
   public enum TheFlags {
     None = 0, // this will not appear in GraphQL enum: 0-valued values in Flags enums are ignored automatically
     FlagOne = 1,
+    /// <summary>Description for FlagTwo loaded from Xml comment.</summary>
     FlagTwo = 1 << 1,
     FlagThree = 1 << 2,
   }

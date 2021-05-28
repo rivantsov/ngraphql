@@ -49,7 +49,7 @@ namespace NGraphQL.Server.Parsing {
         AddRuntimeRequestDirectives(item);
         switch (item) {
           case SelectionField selFld:
-            var fldDef = objectTypeDef.Fields.FirstOrDefault(f => f.Name == selFld.Name);
+            var fldDef = objectTypeDef.Fields[selFld.Name];
             if (fldDef == null) {
               // if field not found, the behavior depends if it is a union; it is error for a union
               if (!isForUnion)
@@ -75,17 +75,20 @@ namespace NGraphQL.Server.Parsing {
       if (_requestContext.Failed)
         return; 
 
+      // Now create mappings for all possible entity types
       foreach (var typeMapping in objectTypeDef.Mappings) {
         var mappedItems = new List<MappedSelectionItem>();
         foreach (var item in selSubset.Items) {
 
           switch (item) {
             case SelectionField selFld:
-              var fldResolver = typeMapping.FieldResolvers.FirstOrDefault(fr => fr.Field.Name == selFld.Name);
-              if (fldResolver == null) 
+              var fldDef = typeMapping.TypeDef.Fields[selFld.Name];
+              if (fldDef == null)
                 // it is not error, it should have been caught earlier; it is unmatch for union
                 continue;
-              var mappedFld = new MappedSelectionField(selFld, fldResolver, mappedItems.Count);
+              var fldResolver = typeMapping.FieldResolvers[fldDef.Index];
+                //.FirstOrDefault(fr => fr.Field.Name == selFld.Name);
+              var mappedFld = new MappedSelectionField(selFld, fldResolver);
               mappedItems.Add(mappedFld);
               break;
 

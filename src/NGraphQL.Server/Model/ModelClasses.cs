@@ -163,6 +163,7 @@ namespace NGraphQL.Model {
       OwnerType = ownerType; 
       Name = name;
       TypeRef = typeRef;
+      Index = ownerType.Fields.Count;
       var typeDef = TypeRef.TypeDef;
       if (typeDef.IsComplexReturnType())
         Flags |= FieldFlags.ReturnsComplexType;

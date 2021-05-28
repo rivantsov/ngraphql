@@ -54,8 +54,10 @@ namespace NGraphQL.Model.Construction {
       var objTypes = _model.Types.Where(tdef => tdef.Kind == TypeKind.Object).OfType<ObjectTypeDef>(); 
       foreach(var typeDef in objTypes)
         foreach(var mapping in typeDef.Mappings) {
-          var resolvers = typeDef.Fields.Select(f => new FieldResolverInfo() { Field = f, TypeMapping = mapping }).ToList();
-          mapping.FieldResolvers.AddRange(resolvers); 
+          foreach(var fldDef in typeDef.Fields) { 
+            var fres = new FieldResolverInfo() { Field = fldDef, TypeMapping = mapping };
+            mapping.FieldResolvers.Add(fres); 
+          }
         }
     }
 
