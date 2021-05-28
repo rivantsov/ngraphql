@@ -315,6 +315,7 @@ query {
     [TestMethod]
     public async Task Test_Input_FlagsEnum() {
       TestEnv.LogTestMethodStart();
+      var enumValues = Enum.GetValues(typeof(ThingKind));
 
       TestEnv.LogTestDescr("passing flags enum value as literal array.");
       var query = @" query { echoFlags(flags: [FLAG_ONE FLAG_THREE]) }";
