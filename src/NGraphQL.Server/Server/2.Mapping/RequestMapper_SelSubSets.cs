@@ -8,7 +8,7 @@ using NGraphQL.Model.Request;
 using NGraphQL.Utilities;
 using NGraphQL.Introspection;
 
-namespace NGraphQL.Server.Parsing {
+namespace NGraphQL.Server.Mapping {
 
   /// <summary>RequestMapper takes request tree and maps its objects to API model; for ex: selection field is mapped to field definition</summary>
   public partial class RequestMapper {

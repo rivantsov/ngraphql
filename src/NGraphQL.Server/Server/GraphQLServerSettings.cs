@@ -10,9 +10,10 @@ namespace NGraphQL.Server {
     None = 0,
     ReturnExceptionDetails = 1,
     EnableRequestCache = 1 << 1,
+    EnableParallelQueries = 1 << 2,
 
-    DefaultDev = EnableRequestCache | ReturnExceptionDetails,
-    DefaultProd = EnableRequestCache
+    DefaultProd = EnableRequestCache | EnableParallelQueries,
+    DefaultDev = DefaultProd | ReturnExceptionDetails,
 
   }
 

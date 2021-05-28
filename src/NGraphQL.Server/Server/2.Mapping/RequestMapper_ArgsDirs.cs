@@ -7,7 +7,7 @@ using NGraphQL.Server.Execution;
 using NGraphQL.Server.Parsing;
 using NGraphQL.Model.Request;
 
-namespace NGraphQL.Server.Parsing {
+namespace NGraphQL.Server.Mapping {
 
   partial class RequestMapper {
 

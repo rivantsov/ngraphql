@@ -9,7 +9,7 @@ using NGraphQL.Model.Request;
 using NGraphQL.Server.Execution;
 using NGraphQL.CodeFirst;
 
-namespace NGraphQL.Server.Parsing {
+namespace NGraphQL.Server.Mapping {
 
   public class FragmentAnalyzer {
     RequestContext _requestContext;

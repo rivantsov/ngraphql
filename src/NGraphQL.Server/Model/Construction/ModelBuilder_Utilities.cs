@@ -79,6 +79,11 @@ namespace NGraphQL.Model.Construction {
       return attrs; 
     }
 
+    private void ReassignFieldIndexes(ObjectTypeDef typeDef) {
+      for (int i = 0; i < typeDef.Fields.Count; i++)
+        typeDef.Fields[i].Index = i;
+    }
+
     public void AddError(string message) {
       _model.Errors.Add(message);
     }

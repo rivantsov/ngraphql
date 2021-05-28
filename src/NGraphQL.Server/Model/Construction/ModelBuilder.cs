@@ -72,15 +72,12 @@ namespace NGraphQL.Model.Construction {
 
       var schemaGen = new SchemaDocGenerator();
       _model.SchemaDoc = schemaGen.GenerateSchema(_model);
-
-      VerifyModel();
     }
 
     private void ApplyModelDirectives() {
       var visitor = new ModelVisitor(_model);
       visitor.Visit(ApplyDirectives);
     }
-
     
     private void ApplyDirectives(GraphQLModelObject modelObj) {
       if (!modelObj.HasDirectives())
@@ -277,16 +274,11 @@ namespace NGraphQL.Model.Construction {
         string dupesAll = string.Join(",", fieldNameDupes.Select(g => g.Key));
         AddError($"Duplicate fields defined at top-level type {typeRole}, field names: {dupesAll}");
       }
-      // important: re-assign Index value for all fields
-      for (int i = 0; i < rootObjTypeDef.Fields.Count; i++)
-        rootObjTypeDef.Fields[i].Index = i; 
+      // important: re-assign Index value for all fields; we moved fields to aggregate Query, Mutation
+      //  objects, so their indexes changed
+      ReassignFieldIndexes(rootObjTypeDef); 
       return rootObjTypeDef;
     }
-
-    private void VerifyModel() {
-    }
-
-
 
   } //class
 }

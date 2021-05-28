@@ -9,17 +9,19 @@ using NGraphQL.Model;
 using NGraphQL.Server.Parsing;
 using NGraphQL.Model.Request;
 using NGraphQL.Server.Execution;
+using NGraphQL.Server.Mapping;
 
 namespace NGraphQL.Server {
 
   internal class RequestHandler {
     GraphQLServer _server; 
     RequestContext _requestContext;
-    bool _parallelQuery = true;
+    bool _parallelQueryEnabled;
 
     public RequestHandler(GraphQLServer server,  RequestContext requestContext) {
       _server = server; 
       _requestContext = requestContext;
+      _parallelQueryEnabled = server.Settings.Options.IsSet(GraphQLServerOptions.EnableParallelQueries);
     }
 
     public async Task ExecuteAsync() {
@@ -61,7 +63,7 @@ namespace NGraphQL.Server {
     private async Task ExecuteOperationAsync(GraphQLOperation op, OutputObjectScope topScope) {
       var mappedTopSubset = op.SelectionSubset.MappedSubSets[0];
       var topMappedItems = mappedTopSubset.MappedItems;
-      var parallel = _parallelQuery && op.OperationType == OperationType.Query && topMappedItems.Count > 1; 
+      var parallel = _parallelQueryEnabled && op.OperationType == OperationType.Query && topMappedItems.Count > 1; 
       
       // Note: if we go parallel here, note that the topScope is safe for concurrent thread access; 
       //   it is only used to save op result value (SetValue method)
