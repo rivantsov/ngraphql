@@ -34,6 +34,11 @@ namespace NGraphQL.TestApp {
       return _app.Things.FirstOrDefault(t => t.Id == id);
     }
 
+    public Thing GetInvalidThing(IFieldContext context) {
+      // Name is declared non-null on Thing_, should result in error
+      return new Thing() { Id = 100, Name = null };
+    }
+
     public async Task<int> WaitForPositiveValueAsync(IFieldContext context) {
       return await _app.WaitForPositiveValueAsync(context.CancellationToken);
     }

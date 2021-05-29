@@ -68,7 +68,7 @@ query introQuery {
 
       TestEnv.LogTestDescr(@" testing Graphiql introspection query.");
       var query = _graphiqlIntroQuery;
-      var resp = await ExecuteAsync(query);
+      var resp = await ExecuteAsync(query, throwOnError: false);
       Assert.AreEqual(0, resp.Errors.Count);
     }
 

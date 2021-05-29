@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -30,25 +31,18 @@ query {
       var things = resp.Data["things"];
       Assert.IsNotNull(things, "Expected result");
 
-      /*
-      // Disabling this test - now __typename at top level is allowed, returns 'Mutation'
-      
-      TestEnv.LogTestDescr(@"Repro issue #4 - crash with NullRef when using _typename at top level.");
+      // bug, issue #8; resolver returning null on non-null field should cause error
+      //   getInvalidthing resolver returns Thing object with Name==null, but Name is String!;
+      //   should be an error. This is server failure, normally details not reported to client
+      //   but in this case server explains some details - I think it is safe, and helpful
       query = @"
-mutation {
-  __typename  # causes error
-  mutateThing(id: 1, newName: ""newName"") { 
-    id 
-    name 
-  }
-}";
-      // Bug, old behavior: fails with null ref exc
-      // Fixed: now returns error "field _typename not found"
+    query {
+       getInvalidThing {id name}
+    } ";
       resp = await ExecuteAsync(query, throwOnError: false);
-      Assert.AreEqual(1, resp.Errors.Count, "Expected 1 result");
-      var err0 = resp.Errors[0];
-      Assert.IsTrue(err0.Message.Contains(@"Field '__typename' not found"), "Invalid error message"); 
-      */ 
+      Assert.AreEqual(1, resp.Errors.Count, "Expected error");
+      var errMsg = resp.Errors[0].Message;
+      Assert.AreEqual("Server error: resolver for non-nullable field 'name' returned null.", errMsg);
     }
 
   }

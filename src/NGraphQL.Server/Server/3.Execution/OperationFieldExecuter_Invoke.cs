@@ -15,10 +15,17 @@ namespace NGraphQL.Server.Execution {
   partial class OperationFieldExecuter {
 
     private async Task<object> InvokeResolverAsync(FieldContext fieldContext) {
+      object result;
       if (fieldContext.MappedField.Resolver.ResolverFunc != null)
-        return InvokeResolverFunc(fieldContext);
+        result = InvokeResolverFunc(fieldContext);
       else
-        return await InvokeResolverMethodAsync(fieldContext); 
+        result = await InvokeResolverMethodAsync(fieldContext);
+      if (result == null && fieldContext.FieldDef.TypeRef.IsNotNull) {
+        var selFld = fieldContext.MappedField.Field;
+        _requestContext.AddError($"Server error: resolver for non-nullable field '{selFld.Key}' returned null.",
+              selFld, ErrorCodes.ServerError);
+      }
+      return result; 
     }
 
     private async Task<object> InvokeResolverMethodAsync(FieldContext fieldContext) {

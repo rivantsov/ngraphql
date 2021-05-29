@@ -16,7 +16,8 @@ namespace NGraphQL.Introspection {
   }
 
   public abstract class IntroObjectBase {
-    public string Name;
+    // we make it virtual to override in __Type and add [Null] attr - Type__ might have Name=null (ex: non-null wrapper)
+    public virtual string Name { get; set; }
     [Null]
     public string Description;
     public bool IsDeprecated;
@@ -26,6 +27,8 @@ namespace NGraphQL.Introspection {
 
   [Hidden]
   public class __Type : IntroObjectBase {
+    [Null]
+    public override string Name {get;set;}
     public TypeKind Kind;
 
     // object only 

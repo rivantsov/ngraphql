@@ -14,6 +14,10 @@ namespace NGraphQL.TestApp {
     /// <param name="id">Thing id.</param>
     Thing_ GetThing(int id);
 
+    /// <summary>Returns the Thing with invalid value(s).</summary>
+    Thing_ GetInvalidThing();
+
+
     int WaitForPositiveValueAsync();
 
     TheFlags GetFlags();
