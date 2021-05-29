@@ -12,7 +12,8 @@ namespace NGraphQL.TestApp {
     public ThingsGraphQLModule() {
       // 1. Register all types
       base.EnumTypes.Add(typeof(ThingKind), typeof(TheFlags));
-      base.ObjectTypes.Add(typeof(Thing_), typeof(OtherThing_), typeof(ThingForIntfEntity_), typeof(OtherThingWrapper_));
+      base.ObjectTypes.Add(typeof(Thing_), typeof(ThingX_), typeof(OtherThing_), 
+             typeof(ThingForIntfEntity_), typeof(OtherThingWrapper_));
       base.InputTypes.Add(typeof(InputObj), typeof(InputObjWithEnums), typeof(InputObjParent),         
         typeof(InputObjChild),  typeof(InputObjWithList));
       base.InterfaceTypes.Add(typeof(INamedObj), typeof(IObjWithId));
@@ -36,6 +37,14 @@ namespace NGraphQL.TestApp {
         NextThing = FromMap<Thing_>(th.NextThing), 
         OtherThingWrapped = th.MainOtherThing.GetWrapper(),        
       });
+
+      // map Thing to another GrqphQL type ThingX_
+      MapEntity<Thing>().To<ThingX_>(th => new ThingX_() {
+        IdX = th.Id,
+        NameX = th.Name,
+        KindX = th.TheKind,
+      });
+
 
       MapEntity<OtherThing>().To<OtherThing_>(); // engine will automatically map all matching fields
       MapEntity<IThingIntfEntity>().To<ThingForIntfEntity_>();

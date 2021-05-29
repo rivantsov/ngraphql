@@ -49,6 +49,14 @@ namespace NGraphQL.TestApp {
     [Null] public OtherThingWrapper_ OtherThingWrapped;
   }
 
+  // A second GraphQL type mapped to Thing entity. Test of mapping of one entity type to multiple 
+  // GraphQL types. We use the same resolver GetThings; but GraphQL field is 'thingsX'
+  public class ThingX_ {
+    public int IdX;
+    public string NameX;
+    public ThingKind KindX; 
+  }
+
   public class OtherThing_ : INamedObj {
     [Scalar("ID")]
     public string IdStr;

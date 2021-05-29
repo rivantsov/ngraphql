@@ -176,6 +176,21 @@ query {
       Assert.AreEqual(2, resList.Count, "Expected 2 objects");
     }
 
+    [TestMethod]
+    public async Task Test_Misc_MultiTypeMapping() {
+      TestEnv.LogTestMethodStart();
+      string query;
+      GraphQLResponse resp;
+
+      TestEnv.LogTestDescr(@" mapping Thing entity to another GraphQL type ThingX.");
+      query = @"
+        query { 
+          thingsX { idX nameX kindX }
+}";
+      resp = await ExecuteAsync(query);
+      var resList = resp.GetValue<IList>("thingsX");
+      Assert.AreEqual(3, resList.Count, "Expected 3 objects");
+    }
 
 
     [TestMethod]
