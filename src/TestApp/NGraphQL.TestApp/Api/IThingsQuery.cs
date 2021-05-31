@@ -19,7 +19,6 @@ namespace NGraphQL.TestApp {
     /// <summary>Returns the Thing with invalid value(s).</summary>
     Thing_ GetInvalidThing();
 
-
     int WaitForPositiveValueAsync();
 
     TheFlags GetFlags();
@@ -67,5 +66,12 @@ namespace NGraphQL.TestApp {
     IList<INamedObj> GetSomeNamedObjects();
 
     ThingKind[] GetAllKinds();
+
+    /// <summary>Demonstrates converting custom exc into GraphQL errors in the response. 
+    /// Throws AggregateException; the special handler on error event catches it, unpacks the exc,
+    /// and posts messages from child exceptions as separate GraphQL errors.  
+    /// </summary>
+    /// <returns>Throws exc.</returns>
+    int ThrowAggrExc(); 
   }
 }

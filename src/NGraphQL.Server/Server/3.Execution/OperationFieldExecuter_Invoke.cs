@@ -16,72 +16,64 @@ namespace NGraphQL.Server.Execution {
 
     private async Task<object> InvokeResolverAsync(FieldContext fieldContext) {
       object result;
-      if (fieldContext.MappedField.Resolver.ResolverFunc != null)
-        result = InvokeResolverFunc(fieldContext);
-      else
-        result = await InvokeResolverMethodAsync(fieldContext);
-      if (result == null && fieldContext.FieldDef.TypeRef.IsNotNull) {
-        var selFld = fieldContext.MappedField.Field;
-        _requestContext.AddError($"Server error: resolver for non-nullable field '{selFld.Key}' returned null.",
-              selFld, ErrorCodes.ServerError);
-      }
-      return result; 
-    }
-
-    private async Task<object> InvokeResolverMethodAsync(FieldContext fieldContext) {
       try {
-        var fldResolver = fieldContext.MappedField.Resolver;
-        var fldDef = fldResolver.Field;
-        if(fieldContext.ArgValues == null)
-          BuildResolverArguments(fieldContext);
-        // we might have encountered errors when evaluating args; if so, abort all
-        this.AbortIfFailed();
-        if (fieldContext.ResolverClassInstance == null)
-          AssignResolverClassInstance(fieldContext, fldResolver);
-        // set current parentEntity arg
-        var isStatic = fldDef.Flags.IsSet(FieldFlags.Static);
-        if (!isStatic) {
-          fieldContext.ArgValues[1] = fieldContext.CurrentParentScope.Entity;
+        if (fieldContext.MappedField.Resolver.ResolverFunc != null)
+          result = InvokeResolverFunc(fieldContext);
+        else
+          result = await InvokeResolverMethodAsync(fieldContext);
+        if (result == null && fieldContext.FieldDef.TypeRef.IsNotNull) {
+          var selFld = fieldContext.MappedField.Field;
+          _requestContext.AddError($"Server error: resolver for non-nullable field '{selFld.Key}' returned null.",
+                selFld, ErrorCodes.ServerError);
         }
-        var clrMethod = fldResolver.ResolverMethod.Method; 
-        var result = clrMethod.Invoke(fieldContext.ResolverClassInstance, fieldContext.ArgValues);
-        if(fldResolver.ResolverMethod.ReturnsTask)
-          result = await UnwrapTaskResultAsync(fieldContext, fldResolver, (Task)result);
-        Interlocked.Increment(ref _requestContext.Metrics.ResolverCallCount);
-        // Note: result might be null, but batched result might be set.
         return result;
-      } catch(TargetInvocationException tex) {
+      } catch (TargetInvocationException tex) {
         // sync call goes here
         var origExc = tex.InnerException;
         if (origExc is AbortRequestException)
-          throw origExc; 
-        fieldContext.AddError(origExc, ErrorCodes.ResolverError);
+          throw origExc;
+        AddError(fieldContext, origExc, ErrorCodes.ResolverError);
         Fail(); // throws
         return null; //never happens
-      } catch(AbortRequestException) {
+      } catch (AbortRequestException) {
         throw;
-      } catch(Exception ex) {
-        fieldContext.AddError(ex, ErrorCodes.ResolverError);
+      } catch (Exception ex) {
+        AddError(fieldContext, ex, ErrorCodes.ResolverError);
         Fail();
         return null; //never happens
       }
     }
 
-    // merge with prev method InvokeResolverAsync 
-    private object InvokeResolverFunc(FieldContext fieldContext) {
-      try {
-        var propReader = fieldContext.MappedField.Resolver.ResolverFunc;
-        var entity = fieldContext.CurrentParentScope.Entity; 
-        var result = propReader(entity);
-        return result;
-      } catch (Exception ex) {
-        // sync call goes here
-        // var origExc = tex.InnerException ?? tex;
-        fieldContext.AddError(ex, ErrorCodes.ResolverError);
-        throw new AbortRequestException();
+    private async Task<object> InvokeResolverMethodAsync(FieldContext fieldContext) {
+      var fldResolver = fieldContext.MappedField.Resolver;
+      var fldDef = fldResolver.Field;
+      if (fieldContext.ArgValues == null)
+        BuildResolverArguments(fieldContext);
+      // we might have encountered errors when evaluating args; if so, abort all
+      this.AbortIfFailed();
+      if (fieldContext.ResolverClassInstance == null)
+        AssignResolverClassInstance(fieldContext, fldResolver);
+      // set current parentEntity arg
+      var isStatic = fldDef.Flags.IsSet(FieldFlags.Static);
+      if (!isStatic) {
+        fieldContext.ArgValues[1] = fieldContext.CurrentParentScope.Entity;
       }
+      var clrMethod = fldResolver.ResolverMethod.Method;
+      var result = clrMethod.Invoke(fieldContext.ResolverClassInstance, fieldContext.ArgValues);
+      if (fldResolver.ResolverMethod.ReturnsTask)
+        result = await UnwrapTaskResultAsync(fieldContext, fldResolver, (Task)result);
+      Interlocked.Increment(ref _requestContext.Metrics.ResolverCallCount);
+      // Note: result might be null, but batched result might be set.
+      return result;
     }
 
+    // merge with prev method InvokeResolverAsync 
+    private object InvokeResolverFunc(FieldContext fieldContext) {
+      var propReader = fieldContext.MappedField.Resolver.ResolverFunc;
+      var entity = fieldContext.CurrentParentScope.Entity; 
+      var result = propReader(entity);
+      return result;
+    }
 
     private async Task<object> UnwrapTaskResultAsync(FieldContext fieldContext, FieldResolverInfo fieldResolver, Task task) {
       if (!task.IsCompleted)
@@ -92,7 +84,7 @@ namespace NGraphQL.Server.Execution {
           Exception origExc = task.Exception;
           if(origExc is AggregateException aex)
             origExc = aex.InnerException; //we expect just one exc (we ignore exc.InnerExceptions list)
-          fieldContext.AddError(origExc, ErrorCodes.ResolverError);
+          AddError(fieldContext, origExc, ErrorCodes.ResolverError);
           Fail();
           return null; 
         

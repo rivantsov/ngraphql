@@ -63,10 +63,9 @@ namespace NGraphQL.Server {
     private async Task ExecuteOperationAsync(GraphQLOperation op, OutputObjectScope topScope) {
       var mappedTopSubset = op.SelectionSubset.MappedSubSets[0];
       var topMappedItems = mappedTopSubset.MappedItems;
-      var parallel = _parallelQueryEnabled && op.OperationType == OperationType.Query && topMappedItems.Count > 1; 
+      var parallel = _parallelQueryEnabled && op.OperationType == OperationType.Query 
+              && op.SelectionSubset.Items.Count > 1; 
       
-      // Note: if we go parallel here, note that the topScope is safe for concurrent thread access; 
-      //   it is only used to save op result value (SetValue method)
       var executers = new List<OperationFieldExecuter>();
       foreach(var mappedItem in topMappedItems) {
         switch(mappedItem) {

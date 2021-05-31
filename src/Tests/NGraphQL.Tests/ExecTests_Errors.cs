@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NGraphQL.Server.Execution;
 
@@ -113,5 +114,24 @@ query {
       Assert.AreEqual(expected, errMsg);
     }
 
+
+    [TestMethod]
+    public async Task Test_Errors_ExcConvert() {
+      TestEnv.LogTestMethodStart();
+
+      string query;
+      GraphQLError err;
+      GraphQLResponse resp;
+
+      TestEnv.LogTestDescr("converting aggregate exc into multiple errors in the response.");
+      query = @"
+query  { 
+  throwAggrExc
+}";
+      resp = await ExecuteAsync(query, throwOnError: false);
+      Assert.AreEqual(3, resp.Errors.Count, "Expected 3 errors");
+      var allErrors = string.Join(",", resp.Errors.Select(e => e.Message));
+      Assert.AreEqual("Error1,Error2,Error3", allErrors, "Invalid error messsages");
+    }
   }
 }

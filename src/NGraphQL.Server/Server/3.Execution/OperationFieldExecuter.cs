@@ -16,8 +16,10 @@ namespace NGraphQL.Server.Execution {
   /// multiple instances to execute top query fields in parallel. So there will be one RequestHandler and multiple 
   /// OperationFieldExecuter instances. </remarks>
   public partial class OperationFieldExecuter  {
+    public string OperationFieldName => _mappedOpField.Field.Name;
+    public bool Failed => _failed;
     public object Result;
-    public string ResultKey => _mappedOpField.Field.Key; 
+    public string ResultKey => _mappedOpField.Field.Key;
 
     RequestContext _requestContext;
     OutputObjectScope _parentScope;
@@ -179,14 +181,20 @@ namespace NGraphQL.Server.Execution {
       throw new AbortRequestException();
     }
 
-    // IOperationFieldContext members
-    public string OperationFieldName => _mappedOpField.Field.Name;
-
-    public bool Failed => _failed;
-
     public void AddError(GraphQLError error) {
       _requestContext.AddError(error);
       _failed = true;
+    }
+
+    public void AddError(FieldContext fieldContext, Exception ex, string errorType) {
+      _failed = true;
+      // fire event
+      var eventArgs = new OperationErrorEventArgs(_requestContext, this._mappedOpField.Field, ex);
+      _requestContext.Server.Events.OnOperationError(eventArgs);
+      if (eventArgs.Exception == null)
+        return; // event handler cleared error
+      // add error
+      fieldContext.AddError(ex, errorType);
     }
 
 

@@ -36,6 +36,7 @@ namespace NGraphQL.Tests {
         ThingsServer.RegisterModules(thingsModule);
         ThingsServer.Initialize();
         ThingsServer.Events.RequestCompleted += ThingsServer_RequestCompleted;
+        ThingsServer.Events.OperationError += Events_OperationError;
       } catch (ServerStartupException sEx) {
         LogText(sEx.ToText() + Environment.NewLine);
         LogText(sEx.GetErrorsAsText());
@@ -50,6 +51,20 @@ namespace NGraphQL.Tests {
         ContractResolver = new DefaultContractResolver() { NamingStrategy = new CamelCaseNamingStrategy() }
       };
     }
+
+    // In the real app this method belongs to your Server app code
+    private static void Events_OperationError(object sender, OperationErrorEventArgs args) {
+      // The test method 
+      if (args.Exception is AggregateException aex) {
+        var ctx = args.RequestContext;
+        foreach(var childExc in aex.InnerExceptions) {
+          ctx.AddError(childExc.Message, args.RequestItem, errorType: "SmthWrong");
+        }
+        // clear original exc
+        args.ClearException(); 
+      }
+    }
+
 
     private static void ThingsServer_RequestCompleted(object sender, GraphQLServerEventArgs e) {
       LastRequestContext = e.RequestContext;

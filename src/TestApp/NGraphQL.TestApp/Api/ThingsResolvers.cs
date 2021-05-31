@@ -202,7 +202,15 @@ namespace NGraphQL.TestApp {
       return new[] { ThingKind.KindOne, ThingKind.KindTwo, ThingKind.KindThree };
     }
 
-
+    public int ThrowAggrExc(IFieldContext context) {
+      var excs = new Exception[] {
+        new Exception("Error1"),
+        new Exception("Error2"),
+        new Exception("Error3"),
+      };
+      var agrExc = new AggregateException(excs);
+      throw agrExc; 
+    }
 
     // this is just a test placeholder
     public bool Subscribe(IFieldContext context, string childName) {
