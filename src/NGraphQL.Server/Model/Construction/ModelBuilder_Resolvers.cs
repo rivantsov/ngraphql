@@ -64,25 +64,25 @@ namespace NGraphQL.Model.Construction {
     // setup resolvers having [ResolvesField] attribute
     private void AssignResolversByMethodsResolvesFieldAttribute(IList<ObjectTypeDef> types) {
       // go thru resolver classes, find methods with ResolvesField attr
-      foreach (var resInfo in _allResolvers) {
-        var resAttr = resInfo.ResolvesAttribute;
+      foreach (var resMethInfo in _allResolverMethods) {
+        var resAttr = resMethInfo.ResolvesAttribute;
         if (resAttr == null)
           continue;
-        var module = resInfo.Module;
+        var module = resMethInfo.Module;
         var fieldName = resAttr.FieldName.FirstLower();
         FieldDef field = null;
-        var typeDefs = types.Where(t => t.Module == resInfo.Module).OfType<ObjectTypeDef>();
+        var typeDefs = types.Where(t => t.Module == resMethInfo.Module).OfType<ObjectTypeDef>();
         // check target type
         if (resAttr.TargetType != null) {
           var typeDef = typeDefs.FirstOrDefault(td => td.ClrType == resAttr.TargetType);
           if (typeDef == null) {
-            AddError($"Resolver method '{resInfo}': target type '{resAttr.TargetType}' not registered or is not Object type.");
+            AddError($"Resolver method '{resMethInfo}': target type '{resAttr.TargetType}' not registered or is not Object type.");
             continue;
           }
           // match field
           field = typeDef.Fields.FirstOrDefault(f => f.Name == fieldName);
           if (field == null) {
-            AddError($"Resolver method '{resInfo}': target field '{fieldName}' not found "
+            AddError($"Resolver method '{resMethInfo}': target field '{fieldName}' not found "
                       + $"on type '{resAttr.TargetType}'.");
             continue;
           }
@@ -94,15 +94,15 @@ namespace NGraphQL.Model.Construction {
               field = fields[0];
               break;
             case 0:
-              AddError($"Resolver method '{resInfo}': target field '{fieldName}' not found on any object type.");
+              AddError($"Resolver method '{resMethInfo}': target field '{fieldName}' not found on any object type.");
               continue; 
             default:
-              AddError($"Resolver method '{resInfo}': multipe target fields '{fieldName}' found on Object types.");
+              AddError($"Resolver method '{resMethInfo}': multipe target fields '{fieldName}' found on Object types.");
               continue;
           }
         }
         // We have a field; verify method is compatible
-        VerifyFieldResolverMethod(field, resInfo);
+        VerifyFieldResolverMethod(field, resMethInfo);
         // get parent arg type and find mapping
         var objTypeDef = (ObjectTypeDef)field.OwnerType;
         ObjectTypeMapping mapping = null; 
@@ -113,29 +113,33 @@ namespace NGraphQL.Model.Construction {
             break;
           
           case TypeRole.Data:
-            var prms = resInfo.Method.GetParameters();
+            var prms = resMethInfo.Method.GetParameters();
             if (prms.Length < 2) {
-              AddError($"Resolver method '{resInfo}', expected at least 2 parameters - field context and parent entity.");
+              AddError($"Resolver method '{resMethInfo}', expected at least 2 parameters - field context and parent entity.");
               continue; 
             }
             var parentEntType = prms[1].ParameterType;
             mapping = objTypeDef.Mappings.FirstOrDefault(m => m.EntityType.IsAssignableFrom(parentEntType));
             if (mapping == null) {
-              AddError($"Resolver method '{resInfo}', parent entity argument type '{parentEntType}' is not mapped to output GraphQL type '{objTypeDef.Name}'.");
+              AddError($"Resolver method '{resMethInfo}', parent entity argument type '{parentEntType}' is not mapped to output GraphQL type '{objTypeDef.Name}'.");
               continue; 
             }
             break;
 
           default:
-            AddError($"Resolver method '{resInfo}', invalid target GraphQL type: '{objTypeDef.Name}'.");
+            AddError($"Resolver method '{resMethInfo}', invalid target GraphQL type: '{objTypeDef.Name}'.");
             continue;
         }//switch
-        var fres = mapping.GetResolver(field);
-        if (fres == null) {
-          AddError($"FATAL: resolver method '{resInfo}', failed to match to field resolver in type '{objTypeDef.Name}'.");
+        var fldResolver = mapping.GetResolver(field);
+        if (fldResolver == null) {
+          AddError($"Resolver method '{resMethInfo}', failed to match to field resolver in type '{objTypeDef.Name}'.");
           continue; 
         }
-        fres.ResolverMethod = resInfo; //assign resolver
+        if (fldResolver.ResolverMethod != null) {
+          AddError($"Field '{fldResolver.Field}': more than one resolver method specified.");
+          continue;
+        }
+        fldResolver.ResolverMethod = resMethInfo; //assign resolver
       } //foreach resMeth
     } //method
 
@@ -150,15 +154,20 @@ namespace NGraphQL.Model.Construction {
       }
       foreach (var bnd in memberInit.Bindings) {
         var asmtBnd = bnd as MemberAssignment;
+        // this is a bit inefficient for large field sets, but it all happens once at startup
+        // to myself - do not try to fix it by switching to lookup by name in hybrid dict, does not work
         var fieldDef = mapping.TypeDef.Fields.FirstOrDefault(fld => fld.ClrMember == bnd.Member);
         if (asmtBnd == null || fieldDef == null)
           continue; //should never happen, but just in case
                     // create lambda reading the source property
         var resInfo = mapping.GetResolver(fieldDef);
         if (resInfo == null)
-          continue; 
+          continue;
+        if (resInfo.IsMapped()) {
+          AddError($"Resolver mapper by LINQ expression: field '{fieldDef}' is already mapped to a resolver.");
+          continue;
+        }
         resInfo.ResolverFunc = CompileResolverExpression(entityPrm, asmtBnd.Expression);
-        var outType = asmtBnd.Expression.Type;
       } //foreach bnd
     }
 
@@ -177,10 +186,10 @@ namespace NGraphQL.Model.Construction {
             continue;
           }
         }
-        // 
+        // Get field res info and check if it's already mapped
         var methName = resAttr.MethodName ?? field.ClrMember.Name;
-        var resolverInfos = FindResolvers(methName, resolverType);
-        switch (resolverInfos.Count) {
+        var resMethInfos = FindResolvers(methName, resolverType);
+        switch (resMethInfos.Count) {
           case 1:
             break;
           case 0:
@@ -191,10 +200,15 @@ namespace NGraphQL.Model.Construction {
             continue; //next field
         }
         // we have single matching resolver
-        var resInfo = resolverInfos[0];
-        VerifyFieldResolverMethod(field, resInfo);
+        var resMethInfo = resMethInfos[0];
+        VerifyFieldResolverMethod(field, resMethInfo);
+        // get field resolver info and check if it is already mapped
         var fldRes = mapping.GetResolver(field);
-        fldRes.ResolverMethod = resInfo; 
+        if (fldRes.IsMapped()) {
+          AddError($"Field {typeDef.Name}.{field.Name}: failed to set resolver '{methName}', field is already mapped. ");
+          continue; //next field
+        }
+        fldRes.ResolverMethod = resMethInfo; 
       } //foreach field
     }//method
 
@@ -203,12 +217,12 @@ namespace NGraphQL.Model.Construction {
       var typeDef = mapping.TypeDef; 
       foreach (var field in typeDef.Fields) {
         var fRes = mapping.GetResolver(field);
-        if (fRes == null)
+        if (fRes.IsMapped())
           continue;
         if (field.ClrMember == null)
           continue; //__typename has no clr member
         var methName = field.ClrMember.Name;
-        var resolverInfos =  _allResolvers
+        var resolverInfos =  _allResolverMethods
           .Where(res => res.Module == mapping.TypeDef.Module) // in the same module!
           .Where(res =>  res.Method.Name.Equals(methName, StringComparison.OrdinalIgnoreCase)).ToList();
         switch (resolverInfos.Count) {
@@ -233,7 +247,7 @@ namespace NGraphQL.Model.Construction {
       var allEntFldProps = entityType.GetFieldsProps();
       foreach (var fldDef in mapping.TypeDef.Fields) {
         var res = mapping.GetResolver(fldDef);
-        if (res.ResolverFunc != null || res.ResolverMethod != null)
+        if (res.IsMapped())
           continue; //already set
         var memberName = fldDef.Name;
         MemberInfo entMember = allEntFldProps.Where(m => m.Name.Equals(memberName, StringComparison.OrdinalIgnoreCase))

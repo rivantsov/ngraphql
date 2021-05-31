@@ -81,7 +81,6 @@ namespace NGraphQL.Model {
       }
     }
 
-
     public static bool HasDirectives(this GraphQLModelObject modelObject) {
       return modelObject.Directives != null && modelObject.Directives.Count > 0; 
     }
@@ -90,6 +89,10 @@ namespace NGraphQL.Model {
     public static FieldResolverInfo GetResolver(this ObjectTypeMapping mapping, FieldDef fieldDef) {
       var res = mapping.FieldResolvers[fieldDef.Index];
       return res; 
+    }
+
+    internal static bool IsMapped(this FieldResolverInfo res) {
+      return res.ResolverFunc != null || res.ResolverMethod != null; 
     }
   } //class
 }

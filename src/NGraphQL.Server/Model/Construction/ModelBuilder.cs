@@ -16,7 +16,7 @@ namespace NGraphQL.Model.Construction {
     GraphQLApiModel _model;
     XmlDocumentationLoader _docLoader;
     IList<ModelAdjustment> _modelAdjustments;
-    IList<ResolverMethodInfo> _allResolvers = new List<ResolverMethodInfo>();
+    IList<ResolverMethodInfo> _allResolverMethods = new List<ResolverMethodInfo>();
 
     public ModelBuilder(GraphQLServer server) {
       _server = server;

@@ -40,7 +40,7 @@ namespace NGraphQL.Model.Construction {
             };
             if (resInfo.ReturnsTask)
               resInfo.TaskResultReader = ExpressionHelper.CompileTaskResultReader(m.ReturnType);            
-            _allResolvers.Add(resInfo);
+            _allResolverMethods.Add(resInfo);
           }
         }
       }

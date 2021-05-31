@@ -122,7 +122,7 @@ namespace NGraphQL.Model.Construction {
     }
 
     private IList<ResolverMethodInfo> FindResolvers(string name, Type resType = null) {
-      var list = _allResolvers
+      var list = _allResolverMethods
         .Where(ri => ri.Method.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
         .Where(ri => resType == null || ri.ResolverClass.Type == resType)
         .ToList();
