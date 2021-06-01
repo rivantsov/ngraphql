@@ -27,6 +27,7 @@ namespace NGraphQL.TestApp {
       MapEntity<Thing>().To<Thing_>(th => new Thing_() {
         Id = th.Id,
         Name = th.Name,
+        StrField = th.Name + "-EXT",
         Description = th.Descr,
         Kind = th.TheKind,
         TheFlags = th.Flags,

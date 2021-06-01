@@ -6,10 +6,12 @@ using NGraphQL.CodeFirst;
 
 namespace NGraphQL.TestApp {
 
-  // testing subclassing 
+  // testing subclassing and abstract classes
   public class ThingBase_ {
     public int Id { get; set; }
     public string Name { get; set; }
+    // testing bug #13, field in base class is not mapped to resolver, even if there's mapping expr to entity
+    public string StrField; 
   }
 
   /// <summary>A sample GraphQL output object.</summary>

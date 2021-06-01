@@ -149,17 +149,22 @@ namespace NGraphQL.Model.Construction {
       var entityPrm = mapping.Expression.Parameters[0];
       var memberInit = mapping.Expression.Body as MemberInitExpression;
       if (memberInit == null) {
-        AddError($"Invalid mapping expression for type {mapping.EntityType}->{mapping.TypeDef.Name}");
+        AddError($"Invalid mapping expression for type '{mapping.EntityType}->{mapping.TypeDef.Name}'.");
         return;
       }
       foreach (var bnd in memberInit.Bindings) {
         var asmtBnd = bnd as MemberAssignment;
-        // this is a bit inefficient for large field sets, but it all happens once at startup
-        // to myself - do not try to fix it by switching to lookup by name in hybrid dict, does not work
-        var fieldDef = mapping.TypeDef.Fields.FirstOrDefault(fld => fld.ClrMember == bnd.Member);
-        if (asmtBnd == null || fieldDef == null)
-          continue; //should never happen, but just in case
-                    // create lambda reading the source property
+        if (asmtBnd == null) {
+          AddError($"Invalid mapping expression '{bnd}', expected assignment binding.");
+          continue;
+        }
+        var fldName = bnd.Member.Name.FirstLower();
+        var fieldDef = mapping.TypeDef.Fields[fldName]; 
+        if(fieldDef == null) {
+          AddError($"Invalid assignment expression, target field '{fldName}' not found.");
+          continue; 
+        }
+        // create lambda reading the source property
         var resInfo = mapping.GetResolver(fieldDef);
         if (resInfo == null)
           continue;
