@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>Things.GraphQL</AssemblyName>
+    <RootNamespace>Things.GraphQL</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -18,7 +20,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\NGraphQL.Server\NGraphQL.Server.csproj" />
     <ProjectReference Include="..\..\NGraphQL\NGraphQL.csproj" />
+    <ProjectReference Include="..\Things.App\Things.App.csproj" />
   </ItemGroup>
 
 </Project>

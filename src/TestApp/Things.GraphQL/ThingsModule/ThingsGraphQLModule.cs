@@ -3,17 +3,19 @@ using System.Collections.Generic;
 using System.Text;
 using NGraphQL.CodeFirst;
 
-namespace NGraphQL.TestApp {
+using Things.GraphQL.Types;
+
+namespace Things.GraphQL {
 
   // Api definitions (types, resolvers) are first orginized into api modules,
   // modules then  assembled into a GraphQLApi
-  
+
   public class ThingsGraphQLModule : GraphQLModule {
     public ThingsGraphQLModule() {
       // 1. Register all types
       base.EnumTypes.Add(typeof(ThingKind), typeof(TheFlags));
-      base.ObjectTypes.Add(typeof(Thing_), typeof(ThingX_), typeof(OtherThing_), 
-             typeof(ThingForIntfEntity_), typeof(OtherThingWrapper_));
+      base.ObjectTypes.Add(typeof(Thing_), typeof(OtherThing_),
+             typeof(ThingForIntfEntity_), typeof(OtherThingWrapper_), typeof(ThingX_));
       base.InputTypes.Add(typeof(InputObj), typeof(InputObjWithEnums), typeof(InputObjParent),         
         typeof(InputObjChild),  typeof(InputObjWithList));
       base.InterfaceTypes.Add(typeof(INamedObj), typeof(IObjWithId));
@@ -36,7 +38,7 @@ namespace NGraphQL.TestApp {
         // example of using FromMap function to explicitly convert biz object to API object (BizThing => ApiThing)
         // Note: we could skip this, as field names match, it would automap
         NextThing = FromMap<Thing_>(th.NextThing), 
-        OtherThingWrapped = th.MainOtherThing.GetWrapper(),        
+        OtherThingWrapped = CreateOtherThingWrapper(th.MainOtherThing),        
       });
 
       // map Thing to another GrqphQL type ThingX_
@@ -50,13 +52,28 @@ namespace NGraphQL.TestApp {
       MapEntity<OtherThing>().To<OtherThing_>(); // engine will automatically map all matching fields
       MapEntity<IThingIntfEntity>().To<ThingForIntfEntity_>();
 
-      this.ResolverClasses.Add(typeof(ThingsResolvers));
-
       // testing hide-enum-value feature. Use this if you have no control over enum declaration, but you want to 
       //  remove/hide some members; for ex, some flag enums declare extra flag combinations as enum members (I do this often),
       //  this practice does not fit with GraphQL semantics, so these values should be removed from the GraphQL enum declaration/schema. 
       this.IgnoreMember(typeof(ThingKind), nameof(ThingKind.KindFour_Ignored));
+      this.DeprecateType(typeof(ThingKind), "ThingKind is deprecated.");
+      this.DeprecateMember(typeof(ThingKind), nameof(ThingKind.KindThree), "KindThree is deprecated.");
+
+      // Resolvers
+      this.ResolverClasses.Add(typeof(ThingsResolvers));
+
     }// constructor
+
+
+    // testing bug fix
+    private static OtherThingWrapper_ CreateOtherThingWrapper(OtherThing otherTh) {
+      if (otherTh == null)
+        return null;
+      return new OtherThingWrapper_() {
+        OtherThingName = otherTh.Name, WrappedOn = DateTime.Now,
+        OtherThing = new OtherThing_() { IdStr = otherTh.IdStr, Name = otherTh.Name }
+      };
+    }
 
   } // class
 

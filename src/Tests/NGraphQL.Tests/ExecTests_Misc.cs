@@ -8,7 +8,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NGraphQL.Server;
 using NGraphQL.Server.Execution;
 using NGraphQL.Utilities;
-using NGraphQL.TestApp;
+
+using Things;
+using Things.GraphQL;
 
 namespace NGraphQL.Tests {
 
@@ -238,11 +240,11 @@ query myQuery ($all: Boolean!) {
         Query = @" query { v: waitForPositiveValueAsync }"
       };
       // The query returns whatever is in the ThingsBizApp.WaitValue static field, but it waits until value is > 0
-      ThingsApp.WaitValue = -1;
+      ThingsResolvers.WaitValue = -1;
       var task = TestEnv.ThingsServer.ExecuteAsync(req);
       Assert.IsFalse(task.IsCompleted, "expected pending task");
       // Once we set the field, the task will be completed and result returned. 
-      var testValue = ThingsApp.WaitValue = AppTime.Now.TimeOfDay.Seconds;
+      var testValue = ThingsResolvers.WaitValue = AppTime.Now.TimeOfDay.Seconds;
       task.Wait();
       var retValue = (int)task.Result.Data["v"];
       Assert.AreEqual(testValue, retValue, "Returned value does not match test value.");

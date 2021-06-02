@@ -4,7 +4,9 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NGraphQL.Client;
 using NGraphQL.Introspection;
-using NGraphQL.TestApp;
+
+using Things;
+using Things.GraphQL.Types;
 
 namespace NGraphQL.Tests.HttpTests.Client {
   using TDict = Dictionary<string, object>;

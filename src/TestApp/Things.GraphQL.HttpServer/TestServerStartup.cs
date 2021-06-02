@@ -1,15 +1,16 @@
 using System.Threading.Tasks;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+
 using NGraphQL.Server;
 using NGraphQL.Server.AspNetCore;
-using NGraphQL.TestApp;
 
-namespace NGraphQL.TestHttpServer {
+namespace Things.GraphQL.HttpServer {
 
   public class TestServerStartup {
 
@@ -34,7 +35,7 @@ namespace NGraphQL.TestHttpServer {
       app.UseRouting();
 
       // create server and configure GraphQL endpoints
-      _graphQLServer = CreateGraphQLHttpServer();
+      _graphQLServer = CreateThingsGraphQLHttpServer();
       app.UseEndpoints(endpoints => {
         endpoints.MapPost("graphql", HandleRequest);
         endpoints.MapGet("graphql", HandleRequest);
@@ -48,12 +49,11 @@ namespace NGraphQL.TestHttpServer {
       return _graphQLServer.HandleGraphQLHttpRequestAsync(context);
     }
 
-    private GraphQLHttpServer CreateGraphQLHttpServer() {
+    private GraphQLHttpServer CreateThingsGraphQLHttpServer() {
       // create server and Http graphQL server 
       var thingsBizApp = new ThingsApp();
-      var thingsServer = new GraphQLServer(thingsBizApp);
-      var thingsModule = new ThingsGraphQLModule();
-      thingsServer.RegisterModules(thingsModule);
+      var serverStt = new GraphQLServerSettings() { Options = GraphQLServerOptions.DefaultDev };
+      var thingsServer = new ThingsGraphQLServer(thingsBizApp, serverStt);
       var server = new GraphQLHttpServer(thingsServer);
       return server;
     }

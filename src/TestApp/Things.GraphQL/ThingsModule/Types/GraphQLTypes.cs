@@ -4,7 +4,7 @@ using System.Text;
 
 using NGraphQL.CodeFirst;
 
-namespace NGraphQL.TestApp {
+namespace Things.GraphQL.Types {
 
   // testing subclassing and abstract classes
   public class ThingBase_ {
@@ -25,7 +25,8 @@ namespace NGraphQL.TestApp {
     public DateTime? DateTimeOpt; //it will be marked as Nullable automatically (no ! mark)
     [Null]
     public Thing_ NextThing;
-    [Null]
+
+    [Null, DeprecatedDir("Deprecate-reason1")]
     public string Tag;
 
     [Resolver(nameof(ThingsResolvers.GetMainOtherThing)), Null]
@@ -52,7 +53,7 @@ namespace NGraphQL.TestApp {
   }
 
   // A second GraphQL type mapped to Thing entity. Test of mapping of one entity type to multiple 
-  // GraphQL types. We use the same resolver GetThings; but GraphQL field is 'thingsX'
+  // GraphQL types. We use the same resolver GetThings; but GraphQL field is 'thingsX: [ThingX]!'
   public class ThingX_ {
     public int IdX;
     public string NameX;

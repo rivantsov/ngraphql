@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using NGraphQL.CodeFirst;
 
-namespace NGraphQL.TestApp {
+namespace Things.GraphQL.Types {
 
   public interface IThingsQuery {
     // Resolver is linked thru attribute on resolver method

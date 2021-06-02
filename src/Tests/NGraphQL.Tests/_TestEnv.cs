@@ -10,14 +10,16 @@ using Newtonsoft.Json.Serialization;
 using NGraphQL.CodeFirst;
 using NGraphQL.Server;
 using NGraphQL.Server.Execution;
-using NGraphQL.TestApp;
 using NGraphQL.Utilities;
+
+using Things;
+using Things.GraphQL;
 
 namespace NGraphQL.Tests {
 
   public static class TestEnv {
 
-    public static GraphQLServer ThingsServer;
+    public static ThingsGraphQLServer ThingsServer;
     public static bool LogEnabled = true;
     public static string LogFilePath = "_graphQLtests.log";
     private static JsonSerializerSettings _serializerSettings;
@@ -31,12 +33,10 @@ namespace NGraphQL.Tests {
         File.Delete(LogFilePath);
       try {
         var thingsBizApp = new ThingsApp();
-        var thingsModule = new ThingsGraphQLModule();
-        ThingsServer = new GraphQLServer(thingsBizApp);
-        ThingsServer.RegisterModules(thingsModule);
-        ThingsServer.Initialize();
+        var stt = new GraphQLServerSettings() { Options = GraphQLServerOptions.DefaultDev };
+        ThingsServer = new ThingsGraphQLServer(thingsBizApp, stt);
+        // Add logging hook
         ThingsServer.Events.RequestCompleted += ThingsServer_RequestCompleted;
-        ThingsServer.Events.OperationError += Events_OperationError;
       } catch (ServerStartupException sEx) {
         LogText(sEx.ToText() + Environment.NewLine);
         LogText(sEx.GetErrorsAsText());
@@ -50,19 +50,6 @@ namespace NGraphQL.Tests {
         Formatting = Formatting.Indented, 
         ContractResolver = new DefaultContractResolver() { NamingStrategy = new CamelCaseNamingStrategy() }
       };
-    }
-
-    // In the real app this method belongs to your Server app code
-    private static void Events_OperationError(object sender, OperationErrorEventArgs args) {
-      // The test method 
-      if (args.Exception is AggregateException aex) {
-        var ctx = args.RequestContext;
-        foreach(var childExc in aex.InnerExceptions) {
-          ctx.AddError(childExc.Message, args.RequestItem, errorType: "SmthWrong");
-        }
-        // clear original exc
-        args.ClearException(); 
-      }
     }
 
 

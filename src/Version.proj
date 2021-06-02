@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
-    <AssemblyVersion>1.1.3</AssemblyVersion>
-    <Version>1.1.3</Version>
+    <AssemblyVersion>1.2.0</AssemblyVersion>
+    <Version>1.2.0</Version>
     <Authors>Roman Ivantsov</Authors>
     <Copyright>Roman Ivantsov</Copyright>
     <Company />

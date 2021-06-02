@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 using NGraphQL.CodeFirst;
 
-namespace NGraphQL.TestApp {
+using Things.GraphQL.Types;
+
+namespace Things.GraphQL {
 
   public class ThingsResolvers : IResolverClass {
     ThingsApp _app;
@@ -39,8 +42,17 @@ namespace NGraphQL.TestApp {
       return new Thing() { Id = 100, Name = null };
     }
 
+    // The method used in async call test. 
+    // WaitValue is initially -1; the caller test method calls this method, awaits return; 
+    // the returned task should be in 'Running' status.
+    // The code then changes the WaitValue to positive value and waits for task to complete. 
+    // This is a test that stack completely unwinds when awaiting for long-running async resolver method
+    public static int WaitValue;
+
     public async Task<int> WaitForPositiveValueAsync(IFieldContext context) {
-      return await _app.WaitForPositiveValueAsync(context.CancellationToken);
+      while (WaitValue < 0 && !context.CancellationToken.IsCancellationRequested)
+        await Task.Delay(100);
+      return WaitValue;
     }
 
     public TheFlags GetFlags(IFieldContext context) {
@@ -211,6 +223,7 @@ namespace NGraphQL.TestApp {
       var agrExc = new AggregateException(excs);
       throw agrExc; 
     }
+
 
     // this is just a test placeholder
     public bool Subscribe(IFieldContext context, string childName) {
