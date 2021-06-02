@@ -56,14 +56,11 @@ namespace Things.GraphQL {
       //  remove/hide some members; for ex, some flag enums declare extra flag combinations as enum members (I do this often),
       //  this practice does not fit with GraphQL semantics, so these values should be removed from the GraphQL enum declaration/schema. 
       this.IgnoreMember(typeof(ThingKind), nameof(ThingKind.KindFour_Ignored));
-      this.DeprecateType(typeof(ThingKind), "ThingKind is deprecated.");
-      this.DeprecateMember(typeof(ThingKind), nameof(ThingKind.KindThree), "KindThree is deprecated.");
 
       // Resolvers
       this.ResolverClasses.Add(typeof(ThingsResolvers));
 
     }// constructor
-
 
     // testing bug fix
     private static OtherThingWrapper_ CreateOtherThingWrapper(OtherThing otherTh) {

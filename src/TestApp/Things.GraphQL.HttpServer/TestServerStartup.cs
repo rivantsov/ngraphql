@@ -42,7 +42,7 @@ namespace Things.GraphQL.HttpServer {
         endpoints.MapGet("graphql/schema", HandleRequest);
       });
       // Use GraphiQL UI
-      app.UseGraphiQLServer();
+      app.UseGraphQLGraphiQL();
     }
 
     private Task HandleRequest(HttpContext context) {

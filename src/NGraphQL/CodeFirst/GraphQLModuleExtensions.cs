@@ -35,18 +35,6 @@ namespace NGraphQL.CodeFirst {
       });
     }
 
-    public static void DeprecateType(this GraphQLModule module, Type type, string reason) {
-      module.Adjustments.Add(new ModelAdjustment() {
-        Type = type, Attribute = new DeprecatedDirAttribute(reason)
-      });
-    }
-
-    public static void DeprecateMember(this GraphQLModule module, Type type, string memberName, string reason) {
-      module.Adjustments.Add(new ModelAdjustment() {
-        Type = type, MemberName = memberName, Attribute = new DeprecatedDirAttribute(reason)
-      });
-    }
-
     // To allow add multiple types to module's types lists
     public static void Add(this IList<Type> list, params Type[] types) {
       foreach (var type in types)
