@@ -21,7 +21,7 @@ namespace NGraphQL.Server {
     public GraphQLServerOptions Options = GraphQLServerOptions.DefaultDev;
 
     public int RequestCacheSize = 2000;
-    public TimeSpan RequestCacheEvictionTime = TimeSpan.FromSeconds(20);
+    public TimeSpan RequestCacheEvictionTime = TimeSpan.FromSeconds(60);
 
     /// <summary>Dictionary of custom values for use by extensions, custom sclars or applications. </summary>
     public readonly IDictionary<string, object> Values = new Dictionary<string, object>(); 
