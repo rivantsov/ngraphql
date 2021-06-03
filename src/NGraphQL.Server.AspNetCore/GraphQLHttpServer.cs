@@ -17,6 +17,7 @@ namespace NGraphQL.Server.AspNetCore {
   public class GraphQLHttpServer {
     public const string ContentTypeJson = "application/json";
     public const string ContentTypeGraphQL = "application/graphql";
+    public const string OperationContextKey = "_vita_operation_context_"; // When using VitaWebMiddleware
 
     public readonly JsonSerializerSettings SerializerSettings; 
     public readonly GraphQLServer Server;
@@ -105,6 +106,9 @@ namespace NGraphQL.Server.AspNetCore {
       gqlHttpReq.RequestContext =
             Server.CreateRequestContext(gqlHttpReq.Request, httpContext.RequestAborted,
                     httpContext.User, null, httpContext);
+      // Try retrieving VITA operation context. 
+      if (httpContext.Items.TryGetValue(OperationContextKey, out object opContext))
+        gqlHttpReq.RequestContext.VitaOperationContext = opContext; 
       return gqlHttpReq;
     }
 

@@ -136,15 +136,6 @@ namespace NGraphQL.Server.Execution {
 
     public void SetBatchedResults<TEntity, TResult>(IDictionary<TEntity, TResult> results, TResult valueForMissingKeys) {
       // TODO: add validation of types: TEntity -> typeof(Entity), TResult==fieldType
-      /*
-      var returnsObj = this.Flags.IsSet(FieldFlags.ReturnsComplexType);
-      var fldType = this.Field.FieldDef.TypeRef.TypeDef.ClrType; 
-      if (!fldType.IsAssignableFrom(typeof(TResult))) {
-        throw new ResolverException($"Resolver error: SetBatchResults is called with arg of invalid type. " + 
-                                    $"Expected dictionary with values of type {fldType}", 
-                                    this.GetCodePath());
-      }
-      */
       foreach (var scope in this.AllParentScopes) {
         if (!results.TryGetValue((TEntity)scope.Entity, out var result))
           result = valueForMissingKeys;

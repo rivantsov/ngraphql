@@ -106,7 +106,8 @@ namespace Things.GraphQL {
       var allParents = context.GetAllParentEntities<Thing>();
       var batchedResults = allParents.ToDictionary(p => p, p => p.MainOtherThing);
       context.SetBatchedResults(batchedResults, null);
-      return parent.MainOtherThing;
+      // return parent.MainOtherThing;
+      return null; // the engine will lookup result for this field in batched results
     }
 
     // Batching when field is a list
@@ -114,7 +115,7 @@ namespace Things.GraphQL {
       var allParents = context.GetAllParentEntities<Thing>();
       var batchedResults = allParents.ToDictionary(p => p, p => p.OtherThings);
       context.SetBatchedResults(batchedResults, new List<OtherThing>());
-      return batchedResults[parent];
+      return null; // the engine will lookup result for this field in batched results
     }
 
     // For testing exceptions, thrown by resolver down deep in the data tree

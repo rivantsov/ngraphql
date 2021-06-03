@@ -15,18 +15,29 @@ namespace NGraphQL.Server.Execution {
   partial class OperationFieldExecuter {
 
     private async Task<object> InvokeResolverAsync(FieldContext fieldContext) {
-      object result;
       try {
+        // Invoke resolver
+        object result;
+        object convResult; 
         if (fieldContext.MappedField.Resolver.ResolverFunc != null)
           result = InvokeResolverFunc(fieldContext);
         else
           result = await InvokeResolverMethodAsync(fieldContext);
-        if (result == null && fieldContext.FieldDef.TypeRef.IsNotNull) {
+        // if it was batch result set, and result is null, lookup result from current scope
+        //  we still need to return real result 
+        if (result == null && fieldContext.BatchResultWasSet) {
+          var fldKey = fieldContext.MappedField.Field.Key;
+          fieldContext.CurrentParentScope.TryGetValue(fldKey, out convResult); // value already converted
+        } else {
+          convResult = fieldContext.ConvertToOutputValue(result);
+        }
+        // check for null in non-null field
+        if (convResult == null && fieldContext.FieldDef.TypeRef.IsNotNull) {
           var selFld = fieldContext.MappedField.Field;
           _requestContext.AddError($"Server error: resolver for non-nullable field '{selFld.Key}' returned null.",
                 selFld, ErrorCodes.ServerError);
         }
-        return result;
+        return convResult;
       } catch (TargetInvocationException tex) {
         // sync call goes here
         var origExc = tex.InnerException;

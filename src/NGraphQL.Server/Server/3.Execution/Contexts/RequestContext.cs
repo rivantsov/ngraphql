@@ -29,6 +29,7 @@ namespace NGraphQL.Server.Execution {
     public GraphQLResponse Response { get; } = new GraphQLResponse();
     /// <summary>Dictionary for use by resolvers to pass data around. </summary>
     public IDictionary<string, object> CustomData { get; } = new ConcurrentDictionary<string, object>();
+    public object VitaOperationContext { get; set; }
 
     public CancellationToken CancellationToken => _cancellationTokenSource.Token;
     private CancellationTokenSource _cancellationTokenSource;

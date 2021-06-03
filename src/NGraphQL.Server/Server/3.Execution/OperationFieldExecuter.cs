@@ -50,12 +50,11 @@ namespace NGraphQL.Server.Execution {
         }
         var opFieldContext = new FieldContext(_requestContext, this, _mappedOpField);
         opFieldContext.SetCurrentParentScope(_parentScope);
-        var resolverResult = await InvokeResolverAsync(opFieldContext);
         // We do not save result in parent top-level context: we maybe executing in parallel with other top-level fields;
         // we need synchronization(lock), and also op fields might finish out of order. So we save result in a field, and 
         //  RequestHandler will save all results from executers in proper order. 
         //_parentScope.SetValue(_mappedOpField.Field.Key, opOutValue); -- do not do this
-        this.Result = opFieldContext.ConvertToOutputValue(resolverResult); //save it for later
+        this.Result = await InvokeResolverAsync(opFieldContext);
         // for fields returning objects, save for further processing of results
         if (opFieldContext.MappedField.Field.SelectionSubset != null)
           _executedObjectFieldContexts.Add(opFieldContext);
@@ -140,11 +139,9 @@ namespace NGraphQL.Server.Execution {
           fieldContext.SetCurrentParentScope(scope);
           var fldDef = fieldContext.FieldDef;
           object result = await InvokeResolverAsync(fieldContext);
-          // if batched result was not set, set value
-          if (!fieldContext.BatchResultWasSet) {
-            var outValue = fieldContext.ConvertToOutputValue(result);
-            scope.SetValue(selFieldKey, outValue);
-          }
+          // if batched result was not set, save value in scope
+          if (!fieldContext.BatchResultWasSet) 
+            scope.SetValue(selFieldKey, result);
         } //foreach scope
         // if there are any non-null object-type results, add this field context to this special list
         //   to execute selection subsets in the next round. 
@@ -156,8 +153,9 @@ namespace NGraphQL.Server.Execution {
 
     private MappedSelectionSubSet GetMappedSubset(SelectionSubset subSet, IList<ObjectTypeDef> objectTypeDefs, Type entityType,
                                                              NamedRequestObject requestObj) {
-      var mappedSubset = subSet.MappedSubSets.FirstOrDefault(ms => ms.Mapping.EntityType == entityType &&
-                                                               objectTypeDefs.Contains(ms.Mapping.TypeDef));
+      var mappedSubset = subSet.MappedSubSets.FirstOrDefault(
+          ms => (ms.Mapping.EntityType == entityType || ms.Mapping.EntityType.IsAssignableFrom(entityType)) &&
+                         objectTypeDefs.Contains(ms.Mapping.TypeDef));
       if (mappedSubset == null) {
         var types = string.Join(",", objectTypeDefs);
         this._requestContext.AddError($"Failed to find mapping from entity type {entityType} to GraphQLType(s) [{types}].",

@@ -9,6 +9,7 @@ namespace Things.GraphQL.Types {
   // testing subclassing and abstract classes
   public class ThingBase_ {
     public int Id { get; set; }
+    /// <summary>The name of the thing.</summary>
     public string Name { get; set; }
     // testing bug #13, field in base class is not mapped to resolver, even if there's mapping expr to entity
     public string StrField; 
@@ -16,6 +17,7 @@ namespace Things.GraphQL.Types {
 
   /// <summary>A sample GraphQL output object.</summary>
   public class Thing_ : ThingBase_, INamedObj, IObjWithId {
+    /// <summary>The description of the thing.</summary>
     [Null]
     public string Description;
     public ThingKind Kind;

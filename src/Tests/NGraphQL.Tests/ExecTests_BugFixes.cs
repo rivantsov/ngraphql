@@ -25,6 +25,8 @@ query {
       otherThingName
       otherThing { name}
     }
+    # testing fix for interface entities mapping
+    intfThing { id name tag} 
   }
 }";
       var resp = await ExecuteAsync(query);

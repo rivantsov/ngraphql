@@ -16,6 +16,9 @@ namespace NGraphQL.CodeFirst {
 
     /// <summary>Protocol context; for HTTP server - HttpContext instance (ASP.NET Core). </summary>
     object HttpContext { get; }
+
+    /// <summary>Reserved for VITA ORM operation context, assigned by VitaWebMiddleware. </summary>
+    object VitaOperationContext { get; }
   }
 
 }
