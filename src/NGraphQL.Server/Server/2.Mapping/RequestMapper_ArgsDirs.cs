@@ -25,8 +25,7 @@ namespace NGraphQL.Server.Mapping {
         }
         var value = eval.GetValue(_requestContext);
         if (value != null && value.GetType() != typeRef.TypeDef.ClrType) {
-          // TODO: fix that, add type conversion, for now throwing exception; or maybe it's not needed, value will be converted at time of use
-          // but spec also allows auto casting like  int => int[]
+          // TODO: add valid coersion rules; for ex, spec allows auto convert like  int => int[]
           AddError($"Detected type mismatch for default value '{value}' of variable {varDef.Name} of type {typeRef.Name}", varDef);
         }
         inpDef.DefaultValue = value;
@@ -194,7 +193,6 @@ namespace NGraphQL.Server.Mapping {
           throw new InvalidInputException($"Missing value for field '{fldDef.Name}'.", valueSource);
         }
         fields.Add(new InputFieldEvalInfo() { FieldDef = fldDef, ValueEvaluator = fldEval });
-        // TODO: add check that there are no 'extra' members in parsed object
       }
       var result = new InputObjectEvaluator(inputDef, typeRef, valueSource, fields);
       return result;

@@ -66,7 +66,7 @@ namespace NGraphQL.Model.Construction {
 
         case UnionTypeDef _:
         case InterfaceTypeDef _:
-          //TODO: implement later
+          //TODO: maybe implement later
           return true;
       }
       return true;

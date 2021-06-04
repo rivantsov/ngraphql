@@ -8,7 +8,7 @@
     <projectUrl>https://github.com/rivantsov/ngraphql</projectUrl>
     <license type="expression">MIT</license>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>GraphQL for .NET, base abstractions</description>
+    <description>GraphQL for .NET, base types</description>
     <releaseNotes></releaseNotes>
     <copyright>Copyright Roman Ivantsov</copyright>
     <tags>GraphQL .NET c#</tags>

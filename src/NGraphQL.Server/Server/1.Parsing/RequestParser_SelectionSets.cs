@@ -41,7 +41,6 @@ namespace NGraphQL.Server.Parsing {
         // arguments
         // the actual arg list is 2 levels below
         var argsListOptNode = selNode.FindChild(TermNames.ArgListOpt);
-        // TODO: refactor, this is temp fix
         var argNodes = (argsListOptNode != null) ? argsListOptNode.ChildNodes : new List<ParseTreeNode>();
         selFld.Args = BuildArguments(argNodes, selFld);
 

@@ -110,7 +110,6 @@ namespace NGraphQL.Server.Execution {
 
       foreach(var mappedItem in mappedSubSet.MappedItems) {
 
-        // TODO: Invoke event to signal execution of directives
         if (mappedItem.Item.OnExecuting(_requestContext, out var args) && args.Skip) {
           continue;
         }

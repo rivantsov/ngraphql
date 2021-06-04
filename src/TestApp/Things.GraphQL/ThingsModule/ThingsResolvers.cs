@@ -16,9 +16,6 @@ namespace Things.GraphQL {
 
     void IResolverClass.BeginRequest(IRequestContext context) {
       _app = (ThingsApp) context.App;
-      // TODO: check it is HttpContext
-      var httpContext = context.HttpContext;
-      var user = context.User; 
     }
 
     public void EndRequest(IRequestContext context) {

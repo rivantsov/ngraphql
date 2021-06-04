@@ -200,42 +200,5 @@ namespace NGraphQL.Server.Mapping {
       } //foreach fragm
     }
 
-    /*
-    // TODO: move it to request mapper
-    private void Fragments_MapFragmentFields() {
-      // Step 1 - order fragments by depencency level
-      Fragments_OrderByDependencyTreeLevel();
-
-      // Step 2 - map only top-level fields, do not go into field selection subsets if any
-      //   there are no circular dependencies at top level, and we ordered dependencies
-      _pendingSelectionSets.Clear();
-      foreach (var fragm in _namedFragments)
-        MapSelectionSubSet(fragm.SelectionSubset, fragm.OnTypeRef.TypeDef, fragm.Directives);
-      // there could be errors
-      if (_requestContext.Failed)
-        return;
-      // Step 3 - mapp all pending subsets
-      MapPendingSelectionSubsets();
-    }
-
-    private void Fragments_OrderByDependencyTreeLevel() {
-      // we know there is no circular references among fragments at top-level fragment spreads, so it is a tree, 
-      //  and we can order
-      //1. compute dependency index
-      foreach (var fragm in _namedFragments)
-        fragm.ComputeDependencyTreeLevel();
-      // 2. Sort by dependency index in asc order
-      _namedFragments = _namedFragments.OrderBy(f => f.DependencyTreeLevel).ToList();
-    }
-
-    public static int ComputeDependencyTreeLevel(this FragmentDef fragment) {
-      if (fragment.DependencyTreeLevel < 0)
-        fragment.DependencyTreeLevel = (fragment.UsesFragmentsAll.Count == 0) ?
-          0 :
-          fragment.UsesFragmentsAll.Max(f => f.ComputeDependencyTreeLevel()) + 1;
-      return fragment.DependencyTreeLevel;
-    }
-    */
-
   }
 }
