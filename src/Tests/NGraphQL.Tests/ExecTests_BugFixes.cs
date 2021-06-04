@@ -12,11 +12,34 @@ namespace NGraphQL.Tests {
     [TestMethod]
     public async Task Test_BugFixes() {
       TestEnv.LogTestMethodStart();
+      string query;
+      GraphQLResponse resp;
+
+      TestEnv.LogTestDescr(@"big decimal input values ");
+      decimal decInp = 12345678901234567890m;
+      query = @"
+query { 
+  dv: decTimesTwo(dec: decInp)
+}".Replace("decInp", decInp.ToString());
+      resp = await ExecuteAsync(query);
+      var res = (decimal) resp.Data["dv"];
+      Assert.AreEqual(decInp * 2, res, "dec * 2 does not match.");
+
+
+      TestEnv.LogTestDescr(@"big decimal input values, now with fractions ");
+      decInp = 12345678901234567890.987m;
+      query = @"
+query { 
+  dv: decTimesTwo(dec: decInp)
+}".Replace("decInp", decInp.ToString());
+      resp = await ExecuteAsync(query);
+      res = (decimal)resp.Data["dv"];
+      Assert.AreEqual(decInp * 2, res, "dec * 2 does not match.");
 
       TestEnv.LogTestDescr(@"Repro issue #169 in VITA.");
       // reported in VITA: https://github.com/rivantsov/vita/issues/169
 
-      var query = @"
+      query = @"
 query { 
   things() { 
     id 
@@ -29,7 +52,7 @@ query {
     intfThing { id name tag} 
   }
 }";
-      var resp = await ExecuteAsync(query);
+      resp = await ExecuteAsync(query);
       var things = resp.Data["things"];
       Assert.IsNotNull(things, "Expected result");
 

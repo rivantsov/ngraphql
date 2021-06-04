@@ -33,6 +33,7 @@ namespace NGraphQL.Server.Parsing {
 
       //terminals
       var number = new NumberLiteral(TermNames.Number, NumberOptions.AllowSign);
+      number.DefaultIntTypes = new TypeCode[] { TypeCode.Int32, TypeCode.Int64, TypeCode.Decimal, NumberLiteral.TypeCodeBigInt };
       number.AddPrefix("0x", NumberOptions.Hex); //allow hex
       var tripleQt = "\"\"\"";
       var strSimple = new StringLiteral(TermNames.StrSimple, "\"", StringOptions.AllowsUEscapes);

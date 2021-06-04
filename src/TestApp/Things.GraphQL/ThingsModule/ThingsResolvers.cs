@@ -222,6 +222,9 @@ namespace Things.GraphQL {
       throw agrExc; 
     }
 
+    public decimal DecTimesTwo(IFieldContext context, decimal dec) => dec * 2;
+
+
 
     // this is just a test placeholder
     public bool Subscribe(IFieldContext context, string childName) {

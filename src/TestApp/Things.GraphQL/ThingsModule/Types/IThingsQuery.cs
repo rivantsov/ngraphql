@@ -72,6 +72,8 @@ namespace Things.GraphQL.Types {
     /// and posts messages from child exceptions as separate GraphQL errors.  
     /// </summary>
     /// <returns>Throws exc.</returns>
-    int ThrowAggrExc(); 
+    int ThrowAggrExc();
+
+    decimal DecTimesTwo(decimal dec); 
   }
 }
