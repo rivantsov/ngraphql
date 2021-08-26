@@ -33,11 +33,6 @@ namespace NGraphQL.Client {
       Request = request; 
     }
 
-    /*
-    public T GetUnmappedFieldValue<T>(object parent, string name) {
-      throw new NotImplementedException(); 
-    }
-    */
   }
 }
 
