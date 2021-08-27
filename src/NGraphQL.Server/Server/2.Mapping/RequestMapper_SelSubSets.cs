@@ -123,10 +123,14 @@ namespace NGraphQL.Server.Mapping {
     private void MapSelectionFieldSubsetIfPresent(SelectionField selField, TypeDefBase fieldType) {
       var selSubset = selField.SelectionSubset;
       switch(fieldType) {
-        case ScalarTypeDef _:
+        case ScalarTypeDef sc:
+          if(selSubset != null && !sc.Scalar.CanHaveSelectionSubset)
+            AddError($"Field '{selField.Key}' of type '{fieldType.Name}' may not have a selection subset.", selSubset);
+          break;
+
         case EnumTypeDef _:
           if (selSubset != null)
-            AddError($"Field '{selField.Key}' of type '{fieldType.Name}' may not have a selection subset.", selSubset);
+            AddError($"Field '{selField.Key}' of enum type '{fieldType.Name}' may not have a selection subset.", selSubset);
           break;
         
         default: // ObjectType, Union or Interface 

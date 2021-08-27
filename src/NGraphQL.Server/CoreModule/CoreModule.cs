@@ -14,7 +14,7 @@ namespace NGraphQL.Core {
       this.ScalarTypes.AddRange(new Type[] {
         typeof(StringScalar), typeof(IntScalar), typeof(LongScalar), typeof(FloatScalar), typeof(DoubleScalar),
         typeof(BooleanScalar), typeof(IdScalar), typeof(DateTimeScalar), typeof(DateScalar), typeof(TimeScalar),
-        typeof(UuidScalar), typeof(DecimalScalar)
+        typeof(UuidScalar), typeof(DecimalScalar), typeof(MapScalar)
       });
       // Directives 
       this.RegisterDirective("deprecated", typeof(DeprecatedDirAttribute),

@@ -135,12 +135,8 @@ namespace NGraphQL.Server.Mapping {
       
       switch(resultTypeRef.TypeDef) {
         case ScalarTypeDef stdef:
-          if(valueSource is TokenValueSource tknIv) {
-            var constValue = stdef.Scalar.ParseToken(_requestContext, tknIv.TokenData);
-            return CreateConstantInputValue(inputDef, valueSource, resultTypeRef, constValue); 
-          } else {
-            throw new InvalidInputException("invalid input value, expected scalar", valueSource); 
-          }
+          var constValue = stdef.Scalar.ParseValue(_requestContext, valueSource);
+          return CreateConstantInputValue(inputDef, valueSource, resultTypeRef, constValue);
         
         case EnumTypeDef etdef:
           var handler = etdef.Handler;

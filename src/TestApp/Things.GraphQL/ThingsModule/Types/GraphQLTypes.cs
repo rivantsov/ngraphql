@@ -52,6 +52,8 @@ namespace Things.GraphQL.Types {
     public ThingForIntfEntity_ IntfThing;
 
     [Null] public OtherThingWrapper_ OtherThingWrapped;
+
+    [Null] public Dictionary<string, object> Props; 
   }
 
   // A second GraphQL type mapped to Thing entity. Test of mapping of one entity type to multiple 
@@ -137,6 +139,10 @@ namespace Things.GraphQL.Types {
 
   public class InputObjWithList {
     public int[][] List;
+  }
+
+  public class InputObjWithMap {
+    public Dictionary<string, object> Map;
   }
 
 

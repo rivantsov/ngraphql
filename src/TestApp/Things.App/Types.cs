@@ -52,7 +52,9 @@ namespace Things {
 
     public string Tag;
 
-    public IThingIntfEntity IntfThing; 
+    public IThingIntfEntity IntfThing;
+
+    public Dictionary<string, object> Props;
   }
 
   [DebuggerDisplay("{Name}")]

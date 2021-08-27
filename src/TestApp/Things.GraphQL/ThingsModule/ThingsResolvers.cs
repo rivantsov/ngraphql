@@ -85,6 +85,11 @@ namespace Things.GraphQL {
       return inpObj.ToString();
     }
 
+
+    public Dictionary<string, object> EchoInputObjWithMap(IFieldContext context, InputObjWithMap inp) {
+      return inp.Map;
+    }
+
     [ResolvesField(nameof(IThingsQuery.EchoInputObjWithEnums))]
     public string EchoInputObjectWithEnums(IFieldContext context, InputObjWithEnums inpObj) {
       return inpObj.ToString();
