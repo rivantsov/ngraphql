@@ -24,4 +24,22 @@
     <None Remove="Server\**" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="CodeFirst\Resolvers\IFieldContext.cs" />
+    <Compile Remove="CodeFirst\Resolvers\IRequestContext.cs" />
+    <Compile Remove="CodeFirst\Resolvers\IResolverClass.cs" />
+    <Compile Remove="CodeFirst\Resolvers\ISelectionField.cs" />
+    <Compile Remove="CodeFirst\Resolvers\ResolverAttributes.cs" />
+    <Compile Remove="CodeFirst\ValidationExtensions.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="CodeFirst\Resolvers\IFieldContext.cs" />
+    <None Include="CodeFirst\Resolvers\IRequestContext.cs" />
+    <None Include="CodeFirst\Resolvers\IResolverClass.cs" />
+    <None Include="CodeFirst\Resolvers\ISelectionField.cs" />
+    <None Include="CodeFirst\Resolvers\ResolverAttributes.cs" />
+    <None Include="CodeFirst\ValidationExtensions.cs" />
+  </ItemGroup>
+
 </Project>

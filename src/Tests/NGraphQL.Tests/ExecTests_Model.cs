@@ -64,9 +64,8 @@ query {
   }
 }";
       var resp = await ExecuteAsync(query);
-      var data = resp.Data["res"];
-      var thing = (IDict)data;
-      var propsObj = thing["props"];
+      var res = (IDict) resp.Data["res"];
+      var propsObj = res["props"];
       var props = (IDict)propsObj;
       Assert.AreEqual(2, props.Count, "Expected 2 props in Dict");
 
@@ -80,7 +79,29 @@ query ($map: Map) {
       var mapVar = new Dict() { {"prop1", "v1" }, { "prop2", 123 } };
       vars["map"] = mapVar;
       resp = await ExecuteAsync(query, vars);
-      var res = (IDict) resp.Data["res"];
+      res = (IDict) resp.Data["res"];
+      Assert.AreEqual(2, res.Count, "Expected 2 props in Dict");
+
+      TestEnv.LogTestDescr(@" MapScalar test 3 - map in Input object; sending map value as literal (array of arrays).");
+      query = @"
+query { 
+  res: echoInputObjWithMap (inp: {
+            map: [ [""prop1"" ""v1""] [prop2 123] ]            # notice prop2 without quotes, it is allowed
+       })
+}";
+      resp = await ExecuteAsync(query);
+      res = (IDict)resp.Data["res"];
+      Assert.AreEqual(2, res.Count, "Expected 2 props in Dict");
+
+      TestEnv.LogTestDescr(@" MapScalar test 4 - map in Input object; sending map value as literal, formatted like input object.");
+      query = @"
+query { 
+  res: echoInputObjWithMap (inp: {
+            map: {prop1: ""v1"" prop2: 123}                     # formatted like InputObject literal
+       })
+}";
+      resp = await ExecuteAsync(query);
+      res = (IDict)resp.Data["res"];
       Assert.AreEqual(2, res.Count, "Expected 2 props in Dict");
 
 

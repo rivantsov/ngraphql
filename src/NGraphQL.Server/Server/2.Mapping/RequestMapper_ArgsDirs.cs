@@ -109,8 +109,13 @@ namespace NGraphQL.Server.Mapping {
     }
 
     internal InputValueEvaluator GetInputValueEvaluator(InputValueDef inputDef, ValueSource valueSource, TypeRef valueTypeRef) {
-      if (valueSource.IsConstNull())
+      // check if it is null literal
+      if (valueSource.IsConstNull()) {
+        if(valueTypeRef.IsNotNull)
+          throw new InvalidInputException($"Input type '{valueTypeRef.Name}' is not-null type, but null was encountered.",
+            valueSource);
         return CreateConstantInputValue(inputDef, valueSource, valueTypeRef, null);
+      }
       var eval = GetInputValueEvaluatorImpl(inputDef, valueSource, valueTypeRef);
       // replace with constant if it does not depend on vars
       if (eval.IsConst()) {
@@ -195,11 +200,6 @@ namespace NGraphQL.Server.Mapping {
     }
 
     private InputValueEvaluator GetInputListEvaluator(InputValueDef inputDef, ValueSource valueSource, TypeRef listTypeRef) {
-      if(valueSource.IsConstNull()) {
-        if (listTypeRef.IsNotNull)
-          throw new InvalidInputException("Input type '{valueTypeRef.Name}' is not-null type, but null was encountered.", 
-            valueSource);
-      }
       if (!(valueSource is ListValueSource arrValue))
         throw new InvalidInputException($"Input type '{listTypeRef.Name}' is not list or array, expected array.", valueSource);
       var elemTypeRef = listTypeRef.GetListElementTypeRef();
