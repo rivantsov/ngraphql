@@ -23,12 +23,12 @@
 ## Packages and Components
 NGraphQL binaries are distributed as a set of [NuGet packages](https://www.nuget.org/packages/NGraphQL/):
 
-|Package|Description|
-|-------|-----------|
-|NGraphQL|Basic classes shared by client and server components.|
-|NGraphQL.Client|GraphQL client.|
-|NGraphQL.Server|GraphQL server implementation not tied to a specific transport protocol.|
-|NGraphQL.Server.AspNetCore|GraphQL HTTP server based on ASP.NET Core stack.|
+|Package|Description|Size,KB|
+|-------|-----------|------|
+|NGraphQL|Basic classes shared by client and server components.|23|
+|NGraphQL.Client|GraphQL client.|21|
+|NGraphQL.Server|GraphQL server implementation not tied to a specific transport protocol.|174|
+|NGraphQL.Server.AspNetCore|GraphQL HTTP server based on ASP.NET Core stack.|23|
 
 ## Examples
 The repo contains a TestApp with HTTP server and *Graphiql UI*. It is used in HTTP server harness and unit tests. It is a made-up GraphQL API about abstract *Things*, and it is void of any real semantic meaning. The sole purpose of this app is to provide a number of types and methods covering the many aspects of the *GraphQL* protocol. Run the HTTP server harness and play with the *Graphiql* page in browser.
