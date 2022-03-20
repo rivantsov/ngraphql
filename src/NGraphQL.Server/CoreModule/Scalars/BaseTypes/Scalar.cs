@@ -1,6 +1,7 @@
 ﻿using System;
 using NGraphQL.CodeFirst;
 using NGraphQL.Model.Request;
+using NGraphQL.Server;
 using NGraphQL.Server.Execution;
 
 namespace NGraphQL.Core.Scalars {
@@ -12,12 +13,19 @@ namespace NGraphQL.Core.Scalars {
     public readonly bool IsCustom;
     public bool IsDefaultForClrType { get; protected set; } = true;
     public Type[] CanConvertFrom;
+    public bool CanHaveSelectionSubset { get; protected set; }
 
     public Scalar(string name, string description, Type defaultClrType, bool isCustom = true) {
       Name = name;
       Description = description;
       DefaultClrType = defaultClrType;
       IsCustom = isCustom;
+    }
+
+    public virtual object ParseValue(RequestContext context, ValueSource valueSource) {
+      if(valueSource is TokenValueSource tknVsrc)
+        return ParseToken(context, tknVsrc.TokenData);
+      throw new InvalidInputException("invalid input value, expected scalar", valueSource);
     }
 
     public virtual object ParseToken(RequestContext context, TokenData tokenData) {
@@ -28,7 +36,7 @@ namespace NGraphQL.Core.Scalars {
       return inpValue;
     }
 
-    // used in Schema doc output
+    // used in Schema doc output - to format constants in default values of args
     public virtual string ToSchemaDocString(object value) {
       if (value == null)
         return "null";

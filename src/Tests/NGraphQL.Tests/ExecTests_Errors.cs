@@ -120,7 +120,6 @@ query {
       TestEnv.LogTestMethodStart();
 
       string query;
-      GraphQLError err;
       GraphQLResponse resp;
 
       TestEnv.LogTestDescr("converting aggregate exc into multiple errors in the response.");

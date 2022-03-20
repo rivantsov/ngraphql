@@ -33,9 +33,6 @@ namespace NGraphQL.Server {
              : base(message, inner) {
       Anchor = anchor;
     }
-    public InvalidInputException(NamedRequestObject anchor, Exception inner) : base(inner.Message, inner) {
-      Anchor = anchor;
-    }
   }
 
   public class FatalServerException : GraphQLException {

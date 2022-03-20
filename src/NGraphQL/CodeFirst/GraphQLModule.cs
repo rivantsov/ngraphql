@@ -36,6 +36,11 @@ namespace NGraphQL.CodeFirst {
       return mapping;
     }
 
+    /// <summary>A fake method, placeholder. Use it in mapping expressions (MapEntity() method) to identify the automatic conversion
+    /// from entity to GraphQL type based on registered type mappings. </summary>
+    /// <typeparam name="T">Target type.</typeparam>
+    /// <param name="value">The value to convert.</param>
+    /// <returns>Default value for type. The method should never be invoked directly.</returns>
     public T FromMap<T>(object value) {
       return default;
     }

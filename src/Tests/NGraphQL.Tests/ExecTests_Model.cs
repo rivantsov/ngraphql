@@ -5,6 +5,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NGraphQL.Utilities;
 using NGraphQL.Server;
 using System.Collections;
+using Things.GraphQL.Types;
+using IDict = System.Collections.Generic.IDictionary<string, object>;
+using Dict = System.Collections.Generic.Dictionary<string, object>;
 
 namespace NGraphQL.Tests {
 
@@ -46,6 +49,64 @@ query {
       expected = "2020-05-31|2020-06-15|11:22:33";
       Assert.AreEqual(expected, result, "Result mismatch");
     }
+
+
+    [TestMethod]
+    public async Task Test_Model_MapScalar() {
+      TestEnv.LogTestMethodStart();
+
+      TestEnv.LogTestDescr(@" MapScalar test 1; Thing.Props is Map scalar (dict<string, object>).");
+      var query = @"
+query { 
+  res: getThing (id: 1) {
+    id name 
+    props { Prop1, Prop2 }
+  }
+}";
+      var resp = await ExecuteAsync(query);
+      var res = (IDict) resp.Data["res"];
+      var propsObj = res["props"];
+      var props = (IDict)propsObj;
+      Assert.AreEqual(2, props.Count, "Expected 2 props in Dict");
+
+
+      TestEnv.LogTestDescr(@" MapScalar test 2 - map in Input object; sending map value through variable.");
+      query = @"
+query ($map: Map) { 
+  res: echoInputObjWithMap (inp: {map: $map})
+}";
+      var vars = new Dict(); 
+      var mapVar = new Dict() { {"prop1", "v1" }, { "prop2", 123 } };
+      vars["map"] = mapVar;
+      resp = await ExecuteAsync(query, vars);
+      res = (IDict) resp.Data["res"];
+      Assert.AreEqual(2, res.Count, "Expected 2 props in Dict");
+
+      TestEnv.LogTestDescr(@" MapScalar test 3 - map in Input object; sending map value as literal (array of arrays).");
+      query = @"
+query { 
+  res: echoInputObjWithMap (inp: {
+            map: [ [""prop1"" ""v1""] [prop2 123] ]            # notice prop2 without quotes, it is allowed
+       })
+}";
+      resp = await ExecuteAsync(query);
+      res = (IDict)resp.Data["res"];
+      Assert.AreEqual(2, res.Count, "Expected 2 props in Dict");
+
+      TestEnv.LogTestDescr(@" MapScalar test 4 - map in Input object; sending map value as literal, formatted like input object.");
+      query = @"
+query { 
+  res: echoInputObjWithMap (inp: {
+            map: {prop1: ""v1"" prop2: 123}                     # formatted like InputObject literal
+       })
+}";
+      resp = await ExecuteAsync(query);
+      res = (IDict)resp.Data["res"];
+      Assert.AreEqual(2, res.Count, "Expected 2 props in Dict");
+
+
+    }
+
 
 
   }
