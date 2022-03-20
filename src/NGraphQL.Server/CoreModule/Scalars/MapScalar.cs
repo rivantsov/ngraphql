@@ -30,11 +30,6 @@ namespace NGraphQL.Core.Scalars {
     }
 
     public override object ParseValue(RequestContext context, ValueSource valueSource) {
-      try {
-
-      } catch(Exception ex) {
-
-      }
       switch(valueSource) {
         case ListValueSource lvs:
           return ParseFromList(context, lvs); 
@@ -44,7 +39,6 @@ namespace NGraphQL.Core.Scalars {
           throw new InvalidInputException("Invalid input value for Map scalar; expected object or rank 2 array.", valueSource);
       }
     }
-
 
     private object ParseFromList(RequestContext context, ListValueSource listVs) {
       var allOk = listVs.Values.All(vs => vs is ListValueSource lvs && lvs.Values.Length == 2 && 

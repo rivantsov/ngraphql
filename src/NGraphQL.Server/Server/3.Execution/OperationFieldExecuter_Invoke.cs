@@ -107,7 +107,8 @@ namespace NGraphQL.Server.Execution {
         case TaskStatus.Canceled:
         default:
           var msg = "Resolver execution canceled.";
-          fieldContext.AddError(msg, ErrorCodes.Cancelled);
+          var ex = new Exception(msg);
+          AddError(fieldContext, ex, ErrorCodes.Cancelled);
           throw new ResolverException(msg); 
       }
     }
