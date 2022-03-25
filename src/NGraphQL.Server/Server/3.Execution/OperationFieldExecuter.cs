@@ -152,7 +152,12 @@ namespace NGraphQL.Server.Execution {
 
     private MappedSelectionSubSet GetMappedSubset(SelectionSubset subSet, IList<ObjectTypeDef> objectTypeDefs, Type entityType,
                                                              NamedRequestObject requestObj) {
-      var mappedSubset = subSet.MappedSubSets.FirstOrDefault(
+      var mappedAll = subSet.MappedSubSets;
+      //fast path
+      if (mappedAll.Count == 1 && mappedAll[0].Mapping.EntityType == entityType)
+        return mappedAll[0];
+      // find
+      var mappedSubset = mappedAll.FirstOrDefault(
           ms => (ms.Mapping.EntityType == entityType || ms.Mapping.EntityType.IsAssignableFrom(entityType)) &&
                          objectTypeDefs.Contains(ms.Mapping.TypeDef));
       if (mappedSubset == null) {

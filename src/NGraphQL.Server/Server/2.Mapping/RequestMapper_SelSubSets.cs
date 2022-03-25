@@ -52,7 +52,7 @@ namespace NGraphQL.Server.Mapping {
           case SelectionField selFld:
             var fldDef = objectTypeDef.Fields[selFld.Name];
             if (fldDef == null) {
-              // if field not found, the behavior depends if it is a union; it is error for a union
+              // if field not found, the behavior depends if it is a union; it is not error for union
               if (!isForUnion)
                 AddError($"Field '{selFld.Name}' not found on type '{objectTypeDef.Name}'.", selFld);
               continue;
