@@ -76,7 +76,7 @@ namespace NGraphQL.Server.Mapping {
       if (_requestContext.Failed)
         return; 
 
-      // Now create mappings for all possible entity types
+      // Now create mappings for all possible parent entity types; usually it's just one type
       foreach (var typeMapping in objectTypeDef.Mappings) {
         // It is possible mapped set already exists (with unions and especially fragments)
         var existing = selSubset.MappedSubSets.FirstOrDefault(ms => ms.Mapping == typeMapping);
