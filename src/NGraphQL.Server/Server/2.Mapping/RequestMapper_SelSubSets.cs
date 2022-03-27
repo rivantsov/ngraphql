@@ -32,13 +32,13 @@ namespace NGraphQL.Server.Mapping {
           break;
 
         case InterfaceTypeDef intTypeDef:
-          foreach(var objType in intTypeDef.PossibleTypes)
-            MapObjectSelectionSubset(selSubset, objType);
+          foreach(var possibleTypeDef in intTypeDef.PossibleTypes)
+            MapObjectSelectionSubset(selSubset, possibleTypeDef);
           break;
 
         case UnionTypeDef unionTypeDef:
-          foreach(var objType in unionTypeDef.PossibleTypes)
-            MapObjectSelectionSubset(selSubset, objType, isForUnion: true);
+          foreach(var possibleTypeDef in unionTypeDef.PossibleTypes)
+            MapObjectSelectionSubset(selSubset, possibleTypeDef, isForUnion: true);
           break;
       }
     }
@@ -79,8 +79,7 @@ namespace NGraphQL.Server.Mapping {
       // Now create mappings for all possible parent entity types; usually it's just one type
       foreach (var typeMapping in objectTypeDef.Mappings) {
         // It is possible mapped set already exists (with unions and especially fragments)
-        var existing = selSubset.MappedSubSets.FirstOrDefault(ms => ms.Mapping == typeMapping);
-        if(existing != null)
+        if (HasMappedSubsetFor(selSubset, typeMapping))
           continue; 
         var mappedItems = new List<MappedSelectionItem>();
         foreach (var item in selSubset.Items) {
@@ -113,6 +112,14 @@ namespace NGraphQL.Server.Mapping {
 
         selSubset.MappedSubSets.Add(new MappedSelectionSubSet() { Mapping = typeMapping, MappedItems = mappedItems });
       } //foreach typeMapping
+    }
+
+    private bool HasMappedSubsetFor(SelectionSubset selSubSet, ObjectTypeMapping typeMapping) {
+      var mappedSubSets = selSubSet.MappedSubSets;
+      // fast path combined with slow path
+      return mappedSubSets.Count > 0 && (
+        mappedSubSets[0].Mapping == typeMapping || mappedSubSets.Any(ms => ms.Mapping == typeMapping)
+        );        
     }
 
     private FragmentDef GetFragmentDef(string name) {
