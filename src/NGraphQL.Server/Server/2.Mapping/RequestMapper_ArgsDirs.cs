@@ -34,7 +34,7 @@ namespace NGraphQL.Server.Mapping {
     }
 
 
-    private void AddRuntimeRequestDirectives(SelectionItem selItem) {
+    private void ProcessSelectionItemDirectives(SelectionItem selItem) {
       if (selItem.Directives == null || selItem.Directives.Count == 0)
         return;
       var allReqDirs = _requestContext.ParsedRequest.AllDirectives;
@@ -45,15 +45,18 @@ namespace NGraphQL.Server.Mapping {
       }
     }
 
-    private void AddRuntimeModelDirectives(FieldDef fldDef) {
+    private void AddFieldTypeDirectives(SelectionField selFld, FieldDef fldDef) {
+      var typeDef = fldDef.TypeRef.TypeDef;
+      if (!fldDef.HasDirectives() && !typeDef.HasDirectives())
+        return; 
       var allReqDirs = _requestContext.ParsedRequest.AllDirectives;
+
       if (fldDef.HasDirectives())
         foreach (Model.ModelDirective fldDir in fldDef.Directives)
-          allReqDirs.Add(new RuntimeDirective(fldDir, allReqDirs.Count));
-      var typeDef = fldDef.TypeRef.TypeDef;
+          allReqDirs.Add(new RuntimeDirective(selFld, fldDir, allReqDirs.Count));
       if (typeDef.HasDirectives())
-        foreach (Model.ModelDirective tdir in typeDef.Directives)
-          allReqDirs.Add(new RuntimeDirective(tdir, allReqDirs.Count));
+        foreach (Model.ModelDirective typeDir in typeDef.Directives)
+          allReqDirs.Add(new RuntimeDirective(selFld, typeDir, allReqDirs.Count));
     }
 
 
@@ -86,8 +89,8 @@ namespace NGraphQL.Server.Mapping {
           // nullable args have default value null
           if(argDef.HasDefaultValue || !argDef.TypeRef.IsNotNull) {
             var constValue = CreateConstantInputValue(argDef, owner, argDef.TypeRef, argDef.DefaultValue); 
-            var MappedSelectionFieldArg = new MappedArg() { Anchor = owner, ArgDef = argDef, Evaluator = constValue };
-            mappedArgs.Add(MappedSelectionFieldArg);
+            var mappedArg = new MappedArg() { Anchor = owner, ArgDef = argDef, Evaluator = constValue };
+            mappedArgs.Add(mappedArg);
           } else {
             AddError($"Field(dir) '{owner.Name}': argument '{argDef.Name}' value is missing.", owner);
           }
@@ -96,8 +99,8 @@ namespace NGraphQL.Server.Mapping {
         // arg != null
         try {
           var argEval = GetInputValueEvaluator(argDef, arg.ValueSource, argDef.TypeRef);
-          var outArg = new MappedArg() { Anchor = arg, ArgDef = argDef, Evaluator = argEval };
-          mappedArgs.Add(outArg);
+          var mappedArg2 = new MappedArg() { Anchor = arg, ArgDef = argDef, Evaluator = argEval };
+          mappedArgs.Add(mappedArg2);
         } catch (InvalidInputException bvEx) {
           _requestContext.AddInputError(bvEx);
           continue;

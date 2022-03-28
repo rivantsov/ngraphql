@@ -17,10 +17,12 @@ namespace NGraphQL.Model.Request {
   public class MappedSelectionField: MappedSelectionItem {
     public readonly SelectionField Field;
     public readonly FieldResolverInfo Resolver;
+    public readonly IList<MappedArg> MappedArgs;
 
-    public MappedSelectionField(SelectionField field, FieldResolverInfo resolver) : base(field) {
+    public MappedSelectionField(SelectionField field, FieldResolverInfo resolver, IList<MappedArg> mappedArgs) : base(field) {
       Field = field; 
       Resolver = resolver;
+      MappedArgs = mappedArgs;  
     }
 
     public override string ToString() => $"{Field.Key}";

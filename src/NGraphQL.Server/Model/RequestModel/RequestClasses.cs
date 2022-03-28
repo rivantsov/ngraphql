@@ -57,7 +57,6 @@ namespace NGraphQL.Model.Request {
     public string Key => Alias ?? Name;    //alias or name
     public IList<InputValue> Args;
     public SelectionSubset SelectionSubset;
-    public IList<MappedArg> MappedArgs;
 
     public SelectionField() : base(SelectionItemKind.Field) { }
 
@@ -81,6 +80,7 @@ namespace NGraphQL.Model.Request {
   }
 
   public class SelectionSubset: RequestObjectBase {
+    public bool IsOnUnion; 
     public List<SelectionItem> Items;
     public readonly IList<MappedSelectionSubSet> MappedSubSets = new List<MappedSelectionSubSet>(); 
 

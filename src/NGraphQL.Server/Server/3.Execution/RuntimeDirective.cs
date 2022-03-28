@@ -14,7 +14,7 @@ namespace NGraphQL.Server.Execution {
   public class RuntimeDirective {
     public int Index; // index to lookup DirectiveContext in requestContext
     public object Source; //ModelDirective or RequestDirective 
-    public object Owner; //  SelectionItem or MappedArg 
+    public RequestObjectBase Owner; //  SelectionItem or MappedArg 
     public DirectiveDef Def;
     public DirectiveLocation Location;
 
@@ -31,7 +31,8 @@ namespace NGraphQL.Server.Execution {
       StaticArgValues = reqDir.MappedArgs.TryEvaluateStaticArgValues(); 
     }
 
-    public RuntimeDirective(ModelDirective modelDir, int index) {
+    public RuntimeDirective(RequestObjectBase owner, ModelDirective modelDir, int index) {
+      Owner = owner;
       Source = modelDir;
       Index = index; 
       Def = modelDir.Def;

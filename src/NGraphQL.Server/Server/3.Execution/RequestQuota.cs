@@ -10,6 +10,8 @@ namespace NGraphQL.Server.Execution {
     public int MaxOutputObjects = 10 * 1000; //reasonable default large limit
 
     /// <summary>Max request time; implemented as timeout of cancellation token. </summary>
-    public TimeSpan MaxRequestTime = TimeSpan.FromMinutes(5); 
+    public TimeSpan MaxRequestTime = TimeSpan.FromMinutes(5);
+
+    public const int MaxErrors = 100;
   }
 }

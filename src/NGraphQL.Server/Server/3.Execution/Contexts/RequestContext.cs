@@ -87,16 +87,18 @@ namespace NGraphQL.Server.Execution {
 
     public void AddError(GraphQLError error, Exception sourceException = null) {
       lock (this.Lock) {
-        this.Response.Errors.Add(error);
+        this.Failed = true;
+        var errors = this.Response.Errors;
+        errors.Add(error);
         if (sourceException != null)
           this.Exceptions.Add(sourceException); 
-        this.Failed = true;
+        if (errors.Count > RequestQuota.MaxErrors) {
+          errors.Add(new GraphQLError("Too many errors, request aborted."));
+          throw new AbortRequestException();
+        }
       }
     }
-   
-    public int GetQuotaTimeMs() {
-      return 10000; 
-    }
+
 
   }
 

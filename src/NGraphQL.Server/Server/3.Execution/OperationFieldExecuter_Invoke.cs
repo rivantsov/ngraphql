@@ -114,7 +114,7 @@ namespace NGraphQL.Server.Execution {
     }
 
     private void BuildResolverArguments(FieldContext fieldContext) {
-      var mappedArgs = fieldContext.MappedField.Field.MappedArgs;
+      var mappedArgs = fieldContext.MappedField.MappedArgs;
       var argValues = new List<object>();
       // special arguments: context, parent      
       argValues.Add(fieldContext);

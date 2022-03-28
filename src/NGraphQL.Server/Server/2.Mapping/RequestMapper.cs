@@ -27,7 +27,7 @@ namespace NGraphQL.Server.Mapping {
         return;
       foreach(var fragm in _requestContext.ParsedRequest.Fragments) {
         if (!fragm.IsInline)
-          MapFragment(fragm); 
+          MapSelectionSubSet(fragm.OnTypeRef.TypeDef, fragm.SelectionSubset);
       }
 
       foreach (var op in _requestContext.ParsedRequest.Operations) {
@@ -52,10 +52,6 @@ namespace NGraphQL.Server.Mapping {
       }
       op.OperationTypeDef = opDef; 
       return true;
-    }
-
-    private void MapFragment(FragmentDef fragm) {
-      MapSelectionSubSet(fragm.SelectionSubset, fragm.OnTypeRef.TypeDef);
     }
 
     private void AddError(string message, RequestObjectBase item, string errorType = ErrorCodes.BadRequest) {

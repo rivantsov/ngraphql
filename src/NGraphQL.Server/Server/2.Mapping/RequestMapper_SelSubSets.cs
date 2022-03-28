@@ -1,13 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using NGraphQL.CodeFirst;
-using NGraphQL.Core;
-using NGraphQL.Model;
-using NGraphQL.Server.Execution;
-using NGraphQL.Model.Request;
-using NGraphQL.Utilities;
 using NGraphQL.Introspection;
-using System;
+using NGraphQL.Model;
+using NGraphQL.Model.Request;
 
 namespace NGraphQL.Server.Mapping {
 
@@ -16,11 +11,11 @@ namespace NGraphQL.Server.Mapping {
 
     private void MapOperation(GraphQLOperation op) {
       _currentOp = op; 
-      MapSelectionSubSet(op.SelectionSubset, op.OperationTypeDef);
+      MapSelectionSubSet(op.OperationTypeDef, op.SelectionSubset);
     }
 
-    private void MapSelectionSubSet(SelectionSubset selSubset, TypeDefBase typeDef) {
-      switch(typeDef) {
+    private void MapSelectionSubSet(TypeDefBase typeDef, SelectionSubset selSubset) {
+      switch (typeDef) {
         case ScalarTypeDef _:
         case EnumTypeDef _:
           // that should never happen
@@ -28,37 +23,41 @@ namespace NGraphQL.Server.Mapping {
           break;
 
         case ObjectTypeDef objTypeDef:
-          MapObjectSelectionSubset(selSubset, objTypeDef);
+          MapObjectTypeSelectionSubset(objTypeDef, selSubset);
           break;
 
         case InterfaceTypeDef intTypeDef:
           foreach(var possibleTypeDef in intTypeDef.PossibleTypes)
-            MapObjectSelectionSubset(selSubset, possibleTypeDef);
+            MapObjectTypeSelectionSubset(possibleTypeDef, selSubset);
           break;
 
         case UnionTypeDef unionTypeDef:
+          selSubset.IsOnUnion = true; 
           foreach(var possibleTypeDef in unionTypeDef.PossibleTypes)
-            MapObjectSelectionSubset(selSubset, possibleTypeDef, isForUnion: true);
+            MapObjectTypeSelectionSubset(possibleTypeDef, selSubset);
           break;
       }
-    }
-    
-    // Might be called for ObjectType or Interface (for intf - just to check fields exist)
-    private void MapObjectSelectionSubset(SelectionSubset selSubset, ObjectTypeDef objectTypeDef, bool isForUnion = false) {
-      // Map arguments on fields, add directives, map fragments 
+
+      // directives
       foreach (var item in selSubset.Items) {
-        AddRuntimeRequestDirectives(item);
+        ProcessSelectionItemDirectives(item);
+      }
+
+    }
+
+    private void MapObjectTypeSelectionSubset(ObjectTypeDef objectTypeDef, SelectionSubset selSubset) {
+      // validate selection fields/fragment spreads 
+      foreach (var item in selSubset.Items) {
         switch (item) {
           case SelectionField selFld:
             var fldDef = objectTypeDef.Fields[selFld.Name];
             if (fldDef == null) {
               // if field not found, the behavior depends if it is a union; it is not error for union
-              if (!isForUnion)
+              if (!selSubset.IsOnUnion)
                 AddError($"Field '{selFld.Name}' not found on type '{objectTypeDef.Name}'.", selFld);
               continue;
             }
-            selFld.MappedArgs = MapArguments(selFld.Args, fldDef.Args, selFld);
-            AddRuntimeModelDirectives(fldDef);
+            AddFieldTypeDirectives(selFld, fldDef);
             MapSelectionFieldSubsetIfPresent(selFld, fldDef.TypeRef.TypeDef);
             break;
 
@@ -91,8 +90,8 @@ namespace NGraphQL.Server.Mapping {
                 // it is not error, it should have been caught earlier; it is unmatch for union
                 continue;
               var fldResolver = typeMapping.GetResolver(fldDef);
-                //.FirstOrDefault(fr => fr.Field.Name == selFld.Name);
-              var mappedFld = new MappedSelectionField(selFld, fldResolver);
+              var mappedArgs = MapArguments(selFld.Args, fldDef.Args, selFld);
+              var mappedFld = new MappedSelectionField(selFld, fldResolver, mappedArgs);
               mappedItems.Add(mappedFld);
               break;
 
@@ -101,8 +100,11 @@ namespace NGraphQL.Server.Mapping {
               var skip = onType != null && onType.Kind == TypeKind.Object && onType != objectTypeDef;
               if (skip)
                 continue;
-              if (fs.IsInline)  // only inline fragments should be mapped from here; named fragments are mapped separately, upfront
-                MapObjectSelectionSubset(fs.Fragment.SelectionSubset, objectTypeDef, isForUnion);
+              if (fs.IsInline) {
+                // only inline fragments should be mapped from here; named fragments are mapped separately, upfront
+                fs.Fragment.SelectionSubset.IsOnUnion = selSubset.IsOnUnion; //inherit from parent sel subset
+                MapObjectTypeSelectionSubset(objectTypeDef, fs.Fragment.SelectionSubset);
+              }
               var mappedSpread = new MappedFragmentSpread(fs);
               mappedItems.Add(mappedSpread);
               break;
@@ -145,7 +147,7 @@ namespace NGraphQL.Server.Mapping {
             AddError($"Field '{selField.Key}' of type '{fieldType.Name}' must have a selection subset.", selField);
             return; 
           }
-          MapSelectionSubSet(selSubset, fieldType);
+          MapSelectionSubSet(fieldType, selSubset);
           break;
       }
     }
