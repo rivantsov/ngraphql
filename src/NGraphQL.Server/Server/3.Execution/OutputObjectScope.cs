@@ -3,10 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-using NGraphQL.CodeFirst;
 using NGraphQL.Model;
 using NGraphQL.Model.Request;
-using NGraphQL.Utilities;
 
 namespace NGraphQL.Server.Execution {
 
@@ -20,13 +18,14 @@ namespace NGraphQL.Server.Execution {
     public RequestPath Path;
     public object Entity;
     public ObjectTypeMapping Mapping;
+    public bool IsMerged; 
 
-    IList<KeyValuePair<string, object>> _keysValues = new List<KeyValuePair<string, object>>();
+    List<KeyValuePair<string, object>> _keysValues = new List<KeyValuePair<string, object>>();
 
     public OutputObjectScope(RequestPath path, object entity, ObjectTypeMapping mapping) {
       Path = path;
       Entity = entity;
-      Mapping = mapping; 
+      Mapping = mapping;
     }
     public override string ToString() {
       return Entity?.ToString() ?? "(root)";
@@ -34,7 +33,7 @@ namespace NGraphQL.Server.Execution {
 
     // Here are the only 2 methods actually used 
     // method used by GraphQL engine
-    internal void SetValue(string key, object value) {
+    internal void AddValue(string key, object value) {
       if (value == DBNull.Value)
         return; 
       _keysValues.Add(new KeyValuePair<string, object>(key, value));
@@ -42,15 +41,21 @@ namespace NGraphQL.Server.Execution {
 
     // method used by serializer
     public IEnumerator<KeyValuePair<string, object>> GetEnumerator() {
-      return _keysValues.GetEnumerator(); 
+      foreach (var kv in _keysValues)
+        yield return kv; 
+    }
+
+    public void AddFrom(OutputObjectScope other) {
+      _keysValues.AddRange(other._keysValues);
     }
 
     // The rest of the methods are never invoked at runtime (only maybe in tests)
     // this is Add method implementing IDictionary.Add, a bit slower than AddNoCheck, but compliant with dictionary semantics
     // - duplicates are allowed
     public void Add(string key, object value) {
-      this[key] = value;
+      throw new NotImplementedException();
     }
+
 
     // we do implement this accessor, but never use it, it is inefficient.
     public object this[string key] {

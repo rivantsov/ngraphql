@@ -87,7 +87,7 @@ namespace NGraphQL.Server {
       // Save results from op fields into top scope; we do it here, after all threads finished, to avoid concurrency issues
       // and preserve output field order
       foreach(var ex in executers) {
-        topScope.SetValue(ex.ResultKey, ex.Result);
+        topScope.AddValue(ex.ResultKey, ex.Result);
       }
     }
 
