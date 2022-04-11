@@ -22,7 +22,6 @@ namespace NGraphQL.Server.Execution {
     public ObjectTypeMapping Mapping;
 
     IList<KeyValuePair<string, object>> _keysValues = new List<KeyValuePair<string, object>>();
-    //HashSet<string> _keys = new HashSet<string>(); 
 
     public OutputObjectScope(RequestPath path, object entity, ObjectTypeMapping mapping) {
       Path = path;
