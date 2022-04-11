@@ -79,8 +79,9 @@ namespace NGraphQL.Server.Mapping {
       foreach (var typeMapping in objectTypeDef.Mappings) {
         // It is possible mapped set already exists (with unions and especially fragments)
         if (HasMappedSubsetFor(selSubset, typeMapping))
-          continue; 
-        var mappedItems = new List<MappedSelectionItem>();
+          continue;
+
+        var mappedSubSet = new MappedSelectionSubSet() { Mapping = typeMapping };
         foreach (var item in selSubset.Items) {
 
           switch (item) {
@@ -92,7 +93,7 @@ namespace NGraphQL.Server.Mapping {
               var fldResolver = typeMapping.GetResolver(fldDef);
               var mappedArgs = MapArguments(selFld.Args, fldDef.Args, selFld);
               var mappedFld = new MappedSelectionField(selFld, fldResolver, mappedArgs);
-              mappedItems.Add(mappedFld);
+              mappedSubSet.MappedItems.Add(mappedFld);
               break;
 
             case FragmentSpread fs:
@@ -106,13 +107,13 @@ namespace NGraphQL.Server.Mapping {
                 MapObjectTypeSelectionSubset(objectTypeDef, fs.Fragment.SelectionSubset);
               }
               var mappedSpread = new MappedFragmentSpread(fs);
-              mappedItems.Add(mappedSpread);
+              mappedSubSet.MappedItems.Add(mappedSpread);
               break;
           }//switch
 
         } //foreach item
 
-        selSubset.MappedSubSets.Add(new MappedSelectionSubSet() { Mapping = typeMapping, MappedItems = mappedItems });
+        selSubset.MappedSubSets.Add(mappedSubSet);
       } //foreach typeMapping
     }
 

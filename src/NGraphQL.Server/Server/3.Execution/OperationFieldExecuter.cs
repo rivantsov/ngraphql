@@ -118,7 +118,6 @@ namespace NGraphQL.Server.Execution {
         if (mappedItem.Item.Kind == SelectionItemKind.FragmentSpread) {
           
           var mappedSpread = (MappedFragmentSpread) mappedItem;
-          var objTypeDef = mappedSubSet.Mapping.TypeDef;
           var fragmSelSubset = mappedSpread.Spread.Fragment.SelectionSubset;
           var entType = mappedSubSet.Mapping.EntityType;
           var mappedFragmSubset = GetMappedSubset(fragmSelSubset, possibleTypes, entType, mappedSpread.Spread);
@@ -136,7 +135,6 @@ namespace NGraphQL.Server.Execution {
           if (fieldContext.BatchResultWasSet && scope.ContainsKey(selFieldKey))
             continue; 
           fieldContext.SetCurrentParentScope(scope);
-          var fldDef = fieldContext.FieldDef;
           object result = await InvokeResolverAsync(fieldContext);
           // if batched result was not set, save value in scope
           if (!fieldContext.BatchResultWasSet) 
