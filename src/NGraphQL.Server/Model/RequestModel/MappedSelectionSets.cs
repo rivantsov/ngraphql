@@ -22,7 +22,7 @@ namespace NGraphQL.Model.Request {
     public MappedSelectionField(SelectionField field, FieldResolverInfo resolver, IList<MappedArg> mappedArgs) : base(field) {
       Field = field; 
       Resolver = resolver;
-      MappedArgs = mappedArgs;  
+      MappedArgs = mappedArgs; 
     }
 
     public override string ToString() => $"{Field.Key}";

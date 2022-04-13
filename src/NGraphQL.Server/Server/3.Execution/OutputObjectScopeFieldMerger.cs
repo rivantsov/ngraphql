@@ -18,30 +18,47 @@ namespace NGraphQL.Server.Execution {
   The spec desribes the CollectFields algorithm that is supposed to be executed early, before resolvers and producing data. 
   We do it differently here, we let the query execute as-is, and then merge the output fields. 
    */
-  internal class OutputObjectScopeFieldMerger {
+  internal static class OutputObjectScopeFieldMerger {
 
-    public void MergeFields(OutputObjectScope scope) {
+    public static void MergeFields(OutputObjectScope scope) {
       // using LINQ here might be not very efficient, might change later 
-      var groupsToMerge = scope
-                    .Where(kv => kv.Value is OutputObjectScope) //Only child scopes, from sel subsets; not primitive values 
+      var allChildScopeKVs = scope
+                    .Where(kv => kv.Value is OutputObjectScope) //Only child scopes, from sel subsets; not primitive values or arrays
+                    .ToList();
+      var groupsToMerge = allChildScopeKVs
                     .GroupBy(kv => kv.Key)  // group by key
                     .Where(g => g.Count() > 1) // and find duplicates
                     .Select(g => g.Select(v => (OutputObjectScope)scope).ToArray())
                     .ToList();
-      // merge all into first
-      foreach(var group in groupsToMerge)
+      // found groups: merge all into first
+      foreach(var group in groupsToMerge) {
         MergeIntoFirst(group);
+        // traverse the tree recursively, to merge child branches 
+        var scope0 = group[0];
+        MergeFields(scope0);
+      }
 
+      // Add processing Array child fields
+      !!
 
+      // for the rest - traverse the response tree to merge more inside the tree
+      foreach (var kv in allChildScopeKVs) {
+        var child = (OutputObjectScope)kv.Value;
+        if (child.Merged)
+          continue; 
+        MergeFields(child); 
+      }
     }
 
-    public void MergeIntoFirst(IList<OutputObjectScope> scopes) {
+    private static void MergeIntoFirst(IList<OutputObjectScope> scopes) {
       var scope0 = scopes[0];
       for (int i = 1; i < scopes.Count; i++) {
         var sc = scopes[i];
         scope0.AddFrom(sc);
-        sc.IsMerged = true; 
+        sc.Merged = true; //mark it as merged, so it will be ignored by serializer (not sent by enumerator)
+        sc.Clear(); //empty it to free memory
       }
+
     } // method
 
   } //class

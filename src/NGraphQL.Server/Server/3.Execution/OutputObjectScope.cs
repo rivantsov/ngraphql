@@ -18,15 +18,16 @@ namespace NGraphQL.Server.Execution {
     public RequestPath Path;
     public object Entity;
     public ObjectTypeMapping Mapping;
-    public bool IsMerged; 
+    public bool Merged; // true if fields merged into another 'object' with the same key
 
-    List<KeyValuePair<string, object>> _keysValues = new List<KeyValuePair<string, object>>();
+    private List<KeyValuePair<string, object>> _keysValues = new List<KeyValuePair<string, object>>();
 
     public OutputObjectScope(RequestPath path, object entity, ObjectTypeMapping mapping) {
-      Path = path;
+      Path = path; 
       Entity = entity;
       Mapping = mapping;
     }
+
     public override string ToString() {
       return Entity?.ToString() ?? "(root)";
     }
@@ -41,13 +42,22 @@ namespace NGraphQL.Server.Execution {
 
     // method used by serializer
     public IEnumerator<KeyValuePair<string, object>> GetEnumerator() {
-      foreach (var kv in _keysValues)
-        yield return kv; 
+      foreach (var kv in _keysValues) {
+        if (kv.Value is OutputObjectScope child && child.Merged) //ignore complex objects that are already merged
+          continue;
+        yield return kv;
+      }
     }
 
+    // a few helper methods
     public void AddFrom(OutputObjectScope other) {
       _keysValues.AddRange(other._keysValues);
     }
+
+    public void Clear() {
+      _keysValues.Clear();
+    }
+
 
     // The rest of the methods are never invoked at runtime (only maybe in tests)
     // this is Add method implementing IDictionary.Add, a bit slower than AddNoCheck, but compliant with dictionary semantics
@@ -93,10 +103,6 @@ namespace NGraphQL.Server.Execution {
     public bool IsReadOnly => false;
 
     public void Add(KeyValuePair<string, object> item) {
-      throw new NotImplementedException();
-    }
-
-    public void Clear() {
       throw new NotImplementedException();
     }
 

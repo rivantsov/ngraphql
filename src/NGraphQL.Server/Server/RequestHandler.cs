@@ -89,6 +89,8 @@ namespace NGraphQL.Server {
       foreach(var ex in executers) {
         topScope.AddValue(ex.ResultKey, ex.Result);
       }
+      // merge fields
+      OutputObjectScopeFieldMerger.MergeFields(topScope); 
     }
 
     private async Task ExecuteAllParallel(IList<OperationFieldExecuter> executers) {
