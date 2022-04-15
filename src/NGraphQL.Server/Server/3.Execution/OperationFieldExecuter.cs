@@ -128,17 +128,18 @@ namespace NGraphQL.Server.Execution {
         // It is a plain field
         var mappedField = (MappedSelectionField) mappedItem;
         var fieldContext = new FieldContext(_requestContext, this, mappedField, parentScopes);
-        var selFieldKey = mappedField.Field.Key;
+        var selFieldKey = mappedField.Field.Key; 
 
         // Process each scope for the field
         foreach (var scope in parentScopes) {
-          if (fieldContext.BatchResultWasSet && scope.ContainsKey(selFieldKey))
+          if (fieldContext.BatchResultWasSet)
             continue; 
           fieldContext.SetCurrentParentScope(scope);
           object result = await InvokeResolverAsync(fieldContext);
+          if (fieldContext.BatchResultWasSet)
+            break; //from loop of parentScopes
           // if batched result was not set, save value in scope
-          if (!fieldContext.BatchResultWasSet) 
-            scope.SetValue(selFieldKey, result);
+          scope.AddValue(selFieldKey, result);
         } //foreach scope
         // if there are any non-null object-type results, add this field context to this special list
         //   to execute selection subsets in the next round. 

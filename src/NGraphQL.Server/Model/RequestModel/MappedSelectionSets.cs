@@ -18,12 +18,11 @@ namespace NGraphQL.Model.Request {
     public readonly SelectionField Field;
     public readonly FieldResolverInfo Resolver;
     public readonly IList<MappedArg> MappedArgs;
-    public MappedSelectionField NextSameKeyField; 
 
     public MappedSelectionField(SelectionField field, FieldResolverInfo resolver, IList<MappedArg> mappedArgs) : base(field) {
       Field = field; 
       Resolver = resolver;
-      MappedArgs = mappedArgs;  
+      MappedArgs = mappedArgs; 
     }
 
     public override string ToString() => $"{Field.Key}";
@@ -40,9 +39,6 @@ namespace NGraphQL.Model.Request {
   public class MappedSelectionSubSet {
     public ObjectTypeMapping Mapping;
     public IList<MappedSelectionItem> MappedItems = new List<MappedSelectionItem>();
-    // dict of fields with subsets by key (alias or name), subject to possible merge
-    public IDictionary<string, MappedSelectionField> FieldsWithSubSets;
-    public bool NeedsSubSetsMerge; 
 
     public override string ToString() => $"Mapping:{Mapping.EntityType}=>{Mapping.TypeDef}";
   }
