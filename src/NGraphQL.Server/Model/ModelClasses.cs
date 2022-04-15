@@ -208,6 +208,12 @@ namespace NGraphQL.Model {
     public override string ToString() => $"{Type}(resolver class)";
   }
 
+  public enum FieldsMergeMode {
+    None,
+    Object,
+    Array
+  }
+
   [DisplayName("{Name}/{Kind}")]
   public class TypeRef { 
     public readonly TypeDefBase TypeDef;
@@ -221,6 +227,7 @@ namespace NGraphQL.Model {
     public readonly bool IsList;
     public bool IsNotNull => Kind == TypeKind.NonNull;
     public Type ClrType;
+    public FieldsMergeMode FieldMergeMode; 
 
     public TypeRef(TypeDefBase typeDef) {
       TypeDef = typeDef;

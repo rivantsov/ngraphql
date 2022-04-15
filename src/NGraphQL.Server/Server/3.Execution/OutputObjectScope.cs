@@ -10,6 +10,14 @@ using NGraphQL.Utilities;
 
 namespace NGraphQL.Server.Execution {
 
+  public struct KeyValuePairExt {
+    public KeyValuePair<string, object> KeyValue;
+    public FieldsMergeMode MergeMode;
+    public KeyValuePairExt(string key, object value, FieldsMergeMode mergeMode) { 
+      KeyValue = new KeyValuePair<string, object>(key, value);
+      MergeMode = mergeMode;  
+    }
+
   /// <summary>
   ///   Slimmed down container for output object data (key/value pairs);
   ///   Serializer treats it as a dictionary (IDictionary[object,string]).
@@ -20,14 +28,15 @@ namespace NGraphQL.Server.Execution {
     public RequestPath Path;
     public object Entity;
     public ObjectTypeMapping Mapping;
+    public bool Merged; // skip it on producing output, the value merged to another parent
 
-    IList<KeyValuePair<string, object>> _keysValues = new List<KeyValuePair<string, object>>();
-    //HashSet<string> _keys = new HashSet<string>(); 
+    IList<KeyValuePairExt> _keysValues = new List<KeyValuePairExt>();
 
     public OutputObjectScope(RequestPath path, object entity, ObjectTypeMapping mapping) {
       Path = path;
       Entity = entity;
       Mapping = mapping; 
+      
     }
     public override string ToString() {
       return Entity?.ToString() ?? "(root)";
@@ -35,10 +44,10 @@ namespace NGraphQL.Server.Execution {
 
     // Here are the only 2 methods actually used 
     // method used by GraphQL engine
-    internal void SetValue(string key, object value) {
+    internal void SetValue(string key, object value, TypeRef typeRef) {
       if (value == DBNull.Value)
         return; 
-      _keysValues.Add(new KeyValuePair<string, object>(key, value));
+      _keysValues.Add(new KeyValuePairExt(key, value, typeRef.MergeMode));
     }
 
     // method used by serializer

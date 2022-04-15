@@ -21,7 +21,7 @@ namespace NGraphQL.Model {
           return true;
         default:
           return false;
-      }
+      }   
     }
 
     internal static string GetTypeRefName(this TypeRef typeRef) {
