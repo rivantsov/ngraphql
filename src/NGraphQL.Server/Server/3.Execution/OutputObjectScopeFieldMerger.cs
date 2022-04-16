@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -22,31 +23,52 @@ namespace NGraphQL.Server.Execution {
 
     public static void MergeFields(OutputObjectScope scope) {
       // using LINQ here might be not very efficient, might change later 
-      var allChildScopeKVs = scope
-                    .Where(kv => kv.Value is OutputObjectScope) //Only child scopes, from sel subsets; not primitive values or arrays
+
+      // Process complex objects first (skip primitive values and arrays)
+      var childScopesToMerge = scope.KeysValuePairs
+                    .Where(kv => kv.TypeRef.MergeMode == Model.FieldsMergeMode.Object) 
                     .ToList();
-      var groupsToMerge = allChildScopeKVs
-                    .GroupBy(kv => kv.Key)  // group by key
+      var groupsToMerge = childScopesToMerge
+                    .GroupBy(kv => kv.KeyValue.Key)  // group by key
                     .Where(g => g.Count() > 1) // and find duplicates
-                    .Select(g => g.Select(v => (OutputObjectScope)scope).ToArray())
+                    .Select(g => g.Select(v => (OutputObjectScope)v.KeyValue.Value).ToArray())
                     .ToList();
       // found groups: merge all into first
       foreach(var group in groupsToMerge) {
         MergeIntoFirst(group);
-        // traverse the tree recursively, to merge child branches 
-        var scope0 = group[0];
-        MergeFields(scope0);
       }
 
-      // Add processing Array child fields
-      !!
 
-      // for the rest - traverse the response tree to merge more inside the tree
-      foreach (var kv in allChildScopeKVs) {
-        var child = (OutputObjectScope)kv.Value;
-        if (child.Merged)
-          continue; 
-        MergeFields(child); 
+      // for the rest - traverse the child tree to merge more inside the subtree
+      foreach (var kv in scope.KeysValuePairs) {
+        switch (kv.TypeRef.MergeMode) {
+          case Model.FieldsMergeMode.None: break;
+          
+          case Model.FieldsMergeMode.Object:
+            var childScope = (OutputObjectScope) kv.KeyValue.Value;
+            if (childScope == null || childScope.Merged)
+              continue; 
+            MergeFields(childScope); 
+            break;
+
+          case Model.FieldsMergeMode.Array:
+            MergeArray(kv.KeyValue.Value, kv.TypeRef.Rank);
+            break;
+        }
+      }
+    }
+
+    private static void MergeArray(object arrObj, int rank) {
+      if (arrObj == null) 
+        return;
+      var arr = (List<object>)arrObj;
+      foreach (var elem in arr) {
+        if (elem == null) 
+          continue;
+        if (rank == 1)
+          MergeFields((OutputObjectScope)elem);
+        else
+          MergeArray(elem, rank - 1);
       }
     }
 
@@ -54,7 +76,7 @@ namespace NGraphQL.Server.Execution {
       var scope0 = scopes[0];
       for (int i = 1; i < scopes.Count; i++) {
         var sc = scopes[i];
-        scope0.AddFrom(sc);
+        scope0.KeysValuePairs.AddRange(sc.KeysValuePairs); // copy all to scope0
         sc.Merged = true; //mark it as merged, so it will be ignored by serializer (not sent by enumerator)
         sc.Clear(); //empty it to free memory
       }

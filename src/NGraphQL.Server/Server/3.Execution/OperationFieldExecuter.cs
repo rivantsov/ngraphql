@@ -20,6 +20,7 @@ namespace NGraphQL.Server.Execution {
     public bool Failed => _failed;
     public object Result;
     public string ResultKey => _mappedOpField.Field.Key;
+    public MappedSelectionField MappedField => _mappedOpField;
 
     RequestContext _requestContext;
     OutputObjectScope _parentScope;
@@ -139,7 +140,7 @@ namespace NGraphQL.Server.Execution {
           if (fieldContext.BatchResultWasSet)
             break; //from loop of parentScopes
           // if batched result was not set, save value in scope
-          scope.AddValue(selFieldKey, result);
+          scope.AddValue(selFieldKey, result, mappedField.Resolver.Field.TypeRef);
         } //foreach scope
         // if there are any non-null object-type results, add this field context to this special list
         //   to execute selection subsets in the next round. 

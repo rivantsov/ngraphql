@@ -1,17 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq.Expressions;
 using System.Reflection;
-
 using NGraphQL.CodeFirst;
-using NGraphQL.Core;
 using NGraphQL.Core.Scalars;
-using NGraphQL.Model;
 using NGraphQL.Introspection;
 using NGraphQL.Server;
 using NGraphQL.Server.Execution;
-using System.Linq.Expressions;
-using System.Xml.Linq;
 using NGraphQL.Utilities;
 
 namespace NGraphQL.Model {
@@ -227,14 +223,15 @@ namespace NGraphQL.Model {
     public readonly bool IsList;
     public bool IsNotNull => Kind == TypeKind.NonNull;
     public Type ClrType;
-    public FieldsMergeMode FieldMergeMode; 
+    public FieldsMergeMode MergeMode; 
 
     public TypeRef(TypeDefBase typeDef) {
       TypeDef = typeDef;
       Kind = TypeDef.Kind;
       Name = this.GetTypeRefName();
       KindsPath = new[] { Kind };
-      ClrType = this.GetClrType(); 
+      ClrType = this.GetClrType();
+      MergeMode = ComputeMergeMode();
     }
 
     public TypeRef(TypeRef parent, TypeKind kind) {
@@ -256,7 +253,17 @@ namespace NGraphQL.Model {
       }
       Name = this.GetTypeRefName();
       IsList = kind == TypeKind.List || parent.Kind == TypeKind.List;
-      ClrType = this.GetClrType(); 
+      ClrType = this.GetClrType();
+      MergeMode = ComputeMergeMode();
+    }
+
+    private FieldsMergeMode ComputeMergeMode() {
+      if (!TypeDef.IsComplexReturnType())
+        return FieldsMergeMode.None;
+      if (Rank > 0)
+        return FieldsMergeMode.Array;
+      else
+        return FieldsMergeMode.Object;
     }
 
     public override string ToString() => Name;
