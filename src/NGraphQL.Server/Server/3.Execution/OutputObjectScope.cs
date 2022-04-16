@@ -107,13 +107,13 @@ namespace NGraphQL.Server.Execution {
 
     public int Count => KeysValuePairs.Count;
 
+    public void Clear() {
+      KeysValuePairs.Clear();
+    }
+
     public bool IsReadOnly => false;
 
     public void Add(KeyValuePair<string, object> item) {
-      throw new NotImplementedException();
-    }
-
-    public void Clear() {
       throw new NotImplementedException();
     }
 

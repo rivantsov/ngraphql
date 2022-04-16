@@ -96,6 +96,7 @@ namespace NGraphQL.Model.Construction {
     }
 
     private void RegisterTypeDef(TypeDefBase typeDef) {
+      typeDef.CompleteInitialize(); 
       _model.Types.Add(typeDef);
       // data types - we register them by name and CLR type; they always have module and CLR type
       var modName = typeDef.Module?.Name ?? "(no module)";

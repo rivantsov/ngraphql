@@ -13,12 +13,18 @@ namespace NGraphQL.Model {
       return null;
     }
 
+    // TODO: implement dynamic mapping for Map scalar
     public static bool IsComplexReturnType(this TypeDefBase typeDef) {
       switch(typeDef.Kind) {
         case TypeKind.Object:
         case TypeKind.Interface:
         case TypeKind.Union:
           return true;
+        /*
+        case TypeKind.Scalar:
+          var sc = (ScalarTypeDef)typeDef;
+          return sc.Scalar.CanHaveSelectionSubset;
+        */
         default:
           return false;
       }   

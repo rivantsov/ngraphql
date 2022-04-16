@@ -23,8 +23,8 @@ namespace NGraphQL.Model {
 
     public __Type Type_ => (__Type)Intro_; 
     // Default type refs
-    public readonly TypeRef TypeRefNull;
-    public readonly TypeRef TypeRefNotNull;
+    public TypeRef TypeRefNull;
+    public TypeRef TypeRefNotNull;
     public readonly IList<TypeRef> TypeRefs = new List<TypeRef>();
 
     public TypeDefBase(string name, TypeKind kind, Type clrType, IList<Attribute> attributes, GraphQLModule module) {
@@ -33,6 +33,11 @@ namespace NGraphQL.Model {
       ClrType = clrType;
       Attributes = attributes; 
       Module = module; 
+    }
+
+    // we do not call this method in constructor - this is too early, TypeDef is not fully constructed yet
+    // so it is to build TypeRefs 
+    public void CompleteInitialize() {
       TypeRefNull = new TypeRef(this);
       TypeRefNotNull = new TypeRef(TypeRefNull, TypeKind.NonNull);
       TypeRefs.Add(TypeRefNull);

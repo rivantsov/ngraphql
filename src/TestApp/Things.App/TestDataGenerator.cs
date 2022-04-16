@@ -14,7 +14,7 @@ namespace Things {
       var date0 = DateTime.Now;
       app.Things = new List<Thing>() {
           new Thing() { Name = "Name1", Id = 1, Descr = "Descr1",
-            SomeDate = date0, DateQ = date0.AddHours(1), TheKind = ThingKind.KindOne,
+            SomeDate = date0, DateQ = date0.AddHours(1), TheKind = ThingKind.KindOne, Tag = "tag1",
             Flags = TheFlags.FlagOne | TheFlags.FlagThree, IntfThing = new ThingEntity(),
             Props = new Dict { {"prop1", "V1" }, { "prop2", 123 } }
           },

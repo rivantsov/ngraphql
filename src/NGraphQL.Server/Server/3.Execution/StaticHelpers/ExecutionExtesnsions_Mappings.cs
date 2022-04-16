@@ -15,12 +15,23 @@ namespace NGraphQL.Server.Execution {
         case ObjectTypeDef otd:
           mapping = otd.FindObjectTypeMapping(fromType);
           break; 
+
         case InterfaceTypeDef itd:
           mapping = FindObjectTypeMapping(itd.PossibleTypes, fromType);
           break; 
+
         case UnionTypeDef utd:
           mapping = FindObjectTypeMapping(utd.PossibleTypes, fromType);
           break;
+
+          /*
+        case ScalarTypeDef std: 
+          if (!std.Scalar.CanHaveSelectionSubset)
+            throw new Exception($"FATAL: Failed to find type mapping. Scalar type {std.Scalar} may not be mapped from type {typeDef.Name}");
+          return null;
+        */
+          // TODO: implement dynamic mapping for Map scalar
+
         default:
           // should never happen
           throw new Exception($"FATAL: Invalid target type kind {typeDef.Kind}, type {typeDef.Name}");
