@@ -2,8 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-
+using NGraphQL.CodeFirst;
 
 namespace NGraphQL.Server.Execution {
 
@@ -35,6 +34,7 @@ namespace NGraphQL.Server.Execution {
                     .ToList();
       // found groups: merge all into first
       foreach(var group in groupsToMerge) {
+        ValidateMergeGroup(group);
         MergeIntoFirst(group);
       }
 
@@ -73,16 +73,64 @@ namespace NGraphQL.Server.Execution {
     }
 
     private static void MergeIntoFirst(IList<OutputObjectScope> scopes) {
-      var scope0 = scopes[0];
+      var scope0 = scopes[0]; 
       for (int i = 1; i < scopes.Count; i++) {
         var sc = scopes[i];
         scope0.KeysValuePairs.AddRange(sc.KeysValuePairs); // copy all to scope0
         sc.Merged = true; //mark it as merged, so it will be ignored by serializer (not sent by enumerator)
         sc.Clear(); //empty it to free memory
       }
-
     } // method
 
-  } //class
+    private static void ValidateMergeGroup(IList<OutputObjectScope> scopes) {
+      var fieldCtx = scopes[0].ParentFieldContext;
+      for (int i = 1; i < scopes.Count; i++) {
+        var sc = scopes[i];
+        var mismatch = fieldCtx.GetMismatchesForMerge(sc.ParentFieldContext);
+        if (mismatch == null) continue;
+        // found mismatch
+        fieldCtx.AddError($"Failed to merge fields for duplicate output key '{fieldCtx.MappedField.Field.Key}'; details: {mismatch} ", ErrorCodes.FieldMergeError);
+      }
+      fieldCtx.AbortIfErrors();
+    } // method
 
+    // returns null if match is OK; otherwise returns error message
+    public static string GetMismatchesForMerge(this FieldContext fieldContext, FieldContext other) {
+      var selField = fieldContext.MappedField.Field;
+      var name1 = fieldContext.FieldDef.Name;
+      var name2 = other.FieldDef.Name;
+      if (name1 != name2)
+        return $"Field names do not match: {name1}, {name2}; cannot merge result object";
+
+      var type1 = fieldContext.FieldDef.TypeRef;
+      var type2 = other.FieldDef.TypeRef;
+      if (type1 != type2)
+        return $"Field types do not match, fields: {type1.Name}, {type2.Name}; cannot merge result object.";
+
+      var hash1 = GetArgsHash(fieldContext);
+      var hash2 = GetArgsHash(other);
+      if (hash1 != hash2)
+        return $"Arguments for fields do not match, cannot merge result object.";
+      return null;
+    }
+
+    private static int GetArgsHash(FieldContext ctx) {
+      var argDefs = ctx.MappedField.Field.Args;
+      if (argDefs.Count == 0)
+        return 0;
+      if (ctx.ArgValues == null || ctx.ArgValues.Length == 0)
+        return 0;
+      var hash = 0;
+      // ctx.ArgValues are args for resolver; arg[0] is fieldContext, skip it. 
+      for (int i = 1; i < ctx.ArgValues.Length; i++) {
+        var v = ctx.ArgValues[i];
+        if (v == null) continue;
+        var argName = argDefs[i - 1].Name;
+        unchecked { hash = (hash << 1) + argName.GetHashCode() + v.GetHashCode(); }
+      }
+      return hash;
+    }
+
+
+  } //class
 }

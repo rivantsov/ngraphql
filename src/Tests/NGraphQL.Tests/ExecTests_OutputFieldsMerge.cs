@@ -73,6 +73,16 @@ query {
       Assert.IsNotNull(kind, "expected thing.kind not null");
       Assert.IsNotNull(tag, "expected thing.tag not null");
 
+      TestEnv.LogTestDescr(@"Testing failed merge");
+      query = @"
+query { 
+  thing: getThing(id: 1) { id name }
+  thing: getThing(id: 2) { tag kind }
+}";
+      resp = await ExecuteAsync(query, throwOnError: false);
+      Assert.IsTrue(resp.Errors.Count > 0, "Expected failed merge error.");
+
+
     }
 
   } //class

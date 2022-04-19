@@ -36,7 +36,5 @@ namespace NGraphQL.Server.Execution {
       return ExecutionExtensions.EvaluateArgs(null, mappedArgs);
     }
 
-
-
   }
 }

@@ -12,6 +12,7 @@ namespace NGraphQL.CodeFirst {
     public const string Cancelled = "CANCELLED";
     public const string ResolverError = "RESOLVER_ERROR";
     public const string ServerError = "SERVER_ERROR"; // fatal server failure, unexpected
+    public const string FieldMergeError = "FIELD_MERGE_ERROR";
   }
 
 }

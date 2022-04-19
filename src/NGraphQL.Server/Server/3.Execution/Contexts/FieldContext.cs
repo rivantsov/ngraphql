@@ -101,7 +101,7 @@ namespace NGraphQL.Server.Execution {
       var mapping = TypeDef.FindMapping(entType);
       if (mapping == null)
         throw new FatalServerException($"FATAL: failed to find mapping for entity type {entType} in the type {TypeDef.Name}. ");
-      var scope = new OutputObjectScope(path, entity, mapping);
+      var scope = new OutputObjectScope(path, entity, this);
       AllResultScopes.Add(scope);
       var newCount = Interlocked.Increment(ref _requestContext.Metrics.OutputObjectCount);
       // check total count against quota

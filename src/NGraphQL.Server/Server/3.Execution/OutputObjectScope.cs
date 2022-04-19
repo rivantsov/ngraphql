@@ -32,17 +32,17 @@ namespace NGraphQL.Server.Execution {
 
     public RequestPath Path;
     public object Entity;
-    public ObjectTypeMapping Mapping;
+    public FieldContext ParentFieldContext;
     public bool Merged; // skip it on producing output, the value merged to another parent
 
     internal readonly List<KeyValuePairExt> KeysValuePairs = new List<KeyValuePairExt>();
 
-    public OutputObjectScope(RequestPath path, object entity, ObjectTypeMapping mapping) {
+    public OutputObjectScope(RequestPath path, object entity, FieldContext parentFieldContext) {
       Path = path;
       Entity = entity;
-      Mapping = mapping; 
-      
+      ParentFieldContext = parentFieldContext;         
     }
+
     public override string ToString() {
       return Entity?.ToString() ?? "(root)";
     }

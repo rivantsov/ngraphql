@@ -42,7 +42,7 @@ namespace NGraphQL.Server {
       BuildDirectiveContexts();
 
       var opMapping = _requestContext.Operation.OperationTypeDef.Mappings[0];
-      var topScope = new OutputObjectScope(new RequestPath(), null, opMapping); 
+      var topScope = new OutputObjectScope(new RequestPath(), null, null); 
       _requestContext.Response.Data = topScope;
       await ExecuteOperationAsync(_requestContext.Operation, topScope);
     }
