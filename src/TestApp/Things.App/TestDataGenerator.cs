@@ -19,12 +19,12 @@ namespace Things {
             Props = new Dict { {"prop1", "V1" }, { "prop2", 123 } }
           },
           new Thing() { Name = "Name2", Id = 2, Descr = "Descr2",
-            SomeDate = date0, DateQ = null, TheKind = ThingKind.KindTwo,
+            SomeDate = date0, DateQ = null, TheKind = ThingKind.KindTwo, Tag = "tag2",
             Flags = TheFlags.FlagTwo, IntfThing = new ThingEntity(),
             Props = new Dict { {"prop1", "V2" }, { "prop3", null } }
           },
           new Thing() { Name = "Name3", Id = 3, Descr = "Descr3",
-            SomeDate = date0, DateQ = date0, TheKind = ThingKind.KindThree,
+            SomeDate = date0, DateQ = date0, TheKind = ThingKind.KindThree,  Tag = "tag3",
             Flags = TheFlags.FlagOne | TheFlags.FlagTwo, IntfThing = new ThingEntity()
           },
       };
