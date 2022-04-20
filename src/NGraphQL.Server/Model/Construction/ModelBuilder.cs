@@ -153,16 +153,18 @@ namespace NGraphQL.Model.Construction {
     }
 
     private void LinkImplementedInterfaces() {
-      var objTypes = _model.GetTypeDefs<ObjectTypeDef>(TypeKind.Object);
-      foreach (var typeDef in objTypes) {
+      foreach (var typeDef in _model.Types) {
         if (typeDef.ClrType == null) //exclude Intro objects and special types
           continue;
-        var intTypes = typeDef.ClrType.GetInterfaces();
+        if (!(typeDef is ComplexTypeDef complexType)) // complex types - object types or interfaces - can implement interfaces
+          continue; 
+        var intTypes = complexType.ClrType.GetInterfaces();
         foreach (var iType in intTypes) {
           var iTypeDef = (InterfaceTypeDef)_model.GetTypeDef(iType);
           if (iTypeDef != null) {
-            typeDef.Implements.Add(iTypeDef);
-            iTypeDef.PossibleTypes.Add(typeDef);
+            complexType.Implements.Add(iTypeDef);
+            if (complexType is ObjectTypeDef objTypeDef)
+              iTypeDef.PossibleTypes.Add(objTypeDef);
           }
         }
       } //foreach typeDef

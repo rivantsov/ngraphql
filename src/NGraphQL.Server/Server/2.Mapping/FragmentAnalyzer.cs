@@ -117,25 +117,18 @@ namespace NGraphQL.Server.Mapping {
       var fragmName = fragmentSpread.Name;
       switch (parentType) {
 
-        case ObjectTypeDef parObjType:
-          // parent type is object type; the only allowed (non-trivial) case is fragment on interface
-          if (!parObjType.Implements.Contains(fragmOnTypeDef)) {
-            AddError($"Fragment ref '{fragmName}': fragment is defined on type '{fragmOnTypeDef.Name}'" +
-                     $" which is not compatible with type '{parentType.Name}'.",
-                     fragmentSpread);
-            return false;
-          }
-          break;
-
-        case InterfaceTypeDef parIntfType:
-          // parent type is interface; fragment's type must be object implementing interface
-          if (!parIntfType.PossibleTypes.Contains(fragmOnTypeDef)) {
-            AddError($"Fragment ref {fragmName}: fragment is defined on type '{fragmOnTypeDef.Name}'" +
-                     $" which is not compatible with type '{parentType.Name}'.",
-                     fragmentSpread);
-            return false;
-          }
-          break;
+        case ComplexTypeDef complexParentType:
+          // Parent type (PT) is interface or object type. 
+          // Fragment's OnType (FOT) 
+          //   1. FOT is interface - then PT must implement it
+          //   2. FOT is object - it must match PT (be the same type); this we already checked
+          var implements = (fragmOnTypeDef is InterfaceTypeDef) && complexParentType.Implements.Contains(fragmOnTypeDef);
+          if (implements)
+            return true; 
+          AddError($"Fragment ref '{fragmName}': fragment is defined on type '{fragmOnTypeDef.Name}'" +
+                    $" which is not compatible with type '{parentType.Name}'.",
+                    fragmentSpread);
+          return false;
 
         case UnionTypeDef parUnionType:
           // fragment's on-type must be one of the unioned types; of if fragm is on interface, implemented by at least one of the types

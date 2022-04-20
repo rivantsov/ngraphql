@@ -182,7 +182,7 @@ namespace NGraphQL.Server.Parsing {
       typeDef.Rule = scalarTypeDef | objTypeDef | intfTypeDef | unionTypeDef | enumTypeDef | inputObjTypeDef;
       scalarTypeDef.Rule = descrOpt + "scalar" + name + dirListOpt;
       objTypeDef.Rule = descrOpt + "type" + name + implsIntfsOpt + dirListOpt + fldsDefOpt;
-      intfTypeDef.Rule = descrOpt + "interface" + name + dirListOpt + fldsDefOpt;
+      intfTypeDef.Rule = descrOpt + "interface" + name + implsIntfsOpt + dirListOpt + fldsDefOpt;
       unionTypeDef.Rule = descrOpt + "union" + name + dirListOpt + unionMemberTypes;
       enumTypeDef.Rule = descrOpt + "enum" + name + dirListOpt + enumValDefsOpt;
       inputObjTypeDef.Rule = descrOpt + "input" + name + dirListOpt + inputFldDefsOpt;

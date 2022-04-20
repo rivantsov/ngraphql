@@ -86,6 +86,8 @@ namespace NGraphQL.Model {
   public abstract class ComplexTypeDef : TypeDefBase {
     public TypeRole TypeRole;
     public HybridDictionary<FieldDef> Fields = new  HybridDictionary<FieldDef>();
+    public List<InterfaceTypeDef> Implements = new List<InterfaceTypeDef>();
+
     public ComplexTypeDef(string name, TypeKind kind, Type clrType, IList<Attribute> attrs, GraphQLModule module, 
          TypeRole typeRole = TypeRole.Data) 
        : base(name, kind, clrType, attrs, module) {
@@ -94,7 +96,6 @@ namespace NGraphQL.Model {
   }
 
   public class ObjectTypeDef : ComplexTypeDef {
-    public List<InterfaceTypeDef> Implements = new List<InterfaceTypeDef>();
     public List<ObjectTypeMapping> Mappings = new List<ObjectTypeMapping>();
     ObjectTypeDef[] _possibleOutTypes;
 

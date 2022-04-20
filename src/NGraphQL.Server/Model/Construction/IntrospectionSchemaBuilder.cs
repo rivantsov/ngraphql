@@ -158,9 +158,9 @@ namespace NGraphQL.Model.Construction {
         type_.Fields.Add(fld_);
       } //foreach fld
       
-      // Interfaces - for ObjectTypes only
-      if (typeDef is ObjectTypeDef objTypeDef)
-        foreach(var intfDef in objTypeDef.Implements) {
+      // implemented Interfaces - for ObjectTypes and Interfaces
+      if (typeDef is ComplexTypeDef complexType)
+        foreach(var intfDef in complexType.Implements) {
           var intf_ = intfDef.Type_;
           type_.Interfaces.Add( intf_);
           intf_.PossibleTypes.Add(type_);
