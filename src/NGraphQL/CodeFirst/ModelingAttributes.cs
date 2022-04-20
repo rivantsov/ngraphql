@@ -3,6 +3,7 @@
 namespace NGraphQL.CodeFirst {
 
 
+  /// <summary>Specifies the name of GraphQL schema element (type or field) explicitly. </summary>
   [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Interface |
                    AttributeTargets.Enum | AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Method |
                    AttributeTargets.Parameter)]
@@ -50,3 +51,17 @@ namespace NGraphQL.CodeFirst {
 
 
 }
+/// <summary> Specifies list of interfaces implemented by an interface or Object type. </summary>
+/// <remarks> One way to specify that GraphQL type implements an interface is to simply make the .NET type for Object type
+/// implement the corresponding interface. However, c# requires that exact match (member names, types) between
+/// interface and implementing type. GraphQL has weaker requirement, types can be covariant. 
+/// 
+/// </remarks>
+[AttributeUsage(AttributeTargets.Class |AttributeTargets.Interface)]
+public class ImplementsAttribute : Attribute {
+  public Type[] Types;
+  public ImplementsAttribute(params Type[] types) {
+    Types = types;
+  }
+}
+

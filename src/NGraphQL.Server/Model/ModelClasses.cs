@@ -87,6 +87,7 @@ namespace NGraphQL.Model {
     public TypeRole TypeRole;
     public HybridDictionary<FieldDef> Fields = new  HybridDictionary<FieldDef>();
     public List<InterfaceTypeDef> Implements = new List<InterfaceTypeDef>();
+    internal bool Processed; // used internally
 
     public ComplexTypeDef(string name, TypeKind kind, Type clrType, IList<Attribute> attrs, GraphQLModule module, 
          TypeRole typeRole = TypeRole.Data) 

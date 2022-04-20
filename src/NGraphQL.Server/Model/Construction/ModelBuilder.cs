@@ -46,7 +46,7 @@ namespace NGraphQL.Model.Construction {
         return;
 
 
-      LinkImplementedInterfaces();
+      LinkValidateInterfaces();
       BuildUnionTypes();
       if (_model.HasErrors)
         return;
@@ -150,24 +150,6 @@ namespace NGraphQL.Model.Construction {
         } //switch
         td.Directives = BuildDirectivesFromAttributes(td.ClrType, loc);
       } //foreach td
-    }
-
-    private void LinkImplementedInterfaces() {
-      foreach (var typeDef in _model.Types) {
-        if (typeDef.ClrType == null) //exclude Intro objects and special types
-          continue;
-        if (!(typeDef is ComplexTypeDef complexType)) // complex types - object types or interfaces - can implement interfaces
-          continue; 
-        var intTypes = complexType.ClrType.GetInterfaces();
-        foreach (var iType in intTypes) {
-          var iTypeDef = (InterfaceTypeDef)_model.GetTypeDef(iType);
-          if (iTypeDef != null) {
-            complexType.Implements.Add(iTypeDef);
-            if (complexType is ObjectTypeDef objTypeDef)
-              iTypeDef.PossibleTypes.Add(objTypeDef);
-          }
-        }
-      } //foreach typeDef
     }
 
     private void BuildInputObjectFields(InputObjectTypeDef inpTypeDef) {
