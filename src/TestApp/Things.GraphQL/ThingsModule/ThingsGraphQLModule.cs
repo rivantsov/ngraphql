@@ -18,7 +18,7 @@ namespace Things.GraphQL {
              typeof(ThingForIntfEntity_), typeof(OtherThingWrapper_), typeof(ThingX_));
       base.InputTypes.Add(typeof(InputObj), typeof(InputObjWithEnums), typeof(InputObjParent),         
         typeof(InputObjChild),  typeof(InputObjWithList), typeof(InputObjWithMap));
-      base.InterfaceTypes.Add(typeof(INamedObj), typeof(IObjWithId));
+      base.InterfaceTypes.Add(typeof(INamedObj), typeof(IObjWithId), typeof(IIdNameIntf), typeof(IIdNameOtherThingsIntf));
       base.UnionTypes.Add(typeof(ThingsUnion));
 
       base.QueryType = typeof(IThingsQuery);

@@ -77,6 +77,7 @@ namespace NGraphQL.Model.Construction {
         case TypeKind.Interface:
           type_.Fields = new List<__Field>();
           type_.PossibleTypes = new List<__Type>();
+          type_.Interfaces = new List<__Type>();
           break;
 
         case TypeKind.InputObject:

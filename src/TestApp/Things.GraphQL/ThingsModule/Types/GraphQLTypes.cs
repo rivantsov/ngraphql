@@ -16,6 +16,7 @@ namespace Things.GraphQL.Types {
   }
 
   /// <summary>A sample GraphQL output object.</summary>
+  [Implements(typeof(IIdNameOtherThingsIntf))]
   public class Thing_ : ThingBase_, INamedObj, IObjWithId {
     /// <summary>The description of the thing.</summary>
     [Null]
@@ -35,7 +36,7 @@ namespace Things.GraphQL.Types {
     public OtherThing_ MainOtherThing;
 
     [Resolver(nameof(ThingsResolvers.GetOtherThings))]
-    public IList<OtherThing_> otherThings;
+    public IList<OtherThing_> OtherThings;
 
     // An example of handling a field with parameters, with intent to use it in strongly-typed client
     // We define 2 members: GetRandoms method that defines the parameters of the field; we set its
@@ -154,6 +155,21 @@ namespace Things.GraphQL.Types {
     int Id { get; }
   }
 
+  // advanced interfaces - intf implement intfaces, covariance of impl
+  public interface IIdNameIntf {
+    int Id { get; }
+    string Name { get; }
+  }
+
+  // An example of covariant implementation of interface field. Covariance and type compatibility: IList<NamedObj> <=> IList<Thing>
+  [Implements(typeof(IIdNameIntf))]
+  public interface IIdNameOtherThingsIntf {
+    int Id { get; }
+    string Name { get; }
+    IList<INamedObj> OtherThings { get; }
+  }
+
+  // unions 
   public class ThingsUnion : Union<Thing_, OtherThing_> {
     public ThingsUnion(Thing value) {
       Value = value;

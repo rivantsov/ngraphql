@@ -162,23 +162,6 @@ query {
     }
 
     [TestMethod]
-    public async Task Test_Misc_Interfaces() {
-      TestEnv.LogTestMethodStart();
-      string query;
-      GraphQLResponse resp;
-
-      TestEnv.LogTestDescr(@" handling Interface return types.");
-      query = @"
-query { 
-        # return type is [NamedObj], NamedObj is interface
-  list: getSomeNamedObjects() { __typename, name }
-}";
-      resp = await ExecuteAsync(query);
-      var resList = resp.GetValue<IList>("list");
-      Assert.AreEqual(2, resList.Count, "Expected 2 objects");
-    }
-
-    [TestMethod]
     public async Task Test_Misc_MultiTypeMapping() {
       TestEnv.LogTestMethodStart();
       string query;
