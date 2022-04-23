@@ -25,7 +25,12 @@ namespace NGraphQL.Model.Construction {
           .Where(td => td.Scalar.IsCustom).ToList(); 
       foreach(var sd in scalarTypes) {
         AppendDescr(sd.Description);
-        _builder.AppendLine("scalar " + sd.Name);
+        _builder.Append("scalar " + sd.Name);
+        if (!string.IsNullOrWhiteSpace(sd.Scalar.SpecifiedByUrl)) {
+          var url  = this.Escape(sd.Scalar.SpecifiedByUrl);
+          _builder.Append($" @specifiedBy(url: \"{url}\")");
+        }
+        _builder.AppendLine();
       }
       _builder.AppendLine();
 

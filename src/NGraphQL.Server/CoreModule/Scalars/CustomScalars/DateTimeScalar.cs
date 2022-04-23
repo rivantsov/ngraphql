@@ -5,12 +5,12 @@ using NGraphQL.Server.Parsing;
 
 namespace NGraphQL.Core.Scalars {
 
-  public class DateTimeScalar : Scalar {
+  public class DateTimeScalar : CustomScalar {
 
     public DateTimeScalar() : this("DateTime") {
       IsDefaultForClrType = true;
     }
-    public DateTimeScalar(string name) : base(name, "DateTime scalar", typeof(DateTime), isCustom: true) { }
+    public DateTimeScalar(string name) : base(name, "DateTime scalar", typeof(DateTime)) { }
 
     public override object ParseToken(RequestContext context, TokenData token) {
       switch(token.TermName) {

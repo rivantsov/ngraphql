@@ -1,13 +1,13 @@
 ﻿using System;
-
+using NGraphQL.CodeFirst;
 using NGraphQL.Server.Execution;
 using NGraphQL.Server.Parsing;
 
 namespace NGraphQL.Core.Scalars {
 
-  public class TimeScalar : Scalar {
+  public class TimeScalar : CustomScalar {
 
-    public TimeScalar() : base("Time", "Time scalar", typeof(TimeSpan), isCustom: true) {  }
+    public TimeScalar() : base("Time", "Time scalar", typeof(TimeSpan)) {  }
 
     public override object ParseToken(RequestContext context, TokenData token) {
       switch(token.TermName) {

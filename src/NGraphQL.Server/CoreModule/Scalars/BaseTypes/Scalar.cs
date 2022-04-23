@@ -15,6 +15,10 @@ namespace NGraphQL.Core.Scalars {
     public Type[] CanConvertFrom;
     public bool CanHaveSelectionSubset { get; protected set; }
 
+    public const string DefaultSpecifiedBy = "https://github.com/rivantsov/ngraphql/wiki";
+    public string SpecifiedByUrl = DefaultSpecifiedBy;
+
+
     public Scalar(string name, string description, Type defaultClrType, bool isCustom = true) {
       Name = name;
       Description = description;

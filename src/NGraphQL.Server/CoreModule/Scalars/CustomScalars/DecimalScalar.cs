@@ -1,10 +1,11 @@
 ﻿using System;
+using NGraphQL.CodeFirst;
 using NGraphQL.Server.Execution;
 using NGraphQL.Server.Parsing;
 
 namespace NGraphQL.Core.Scalars {
 
-  public class DecimalScalar : Scalar {
+  public class DecimalScalar : CustomScalar {
 
     public DecimalScalar() : base("Decimal", "Decimal scalar", typeof(decimal)) {
       CanConvertFrom = new[] { typeof(Single), typeof(double), typeof(int), typeof(long) };

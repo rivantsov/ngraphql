@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using NGraphQL.CodeFirst;
 using NGraphQL.Model.Request;
 using NGraphQL.Server;
 using NGraphQL.Server.Execution;
@@ -9,9 +10,9 @@ using NGraphQL.Server.Execution;
 namespace NGraphQL.Core.Scalars {
 
   /// <summary>Represents a Dictionary[string, object] type (Map in JavaScript). </summary>
-  public class MapScalar: Scalar {
+  public class MapScalar: CustomScalar {
 
-    public MapScalar(): base("Map", "Map (dictionary) scalar", typeof(Dictionary<string, object>), isCustom: true) {
+    public MapScalar(): base("Map", "Map (dictionary) scalar", typeof(Dictionary<string, object>)) {
       base.CanHaveSelectionSubset = true; 
     }
 

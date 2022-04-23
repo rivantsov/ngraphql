@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using NGraphQL.CodeFirst;
 using NGraphQL.Server.Execution;
 
 namespace NGraphQL.Core.Scalars {
 
-  public class DateScalar: Scalar {
+  public class DateScalar: CustomScalar {
 
-    public DateScalar(): base("Date", "Date scalar", typeof(DateTime), isCustom: true) {
+    public DateScalar(): base("Date", "Date scalar", typeof(DateTime)) {
       IsDefaultForClrType = false; 
     }
 

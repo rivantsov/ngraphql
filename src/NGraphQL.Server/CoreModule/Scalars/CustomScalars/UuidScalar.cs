@@ -1,11 +1,13 @@
 ﻿using System;
+using NGraphQL.CodeFirst;
 using NGraphQL.Server.Execution;
 using NGraphQL.Server.Parsing;
 
 namespace NGraphQL.Core.Scalars {
-  public class UuidScalar : Scalar {
 
-    public UuidScalar() : base("Uuid", "Uuid scalar", typeof(Guid), isCustom: true) { }
+  public class UuidScalar : CustomScalar {
+
+    public UuidScalar() : base("Uuid", "Uuid scalar", typeof(Guid)) { }
 
     public override object ParseToken(RequestContext context, TokenData token) {
       switch(token.TermName) {

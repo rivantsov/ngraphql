@@ -1,12 +1,13 @@
 ﻿using System;
+using NGraphQL.CodeFirst;
 using NGraphQL.Server.Execution;
 using NGraphQL.Server.Parsing;
 
 namespace NGraphQL.Core.Scalars {
 
-  public class DoubleScalar : Scalar {
+  public class DoubleScalar : CustomScalar {
 
-    public DoubleScalar() : base("Double", "Double scalar", typeof(double), isCustom: true) {
+    public DoubleScalar() : base("Double", "Double scalar", typeof(double)) {
       CanConvertFrom = new[] { typeof(Single), typeof(int), typeof(long), typeof(Decimal) }; 
     }
 

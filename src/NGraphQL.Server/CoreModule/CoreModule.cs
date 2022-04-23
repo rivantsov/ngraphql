@@ -28,9 +28,14 @@ namespace NGraphQL.Core {
           DirectiveLocation.Field | DirectiveLocation.FragmentSpread | DirectiveLocation.InlineFragment,
           "Conditional field skip.", 
           handlerType: typeof(SkipDirectiveHandler), listInSchema: false);
+      this.RegisterDirective("specifiedBy", nameof(SpecifiedBySignature),
+          DirectiveLocation.Scalar,
+          "Documentation link for a custom scalar.",
+          handlerType: typeof(SpecifiedByDirectiveHandler), listInSchema: false);
     }
 
     internal static void DeprecatedSignature(string reason) { }
     internal static void IncludeSkipSignature(bool @if) { }
+    internal static void SpecifiedBySignature(string url) { }
   }
 }

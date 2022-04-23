@@ -1,4 +1,5 @@
 ﻿using System;
+using NGraphQL.CodeFirst;
 using NGraphQL.Server.Execution;
 
 namespace NGraphQL.Core.Scalars {
@@ -6,7 +7,8 @@ namespace NGraphQL.Core.Scalars {
   public class IdScalar : StringScalar {
 
     public IdScalar() : base("ID", "ID scalar", isCustom: true) {
-      IsDefaultForClrType = false; 
+      IsDefaultForClrType = false;
+      SpecifiedByUrl = DefaultSpecifiedBy;      
     }
 
     public override object ConvertInputValue(RequestContext context, object value) {

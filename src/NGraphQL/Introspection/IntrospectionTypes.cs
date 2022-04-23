@@ -47,6 +47,10 @@ namespace NGraphQL.Introspection {
     [Null]
     public __Type OfType;
 
+    // Scalar only 
+    [Null]
+    public string SpecifiedBy; 
+
     [GraphQLName("fields")]
     public IList<__Field> GetFields(bool includeDeprecated = true) {
       throw new NotImplementedException("GetFields is a server-side method and should not be called directly.");

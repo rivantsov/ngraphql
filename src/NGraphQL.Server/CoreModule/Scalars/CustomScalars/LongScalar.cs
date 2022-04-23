@@ -1,12 +1,13 @@
 ﻿using System;
+using NGraphQL.CodeFirst;
 using NGraphQL.Server.Execution;
 using NGraphQL.Server.Parsing;
 
 namespace NGraphQL.Core.Scalars {
 
-  public class LongScalar : Scalar {
+  public class LongScalar : CustomScalar {
 
-    public LongScalar() : base("Long", "Long scalar", typeof(long), isCustom: true) {
+    public LongScalar() : base("Long", "Long scalar", typeof(long)) {
       CanConvertFrom = new[] { typeof(int) };
     }
 
