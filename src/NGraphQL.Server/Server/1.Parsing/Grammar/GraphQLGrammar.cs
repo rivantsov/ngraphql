@@ -134,6 +134,7 @@ namespace NGraphQL.Server.Parsing {
       var dirName = new NonTerminal(TermNames.DirName, "@" + name);
       var dir = new NonTerminal("dir");
       var dirListOpt = new NonTerminal(TermNames.DirListOpt);
+      var repeatableOpt = new NonTerminal("repeatableOpt", "repeatable" | Empty);
 
       var scalarTypeExt = new NonTerminal("scalarTypeExt");
       var objTypeExt = new NonTerminal("objTypeExt");
@@ -222,7 +223,7 @@ namespace NGraphQL.Server.Parsing {
       aliasedName.Rule = name + colon + name | name; //optional alias
 
       //directives
-      dirDef.Rule = descrOpt + "directive" + dirName + argDefsOpt + "on" + pipeOpt + dirLocs;
+      dirDef.Rule = descrOpt + "directive" + dirName + argDefsOpt + repeatableOpt + "on" + pipeOpt + dirLocs;
       argDefsOpt.Rule = Empty | "(" + argDefList + ")";
       argDefList.Rule = MakeStarRule(argDefList, inputValueDef);
       inputValueDef.Rule = descrOpt + name + colon + typeRef + dftValueOpt + dirListOpt;

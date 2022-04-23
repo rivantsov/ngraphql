@@ -11,20 +11,20 @@ namespace NGraphQL.Model {
   public static class DirectiveRegistrationExtensions {
 
     public static void RegisterDirective(this GraphQLModule module, string name, string signatureMethodName,
-           DirectiveLocation locations, string description = null, Type handlerType = null, bool listInSchema = true) {
+           DirectiveLocation locations, string description = null, Type handlerType = null, bool isCustom = true, bool isRepeatable = false) {
       var method = module.GetType().GetMethod(signatureMethodName,
         BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance);
       if (method == null)
         throw new ArgumentException($"RegisterDirective, name={name}: method {signatureMethodName} not found in module {module.Name}");
-      RegisterDirective(module, name, method, locations, description, handlerType, listInSchema);
+      RegisterDirective(module, name, method, locations, description, handlerType, isCustom, isRepeatable);
     }
 
     public static void RegisterDirective(this GraphQLModule module, string name, MethodInfo signature,
-           DirectiveLocation locations, string description = null, Type handlerType = null, bool listInSchema = true) {
+           DirectiveLocation locations, string description = null, Type handlerType = null, bool isCustom = true, bool isRepeatable = false) {
       if (signature == null)
         throw new ArgumentException("RegisterDirective method: signature parameter may not be null.");
       var reg = new DirectiveRegistration() {
-        Name = name, Signature = signature, Locations = locations, Description = description, ListInSchema = listInSchema
+        Name = name, Signature = signature, Locations = locations, Description = description, IsCustom = isCustom, IsRepeatable = isRepeatable 
       };
       module.Directives.Add(reg);
       if (handlerType != null)
@@ -37,7 +37,7 @@ namespace NGraphQL.Model {
         throw new ArgumentException(
           $"RegisterDirective method: directive attribute must be subclass of {nameof(directiveAttributeType)}");
       var reg = new DirectiveRegistration() {
-        Name = name, AttributeType = directiveAttributeType, Locations = locations, Description = description, ListInSchema = listInSchema
+        Name = name, AttributeType = directiveAttributeType, Locations = locations, Description = description, IsCustom = listInSchema
       };
       module.Directives.Add(reg);
       if (handlerType != null)

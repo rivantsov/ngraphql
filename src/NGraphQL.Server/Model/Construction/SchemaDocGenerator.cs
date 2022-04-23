@@ -20,19 +20,8 @@ namespace NGraphQL.Model.Construction {
       _model = model;
       _builder = new StringBuilder();
 
-      // custom scalar types 
-      var scalarTypes = SelectTypes<ScalarTypeDef>(TypeKind.Scalar)
-          .Where(td => td.Scalar.IsCustom).ToList(); 
-      foreach(var sd in scalarTypes) {
-        AppendDescr(sd.Description);
-        _builder.Append("scalar " + sd.Name);
-        if (!string.IsNullOrWhiteSpace(sd.Scalar.SpecifiedByUrl)) {
-          var url  = this.Escape(sd.Scalar.SpecifiedByUrl);
-          _builder.Append($" @specifiedBy(url: \"{url}\")");
-        }
-        _builder.AppendLine();
-      }
-      _builder.AppendLine();
+      AppendCustomDirectiveDeclarations();
+      AppendCustomScalarDeclarations();
 
       // enums 
       var enumDefs = SelectTypes<EnumTypeDef>(TypeKind.Enum); 
@@ -121,6 +110,50 @@ namespace NGraphQL.Model.Construction {
       }
 
       return _builder.ToString(); 
+    }
+
+    private void AppendCustomDirectiveDeclarations() {
+      var dirs = _model.Directives.Values.Where(d => d.Registration.IsCustom).ToList();
+      if (dirs.Count == 0)
+        return;
+      foreach (var dirDef in dirs) {
+        AppendDescr(dirDef.Description);
+        _builder.Append("directive @" + dirDef.Name);
+        if (dirDef.Args.Count > 0) {
+          var argsToPrint = dirDef.Args;
+          _builder.Append(" (");
+          for (int i = 0; i < argsToPrint.Count; i++) {
+            var arg = argsToPrint[i];
+            if (i > 0)
+              _builder.Append(", ");
+            Append(arg);
+          }
+          _builder.Append(")");
+        }
+        if (dirDef.Registration.IsRepeatable)
+          _builder.Append(" repeatable");
+        var locs = dirDef.Registration.Locations.ToString().Replace(",", " |");
+        _builder.Append(" on " + locs);
+        _builder.AppendLine();
+      }
+      _builder.AppendLine();
+    }
+
+    private void AppendCustomScalarDeclarations() {
+      var scalarTypes = SelectTypes<ScalarTypeDef>(TypeKind.Scalar)
+          .Where(td => td.Scalar.IsCustom).ToList();
+      if (scalarTypes.Count == 0)
+        return;
+      foreach (var sd in scalarTypes) {
+        AppendDescr(sd.Description);
+        _builder.Append("scalar " + sd.Name);
+        if (!string.IsNullOrWhiteSpace(sd.Scalar.SpecifiedByUrl)) {
+          var url = this.Escape(sd.Scalar.SpecifiedByUrl);
+          _builder.Append($" @specifiedBy(url: \"{url}\")");
+        }
+        _builder.AppendLine();
+      }
+      _builder.AppendLine();
     }
 
     private void AppendDirs(GraphQLModelObject modelObj) {

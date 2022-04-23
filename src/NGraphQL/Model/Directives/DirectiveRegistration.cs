@@ -11,7 +11,8 @@ namespace NGraphQL.Model {
     public DirectiveLocation Locations;
     public Type AttributeType; // for type system directives defined by attributes
     public MethodBase Signature; // for query directives, defined by method signature
-    public bool ListInSchema;
+    public bool IsCustom;
+    public bool IsRepeatable;
   }
 
   // Directive handler (implementation) is defined separately from directive itself.
