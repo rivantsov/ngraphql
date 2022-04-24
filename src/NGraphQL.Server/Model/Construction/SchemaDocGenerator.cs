@@ -44,7 +44,7 @@ namespace NGraphQL.Model.Construction {
       var intfTypes = SelectTypes<InterfaceTypeDef>(TypeKind.Interface);
       foreach(var tDef in intfTypes) {
         AppendDescr(tDef.Description);
-        _builder.AppendLine("interface " + tDef.Name);
+        _builder.Append("interface " + tDef.Name);
         if (tDef.Implements.Count > 0) {
           _builder.Append(" implements ");
           var intfList = string.Join(" & ", tDef.Implements.Select(iDef => iDef.Name));
