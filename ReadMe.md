@@ -45,10 +45,10 @@ See the [Wiki pages](https://github.com/rivantsov/ngraphql/wiki) for this projec
 ##  Limitations
 * *Code-first only, no schema-first scenario*. Implementing a working GraphQL API requires creating a number of detailed c#/.NET artefacts that cannot be directly derived from the Schema document. The complete schema-first scenario is not feasible.
 
-* Subscriptions are not implemented yet - coming in the future
+* Subscriptions are not supported directly, only at GraphQL parsing/invocation level. The actual bi-directional channel (websockets) is expected to be implemented in a separate library. A sample and a reference implementation is planned in the future.  
 
 ## System requirements
-Visual Studio 2019, .NET Standard 2.0, .NET Core 3.1 
+Visual Studio 2022+, .NET Standard 2.0, fully compatible with .NET 5, 6 and up.  
 
 ## Other GraphQL on .NET solutions
 * [GraphQL DotNet](https://github.com/graphql-dotnet/graphql-dotnet)
