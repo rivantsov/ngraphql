@@ -3,7 +3,7 @@
 **NGraphQL** is a framework for implementing [GraphQL](https://graphql.org/) APIs in .NET. It provides server- and client-side components.  
 
 ## Features
-* Conforms to [GraphQL Specification, Oct 2021 version](https://spec.graphql.org/October2021/).
+* Conforms to [GraphQL Specification, Oct 2021 Edition](https://spec.graphql.org/October2021/).
 * GraphQL model is defined using plain c# (POCO) classes decorated with some attributes. Unlike other .NET GraphQL solutions, *NGraphQL*-based API definitions look and feel like real .NET artifacts - strongly typed, compact and readable.   
 * Server and client components. ASP.NET Core -based HTTP server implementation following the standard "serving over HTTP" rules 
 * Light-weight but capable GraphQL Client - supports both dynamic-type objects for return data, or strongly-typed objects by directly using the GraphQL c# classes from the model. 
