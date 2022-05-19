@@ -269,7 +269,7 @@ namespace NGraphQL.Server.Parsing {
       constListBr.Rule = "[" + constList + "]";
       constList.Rule = MakeStarRule(constList, val);
       constInpObj.Rule = "{" + constInpObjFldList + "}";
-      constInpObjFldList.Rule = MakePlusRule(constInpObjFldList, constObjFld);
+      constInpObjFldList.Rule = MakeStarRule(constInpObjFldList, constObjFld);
       constObjFld.Rule = name + colon + val;
 
       // schemaExt
