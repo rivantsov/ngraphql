@@ -43,6 +43,8 @@ namespace Things.GraphQL.Types {
     [Resolver("EchoInputObject")]
     string EchoInputObj(InputObj inpObj);
 
+    string EchoInputObjWithNulls(InputObjWithNulls inpObj);
+
     // matched with resolver using [ResolvesField(field)] attribute on resolver method
     string EchoInputObjWithEnums(InputObjWithEnums inpObj);
 

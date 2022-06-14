@@ -111,6 +111,15 @@ namespace Things.GraphQL.Types {
     public override string ToString() => $"id:{Id},name:{Name},num:{Num}";
   }
 
+  // used in test for fix for bug in issue #27 (all null fields cause error)
+  public class InputObjWithNulls {
+    public int? Id;
+    [Null] public string Name;
+    // ToString is used in one of the resolvers
+    public override string ToString() => $"id:{Id},name:{Name}";
+  }
+
+
   public class InputObjWithEnums {
     public TheFlags Flags;
     public ThingKind Kind;
@@ -145,7 +154,6 @@ namespace Things.GraphQL.Types {
   public class InputObjWithMap {
     public Dictionary<string, object> Map;
   }
-
 
   public interface INamedObj {
     string Name { get; }

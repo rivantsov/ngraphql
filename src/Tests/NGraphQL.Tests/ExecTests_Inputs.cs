@@ -100,6 +100,15 @@ query myQuery($inpObj: InputObj!) {
       resp = await ExecuteAsync(query, vars);
       var echoInpObj = resp.GetValue<string>("echoInputObj");
       Assert.AreEqual("id:123,name:SomeName,num:456", echoInpObj); //this is InputObj.ToString()
+
+      TestEnv.LogTestDescr("Buf fix #27: empty input object as argument.");
+      query = @"
+query { 
+  res: echoInputObjWithNulls(inpObj: {} )  # returns inpObj.ToString()
+}";
+      resp = await ExecuteAsync(query);
+      result = (string)resp.Data["res"];
+      Assert.AreEqual("id:,name:", result, "Result mismatch");
     }
 
     [TestMethod]
