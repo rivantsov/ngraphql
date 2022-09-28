@@ -12,7 +12,8 @@ namespace Things.GraphQL.Types {
     /// <summary>The name of the thing.</summary>
     public string Name { get; set; }
     // testing bug #13, field in base class is not mapped to resolver, even if there's mapping expr to entity
-    public string StrField; 
+    public string StrField;
+
   }
 
   /// <summary>A sample GraphQL output object.</summary>
@@ -54,7 +55,8 @@ namespace Things.GraphQL.Types {
 
     [Null] public OtherThingWrapper_ OtherThingWrapped;
 
-    [Null] public Dictionary<string, object> Props; 
+    [Null] public Dictionary<string, object> Props;
+
   }
 
   // A second GraphQL type mapped to Thing entity. Test of mapping of one entity type to multiple 
@@ -107,6 +109,10 @@ namespace Things.GraphQL.Types {
     public string Name;
     [DeprecatedDir("Num is deprecated. Esc chars: \", \\ ")] // to test escaping in strings
     public int? Num { get; set; }
+
+    [Ignore]
+    public object IgnoredProp;
+
     // ToString is used in one of the resolvers
     public override string ToString() => $"id:{Id},name:{Name},num:{Num}";
   }

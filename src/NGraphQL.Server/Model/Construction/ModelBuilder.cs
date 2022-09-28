@@ -70,6 +70,10 @@ namespace NGraphQL.Model.Construction {
       if (_model.HasErrors)
         return;
 
+      CompleteInitScalars();
+      if (_model.HasErrors)
+        return;
+
       var schemaGen = new SchemaDocGenerator();
       _model.SchemaDoc = schemaGen.GenerateSchema(_model);
     }
@@ -156,6 +160,9 @@ namespace NGraphQL.Model.Construction {
       var members = inpTypeDef.ClrType.GetFieldsProps();
       foreach (var member in members) {
         var attrs = GetAllAttributesAndAdjustments(member);
+        var ignoreAttr = attrs.Find<IgnoreAttribute>();
+        if (ignoreAttr != null)
+          continue;
         var mtype = member.GetMemberReturnType();
         var typeRef = GetMemberGraphQLTypeRef(mtype, member, $"Field {inpTypeDef.Name}.{member.Name}");
         if (typeRef == null)
@@ -262,6 +269,14 @@ namespace NGraphQL.Model.Construction {
       //  objects, so their indexes changed
       ReassignFieldIndexes(rootObjTypeDef); 
       return rootObjTypeDef;
+    }
+
+    // complete initialization of scalars, provide them with copy of the model;
+    // Ex: AnyScalar uses Model to get refs to other scalars.
+    private void CompleteInitScalars() {
+      foreach (var tdef in _model.Types)
+        if (tdef is ScalarTypeDef stdef)
+          stdef.Scalar.CompleteInit(_model); 
     }
 
   } //class

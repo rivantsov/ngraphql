@@ -32,10 +32,9 @@ namespace NGraphQL.Core.Scalars {
       if(value == null)
         return null;
       var dt = (DateTime)value; 
-      if (dt.TimeOfDay == TimeSpan.Zero) {
-        return dt.ToString("yyyy-MM-dd");
-      }
-      return dt.ToString("s"); // sortable datetime format, ex: 2009-06-15T13:45:30
+      if (dt.TimeOfDay == TimeSpan.Zero)
+        return Quote(dt.ToString("yyyy-MM-dd"));
+      return Quote(dt.ToString("s")); // sortable datetime format, ex: 2009-06-15T13:45:30
     }
 
     public override object ConvertInputValue(RequestContext context, object value) {
@@ -49,5 +48,9 @@ namespace NGraphQL.Core.Scalars {
       throw new Exception($"Invalid DateTime value: '{value}'");
     }
 
+    private string Quote(string v) {
+      const string q = "'";
+      return q + v + q; 
+    }
   } //class
 }

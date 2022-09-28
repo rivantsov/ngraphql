@@ -21,7 +21,7 @@ namespace NGraphQL.Model.Construction {
           var scalar = (Scalar)Activator.CreateInstance(scalarType);
           var sTypeDef = new ScalarTypeDef(scalar, module);
           RegisterTypeDef(sTypeDef);
-        }
+        } 
       }
       return !_model.HasErrors;
     }

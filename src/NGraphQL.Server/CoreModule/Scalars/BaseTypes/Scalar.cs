@@ -1,5 +1,6 @@
 ﻿using System;
 using NGraphQL.CodeFirst;
+using NGraphQL.Model;
 using NGraphQL.Model.Request;
 using NGraphQL.Server;
 using NGraphQL.Server.Execution;
@@ -7,6 +8,7 @@ using NGraphQL.Server.Execution;
 namespace NGraphQL.Core.Scalars {
 
   public class Scalar {
+    public GraphQLApiModel Model { get; private set; } //assigned at CompleteInit
     public readonly string Name;
     public readonly string Description;
     public Type DefaultClrType;
@@ -49,6 +51,10 @@ namespace NGraphQL.Core.Scalars {
 
     public virtual object ToOutput(IFieldContext context, object value) {
       return value;
+    }
+
+    public virtual void CompleteInit(GraphQLApiModel model) {
+      Model = model;  
     }
 
   }

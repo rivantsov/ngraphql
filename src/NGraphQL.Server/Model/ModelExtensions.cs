@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using NGraphQL.Core;
+using NGraphQL.Core.Scalars;
 using NGraphQL.Introspection;
 
 namespace NGraphQL.Model {
