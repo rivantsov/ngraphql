@@ -7,14 +7,14 @@ using NGraphQL.Model;
 
 namespace NGraphQL.Core {
 
-  /// <summary>Core module defines standard and custom scalars; @include and @skip directives.</summary>
+  /// <summary>Core module defines standard and some custom scalars, and standard directives.</summary>
   public class CoreModule : GraphQLModule {
 
     public CoreModule() {
       this.ScalarTypes.AddRange(new Type[] {
         typeof(StringScalar), typeof(IntScalar), typeof(LongScalar), typeof(FloatScalar), typeof(DoubleScalar),
         typeof(BooleanScalar), typeof(IdScalar), typeof(DateTimeScalar), typeof(DateScalar), typeof(TimeScalar),
-        typeof(UuidScalar), typeof(DecimalScalar), typeof(MapScalar)
+        typeof(UuidScalar), typeof(DecimalScalar), typeof(MapScalar), typeof(AnyScalar)
       });
       // Directives 
       this.RegisterDirective("deprecated", typeof(DeprecatedDirAttribute),

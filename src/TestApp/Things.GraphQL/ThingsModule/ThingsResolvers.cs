@@ -90,9 +90,15 @@ namespace Things.GraphQL {
     }
 
 
-    public Dictionary<string, object> EchoInputObjWithMap(IFieldContext context, InputObjWithMap inp) {
+    public Dictionary<string, object> EchoInputObjWithMap(IFieldContext context, InputObjWithMapAny inp) {
       return inp.Map;
     }
+
+    // Note: after deserialization, for unknown objects (not primitives) the AnyValue field contains JObject, not IDictionary<>
+    public object[] EchoInputObjectsWithAny(IFieldContext context, InputObjWithMapAny[] inp) {
+      return inp.Select(o => o.AnyValue).ToArray();
+    }
+
 
     [ResolvesField(nameof(IThingsQuery.EchoInputObjWithEnums))]
     public string EchoInputObjectWithEnums(IFieldContext context, InputObjWithEnums inpObj) {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using NGraphQL.CodeFirst;
 using NGraphQL.Model;
@@ -17,8 +18,8 @@ namespace NGraphQL.Core.Scalars {
     StringScalar _string;
     LongScalar _long;
     DoubleScalar _double;
-    DateScalar _date;
-    UuidScalar _uuid; 
+    DateTimeScalar _date;
+    UuidScalar _uuid;
 
     public AnyScalar(): base("Any", "'Any' scalar (untyped object) ", typeof(object)) {
       base.CanHaveSelectionSubset = true;
@@ -27,97 +28,73 @@ namespace NGraphQL.Core.Scalars {
     public override void CompleteInit(GraphQLApiModel model) {
       base.CompleteInit(model);
       // get refs to other 'real' scalars
-      _map = GetScalarInstance<MapScalar>();
-      _string = GetScalarInstance<StringScalar>();
-      _long = GetScalarInstance<LongScalar>();
-      _double = GetScalarInstance<DoubleScalar>();
-      _date = GetScalarInstance<DateScalar>();
-      _uuid = GetScalarInstance<UuidScalar>();
+      _map = GetScalar<MapScalar>();
+      _string = GetScalar<StringScalar>();
+      _long = GetScalar<LongScalar>();
+      _double = GetScalar<DoubleScalar>();
+      _date = GetScalar<DateTimeScalar>();
+      _uuid = GetScalar<UuidScalar>();
     }
 
     public override string ToSchemaDocString(object value) {
       switch(value) {
         case null: return "null";
-        case string s:
+        case string _:
           return _string.ToSchemaDocString(value);
-        case Int32 i:
-        case long l:
+        case Int32 _:
+        case long _:
           return _long.ToSchemaDocString(value);
-        case Guid g:
+        case double _:
+          return _double.ToSchemaDocString(value);
+        case Guid _:
           return _uuid.ToSchemaDocString(value);
         case DateTime dt:
           return _date.ToSchemaDocString(value);
         default:
-          throw new Exception($"Any scalar error: cannot format (default) value: {value}.");
+          throw new Exception($"Any scalar error: cannot format value: {value}.");
       }
     }
 
     public override object ConvertInputValue(RequestContext context, object value) {
       switch(value) {
-        case JToken jtkn: 
-
+        case null: 
+          return null;
+        case int _:
+        case long _:
+        case Single _:
+        case double _:
+        case string _:
+        case bool _:
+          return value;
+        default:
+          var tname = value.GetType().Name; 
+          if (tname == "JObject" || tname == "JToken")
+            return value; //return as raw JObject
+          throw new Exception($"Not handled case for value type {value.GetType()} in AnyScalar.ConvertInputValue.");
       }
-      return value; 
     }
 
     public override object ParseValue(RequestContext context, ValueSource valueSource) {
       switch(valueSource) {
-        case TokenValueSource tvs: 
-
-        case ListValueSource lvs:
-          return ParseFromList(context, lvs); 
-        case ObjectValueSource ovs:
-          return ParseFromObject(context, ovs);
-        default:
-          throw new InvalidInputException("Invalid input value for Map scalar; expected object or rank 2 array.", valueSource);
-      }
-    }
-
-    private object ParseFromList(RequestContext context, ListValueSource listVs) {
-      var allOk = listVs.Values.All(vs => vs is ListValueSource lvs && lvs.Values.Length == 2 && 
-         lvs.Values[0] is TokenValueSource keyVs && keyVs.TokenData.ParsedValue is string);
-      if(!allOk)
-        throw new InvalidInputException(
-          $"Invalid Map (dict) literal. Expected array of 2-element arrays with key-value pairs.", listVs);
-      // 
-      var dict = new Dictionary<string, object>();
-      foreach(var elemVs in listVs.Values) {
-        var elemListVs = elemVs as ListValueSource;        
-        var keyVs = elemListVs.Values[0] as TokenValueSource;
-        var key = keyVs.TokenData.ParsedValue as string;
-        var valueVs = ParseEntryValue(context, elemListVs.Values[1]);
-        dict[key] = valueVs;         
-      }
-      return dict; 
-    }
-
-    private object ParseFromObject(RequestContext context, ObjectValueSource objVs) {
-      var dict = new Dictionary<string, object>();
-      foreach(var fld in objVs.Fields) {
-        var value = ParseEntryValue(context, fld.Value);
-        dict[fld.Key] = value; 
-      }
-      return dict; 
-    }
-
-    private object ParseEntryValue(RequestContext context, ValueSource vs) {
-      switch(vs) {
         case TokenValueSource tvs:
           return tvs.TokenData.ParsedValue;
         case ListValueSource lvs:
+          return MapScalar.ParseFromList(context, lvs); 
         case ObjectValueSource ovs:
-        default: 
-          throw new InvalidInputException("Array and complex values not supported for Map values.", vs);
+          return MapScalar.ParseFromObject(context, ovs);
+        default:
+          throw new InvalidInputException("'Any' Scalar error: failed to parse value.", valueSource);
       }
     }
 
-    // 
-    private TScalar GetScalarInstance<TScalar>() where TScalar : Scalar {
-      var stype = typeof(TScalar);
-      foreach (var td in Model.Types)
-        if (td is ScalarTypeDef stdef && stdef.Scalar.GetType() == stype)
-          return (TScalar)stdef.Scalar;
-      Model.Errors.Add($"AnyScalar init ERROR: failed to find scalar {stype}.");
+    List<Scalar> _allScalars;
+
+    private TScalar GetScalar<TScalar>() where TScalar : Scalar {
+      _allScalars ??= Model.Types.OfType<ScalarTypeDef>().Select(td => td.Scalar).ToList();
+      var scalar = _allScalars.FirstOrDefault(s => s is TScalar);
+      if (scalar != null)
+        return (TScalar)scalar; 
+      Model.Errors.Add($"AnyScalar init ERROR: failed to find scalar {typeof(TScalar)}.");
       return default;
     }
 

@@ -41,7 +41,7 @@ namespace NGraphQL.Core.Scalars {
       }
     }
 
-    private object ParseFromList(RequestContext context, ListValueSource listVs) {
+    public static object ParseFromList(RequestContext context, ListValueSource listVs) {
       var allOk = listVs.Values.All(vs => vs is ListValueSource lvs && lvs.Values.Length == 2 && 
          lvs.Values[0] is TokenValueSource keyVs && keyVs.TokenData.ParsedValue is string);
       if(!allOk)
@@ -59,7 +59,7 @@ namespace NGraphQL.Core.Scalars {
       return dict; 
     }
 
-    private object ParseFromObject(RequestContext context, ObjectValueSource objVs) {
+    public static object ParseFromObject(RequestContext context, ObjectValueSource objVs) {
       var dict = new Dictionary<string, object>();
       foreach(var fld in objVs.Fields) {
         var value = ParseEntryValue(context, fld.Value);
@@ -68,14 +68,14 @@ namespace NGraphQL.Core.Scalars {
       return dict; 
     }
 
-    private object ParseEntryValue(RequestContext context, ValueSource vs) {
+    public static object ParseEntryValue(RequestContext context, ValueSource vs) {
       switch(vs) {
         case TokenValueSource tvs:
           return tvs.TokenData.ParsedValue;
         case ListValueSource lvs:
         case ObjectValueSource ovs:
         default: 
-          throw new InvalidInputException("Array and complex values not supported for Map values.", vs);
+          throw new InvalidInputException("Failed to parse input value; might be not supported by the Scalar.", vs);
       }
     }
 

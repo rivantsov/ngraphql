@@ -119,6 +119,8 @@ namespace NGraphQL.Server.AspNetCore {
               return jtoken.Value<double>();
             case JTokenType.Boolean:
               return jtoken.Value<bool>();
+            case JTokenType.Object:
+              return jtoken.Value<object>(); 
             default:
               return jtoken.Value<string>(); //let Scalar parse it
           } // switch jtoken.type

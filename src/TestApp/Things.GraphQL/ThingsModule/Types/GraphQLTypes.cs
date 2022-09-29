@@ -157,9 +157,14 @@ namespace Things.GraphQL.Types {
     public int[][] List;
   }
 
-  public class InputObjWithMap {
+  public class InputObjWithMapAny {
+    [Null]
     public Dictionary<string, object> Map;
+    [Null]
+    public object AnyValue; //mapped to Any scalar
   }
+
+  public class OutObjWithMapAny: InputObjWithMapAny { }
 
   public interface INamedObj {
     string Name { get; }
