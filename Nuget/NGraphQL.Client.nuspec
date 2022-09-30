@@ -13,9 +13,9 @@
     <copyright>Copyright Roman Ivantsov</copyright>
     <tags>GraphQL .NET c# Client</tags>
     <dependencies>
-       <group>
+       <group  targetFramework="netstandard2.0" >
          <dependency id="NGraphQL" version="$version$"/>
-          <dependency id="Newtonsoft.Json" version="12.0.3"/>
+         <dependency id="Newtonsoft.Json" version="13.0.1"/>
       </group>	
     </dependencies>
   </metadata>

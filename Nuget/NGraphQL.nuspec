@@ -12,6 +12,9 @@
     <releaseNotes></releaseNotes>
     <copyright>Copyright Roman Ivantsov</copyright>
     <tags>GraphQL .NET c#</tags>
+    <dependencies>
+       <group  targetFramework="netstandard2.0" />
+    </dependencies>    
   </metadata>
   
   <files>

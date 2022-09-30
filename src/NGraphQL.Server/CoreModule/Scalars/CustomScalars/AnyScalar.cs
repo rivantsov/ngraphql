@@ -56,22 +56,15 @@ namespace NGraphQL.Core.Scalars {
     }
 
     public override object ConvertInputValue(RequestContext context, object value) {
-      switch(value) {
-        case null: 
-          return null;
-        case int _:
-        case long _:
-        case Single _:
-        case double _:
-        case string _:
-        case bool _:
-          return value;
-        default:
-          var tname = value.GetType().Name; 
-          if (tname == "JObject" || tname == "JToken")
-            return value; //return as raw JObject
-          throw new Exception($"Not handled case for value type {value.GetType()} in AnyScalar.ConvertInputValue.");
-      }
+      if (value == null)
+        return null;
+      var type = value.GetType();
+      if (type.IsPrimitive)  // bool, float, double, all int types, char
+        return value;
+      var tname = value.GetType().Name;
+      if (type.Name == "JObject" || type.Name == "JToken")
+        return value; //return as raw JObject
+      throw new Exception($"Not handled case for value type {type} in AnyScalar.ConvertInputValue.");
     }
 
     public override object ParseValue(RequestContext context, ValueSource valueSource) {

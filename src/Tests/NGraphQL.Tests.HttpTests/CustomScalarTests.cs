@@ -16,7 +16,7 @@ namespace NGraphQL.Tests.HttpTests {
       TestEnv.Initialize();
     }
 
-    // Used as data for Any scalar test
+    // Used as data for Any, Map scalars test
     public class SomeObj {
       public string Name;
       public int Value;
@@ -53,6 +53,15 @@ query ($inp: [InputObjWithMapAny]!) {
         .Replace(" ", String.Empty).Replace("\"", string.Empty);
       var expected = "123|12.34|abc|{name:Parent,value:456,next:{name:Child,value:567,next:null}}|True|";
       Assert.AreEqual(expected, resStr, "Call result mismatch");
+    }
+
+    [TestMethod]
+    public async Task Test_MapScalar() {
+      TestEnv.LogTestMethodStart();
+
+      TestEnv.LogTestDescr(@" MapScalar test 1; returning Map in field.");
+
+
     }
 
   } //class
