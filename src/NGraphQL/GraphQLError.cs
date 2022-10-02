@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using NGraphQL.CodeFirst;
 
 namespace NGraphQL {
@@ -25,12 +26,19 @@ namespace NGraphQL {
     }
 
     public override string ToString() {
-      var str = Message;
-      if (Path != null)
-        str += " path: [" + string.Join(", ", Path) + "]";
+      var sb = new StringBuilder();
+      sb.AppendLine(Message);
+      if (Path != null && Path.Count > 0)
+        sb.AppendLine($" Path: [ {string.Join(", ", Path)} ]");
       if (Locations != null && Locations.Count > 0)
-        str += $" at: {Locations[0]}";
-      return str;
+        sb.AppendLine($"Locations: {string.Join("; ", Locations)}");
+      if (Extensions != null && Extensions.Count > 0) {
+        sb.AppendLine($"Extensions: [");
+        foreach (var kv in Extensions)
+          sb.AppendLine($"  {kv.Key} = {kv.Value}");
+        sb.AppendLine($"]");
+      }
+      return sb.ToString();
     }
   }
 

@@ -93,14 +93,14 @@ namespace NGraphQL.Server.AspNetCore {
     }
 
     private object ReadScalar(RequestContext context, Scalar scalar, object jsonValue, IList<object> path) {
-      var value = UnwrapSimpleValue(context, jsonValue, path);
+      var value = UnwrapJsonScalarValue(context, jsonValue, path);
       if (value == null)
         return null; 
       var res = scalar.ConvertInputValue(context, value);
       return res; 
     }
 
-    private object UnwrapSimpleValue(RequestContext context, object value, IList<object> path) {
+    private object UnwrapJsonScalarValue(RequestContext context, object value, IList<object> path) {
       switch (value) {
         case null: return null;
         case long lng:
@@ -120,9 +120,11 @@ namespace NGraphQL.Server.AspNetCore {
             case JTokenType.Boolean:
               return jtoken.Value<bool>();
             case JTokenType.Object:
-              return jtoken.Value<object>(); 
+              return jtoken.Value<object>();
+            case JTokenType.Array:
+              return jtoken.Value<object[]>();
             default:
-              return jtoken.Value<string>(); //let Scalar parse it
+              return jtoken.Value<object>(); //let Scalar parse it
           } // switch jtoken.type
         default:
           return value;

@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using Newtonsoft.Json.Linq;
 using NGraphQL.CodeFirst;
 using NGraphQL.Model;
 using NGraphQL.Model.Request;
 using NGraphQL.Server;
 using NGraphQL.Server.Execution;
+using NGraphQL.Utilities;
 
 namespace NGraphQL.Core.Scalars {
 
@@ -61,9 +63,15 @@ namespace NGraphQL.Core.Scalars {
       var type = value.GetType();
       if (type.IsPrimitive)  // bool, float, double, all int types, char
         return value;
-      var tname = value.GetType().Name;
-      if (type.Name == "JObject" || type.Name == "JToken")
-        return value; //return as raw JObject
+      if (type.IsGenericListOrArray(out var elemType, out var rank)) {
+
+      }
+      switch(value) {
+        case string s: return s;
+        case JValue jv: return jv.Value;
+        case JObject jObj: return _map.ConvertInputValue(context, value); 
+      }
+
       throw new Exception($"Not handled case for value type {type} in AnyScalar.ConvertInputValue.");
     }
 

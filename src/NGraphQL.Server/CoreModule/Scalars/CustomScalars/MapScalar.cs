@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Newtonsoft.Json.Linq;
 using NGraphQL.CodeFirst;
 using NGraphQL.Model.Request;
 using NGraphQL.Server;
@@ -25,6 +26,12 @@ namespace NGraphQL.Core.Scalars {
       switch (value) {
         case Dictionary<string, object> dict: 
           return dict;
+        case JValue jv:
+          if (jv.Type == JTokenType.Null)
+            return null; 
+          return jv.Value;
+        case JObject jo:
+          return jo.ToObject<Dictionary<string, object>>();
         default:
           throw new Exception($"Invalid value for type Dictionary<string, object>.");
       }
