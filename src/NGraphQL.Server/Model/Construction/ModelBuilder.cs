@@ -161,8 +161,10 @@ namespace NGraphQL.Model.Construction {
       foreach (var member in members) {
         var attrs = GetAllAttributesAndAdjustments(member);
         var ignoreAttr = attrs.Find<IgnoreAttribute>();
-        if (ignoreAttr != null)
+        if (ignoreAttr != null) {
+          inpTypeDef.IgnoreFields.Add(member.Name);
           continue;
+        }
         var mtype = member.GetMemberReturnType();
         var typeRef = GetMemberGraphQLTypeRef(mtype, member, $"Field {inpTypeDef.Name}.{member.Name}");
         if (typeRef == null)

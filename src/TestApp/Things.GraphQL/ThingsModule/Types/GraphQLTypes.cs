@@ -113,6 +113,9 @@ namespace Things.GraphQL.Types {
     [Ignore]
     public object IgnoredProp;
 
+    [Null]
+    public string NullableProp; 
+
     // ToString is used in one of the resolvers
     public override string ToString() => $"id:{Id},name:{Name},num:{Num}";
   }

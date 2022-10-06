@@ -111,6 +111,8 @@ namespace NGraphQL.Server.AspNetCore {
             return value;
         case JToken jtoken:
           switch (jtoken.Type) {
+            case JTokenType.Null:
+              return null; 
             case JTokenType.String:
               return jtoken.Value<string>();
             case JTokenType.Integer:
@@ -174,7 +176,8 @@ namespace NGraphQL.Server.AspNetCore {
         newPath.Add(prop.Name); 
         var fldDef = inputTypeDef.Fields.FirstOrDefault(f => f.Name == prop.Name);
         if (fldDef == null) {
-          AddError(context, $"Field {prop.Name} not defined on input object {inputTypeDef.Name}.", newPath);
+          if (!inputTypeDef.IgnoreFields.Contains(prop.Name))
+            AddError(context, $"Field {prop.Name} not defined on input object {inputTypeDef.Name}.", newPath);
           continue;
         }
         if (missingFldNamess.Contains(prop.Name))

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NGraphQL.Client;
+using Things.GraphQL.Types;
 
 namespace NGraphQL.Tests.HttpTests {
   using TDict = Dictionary<string, object>;
@@ -107,19 +108,21 @@ query myQuery($boolVal: Boolean, $longVal: Long, $doubleVal: Double, $strVal: St
       resp = await TestEnv.Client.PostAsync(query, varsDict);
       Assert.AreEqual(3, resp.Errors.Count, "Expected 3 errors");
 
-      TestEnv.LogTestDescr("complex object type in a variable.");
+      TestEnv.LogTestDescr("complex object type in a variable."); // ----------------------------------------------
       query = @"
 query myQuery($inpObj: InputObj!) { 
   echoInputObj (inpObj: $inpObj) 
 }";
       varsDict = new TDict();
-      varsDict["inpObj"] = new TDict() { { "id", 123 }, { "num", 456 }, { "name", "SomeName" } };
+      varsDict["inpObj"] = new InputObj() { Id = 123, Num = 456, Name = "SomeName"};
       resp = await TestEnv.Client.PostAsync(query, varsDict);
       resp.EnsureNoErrors();
       var echoInpObj = resp.data.echoInputObj;
       Assert.AreEqual("id:123,name:SomeName,num:456", echoInpObj); //this is InputObj.ToString()
 
-      TestEnv.LogTestDescr("literal object as argument, but with prop values coming from variables.");
+
+
+      TestEnv.LogTestDescr("literal object as argument, but with prop values coming from variables."); //------------------
       query = @"
 query myQuery($num: Int!, $name: String!) { 
   echoInputObj (inpObj: {id: 123, num: $num, name: $name}) 

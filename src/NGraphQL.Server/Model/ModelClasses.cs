@@ -129,6 +129,9 @@ namespace NGraphQL.Model {
 
   public class InputObjectTypeDef : TypeDefBase {
     public List<InputValueDef> Fields = new List<InputValueDef>();
+    // field names to ignore (not post error) when it appears in input json. It might happen if we serialize CLR object
+    // with field(s) marked as Ignore
+    public HashSet<string> IgnoreFields = new HashSet<string>(StringComparer.OrdinalIgnoreCase); 
 
     public InputObjectTypeDef(string name, Type clrType, IList<Attribute> attrs, GraphQLModule module) 
         : base(name, TypeKind.InputObject, clrType, attrs, module) { }
