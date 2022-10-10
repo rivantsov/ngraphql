@@ -59,7 +59,7 @@ namespace NGraphQL.Client {
       var enumType = typeof(TEnum);
       if (!enumType.IsEnum)
         throw new Exception($"Invalid type argument '{enumType}', expected enum.");
-      var handler = KnownEnumTypes.GetEnumHandler(enumType);
+      var handler = EnumHandlersCache.GetEnumHandler(enumType);
       if (handler.IsFlagSet) {
         if (!(value is IList<string> stringList))
           stringList = ((IList)value).OfType<string>().ToList(); 

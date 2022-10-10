@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using NGraphQL.Model;
 
-namespace NGraphQL.Client.Serialization {
-  public static class KnownEnumTypes {
+namespace NGraphQL.Model {
 
-    static Dictionary<Type, EnumHandler> _enumsInfoLookup = new Dictionary<Type, EnumHandler>();
+  public static class EnumHandlersCache {
+
+    static Dictionary<Type, EnumHandler> _handlers = new Dictionary<Type, EnumHandler>();
 
     public static EnumHandler GetEnumHandler(Type enumType) {
-      if (enumType.IsEnum && _enumsInfoLookup.TryGetValue(enumType, out var enumInfo))
+      if (enumType.IsEnum && _handlers.TryGetValue(enumType, out var enumInfo))
         return enumInfo;
       if (!enumType.IsValueType)
         return null;
@@ -16,7 +16,7 @@ namespace NGraphQL.Client.Serialization {
       if (underType != null) {
         enumType = underType;
         // lookup again
-        if (enumType.IsEnum && _enumsInfoLookup.TryGetValue(enumType, out enumInfo))
+        if (enumType.IsEnum && _handlers.TryGetValue(enumType, out enumInfo))
           return enumInfo;
       }
       if (!enumType.IsEnum)
@@ -32,9 +32,9 @@ namespace NGraphQL.Client.Serialization {
       var enumInfo = new EnumHandler(enumType);
       lock (_lock) {
         // copy-add-replace
-        var newDict = new Dictionary<Type, EnumHandler>(_enumsInfoLookup);
+        var newDict = new Dictionary<Type, EnumHandler>(_handlers);
         newDict[enumType] = enumInfo;
-        _enumsInfoLookup = newDict;
+        _handlers = newDict;
       }
       return enumInfo;
     }

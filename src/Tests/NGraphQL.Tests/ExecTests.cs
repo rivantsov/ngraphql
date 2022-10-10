@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace NGraphQL.Tests {
+
   [TestClass]
   public partial class ExecTests {
 

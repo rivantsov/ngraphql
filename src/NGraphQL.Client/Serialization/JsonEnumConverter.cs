@@ -19,8 +19,8 @@ namespace NGraphQL.Client.Serialization {
       if (!objectType.IsValueType)
         return false; 
       // try lookup and register
-      var enumInfo = KnownEnumTypes.GetEnumHandler(objectType); 
-      return enumInfo != null; 
+      var handler = EnumHandlersCache.GetEnumHandler(objectType); 
+      return handler != null; 
     }
 
     public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer) {
@@ -28,8 +28,8 @@ namespace NGraphQL.Client.Serialization {
       var nullable = ReflectionHelper.CheckNullable(ref enumType);
       if (!enumType.IsEnum)
         throw new Exception($"{nameof(JsonEnumConverter)}: unexpected conversion type {enumType}; expected enum.");
-      var enumHandler = KnownEnumTypes.GetEnumHandler(enumType);
-      var enumInfo = KnownEnumTypes.GetEnumHandler(enumType);
+      var enumHandler = EnumHandlersCache.GetEnumHandler(enumType);
+      var enumInfo = EnumHandlersCache.GetEnumHandler(enumType);
       // check null
       if (reader.TokenType == JsonToken.Null) {
         if (!nullable)
@@ -70,7 +70,7 @@ namespace NGraphQL.Client.Serialization {
       var enumType = value.GetType();
       if (!enumType.IsEnum)
         throw new Exception($"{nameof(JsonEnumConverter)}: unexpected conversion type {enumType}; expected enum.");
-      var handler = KnownEnumTypes.GetEnumHandler(enumType);
+      var handler = EnumHandlersCache.GetEnumHandler(enumType);
       if (handler.IsFlagSet) {
         writer.WriteStartArray();
         var strings = handler.ConvertFlagsEnumValueToOutputStringList(value);

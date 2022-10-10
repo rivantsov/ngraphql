@@ -163,8 +163,8 @@ namespace Things.GraphQL.Types {
   public class InputObjWithMapAny {
     [Null]
     public Dictionary<string, object> Map;
-    [Null]
-    public object AnyValue; //mapped to Any scalar
+
+    // [Null]  public object AnyValue; //mapped to Any scalar; Any is not enabled yet
   }
 
   public class OutObjWithMapAny: InputObjWithMapAny { }

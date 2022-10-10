@@ -51,6 +51,16 @@ query {
     }
 
 
+    // Used in Map scalar test
+    public class SomeObj {
+      public string Name;
+      public int Value;
+      public SomeObj Next;
+      public override string ToString() {
+        return $"{Name} {Value} {Next?.ToString()}";
+      }
+    }
+
     [TestMethod]
     public async Task Test_Model_MapScalar() {
       TestEnv.LogTestMethodStart();
@@ -106,45 +116,6 @@ query {
     }
 
 
-    // Used as data for Any scalar test
-    public class SomeObj {
-      public string Name;
-      public int Value;
-      public SomeObj Next;
-      public override string ToString() {
-        return $"{Name} {Value} {Next?.ToString()}";
-      }
-    }
-
-    [TestMethod]
-    public async Task Test_Model_AnyScalar() {
-      TestEnv.LogTestMethodStart();
-      
-      TestEnv.LogTestDescr(@" AnyScalar: returning various values in Any field.");
-      var query = @"
-query ($inp: [InputObjWithMapAny]!) { 
-  res: echoInputObjectsWithAny (inp: $inp)
-}";
-      var someObj = new SomeObj {
-        Name = "Parent", Value = 456, Next = new SomeObj { Name = "Child", Value = 567 }
-      };
-      var inp = new InputObjWithMapAny[] {
-        new InputObjWithMapAny() {AnyValue = 123},
-        new InputObjWithMapAny() {AnyValue = 12.34},
-        new InputObjWithMapAny() {AnyValue = "abc"},
-        new InputObjWithMapAny() {AnyValue = someObj},
-        new InputObjWithMapAny() {AnyValue = true},
-        new InputObjWithMapAny() {AnyValue = null},
-      };
-      var vars = new Dict();
-      vars["inp"] = inp;
-
-      var resp = await ExecuteAsync(query, vars);
-      var resArr = (object[]) resp.Data["res"];
-      var resStr = string.Join("|", resArr);
-      Assert.AreEqual("123|12.34|abc|Parent 456 Child 567 |True|", 
-        resStr, "Call result mismatch");
-    }
 
   }
 }

@@ -12,6 +12,7 @@ using NGraphQL.Server.Execution;
 using NGraphQL.Utilities;
 
 namespace NGraphQL.Core.Scalars {
+  // Oct 22 - currently disabled
 
   /// <summary>Represents an untyped object. </summary>
   public class AnyScalar: CustomScalar {

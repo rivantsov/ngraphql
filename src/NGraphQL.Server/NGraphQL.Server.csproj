@@ -21,6 +21,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="CoreModule\Scalars\CustomScalars\Disabled_AnyScalar.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="CoreModule\Scalars\CustomScalars\Disabled_AnyScalar.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Irony" Version="1.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
