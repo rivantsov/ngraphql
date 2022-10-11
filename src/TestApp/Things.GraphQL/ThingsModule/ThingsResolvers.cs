@@ -90,8 +90,10 @@ namespace Things.GraphQL {
     }
 
 
-    public Dictionary<string, object> EchoInputObjWithMap(IFieldContext context, InputObjWithMapAny inp) {
-      return inp.Map;
+    public Dictionary<string, object> EchoInputObjWithMap(IFieldContext context, InputObjWithCustomScalars inp) {
+      // create copy and return
+      var dict = new Dictionary<string, object>(inp.Map); 
+      return dict;
     }
 
     [ResolvesField(nameof(IThingsQuery.EchoInputObjWithEnums))]

@@ -160,14 +160,17 @@ namespace Things.GraphQL.Types {
     public int[][] List;
   }
 
-  public class InputObjWithMapAny {
+  public class InputObjWithCustomScalars {
     [Null]
     public Dictionary<string, object> Map;
 
+    public long? MaxLong = long.MaxValue;
+    public long? MinLong = long.MinValue; 
     // [Null]  public object AnyValue; //mapped to Any scalar; Any is not enabled yet
   }
 
-  public class OutObjWithMapAny: InputObjWithMapAny { }
+
+  //public class OutObjWithMapAny: InputObjWithCustomScalars { }
 
   public interface INamedObj {
     string Name { get; }

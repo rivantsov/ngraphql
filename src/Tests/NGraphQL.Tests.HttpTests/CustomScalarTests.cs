@@ -45,16 +45,18 @@ query {
       Assert.AreEqual(2, props.Count, "Expected 2 props in Dict"); // 
 
 
-      TestEnv.LogTestDescr(@" MapScalar test 2 - map in Input object; sending map value through variable.");
+      TestEnv.LogTestDescr(@" MapScalar test 2 - map in Input object.");
       query = @"
-query ($map: Map) { 
-  res: echoInputObjWithMap (inp: {map: $map})
+query ($inp: InputObjWithCustomScalars) { 
+  res: echoInputObjWithMap (inp: $inp)
 }";
       var vars = new Dict();
       var nestedMap = new Dict() { { "nestedStr", "NestedStr" }, { "nestedInt", 234 } };
-      var mapVar = new Dict() { { "prop1", "v1" }, { "prop2", 123 }, { "nullV", null }, { "nested", nestedMap } };
-           // "nullV" tests null conv/desrialization
-      vars["map"] = mapVar;
+      var map = new Dict() { { "prop1", "v1" }, { "prop2", 123 }, { "nullV", null }, { "nested", nestedMap } };
+      var inpObj = new InputObjWithCustomScalars() {
+        Map = map, MaxLong = long.MaxValue, MinLong = long.MinValue
+      };
+      vars["inp"] = inpObj;
       resp = await ExecuteAsync(query, vars);
       res = resp.data.res;
       Assert.AreEqual(4, res.Count, "Expected 4 props in Dict");
@@ -88,8 +90,10 @@ query {
     }
 
 
-    public Task<ServerResponse> ExecuteAsync(string query, IDictionary<string, object> vars = null) {
-      return TestEnv.Client.PostAsync(query, vars);
+    public async Task<ServerResponse> ExecuteAsync(string query, IDictionary<string, object> vars = null) {
+      var resp = await TestEnv.Client.PostAsync(query, vars);
+      resp.EnsureNoErrors();
+      return resp; 
     }
 
     /* 

@@ -116,7 +116,7 @@ namespace NGraphQL.Server.AspNetCore {
             case JTokenType.String:
               return jtoken.Value<string>();
             case JTokenType.Integer:
-              return jtoken.Value<int>();
+              return jtoken.Value<long>(); // JTokenType.Int means int or long
             case JTokenType.Float:
               return jtoken.Value<double>();
             case JTokenType.Boolean:

@@ -15,10 +15,10 @@ namespace Things.GraphQL {
       // 1. Register all types
       base.EnumTypes.Add(typeof(ThingKind), typeof(TheFlags));
       base.ObjectTypes.Add(typeof(Thing_), typeof(OtherThing_),
-             typeof(ThingForIntfEntity_), typeof(OtherThingWrapper_), typeof(ThingX_),
-             typeof(OutObjWithMapAny));
+             typeof(ThingForIntfEntity_), typeof(OtherThingWrapper_), typeof(ThingX_));
+      //Note: NGraphQL allows to use input types as output (Object) types
       base.InputTypes.Add(typeof(InputObj), typeof(InputObjWithNulls), typeof(InputObjWithEnums), typeof(InputObjParent),         
-        typeof(InputObjChild),  typeof(InputObjWithList), typeof(InputObjWithMapAny));
+        typeof(InputObjChild),  typeof(InputObjWithList), typeof(InputObjWithCustomScalars));
       base.InterfaceTypes.Add(typeof(INamedObj), typeof(IObjWithId), typeof(IIdNameIntf), typeof(IIdNameOtherThingsIntf));
       base.UnionTypes.Add(typeof(ThingsUnion));
 

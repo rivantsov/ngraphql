@@ -33,7 +33,7 @@ namespace Things.GraphQL.Types {
 
     string EchoEnumArray(TheFlags? flagVals);
 
-    Dictionary<string, object> EchoInputObjWithMap(InputObjWithMapAny inp);
+    Dictionary<string, object> EchoInputObjWithMap(InputObjWithCustomScalars inp);
 
     // the following 2 fields are matched to resolvers in 2 different ways. 
     //  the first field uses [Resolver(methodName)] attribute on the field (in GraphQLQ Query);
