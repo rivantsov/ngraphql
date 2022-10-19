@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace NGraphQL.Model.Construction {
-  // Currently not used, might be used by custom implementations
+  // Used for applying directives
   public class ModelVisitor {
     GraphQLApiModel _model; 
 
@@ -15,8 +15,6 @@ namespace NGraphQL.Model.Construction {
       foreach (var dirDef in _model.Directives.Values)
         Visit(dirDef, action);
       foreach (var typeDef in _model.Types) {
-        // if (!typeDef.IsDataType()) // skip utility types like Query, Mutation etc 
-        //  continue;
         Visit(typeDef, action);
       }
     } //method

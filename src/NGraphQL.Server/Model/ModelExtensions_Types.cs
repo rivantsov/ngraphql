@@ -19,6 +19,7 @@ namespace NGraphQL.Model {
         case TypeKind.Object:
         case TypeKind.Interface:
         case TypeKind.Union:
+        case TypeKind.InputObject:  // Input types can be returned as output
           return true;
         /*
         case TypeKind.Scalar:

@@ -85,6 +85,10 @@ namespace Things.GraphQL {
       return inpObj.ToString();
     }
 
+    public InputObj EchoInputObj2(IFieldContext context, InputObj inpObj) {
+      return inpObj;
+    }
+
     public string EchoInputObjWithNulls(IFieldContext context, InputObjWithNulls inpObj) {
       return inpObj.ToString();
     }

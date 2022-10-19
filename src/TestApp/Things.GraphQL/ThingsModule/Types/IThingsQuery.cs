@@ -43,6 +43,9 @@ namespace Things.GraphQL.Types {
     [Resolver("EchoInputObject")]
     string EchoInputObj(InputObj inpObj);
 
+    // test of using Input type as output
+    InputObj EchoInputObj2(InputObj inpObj);
+
     string EchoInputObjWithNulls(InputObjWithNulls inpObj);
 
     // matched with resolver using [ResolvesField(field)] attribute on resolver method

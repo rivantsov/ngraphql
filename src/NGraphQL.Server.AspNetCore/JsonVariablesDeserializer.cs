@@ -169,7 +169,7 @@ namespace NGraphQL.Server.AspNetCore {
         AddError(context, "Expected Json object segment.", path);
       }
       var clrType = inputTypeDef.ClrType;
-      var missingFldNamess = inputTypeDef.GetRequiredFields();
+      var missingFldNames = inputTypeDef.GetRequiredFields();
       var inputObj = Activator.CreateInstance(clrType);
       foreach (var prop in jObj.Properties()) {
         var newPath = new List<object>(path);
@@ -180,8 +180,8 @@ namespace NGraphQL.Server.AspNetCore {
             AddError(context, $"Field {prop.Name} not defined on input object {inputTypeDef.Name}.", newPath);
           continue;
         }
-        if (missingFldNamess.Contains(prop.Name))
-          missingFldNamess.Remove(prop.Name); 
+        if (missingFldNames.Contains(prop.Name))
+          missingFldNames.Remove(prop.Name); 
         
         var value = ReadValue(context, fldDef.TypeRef, prop.Value, newPath);
         if (value == null && fldDef.TypeRef.IsNotNull) {
@@ -191,8 +191,8 @@ namespace NGraphQL.Server.AspNetCore {
         fldDef.InputObjectClrMember.SetMember(inputObj, value);
       }
       // check that all required fields are provided
-      if (missingFldNamess.Count > 0) {
-        var missingStr = string.Join(", ", missingFldNamess);
+      if (missingFldNames.Count > 0) {
+        var missingStr = string.Join(", ", missingFldNames);
         AddError(context, $"Input object {inputTypeDef.Name}: missing required fields: {missingStr}", path); 
       }
       return inputObj; 
