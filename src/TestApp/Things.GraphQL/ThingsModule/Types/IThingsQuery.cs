@@ -40,11 +40,11 @@ namespace Things.GraphQL.Types {
     //  the other one is using [ResolvesField(fieldName)] attribute on the resolver method. 
     //  Using attribute on resolver method allows you to keep GraphQL type(s) free of 
     // references to resolver classes and any dependency on deep server-side app logic. 
-    [Resolver("EchoInputObject")]
-    string EchoInputObj(InputObj inpObj);
+    [Resolver("EchoInputObjectAsStr")]
+    string EchoInputObjAsString(InputObj inpObj);
 
     // test of using Input type as output
-    InputObj EchoInputObj2(InputObj inpObj);
+    InputObj EchoInputObj(InputObj inpObj);
 
     string EchoInputObjWithNulls(InputObjWithNulls inpObj);
 

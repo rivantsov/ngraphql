@@ -112,7 +112,7 @@ query myQuery($boolVal: Boolean, $longVal: Long, $doubleVal: Double, $strVal: St
       TestEnv.LogTestDescr("complex object type in a variable."); // ----------------------------------------------
       query = @"
 query myQuery($inpObj: InputObj!) { 
-  echoInputObj (inpObj: $inpObj) 
+  result: echoInputObjAsString (inpObj: $inpObj)
 }";
       var inpObj = new InputObj() { Id = 123, Num = 456, Name = "SomeName",
         Flags = TheFlags.FlagOne | TheFlags.FlagThree, Kind = ThingKind.KindTwo, FlagsArray = new TheFlags[] { TheFlags.FlagOne } };
@@ -120,14 +120,15 @@ query myQuery($inpObj: InputObj!) {
       varsDict["inpObj"] = inpObj;
       resp = await TestEnv.Client.PostAsync(query, varsDict);
       resp.EnsureNoErrors();
-      var echoInpObj = resp.data.echoInputObj;
-      //Assert.AreEqual("id:123,name:SomeName,num:456", echoInpObj); //this is InputObj.ToString()
+      string result = resp.data.result;
+      Assert.AreEqual("id:123,name:SomeName,num:456,flags:(FlagOne, FlagThree),kind:KindTwo", result); 
+            //this is InputObj.ToString()
 
 
       TestEnv.LogTestDescr("literal object as argument, but with prop values coming from variables."); //------------------
       query = @"
 query myQuery($num: Int!, $name: String!) { 
-  echoInputObj (inpObj: {id: 123, num: $num, name: $name,  flags: [[FLAG_ONE]], kind: KIND_ONE }) 
+  result: echoInputObjAsString (inpObj: {id: 123, num: $num, name: $name,  flags: [[FLAG_ONE]], kind: KIND_ONE }) 
 }";
       varsDict = new TDict();
       // we cannot use InputObj here, serializer will send first-cap prop names and request will fail
@@ -135,14 +136,12 @@ query myQuery($num: Int!, $name: String!) {
       varsDict["name"] = "SomeName";
       resp = await TestEnv.Client.PostAsync(query, varsDict);
       resp.EnsureNoErrors();
-      var echoInpObj2 = resp.data.echoInputObj;
-      Assert.AreEqual("id:123,name:SomeName,num:456", echoInpObj2); //this is InputObj.ToString()
+      result = resp.data.result;
+      Assert.AreEqual("id:123,name:SomeName,num:456,flags:(FlagOne),kind:KindOne", result); //this is InputObj.ToString()
     }
 
-
-
     [TestMethod]
-    public async Task TestInputObjects() {
+    public async Task TestInputObjectAsOutput() {
       string query;
       TDict varsDict;
       ServerResponse resp;
@@ -152,7 +151,7 @@ query myQuery($num: Int!, $name: String!) {
       TestEnv.LogTestDescr("Returning Input object as output (NGraphQL allows this)."); // ----------------------------------------------
       query = @"
 query myQuery($inpObj: InputObj!) { 
-  retObj: echoInputObj2 (inpObj: $inpObj) {
+  retObj: echoInputObj (inpObj: $inpObj) {
              id num name flags kind flagsArray
           }
 }";
@@ -167,10 +166,13 @@ query myQuery($inpObj: InputObj!) {
       resp.EnsureNoErrors();
       var retObj = resp.GetTopField<InputObj>("retObj");
       Assert.AreEqual(inpObj.Id, retObj.Id);
-
-
-
+      Assert.AreEqual(inpObj.Name, retObj.Name);
+      Assert.AreEqual(inpObj.Num, retObj.Num);
+      Assert.AreEqual(inpObj.Flags, retObj.Flags);
+      Assert.AreEqual(inpObj.Kind, retObj.Kind);
     }
+
+
     [TestMethod]
     public async Task TestGetSchema() {
       TestEnv.LogTestMethodStart();

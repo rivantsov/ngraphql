@@ -81,11 +81,11 @@ namespace Things.GraphQL {
       return strFlags;
     }
 
-    public string EchoInputObject(IFieldContext context, InputObj inpObj) {
+    public string EchoInputObjectAsStr(IFieldContext context, InputObj inpObj) {
       return inpObj.ToString();
     }
 
-    public InputObj EchoInputObj2(IFieldContext context, InputObj inpObj) {
+    public InputObj EchoInputObj(IFieldContext context, InputObj inpObj) {
       return inpObj;
     }
 

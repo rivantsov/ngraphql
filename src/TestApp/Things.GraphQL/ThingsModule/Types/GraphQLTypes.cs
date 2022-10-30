@@ -121,7 +121,7 @@ namespace Things.GraphQL.Types {
     [Null] public TheFlags[] FlagsArray;
 
     // ToString is used in one of the resolvers
-    public override string ToString() => $"id:{Id},name:{Name},num:{Num}";
+    public override string ToString() => $"id:{Id},name:{Name},num:{Num},flags:({Flags}),kind:{Kind}";
   }
 
   // used in test for fix for bug in issue #27 (all null fields cause error)

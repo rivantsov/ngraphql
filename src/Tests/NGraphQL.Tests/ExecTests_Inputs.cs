@@ -61,47 +61,47 @@ query {
       TestEnv.LogTestDescr("literal input object as argument.");
       query = @"
 query { 
-  res: echoInputObj(inpObj: {id: 1, name: ""abc"", num: 0, 
+  res: echoInputObjAsString (inpObj: {id: 1, name: ""abc"", num: 0, 
                    flags: [[FLAG_ONE]], kind: KIND_ONE })       # returns inpObj.ToString()
 }";
       resp = await ExecuteAsync(query);
       result = (string)resp.Data["res"];
-      Assert.AreEqual("id:1,name:abc,num:0", result, "Result mismatch");
+      Assert.AreEqual("id:1,name:abc,num:0,flags:(FlagOne),kind:KindOne", result, "Result mismatch");
 
       TestEnv.LogTestDescr("literal input object as argument, with some of its properties set from variables.");
       query = @"
 query myQuery($id : int) { 
-  res: echoInputObj(inpObj: {id: $id, name: ""abc"", num:456, 
+  res: echoInputObjAsString(inpObj: {id: $id, name: ""abc"", num:456, 
                               flags: [[]], kind: KIND_TWO })
 }";
       vars = new TDict() { { "id", 1 } };
       resp = await ExecuteAsync(query, vars);
       result = (string)resp.Data["res"];
-      Assert.AreEqual("id:1,name:abc,num:456", result, "Result mismatch");
+      Assert.AreEqual("id:1,name:abc,num:456,flags:(None),kind:KindTwo", result, "Result mismatch");
 
       TestEnv.LogTestDescr("literal input object as argument; variable value ($id) is not provided and is assigned from default.");
       query = @"
 query myQuery($num: Int!, $name: String!, $id: Int = 123) { 
-  echoInputObj (inpObj: {id: $id, num: $num, name: $name, flags: [[]], kind: KIND_ONE }) 
+  result: echoInputObjAsString (inpObj: {id: $id, num: $num, name: $name, flags: [[]], kind: KIND_ONE }) 
 }";
       vars = new TDict();
       vars["num"] = 456;
       vars["name"] = "SomeName";
       resp = await ExecuteAsync(query, vars);
-      var echoInpObj2 = resp.GetValue<string>("echoInputObj");
-      Assert.AreEqual("id:123,name:SomeName,num:456", echoInpObj2); //this is InputObj.ToString()
+      result = resp.GetValue<string>("result");
+      Assert.AreEqual("id:123,name:SomeName,num:456,flags:(None),kind:KindOne", result); //this is InputObj.ToString()
 
       TestEnv.LogTestDescr("complex input object in a variable.");
       query = @"
 query myQuery($inpObj: InputObj!) { 
-  echoInputObj (inpObj: $inpObj) 
+  result: echoInputObjAsString (inpObj: $inpObj) 
 }";
       vars = new TDict();
       // we cannot use InputObj here, serializer will send first-cap prop names and request will fail
       vars["inpObj"] = new InputObj() { Id = 123, Num = 456, Name = "SomeName" };
       resp = await ExecuteAsync(query, vars);
-      var echoInpObj = resp.GetValue<string>("echoInputObj");
-      Assert.AreEqual("id:123,name:SomeName,num:456", echoInpObj); //this is InputObj.ToString()
+      result = resp.GetValue<string>("result");
+      Assert.AreEqual("id:123,name:SomeName,num:456,flags:(None),kind:KindOne", result); //this is InputObj.ToString()
 
       TestEnv.LogTestDescr("Buf fix #27: empty input object as argument.");
       query = @"
