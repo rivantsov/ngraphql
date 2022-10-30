@@ -69,6 +69,8 @@ namespace NGraphQL.Model.Construction {
         _builder.Append("input " + tDef.Name);
         _builder.AppendLine(" {");
         foreach(var fldDef in tDef.Fields) {
+          if (fldDef.Flags.IsSet(FieldFlags.Hidden))
+            continue;
           Append(fldDef);
           _builder.AppendLine();
         }
@@ -158,9 +160,10 @@ namespace NGraphQL.Model.Construction {
 
     private void AppendDirs(GraphQLModelObject modelObj) {
       if(!modelObj.HasDirectives())
-        return; 
+        return;
+      _builder.AppendLine();
       foreach(ModelDirective dir in modelObj.Directives) {
-        _builder.Append(" @");
+        _builder.Append("    @"); // 4 char indent
         _builder.Append(dir.Def.Name);
         if (dir.Def.Args.Count > 0) {
           var nvList = new List<string>(); 
@@ -207,6 +210,14 @@ namespace NGraphQL.Model.Construction {
       } //if args.Coun > 0
       _builder.Append(": ");
       _builder.Append(field.TypeRef.Name);
+
+      if (field.HasDefaultValue) {
+        _builder.Append(" = ");
+        var tdef = field.TypeRef.TypeDef;
+        _builder.Append(tdef.ToSchemaDocString(field.DefaultValue));
+      }
+
+      AppendDirs(field);
     }
 
     private void Append(InputValueDef valueDef, bool indent = false) {

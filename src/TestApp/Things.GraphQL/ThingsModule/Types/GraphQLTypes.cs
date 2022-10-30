@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text;
 
 using NGraphQL.CodeFirst;
@@ -119,6 +120,9 @@ namespace Things.GraphQL.Types {
     public TheFlags Flags;
     public ThingKind Kind;
     [Null] public TheFlags[] FlagsArray;
+
+    [DefaultValue(999), DeprecatedDir("It's not needed anymore.")]
+    public int? IntPropWithDefault; 
 
     // ToString is used in one of the resolvers
     public override string ToString() => $"id:{Id},name:{Name},num:{Num},flags:({Flags}),kind:{Kind}";
