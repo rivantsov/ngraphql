@@ -110,14 +110,14 @@ namespace NGraphQL.Model.Construction {
       var typeRef = field.TypeRef;
       if (typeRef == null)
         return; // error found, it is already logged
-      var mtype = typeRef.TypeDef.ClrType;
       if (field.Args.Count > 0) {
         AddError($"Input type member {field.FullRefName}: input fields may not have arguments.");
         return;
       }
+      var retType = field.ClrMember.GetMemberReturnType();
       if (typeRef.IsList && !typeRef.TypeDef.IsEnumFlagArray()) {
         // list members must be IList<T> or T[] - this is important, lists are instantiated as arrays when deserializing
-        if (!mtype.IsArray && !mtype.IsInterface) {
+        if (!retType.IsArray && !retType.IsInterface) {
           AddError($"Input type member {field.FullRefName}: list must be either array or IList<T>.");
           return;
         }
@@ -128,7 +128,7 @@ namespace NGraphQL.Model.Construction {
         case TypeKind.InputObject:
           break;
         default:
-          AddError($"Input type member {field.FullRefName}: invalid type {mtype}; must be scalar, enum or input type.");
+          AddError($"Input type member {field.FullRefName}: invalid type {typeRef.TypeDef.ClrType}; must be scalar, enum or input type.");
         break; 
       }
       // check default value from DefaultValueAttribute

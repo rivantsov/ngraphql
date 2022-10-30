@@ -61,7 +61,8 @@ query {
       TestEnv.LogTestDescr("literal input object as argument.");
       query = @"
 query { 
-  res: echoInputObj(inpObj: {id: 1, name: ""abc"", num: 0})       # returns inpObj.ToString()
+  res: echoInputObj(inpObj: {id: 1, name: ""abc"", num: 0, 
+                   flags: [[FLAG_ONE]], kind: KIND_ONE })       # returns inpObj.ToString()
 }";
       resp = await ExecuteAsync(query);
       result = (string)resp.Data["res"];
@@ -70,7 +71,8 @@ query {
       TestEnv.LogTestDescr("literal input object as argument, with some of its properties set from variables.");
       query = @"
 query myQuery($id : int) { 
-  res: echoInputObj(inpObj: {id: $id, name: ""abc"", num:456})
+  res: echoInputObj(inpObj: {id: $id, name: ""abc"", num:456, 
+                              flags: [[]], kind: KIND_TWO })
 }";
       vars = new TDict() { { "id", 1 } };
       resp = await ExecuteAsync(query, vars);
@@ -80,7 +82,7 @@ query myQuery($id : int) {
       TestEnv.LogTestDescr("literal input object as argument; variable value ($id) is not provided and is assigned from default.");
       query = @"
 query myQuery($num: Int!, $name: String!, $id: Int = 123) { 
-  echoInputObj (inpObj: {id: $id, num: $num, name: $name}) 
+  echoInputObj (inpObj: {id: $id, num: $num, name: $name, flags: [[]], kind: KIND_ONE }) 
 }";
       vars = new TDict();
       vars["num"] = 456;

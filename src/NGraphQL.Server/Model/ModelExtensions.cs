@@ -61,8 +61,10 @@ namespace NGraphQL.Model {
     }
 
     public static IList<string> GetRequiredFields(this InputObjectTypeDef inputTypeDef) {
-      var reqFNames = inputTypeDef.Fields.Where(f => f.TypeRef.Kind == TypeKind.NonNull)
+      var reqFNames = inputTypeDef.Fields
+        .Where(f => f.TypeRef.Kind == TypeKind.NonNull && !f.Flags.IsSet(FieldFlags.Hidden))
         .Select(f => f.Name).ToList();
+      // note: _typeName field is hidden
       return reqFNames; 
     }
 

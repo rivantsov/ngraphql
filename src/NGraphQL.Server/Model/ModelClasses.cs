@@ -160,7 +160,7 @@ namespace NGraphQL.Model {
     public IList<InputValueDef> Args = new List<InputValueDef>();
     public MemberInfo ClrMember;
 
-    public string FullRefName => $"{OwnerType}.{Name}";
+    public string FullRefName => $"{OwnerType.Name}.{Name}";
 
     // Input object only
     public bool HasDefaultValue;

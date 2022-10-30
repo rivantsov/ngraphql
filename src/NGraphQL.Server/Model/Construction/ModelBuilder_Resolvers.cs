@@ -20,9 +20,13 @@ namespace NGraphQL.Model.Construction {
       // create all resolvers in all mappings
       InitFieldResolvers();
 
-      // get all object types except root types (Query, Mutation, Schema) that do not have CLR type. 
-      var objectTypes = _model.GetTypeDefs<ObjectTypeDef>(TypeKind.Object)
-                              .Where(td => td.ClrType != null).ToList();
+      // get all object and input types except root types (Query, Mutation, Schema) that do not have CLR type. 
+      var objectTypes = _model.Types
+            .Where(td => td.Kind == TypeKind.Object || td.Kind == TypeKind.InputObject)
+            .Where(td => td.ClrType != null)
+            .Select(td => (ObjectTypeDef)td)
+            .ToList();        
+        
       // 1. Map by ResolvesField attribute on resolver methods
       AssignResolversByMethodsResolvesFieldAttribute(objectTypes);
 
@@ -51,7 +55,9 @@ namespace NGraphQL.Model.Construction {
       return !_model.HasErrors;
 }
     private void InitFieldResolvers() {
-      var objTypes = _model.Types.Where(tdef => tdef.Kind == TypeKind.Object).OfType<ObjectTypeDef>(); 
+      // Note: input objects also can be used as output objects
+      var objTypes = _model.Types.Where(tdef => tdef.Kind == TypeKind.Object || tdef.Kind == TypeKind.InputObject)
+                      .OfType<ObjectTypeDef>(); 
       foreach(var typeDef in objTypes)
         foreach(var mapping in typeDef.Mappings) {
           foreach(var fldDef in typeDef.Fields) { 

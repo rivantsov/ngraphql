@@ -243,7 +243,7 @@ namespace NGraphQL.Model.Construction {
     }
 
     private IList<T> SelectTypes<T>(TypeKind kind) where T: TypeDefBase {
-      return _model.GetTypeDefs<T>(kind, excludeHidden: true);
+      return _model.Types.Where(td => td.Kind == kind && !td.Hidden).OfType<T>().ToList();
     }
 
     static char[] _toEscape = new char[] { '\\', '"' };

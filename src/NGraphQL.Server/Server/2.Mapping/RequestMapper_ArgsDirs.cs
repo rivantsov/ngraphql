@@ -186,6 +186,9 @@ namespace NGraphQL.Server.Mapping {
         throw new InvalidInputException($"Value is not InputObject, expected value of type '{typeRef.Name}'.", valueSource);
       var fields = new List<InputFieldEvalInfo>();
       foreach(var fldDef in inpObjTypeDef.Fields) {
+        // ex: _typeName in Input types used as Output; in input it should be ignored
+        if (fldDef.Flags.IsSet(FieldFlags.Hidden))
+          continue; 
         InputValueEvaluator fldEval;
         if (parsedInputObj.Fields.TryGetValue(fldDef.Name, out var inpValue))
           fldEval = GetInputValueEvaluator(fldDef.Name, inpValue, fldDef.TypeRef);
@@ -193,7 +196,7 @@ namespace NGraphQL.Server.Mapping {
           fldEval = CreateConstantInputValue(valueName, valueSource, fldDef.TypeRef, fldDef.DefaultValue);
         else if (!fldDef.TypeRef.IsNotNull)
           fldEval = CreateConstantInputValue(valueName, valueSource, fldDef.TypeRef, null);
-        else {
+        else { 
           throw new InvalidInputException($"Missing value for field '{fldDef.Name}'.", valueSource);
         }
         fields.Add(new InputFieldEvalInfo() { FieldDef = fldDef, ValueEvaluator = fldEval });

@@ -176,7 +176,7 @@ namespace NGraphQL.Server.AspNetCore {
       foreach (var prop in jObj.Properties()) {
         var newPath = new List<object>(path);
         newPath.Add(prop.Name);         
-        if (inputTypeDef.Fields.TryGetValue(prop.Name, out var fldDef)) {
+        if (!inputTypeDef.Fields.TryGetValue(prop.Name, out var fldDef)) {
           if (!stt.Options.IsSet(GraphQLServerOptions.IgnoreUnknownJsonFields))
             AddError(context, $"Field {prop.Name} not defined on input object {inputTypeDef.Name}.", newPath);
           continue;

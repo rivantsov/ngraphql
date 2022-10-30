@@ -127,7 +127,7 @@ query myQuery($inpObj: InputObj!) {
       TestEnv.LogTestDescr("literal object as argument, but with prop values coming from variables."); //------------------
       query = @"
 query myQuery($num: Int!, $name: String!) { 
-  echoInputObj (inpObj: {id: 123, num: $num, name: $name}) 
+  echoInputObj (inpObj: {id: 123, num: $num, name: $name,  flags: [[FLAG_ONE]], kind: KIND_ONE }) 
 }";
       varsDict = new TDict();
       // we cannot use InputObj here, serializer will send first-cap prop names and request will fail
