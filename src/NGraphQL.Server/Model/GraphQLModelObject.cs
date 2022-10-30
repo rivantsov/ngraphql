@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Text;
 using NGraphQL.Introspection;
+using NGraphQL.Utilities;
 
 namespace NGraphQL.Model {
 
   /// <summary>Base for all GraphQL Model classes. </summary>
   /// <remarks>Most of the model classes are in NGraphQL.Server. We need this base class here because <see cref="EnumHandler"/>
   /// class is also part of the model. </remarks>
-  public class GraphQLModelObject {
+  public class GraphQLModelObject : INamedObject {
     public string Name { get; set; }
     public string Description;
     public IList<ModelDirective> Directives;

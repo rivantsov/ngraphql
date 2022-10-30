@@ -101,8 +101,8 @@ namespace NGraphQL.Model {
     ObjectTypeDef[] _possibleOutTypes;
 
     public ObjectTypeDef(string name, Type clrType, IList<Attribute> attrs, GraphQLModule module, 
-          TypeRole typeRole = TypeRole.Data) 
-             : base(name, TypeKind.Object, clrType, attrs, module, typeRole) {
+          TypeRole typeRole = TypeRole.Data, TypeKind kind = TypeKind.Object) 
+             : base(name, kind, clrType, attrs, module, typeRole) {
       _possibleOutTypes = new ObjectTypeDef[] { this };
     }
     
@@ -127,15 +127,11 @@ namespace NGraphQL.Model {
     public override IList<ObjectTypeDef> PossibleOutTypes => PossibleTypes;
   }
 
-  public class InputObjectTypeDef : TypeDefBase {
-    public List<InputValueDef> Fields = new List<InputValueDef>();
-    // field names to ignore (not post error) when it appears in input json. It might happen if we serialize CLR object
-    // with field(s) marked as Ignore
-    public HashSet<string> IgnoreFields = new HashSet<string>(StringComparer.OrdinalIgnoreCase); 
-
+  // We consider Input types to be a subset of Object types, so we ALLOW to return Input types as field types
+  // Input type is 'restricted' Object type: no field with args, fields must be Scalar, enum or input type
+  public class InputObjectTypeDef : ObjectTypeDef {
     public InputObjectTypeDef(string name, Type clrType, IList<Attribute> attrs, GraphQLModule module) 
-        : base(name, TypeKind.InputObject, clrType, attrs, module) { }
-
+        : base(name, clrType, attrs, module, kind: TypeKind.InputObject) { }
   }
 
   // Arg or InputObject field
@@ -147,7 +143,6 @@ namespace NGraphQL.Model {
     public object DefaultValue;
 
     public Type ParamType; // Arg only; exact resolver parameter type
-    public MemberInfo InputObjectClrMember; // InputObject only
 
     public InputValueDef() { }
     public override string ToString() => $"{Name}/{TypeRef}";
@@ -164,6 +159,12 @@ namespace NGraphQL.Model {
     public FieldFlags Flags;
     public IList<InputValueDef> Args = new List<InputValueDef>();
     public MemberInfo ClrMember;
+
+    public string FullRefName => $"{OwnerType}.{Name}";
+
+    // Input object only
+    public bool HasDefaultValue;
+    public object DefaultValue;
 
     public FieldDef(ComplexTypeDef ownerType, string name, TypeRef typeRef) {
       OwnerType = ownerType; 

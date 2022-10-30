@@ -28,20 +28,28 @@ namespace NGraphQL.Utilities {
 
     public T this[string name] {
       get {
-        if (_list.Count < SwitchCount) {
-          // use list search
-          for (int i = 0; i < _list.Count; i++) {
-            var obj = _list[i];
-            if (obj.Name == name)
-              return obj;
-          } // for i
-        } else {
-          // use dict
-          if (_dict.TryGetValue(name, out var obj))
-            return obj;
-        } //if
-        return default(T);
+        if (TryGetValue(name, out var value))
+          return value;
+        return default; 
       } //get
+    }
+
+    public bool TryGetValue(string name, out T value) {
+      if (_list.Count < SwitchCount) {
+        // use list search
+        for (int i = 0; i < _list.Count; i++) {
+          var obj = _list[i];
+          if (obj.Name == name) {
+            value = obj;
+            return true;
+          }
+        } // for i
+        value = default; 
+        return false;
+      } else {
+        // use dict
+        return _dict.TryGetValue(name, out value);
+      } //if      
     }
 
     public IEnumerator<T> GetEnumerator() {

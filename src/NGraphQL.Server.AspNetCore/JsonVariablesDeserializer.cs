@@ -167,16 +167,17 @@ namespace NGraphQL.Server.AspNetCore {
       var jObj = jsonValue as JObject; 
       if (jObj == null) {
         AddError(context, "Expected Json object segment.", path);
+        return null;
       }
+      var stt = context.Server.Settings;
       var clrType = inputTypeDef.ClrType;
       var missingFldNames = inputTypeDef.GetRequiredFields();
       var inputObj = Activator.CreateInstance(clrType);
       foreach (var prop in jObj.Properties()) {
         var newPath = new List<object>(path);
-        newPath.Add(prop.Name); 
-        var fldDef = inputTypeDef.Fields.FirstOrDefault(f => f.Name == prop.Name);
-        if (fldDef == null) {
-          if (!inputTypeDef.IgnoreFields.Contains(prop.Name))
+        newPath.Add(prop.Name);         
+        if (inputTypeDef.Fields.TryGetValue(prop.Name, out var fldDef)) {
+          if (!stt.Options.IsSet(GraphQLServerOptions.IgnoreUnknownJsonFields))
             AddError(context, $"Field {prop.Name} not defined on input object {inputTypeDef.Name}.", newPath);
           continue;
         }
@@ -188,7 +189,7 @@ namespace NGraphQL.Server.AspNetCore {
           AddError(context, $"Field {prop.Name} on input object {inputTypeDef.Name} may not be null.", newPath);
           continue; 
         }
-        fldDef.InputObjectClrMember.SetMember(inputObj, value);
+        fldDef.ClrMember.SetMember(inputObj, value);
       }
       // check that all required fields are provided
       if (missingFldNames.Count > 0) {

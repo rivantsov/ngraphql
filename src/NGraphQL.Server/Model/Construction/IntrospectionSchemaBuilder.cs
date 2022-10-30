@@ -103,18 +103,22 @@ namespace NGraphQL.Model.Construction {
             BuildScalarType(std);
             break;
 
-          case ComplexTypeDef ctd:  // object types and interfaces
-            BuildComplexObjectType(ctd);
-            if (ctd is ObjectTypeDef otd)
-              AddTypeNameField(otd); 
-            break;
-
-          case InputObjectTypeDef inpDef:
-            BuildInputType(inpDef);
-            break;
-
           case EnumTypeDef etd:
             BuildEnumType(etd);
+            break;
+
+          case InterfaceTypeDef itd:  
+            BuildComplexObjectType(itd);
+            break;
+
+          case InputObjectTypeDef itd:
+            BuildInputType(itd);
+            AddTypeNameField(itd);
+            break;
+
+          case ObjectTypeDef otd:  
+            BuildComplexObjectType(otd);
+            AddTypeNameField(otd);
             break;
 
           case UnionTypeDef utd:

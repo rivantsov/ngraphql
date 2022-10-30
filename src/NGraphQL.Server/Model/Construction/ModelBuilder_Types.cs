@@ -9,6 +9,7 @@ using NGraphQL.Core.Scalars;
 using NGraphQL.Model;
 using NGraphQL.Introspection;
 using NGraphQL.Utilities;
+using System.ComponentModel;
 
 namespace NGraphQL.Model.Construction {
 
@@ -41,6 +42,42 @@ namespace NGraphQL.Model.Construction {
       return null;
     }
 
+    private void BuildTypesInternalsFromClrType() {
+      foreach (var td in _model.Types) {
+        if (td.ClrType == null)
+          continue; // Special types (Query, Mutation etc) do not have Clr types
+        DirectiveLocation loc = DirectiveLocation.None;
+        switch (td) {
+
+          case InterfaceTypeDef intfTypeDef:
+            loc = DirectiveLocation.Interface;
+            BuildComplexTypeFields(intfTypeDef);
+            break;
+
+          case InputObjectTypeDef inpTypeDef:
+            loc = DirectiveLocation.InputObject;
+            BuildComplexTypeFields(inpTypeDef);
+            break;
+
+          case ObjectTypeDef objTypeDef:
+            loc = DirectiveLocation.Object;
+            BuildComplexTypeFields(objTypeDef);
+            break;
+
+          case EnumTypeDef etd:
+            loc = DirectiveLocation.Enum;
+            BuildEnumTypeFields(etd);
+            break;
+
+          case UnionTypeDef utd:
+            loc = DirectiveLocation.Union;
+            // we build union types in a separate loop after building other types
+            break;
+        } //switch
+        td.Directives = BuildDirectivesFromAttributes(td.ClrType, loc);
+      } //foreach td
+    }
+
     // used for interface and Object types
     private void BuildComplexTypeFields(ComplexTypeDef typeDef) {
       var objTypeDef = typeDef as ObjectTypeDef;
@@ -64,8 +101,74 @@ namespace NGraphQL.Model.Construction {
         typeDef.Fields.Add(fld);
         if (member is MethodInfo method)
           BuildFieldArguments(fld, method);
+        if (typeDef.Kind == TypeKind.InputObject)
+          ProcessInputObjectField(fld);
       }
     }
+
+    private void ProcessInputObjectField(FieldDef field) {
+      var typeRef = field.TypeRef;
+      if (typeRef == null)
+        return; // error found, it is already logged
+      var mtype = typeRef.TypeDef.ClrType;
+      if (field.Args.Count > 0) {
+        AddError($"Input type member {field.FullRefName}: input fields may not have arguments.");
+        return;
+      }
+      if (typeRef.IsList && !typeRef.TypeDef.IsEnumFlagArray()) {
+        // list members must be IList<T> or T[] - this is important, lists are instantiated as arrays when deserializing
+        if (!mtype.IsArray && !mtype.IsInterface) {
+          AddError($"Input type member {field.FullRefName}: list must be either array or IList<T>.");
+          return;
+        }
+      }
+      switch (typeRef.TypeDef.Kind) {
+        case TypeKind.Scalar:
+        case TypeKind.Enum:
+        case TypeKind.InputObject:
+          break;
+        default:
+          AddError($"Input type member {field.FullRefName}: invalid type {mtype}; must be scalar, enum or input type.");
+        break; 
+      }
+      // check default value from DefaultValueAttribute
+      var dftValAttr = field.ClrMember.GetAttribute<DefaultValueAttribute>();
+      if (dftValAttr != null) {
+        field.HasDefaultValue = true;
+        field.DefaultValue = dftValAttr.Value;
+      }
+    }
+
+    private void BuildEnumTypeFields(EnumTypeDef enumTypeDef) {
+      enumTypeDef.Handler = new EnumHandler(enumTypeDef.ClrType, enumTypeDef.Module.Adjustments);
+      enumTypeDef.Name = enumTypeDef.Handler.EnumName;
+      // Build fieldDefs from EnumInfo.Values
+      foreach (var vi in enumTypeDef.Handler.Values) {
+        var enumFld = new EnumFieldDef() { Name = vi.Name, ValueInfo = vi };
+        enumFld.Description = _docLoader.GetDocString(enumFld.ValueInfo.Field, enumTypeDef.ClrType);
+        enumFld.Directives = this.BuildDirectivesFromAttributes(enumFld.ValueInfo.Field, DirectiveLocation.EnumValue);
+        enumTypeDef.Fields.Add(enumFld);
+      }
+    }
+
+    private void BuildUnionTypes() {
+      var unionTypes = _model.Types.Where(td => td.Kind == TypeKind.Union).ToList();
+      foreach (UnionTypeDef utDef in unionTypes) {
+        var objTypes = utDef.ClrType.BaseType.GetGenericArguments();
+        foreach (var objType in objTypes) {
+          var typeDef = _model.GetTypeDef(objType);
+          if (typeDef == null) {
+            AddError($"Union type {utDef.Name}: type {objType} is not registered.");
+            continue;
+          }
+          if (typeDef is ObjectTypeDef objTypeDef)
+            utDef.PossibleTypes.Add(objTypeDef);
+          else
+            AddError($"Union type {utDef.Name}: type {objType} is not GraphQL 'type'.");
+        }
+      } //foreach unionType
+    }
+
 
     private void BuildFieldArguments(FieldDef fieldDef, MethodInfo resMethod) {
       var prms = resMethod.GetParameters();

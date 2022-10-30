@@ -22,14 +22,10 @@ namespace NGraphQL.Model.Construction {
     private void Visit(GraphQLModelObject modelObj, Action<GraphQLModelObject> action) {
       action(modelObj);
       switch (modelObj) {
-        case ComplexTypeDef ctd: // object type and interface type
+
+        case ComplexTypeDef ctd: // object type, interface and input types
           foreach (var fld in ctd.Fields)
             Visit(fld, action);
-          break;
-
-        case InputObjectTypeDef itd:
-          foreach (var f in itd.Fields)
-            Visit(f, action);
           break;
 
         case EnumTypeDef etd:

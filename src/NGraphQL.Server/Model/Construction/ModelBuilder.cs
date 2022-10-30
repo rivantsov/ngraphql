@@ -89,7 +89,6 @@ namespace NGraphQL.Model.Construction {
       foreach (var dir in modelObj.Directives) {
           dir.Def.Handler.ModelDirectiveApply(_model, modelObj, dir.ArgValues);
       }
-
     }
 
     private bool InitializeTypeMappings() {
@@ -118,110 +117,6 @@ namespace NGraphQL.Model.Construction {
         }
       }
       return !_model.HasErrors;
-    }
-
-    private void BuildTypesInternalsFromClrType() {
-      foreach (var td in _model.Types) {
-        if (td.ClrType == null)
-          continue; // Special types (Query, Mutation etc) do not have Clr types
-        DirectiveLocation loc = DirectiveLocation.None;
-        switch (td) {
-
-          case InterfaceTypeDef intfTypeDef:
-            loc = DirectiveLocation.Interface;
-            BuildComplexTypeFields(intfTypeDef);
-            break;
-
-          case ObjectTypeDef objTypeDef:
-            loc = DirectiveLocation.Object;
-            BuildComplexTypeFields(objTypeDef);
-            break;
-
-          case InputObjectTypeDef inpTypeDef:
-            loc = DirectiveLocation.InputObject;
-            BuildInputObjectFields(inpTypeDef);
-            break;
-
-          case EnumTypeDef etd:
-            loc = DirectiveLocation.Enum;
-            BuildEnumTypeFields(etd); 
-            break;
-
-          case UnionTypeDef utd:
-            loc = DirectiveLocation.Union;
-            // we build union types in a separate loop after building other types
-            break;
-        } //switch
-        td.Directives = BuildDirectivesFromAttributes(td.ClrType, loc);
-      } //foreach td
-    }
-
-    private void BuildInputObjectFields(InputObjectTypeDef inpTypeDef) {
-      var members = inpTypeDef.ClrType.GetFieldsProps();
-      foreach (var member in members) {
-        var attrs = GetAllAttributesAndAdjustments(member);
-        var ignoreAttr = attrs.Find<IgnoreAttribute>();
-        if (ignoreAttr != null) {
-          inpTypeDef.IgnoreFields.Add(member.Name);
-          continue;
-        }
-        var mtype = member.GetMemberReturnType();
-        var typeRef = GetMemberGraphQLTypeRef(mtype, member, $"Field {inpTypeDef.Name}.{member.Name}");
-        if (typeRef == null)
-          return; // error found, it is already logged
-        if (typeRef.IsList && !typeRef.TypeDef.IsEnumFlagArray()) {
-          // list members must be IList<T> or T[] - this is important, lists are instantiated as arrays when deserializing
-          if (!mtype.IsArray && !mtype.IsInterface) {
-            AddError($"Input type member {inpTypeDef.Name}.{member.Name}: list must be either array or IList<T>.");
-            continue;
-          }
-        }
-        switch (typeRef.TypeDef.Kind) {
-          case TypeKind.Scalar:
-          case TypeKind.Enum:
-          case TypeKind.InputObject:
-            break;
-          default:
-            AddError($"Input type member {inpTypeDef.Name}.{member.Name}: type {mtype} is not scalar or input type.");
-            continue;
-        }
-        var inpFldDef = new InputValueDef() { Name = member.Name.FirstLower(), TypeRef = typeRef, Attributes = attrs,
-          InputObjectClrMember = member,
-          Description = _docLoader.GetDocString(member, member.DeclaringType)
-        };
-        inpFldDef.Directives = BuildDirectivesFromAttributes(member, DirectiveLocation.InputFieldDefinition);
-        inpTypeDef.Fields.Add(inpFldDef);
-      } //foreach
-    }
-
-    private void BuildEnumTypeFields(EnumTypeDef enumTypeDef) {
-      enumTypeDef.Handler = new EnumHandler(enumTypeDef.ClrType, enumTypeDef.Module.Adjustments);
-      enumTypeDef.Name = enumTypeDef.Handler.EnumName;
-      // Build fieldDefs from EnumInfo.Values
-      foreach (var vi in enumTypeDef.Handler.Values) {
-        var enumFld = new EnumFieldDef() { Name = vi.Name, ValueInfo = vi };
-        enumFld.Description = _docLoader.GetDocString(enumFld.ValueInfo.Field, enumTypeDef.ClrType);
-        enumFld.Directives = this.BuildDirectivesFromAttributes(enumFld.ValueInfo.Field, DirectiveLocation.EnumValue);
-        enumTypeDef.Fields.Add(enumFld);
-      }
-    }
-
-    private void BuildUnionTypes() {
-      var unionTypes = _model.Types.Where(td => td.Kind == TypeKind.Union).ToList();
-      foreach(UnionTypeDef utDef in unionTypes) {
-        var objTypes = utDef.ClrType.BaseType.GetGenericArguments();
-        foreach(var objType in objTypes) {
-          var typeDef = _model.GetTypeDef(objType);
-          if(typeDef == null) {
-            AddError($"Union type {utDef.Name}: type {objType} is not registered.");
-            continue;
-          }
-          if(typeDef is ObjectTypeDef objTypeDef)
-            utDef.PossibleTypes.Add(objTypeDef);
-          else
-            AddError($"Union type {utDef.Name}: type {objType} is not GraphQL 'type'.");
-        }
-      } //foreach unionType
     }
 
     private void BuildSchemaDef() {

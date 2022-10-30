@@ -43,7 +43,7 @@ namespace NGraphQL.Model.Construction {
         fldTypeRank--;
       if (retTypeRank != fldTypeRank) {
         AddError($"Resolver method {method.GetFullRef()}: return type {returnType.Name} (rank {retTypeRank}) is not compatible with type " +
-                 $" {field.TypeRef.Name} of  field '{field.Name}'; list rank mismatch.");
+                 $" {field.TypeRef.Name} of  field '{field.FullRefName}'; list rank mismatch.");
         return false;
       }
       var withBaseType = fldTypeRef.TypeDef.ClrType;

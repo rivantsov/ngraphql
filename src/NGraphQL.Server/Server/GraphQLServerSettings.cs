@@ -11,14 +11,27 @@ namespace NGraphQL.Server {
     ReturnExceptionDetails = 1,
     EnableRequestCache = 1 << 1,
     EnableParallelQueries = 1 << 2,
+    IgnoreUnknownJsonFields = 1 << 3,
 
-    DefaultProd = EnableRequestCache | EnableParallelQueries,
+    DefaultProd = EnableRequestCache | EnableParallelQueries | IgnoreUnknownJsonFields,
     DefaultDev = DefaultProd | ReturnExceptionDetails,
 
   }
 
+  [Flags]
+  public enum GraphQLServerFeatures {
+    None = 0, 
+    Subscriptions = 1,
+    
+    RecursiveFragments = 1 << 8,
+    
+  }
+
   public class GraphQLServerSettings {
+    public static GraphQLServerFeatures DefaultFeatures = GraphQLServerFeatures.RecursiveFragments;
+
     public GraphQLServerOptions Options = GraphQLServerOptions.DefaultDev;
+    public GraphQLServerFeatures Features = DefaultFeatures;
 
     public int RequestCacheSize = 2000;
     public TimeSpan RequestCacheEvictionTime = TimeSpan.FromSeconds(60);

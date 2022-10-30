@@ -10,16 +10,16 @@ using NGraphQL.Utilities;
 namespace NGraphQL.Model.Request {
 
   public abstract class InputValueEvaluator {
-    public InputValueDef InputDef; 
+    public string ValueRefName; 
     public TypeRef ResultTypeRef; 
     public RequestObjectBase Anchor;
     
-    public InputValueEvaluator(InputValueDef inputDef, TypeRef resultTypeRef, RequestObjectBase anchor) {
-      InputDef = inputDef; 
+    public InputValueEvaluator(string refName, TypeRef resultTypeRef, RequestObjectBase anchor) {
+      ValueRefName = refName; 
       ResultTypeRef = resultTypeRef; 
       Anchor = anchor;
     }
-    public override string ToString() => InputDef.ToString();
+    public override string ToString() => ValueRefName.ToString();
 
     protected abstract object Evaluate(RequestContext context);
     public abstract bool IsConst();
@@ -44,8 +44,8 @@ namespace NGraphQL.Model.Request {
     public override bool IsConst() => true;
     protected override object Evaluate(RequestContext context) => Value;
 
-    public ConstInputValue(InputValueDef inputDef, TypeRef resultTypeRef, RequestObjectBase anchor, object value) 
-        : base(inputDef, resultTypeRef, anchor) {
+    public ConstInputValue(string refName, TypeRef resultTypeRef, RequestObjectBase anchor, object value) 
+        : base(refName, resultTypeRef, anchor) {
       Value = value;
     }
   }
@@ -54,7 +54,7 @@ namespace NGraphQL.Model.Request {
     public VariableDef Variable;
     public override bool IsConst() => false;
 
-    public VariableRefEvaluator(InputValueDef inputDef, VariableDef varDecl) : base(inputDef, varDecl.InputDef.TypeRef, varDecl) {
+    public VariableRefEvaluator(string refName, VariableDef varDecl) : base(refName, varDecl.InputDef.TypeRef, varDecl) {
       Variable = varDecl;
     }
     
@@ -69,8 +69,8 @@ namespace NGraphQL.Model.Request {
     public TypeRef ElemTypeRef; 
     public InputValueEvaluator[] ElemEvaluators;
 
-    public InputListEvaluator(InputValueDef inputDef, TypeRef resultTypeRef, RequestObjectBase anchor,
-                 InputValueEvaluator[] elemEvaluators) : base(inputDef, resultTypeRef, anchor) {
+    public InputListEvaluator(string refName, TypeRef resultTypeRef, RequestObjectBase anchor,
+                 InputValueEvaluator[] elemEvaluators) : base(refName, resultTypeRef, anchor) {
       ElemEvaluators = elemEvaluators;
       if (ResultTypeRef.Kind == TypeKind.NonNull)
         ElemTypeRef = ResultTypeRef.Inner.Inner;
@@ -99,9 +99,9 @@ namespace NGraphQL.Model.Request {
     public readonly EnumTypeDef EnumTypeDef;
     public InputValueEvaluator[] ElemEvaluators;
 
-    public FlagSetInputEvaluator(InputValueDef inputDef, TypeRef resultTypeRef, RequestObjectBase anchor, 
+    public FlagSetInputEvaluator(string refName, TypeRef resultTypeRef, RequestObjectBase anchor, 
                     InputValueEvaluator[] valueEvals)
-            : base(inputDef, resultTypeRef, anchor) {
+            : base(refName, resultTypeRef, anchor) {
       ElemEvaluators = valueEvals;
       EnumTypeDef = (EnumTypeDef) ResultTypeRef.TypeDef;
     }
@@ -123,7 +123,7 @@ namespace NGraphQL.Model.Request {
   }
 
   public class InputFieldEvalInfo {
-    public InputValueDef FieldDef;
+    public FieldDef FieldDef;
     public InputValueEvaluator ValueEvaluator;
     public override string ToString() => $"{FieldDef}={ValueEvaluator}";
   }
@@ -131,8 +131,8 @@ namespace NGraphQL.Model.Request {
   public class InputObjectEvaluator : InputValueEvaluator {
     public IList<InputFieldEvalInfo> Fields = new List<InputFieldEvalInfo>();
 
-    public InputObjectEvaluator (InputValueDef inputDef, TypeRef resultTypeRef, RequestObjectBase anchor,
-        IList<InputFieldEvalInfo> fields)  : base(inputDef, resultTypeRef, anchor) {
+    public InputObjectEvaluator (string refName, TypeRef resultTypeRef, RequestObjectBase anchor,
+        IList<InputFieldEvalInfo> fields)  : base(refName, resultTypeRef, anchor) {
       Fields = fields;
     }
 
@@ -145,7 +145,7 @@ namespace NGraphQL.Model.Request {
       foreach (var fld in Fields) {
         var value = fld.ValueEvaluator.GetValue(context);
         var convValue = context.ValidateConvert(value, fld.FieldDef.TypeRef, Anchor);
-        fld.FieldDef.InputObjectClrMember.SetMember(obj, convValue);
+        fld.FieldDef.ClrMember.SetMember(obj, convValue);
       }
       return obj;
     }

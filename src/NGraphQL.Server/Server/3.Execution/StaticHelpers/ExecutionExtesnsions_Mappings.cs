@@ -12,12 +12,8 @@ namespace NGraphQL.Server.Execution {
     public static ObjectTypeMapping FindMapping(this TypeDefBase typeDef, Type fromType) {
       ObjectTypeMapping mapping = null; 
       switch (typeDef) {
-        case ObjectTypeDef otd:
+        case ObjectTypeDef otd: //this covers Input types too when field returns Input type
           mapping = otd.FindObjectTypeMapping(fromType);
-          break;
-
-        case InputObjectTypeDef inptd:
-          //mapping = inptd.FindMapping(fromType);
           break;
 
         case InterfaceTypeDef itd:

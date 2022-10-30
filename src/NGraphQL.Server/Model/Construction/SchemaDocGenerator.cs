@@ -69,7 +69,7 @@ namespace NGraphQL.Model.Construction {
         _builder.Append("input " + tDef.Name);
         _builder.AppendLine(" {");
         foreach(var fldDef in tDef.Fields) {
-          Append(fldDef, indent: true);
+          Append(fldDef);
           _builder.AppendLine();
         }
         _builder.AppendLine("}");

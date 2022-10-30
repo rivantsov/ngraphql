@@ -80,8 +80,7 @@ namespace NGraphQL.Model.Construction {
             continue;
           }
           // match field
-          field = typeDef.Fields.FirstOrDefault(f => f.Name == fieldName);
-          if (field == null) {
+          if (!typeDef.Fields.TryGetValue(fieldName, out field))  {
             AddError($"Resolver method '{resMethInfo}': target field '{fieldName}' not found "
                       + $"on type '{resAttr.TargetType}'.");
             continue;
@@ -187,7 +186,7 @@ namespace NGraphQL.Model.Construction {
         var resolverType = resAttr.ResolverClass;
         if (resolverType != null) {
           if (!typeDef.Module.ResolverClasses.Contains(resolverType)) {
-            AddError($"Field {typeDef.Name}.{field.Name}: target resolver class {resolverType.Name} is not registered with module. ");
+            AddError($"Field {field.FullRefName}: target resolver class {resolverType.Name} is not registered with module. ");
             continue;
           }
         }
@@ -198,10 +197,10 @@ namespace NGraphQL.Model.Construction {
           case 1:
             break;
           case 0:
-            AddError($"Field {typeDef.Name}.{field.Name}: failed to find resolver method {methName}. ");
+            AddError($"Field {field.FullRefName}: failed to find resolver method {methName}. ");
             continue; //next field
           default:
-            AddError($"Field {typeDef.Name}.{field.Name}: found more than one resolver method ({methName}).");
+            AddError($"Field {field.FullRefName}: found more than one resolver method ({methName}).");
             continue; //next field
         }
         // we have single matching resolver
@@ -210,7 +209,7 @@ namespace NGraphQL.Model.Construction {
         // get field resolver info and check if it is already mapped
         var fldRes = mapping.GetResolver(field);
         if (fldRes.IsMapped()) {
-          AddError($"Field {typeDef.Name}.{field.Name}: failed to set resolver '{methName}', field is already mapped. ");
+          AddError($"Field {field.FullRefName}: failed to set resolver '{methName}', field is already mapped. ");
           continue; //next field
         }
         fldRes.ResolverMethod = resMethInfo; 
@@ -236,7 +235,7 @@ namespace NGraphQL.Model.Construction {
           case 1:
             break;
           default:
-            AddError($"Field {typeDef.Name}.{field.Name}: found more than one resolver method ({methName}).");
+            AddError($"Field {field.FullRefName}: found more than one resolver method ({methName}).");
             continue;
         } //switch
         var resInfo = resolverInfos[0];

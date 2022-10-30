@@ -13,7 +13,6 @@ namespace NGraphQL.Utilities {
       else
         return null;
     }
-
     public static string GetTypeName(this Type type) {
       if (type.IsGenericType && Nullable.GetUnderlyingType(type) != null) {
         var t = type.GetGenericArguments()[0];
