@@ -39,8 +39,8 @@ query {
   }
 }";
       var resp = await ExecuteAsync(query);
-      var res = (IDict)resp.data.res; // ["res"];
-      var propsObj = res["props"];
+      var resDict = (IDict)resp.data.res; // ["res"];
+      var propsObj = resDict["props"];
       var props = (IDict)propsObj;
       Assert.AreEqual(2, props.Count, "Expected 2 props in Dict"); // 
 
@@ -48,44 +48,46 @@ query {
       TestEnv.LogTestDescr(@" MapScalar test 2 - map in Input object.");
       query = @"
 query ($inp: InputObjWithCustomScalars) { 
-  res: echoInputObjWithMap (inp: $inp)
+  res: echoInputObjWithCustomScalars (inp: $inp) 
+                 {  map maxLong minLong }
 }";
-      var vars = new Dict();
       var nestedMap = new Dict() { { "nestedStr", "NestedStr" }, { "nestedInt", 234 } };
       var map = new Dict() { { "prop1", "v1" }, { "prop2", 123 }, { "nullV", null }, { "nested", nestedMap } };
       var inpObj = new InputObjWithCustomScalars() {
         Map = map, MaxLong = long.MaxValue, MinLong = long.MinValue
       };
-      vars["inp"] = inpObj;
+      var vars = new Dict() { { "inp", inpObj } };
       resp = await ExecuteAsync(query, vars);
-      res = resp.data.res;
-      Assert.AreEqual(4, res.Count, "Expected 4 props in Dict");
+      var inpBack = resp.GetTopField<InputObjWithCustomScalars>("res");
+      Assert.AreEqual(4, inpBack.Map.Count, "Expected 4 props in Dict");
       // check nested dict and value inside
-      dynamic nested = res["nested"];
+      dynamic nested = inpBack.Map["nested"];
       int nestedInt = (int) nested.nestedInt;
       Assert.AreEqual(234, nestedInt);
 
       TestEnv.LogTestDescr(@" MapScalar test 3 - map in Input object; sending map value as literal (array of arrays).");
       query = @"
 query { 
-  res: echoInputObjWithMap (inp: {
+  res: echoInputObjWithCustomScalars (inp: {
             map: [ [""prop1"" ""v1""] [prop2 123] ]            # notice prop2 without quotes, it is allowed
        })
+           {  map maxLong minLong }
 }";
       resp = await ExecuteAsync(query);
-      res = (IDict)resp.data.res;
-      Assert.AreEqual(2, res.Count, "Expected 2 props in Dict");
+      inpBack = resp.GetTopField<InputObjWithCustomScalars>("res");
+      Assert.AreEqual(2, inpBack.Map.Count, "Expected 2 props in Map field ");
 
       TestEnv.LogTestDescr(@" MapScalar test 4 - map in Input object; sending map value as literal, formatted like input object.");
       query = @"
 query { 
-  res: echoInputObjWithMap (inp: {
+  res: echoInputObjWithCustomScalars (inp: {
             map: {prop1: ""v1"" prop2: 123}                     # formatted like InputObject literal
        })
+                 {  map maxLong minLong }
 }";
       resp = await ExecuteAsync(query);
-      res = (IDict)resp.data.res;
-      Assert.AreEqual(2, res.Count, "Expected 2 props in Dict");
+      inpBack = resp.GetTopField<InputObjWithCustomScalars>("res");
+      Assert.AreEqual(2, inpBack.Map.Count, "Expected 2 props in Dict");
 
     }
 

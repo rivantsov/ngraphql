@@ -19,7 +19,7 @@ namespace NGraphQL.Core.Scalars {
 
     // 
     public override string ToSchemaDocString(object value) {
-      return "(Error: map scalar may not have default value)";
+      return "(Error: Map scalar may not have default value)";
     }
 
     public override object ConvertInputValue(RequestContext context, object value) {
