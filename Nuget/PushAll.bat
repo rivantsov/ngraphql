@@ -1,4 +1,4 @@
-SET pver=1.5.0
+SET pver=1.6.0
 Echo Version: "%pver%"
 dir Nupkg\*.nupkg
 @echo off
@@ -7,6 +7,8 @@ setlocal
 SET AREYOUSURE=N
 SET /P AREYOUSURE=Are you sure (Y/[N])?
 IF /I "%AREYOUSURE%" NEQ "Y" GOTO END
+
+cd packages
 
 echo Publishing....
 :: When we push bin package, the symbols package is pushed automatically by the nuget util

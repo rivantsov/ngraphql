@@ -1,0 +1,21 @@
+<Project>
+    <PropertyGroup>
+        <Version>1.6.0</Version>
+        <AssemblyVersion>1.6.0</AssemblyVersion>
+
+        <AssemblyName>$(MSBuildProjectName)</AssemblyName>
+        <RootNamespace>$(MSBuildProjectName)</RootNamespace>
+        <LangVersion>10.0</LangVersion>
+        <NoWarn>1701;1702;1591</NoWarn>
+        <PackageProjectUrl>https://github.com/rivantsov/ngraphql</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/rivantsov/ngraphql</RepositoryUrl>
+        <Copyright>Roman Ivantsov</Copyright>
+        <Authors>Roman Ivantsov</Authors>
+
+        <RunAnalyzersDuringLiveAnalysis>False</RunAnalyzersDuringLiveAnalysis>
+        <RunAnalyzersDuringBuild>False</RunAnalyzersDuringBuild>
+        <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+        <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+
+    </PropertyGroup>
+</Project>

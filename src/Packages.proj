@@ -1,0 +1,13 @@
+<Project>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+
+        <GenerateDocumentationFile>True</GenerateDocumentationFile>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageOutputPath>..\..\nuget\packages</PackageOutputPath>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <IncludeSymbols>True</IncludeSymbols>
+        <GenerateDocumentationFile>True</GenerateDocumentationFile>
+        <DocumentationFile>$(MSBuildProjectName).xml</DocumentationFile>
+    </PropertyGroup>
+</Project>

@@ -1,9 +1,0 @@
-<Project>
-  <PropertyGroup>
-    <Version>1.5.0</Version>
-    <AssemblyVersion>1.5.0</AssemblyVersion>
-    <Authors>Roman Ivantsov</Authors>
-    <Copyright>Roman Ivantsov</Copyright>
-    <Company />
-  </PropertyGroup>
-</Project>

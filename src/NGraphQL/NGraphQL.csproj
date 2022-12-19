@@ -1,21 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\Version.proj" />
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <RootNamespace>NGraphQL</RootNamespace>
-  </PropertyGroup>
+    <Import Project="..\Common.proj" />
+    <Import Project="..\Packages.proj" />
 
-  <PropertyGroup>
-    <DocumentationFile>bin\NGraphQL.xml</DocumentationFile>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <NoWarn>1701;1702;1591</NoWarn>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <NoWarn>1701;1702;1591</NoWarn>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <Description>NGraphQL - GraphQL for .NET; core package.</Description>
+    </PropertyGroup>
 
 </Project>

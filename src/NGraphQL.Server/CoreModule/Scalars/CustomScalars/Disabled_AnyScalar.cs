@@ -11,6 +11,7 @@ using NGraphQL.Server;
 using NGraphQL.Server.Execution;
 using NGraphQL.Utilities;
 
+/*
 namespace NGraphQL.Core.Scalars {
   // Oct 22 - currently disabled
 
@@ -103,3 +104,4 @@ namespace NGraphQL.Core.Scalars {
 
   }
 }
+*/

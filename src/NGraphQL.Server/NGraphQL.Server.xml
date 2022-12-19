@@ -1,0 +1,140 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>NGraphQL.Server</name>
+    </assembly>
+    <members>
+        <member name="T:NGraphQL.Core.CoreModule">
+            <summary>Core module defines standard and some custom scalars, and standard directives.</summary>
+        </member>
+        <member name="T:NGraphQL.Core.Scalars.MapScalar">
+            <summary>Represents a Dictionary[string, object] type (Map in JavaScript). </summary>
+        </member>
+        <member name="T:NGraphQL.Model.GraphQLModelObject">
+            <summary>Base for all GraphQL Model classes. </summary>
+            <remarks>Most of the model classes are in NGraphQL.Server. We need this base class here because <see cref="T:NGraphQL.Model.EnumHandler"/>
+            class is also part of the model. </remarks>
+        </member>
+        <member name="T:NGraphQL.Model.Request.RequestPath">
+            <summary>Tracks the code path in the request source. Used for reporting path in Error objects
+            according to GraphQL spec. </summary>
+            <remarks>Path elements are either field names (aliases) or array indexes. The paths are organized 
+            as linked lists; each object scope contains a reference to current path element. When error occurs, 
+            the full path (array of names/indexes) is reconstructed from the linked list. </remarks>
+        </member>
+        <member name="T:NGraphQL.Server.Parsing.RequestParser">
+            <summary>RequestParser builds the request object (tree of request elements) from the syntax tree produced by Irony parser.
+            This tree is not mapped yet to API model (types, fields to field defs), this is the job of the RequestMapper. </summary>
+        </member>
+        <member name="T:NGraphQL.Server.Mapping.RequestMapper">
+            <summary>RequestMapper takes request tree and maps its objects to API model; for ex: selection field is mapped to field definition</summary>
+            <summary>RequestMapper takes request tree and maps its objects to API model; for ex: selection field is mapped to field definition</summary>
+        </member>
+        <member name="P:NGraphQL.Server.Execution.RequestContext.CustomData">
+            <summary>Dictionary for use by resolvers to pass data around. </summary>
+        </member>
+        <member name="T:NGraphQL.Server.Execution.OperationFieldExecuter">
+            <summary>Executes a field of a top-level operation. </summary>
+            <remarks> We put these methods into a separate class (and not in a RequestHandler) to be able to create 
+            multiple instances to execute top query fields in parallel. So there will be one RequestHandler and multiple 
+            OperationFieldExecuter instances. </remarks>
+        </member>
+        <member name="T:NGraphQL.Server.Execution.OutputObjectScope">
+            <summary>
+              Slimmed down container for output object data (key/value pairs);
+              Serializer treats it as a dictionary (IDictionary[object,string]).
+            </summary>
+        </member>
+        <member name="T:NGraphQL.Server.Execution.RequestMetrics">
+            <summary>Request processing metrics data.</summary>
+        </member>
+        <member name="F:NGraphQL.Server.Execution.RequestMetrics.StartedOn">
+            <summary>Request processing start.</summary>
+        </member>
+        <member name="F:NGraphQL.Server.Execution.RequestMetrics.Duration">
+            <summary>Request processing duration.</summary>
+        </member>
+        <member name="F:NGraphQL.Server.Execution.RequestMetrics.ExecutionThreadCount">
+            <summary>Number of threads used to execute top operation fields in parallel.</summary>
+        </member>
+        <member name="F:NGraphQL.Server.Execution.RequestMetrics.HttpRequestDuration">
+            <summary>Request processing time by HttpServer if any.</summary>
+        </member>
+        <member name="F:NGraphQL.Server.Execution.RequestMetrics.ResolverCallCount">
+            <summary>Count of the resolver method calls.</summary>
+        </member>
+        <member name="F:NGraphQL.Server.Execution.RequestMetrics.FromCache">
+            <summary>Indicates that the request was not parsed from source text but parsed instance was retrieved from cache. </summary>
+        </member>
+        <member name="F:NGraphQL.Server.Execution.RequestMetrics.OutputObjectCount">
+            <summary>Count of the output objects.</summary>
+        </member>
+        <member name="T:NGraphQL.Server.Execution.RequestQuota">
+            <summary>Warning: quota functionality is a draft, was not tested. </summary>
+        </member>
+        <member name="F:NGraphQL.Server.Execution.RequestQuota.MaxRequestTime">
+            <summary>Max request time; implemented as timeout of cancellation token. </summary>
+        </member>
+        <member name="F:NGraphQL.Server.GraphQLServerSettings.Values">
+            <summary>Dictionary of custom values for use by extensions, custom sclars or applications. </summary>
+        </member>
+        <member name="T:NGraphQL.Utilities.AppTime">
+            <summary>
+                A static utility class provides DateTime-related functions.
+            </summary>
+            <remarks>
+                Implements <see cref="P:System.DateTime.UtcNow"/> and <see cref="P:System.DateTime.Now"/>
+                properties with ability to shift current time forward or back in test scenarios, 
+                for testing time-related features like cache expiration. Also privides 
+                simple time-measuring methods. 
+            </remarks>
+        </member>
+        <member name="P:NGraphQL.Utilities.AppTime.UtcNow">
+            <summary>
+                Gets a System.DateTime object that is set to the current date and time on this
+                computer, expressed as the Coordinated Universal Time (UTC).
+                The returned value can be shifted by the unit testing code.
+            </summary>
+        </member>
+        <member name="P:NGraphQL.Utilities.AppTime.Now">
+            <summary>
+                Gets a System.DateTime object that is set to the current date and time on this
+                computer, expressed as the local time.
+                The returned value can be shifted by the unit testing code.
+            </summary>
+        </member>
+        <member name="M:NGraphQL.Utilities.AppTime.SetOffset(System.TimeSpan)">
+            <summary>
+                Sets an offset to DateTime value returned by the class Now and UtcNow properties. For use in testing environment.
+            </summary>
+            <param name="offset">The time offset value.</param>
+            <remarks>
+                As an example, calling this method with value of 2 hours effectively moves the current application time by
+                2 hours in the future. You can use negative offset value to shift time to the past. Use the <see cref="M:NGraphQL.Utilities.AppTime.ClearOffset"/>
+                method to clear the offset (set it to zero). 
+            </remarks>
+        </member>
+        <member name="M:NGraphQL.Utilities.AppTime.ClearOffset">
+            <summary>
+                Clears the offset to DateTime value returned by the class Now and UtcNow properties. For use in testing environment.
+            </summary>
+        </member>
+        <member name="M:NGraphQL.Utilities.AppTime.GetTimestamp">
+            <summary>
+                Returns the current timestamp value.
+            </summary>
+            <returns>Timestamp.</returns>
+        </member>
+        <member name="M:NGraphQL.Utilities.AppTime.GetDuration(System.Int64)">
+            <summary>Returns the time interval from the given timestamp until current time.  </summary>
+            <param name="fromTimestamp">Start timestamp.</param>
+            <returns>The time span since the timestamp.</returns>
+        </member>
+        <member name="M:NGraphQL.Utilities.AppTime.GetDuration(System.Int64,System.Int64)">
+            <summary>Computes the interval duration between the two timestamps. </summary>
+            <param name="fromTimestamp">Start timestamp.</param>
+            <param name="untilTimestamp">End timestamp.</param>
+            <returns>The time interval.</returns>
+        </member>
+    </members>
+</doc>
