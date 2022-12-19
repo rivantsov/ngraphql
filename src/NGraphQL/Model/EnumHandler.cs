@@ -50,7 +50,7 @@ namespace NGraphQL.Model {
       // build enum value infos
       var fields = enumType.GetFields(BindingFlags.Static | BindingFlags.Public);
       foreach (var fld in fields) {
-        if (fld.HasAttribute<IgnoreAttribute>() || HasAttribute<IgnoreAttribute>(fld, adjustments))
+        if (fld.HasAttribute<IgnoreAttribute>() || HasAdjustmentAttribute<IgnoreAttribute>(fld, adjustments))
           continue;
         var value = fld.GetValue(null);
         var fldLongValue = ConvertToLong(value);
@@ -69,11 +69,7 @@ namespace NGraphQL.Model {
       }
     }
 
-    private bool ShouldIgnore(FieldInfo field, IList<ModelAdjustment> adjustments = null) {
-      return HasAttribute<IgnoreAttribute>(field, adjustments);
-    }
-    
-    private bool HasAttribute<TAttr>(FieldInfo field, IList<ModelAdjustment> adjustments = null) {
+    private bool HasAdjustmentAttribute<TAttr>(FieldInfo field, IList<ModelAdjustment> adjustments = null) {
       if (adjustments == null || adjustments.Count == 0)
         return false;
       var attr = adjustments.FirstOrDefault(ad => ad.Type == this.Type && ad.MemberName == field.Name && ad.Attribute is TAttr);
