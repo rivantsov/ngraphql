@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileSystemGlobbing.Internal.Patterns;
 using Microsoft.Extensions.Hosting;
 
 using NGraphQL.Server;
@@ -33,7 +34,7 @@ namespace Things.GraphQL.HttpServer {
       }
       //app.UseHttpsRedirection();
       app.UseRouting();
-
+      
       // create server and configure GraphQL endpoints
       _graphQLServer = CreateThingsGraphQLHttpServer();
       app.UseEndpoints(endpoints => {

@@ -72,6 +72,7 @@ namespace NGraphQL.Server.AspNetCore {
     private async Task HandleSchemaDocRequestAsync(HttpContext context) {
       context.Response.ContentType = "application/text";
       await context.Response.WriteAsync(Server.Model.SchemaDoc);
+      
     }
 
     // request is parsed; now we know input variable types, we can deserialize them. 
