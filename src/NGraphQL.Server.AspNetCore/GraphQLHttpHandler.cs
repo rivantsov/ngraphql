@@ -14,7 +14,7 @@ using NGraphQL.Utilities;
 namespace NGraphQL.Server.AspNetCore {
 
   /// <summary>GraphQL Http Server. </summary>
-  public class GraphQLHttpServer {
+  public class GraphQLHttpHandler {
     public const string ContentTypeJson = "application/json";
     public const string ContentTypeGraphQL = "application/graphql";
     public const string OperationContextKey = "_vita_operation_context_"; // When using VitaWebMiddleware
@@ -23,7 +23,7 @@ namespace NGraphQL.Server.AspNetCore {
     public readonly GraphQLServer Server;
     JsonVariablesDeserializer _varDeserializer;
 
-    public GraphQLHttpServer(GraphQLServer server, JsonSerializerSettings serializerSettings = null) {
+    public GraphQLHttpHandler(GraphQLServer server, JsonSerializerSettings serializerSettings = null) {
       Server = server;
       if (Server.Model == null)
         Server.Initialize(); 

@@ -5,9 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace NGraphQL.Server.AspNetCore {
   public class DefaultGraphQLController: Controller {
-    GraphQLHttpServer _server;
+    GraphQLHttpHandler _server;
   
-    public DefaultGraphQLController(GraphQLHttpServer server) {
+    public DefaultGraphQLController(GraphQLHttpHandler server) {
       _server = server;
     }
 

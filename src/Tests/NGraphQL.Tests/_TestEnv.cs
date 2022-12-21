@@ -37,6 +37,7 @@ namespace NGraphQL.Tests {
         ThingsServer = new ThingsGraphQLServer(thingsBizApp, stt);
         // Add logging hook
         ThingsServer.Events.RequestCompleted += ThingsServer_RequestCompleted;
+        ThingsServer.Initialize();
       } catch (ServerStartupException sEx) {
         LogText(sEx.ToText() + Environment.NewLine);
         LogText(sEx.GetErrorsAsText());

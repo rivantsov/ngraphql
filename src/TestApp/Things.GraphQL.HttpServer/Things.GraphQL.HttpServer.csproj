@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="Properties\XlaunchSettings.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="GraphQL.Server.Ui.GraphiQL" Version="7.2.0" />
   </ItemGroup>
 

@@ -1,21 +1,20 @@
 {
+  "profiles": {
+    "Things.GraphQL.HttpServer": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "ui/graphiql",
+      "hotReloadEnabled": false,
+      "applicationUrl": "http://localhost:55571"
+    }
+  },
+  "$schema": "http://json.schemastore.org/launchsettings.json",
   "iisSettings": {
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
       "applicationUrl": "http://localhost:55571",
       "sslPort": 0
-    }
-  },
-  "$schema": "http://json.schemastore.org/launchsettings.json",
-  "profiles": {
-    "IIS Express": {
-      "commandName": "IISExpress",
-      "launchBrowser": true,
-      "launchUrl": "ui/graphiql",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
     }
   }
 }

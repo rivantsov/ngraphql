@@ -9,13 +9,15 @@ using Newtonsoft.Json;
 
 using NGraphQL.Client;
 using NGraphQL.Utilities;
+using Things.GraphQL.HttpServer;
 
 namespace NGraphQL.Tests.HttpTests {
+
   public static class TestEnv {
-    public static string ServiceUrl = "http://127.0.0.1:55000";
+    public static string ServiceUrl = "http://127.0.0.1:55571";
     public static string GraphQLEndPointUrl = ServiceUrl + "/graphql";
     public static GraphQLClient Client;
-    static IWebHost _webHost;
+    static Task _task; 
     public static string LogFilePath = "_graphQLHttpTests.log";
 
     public static void Initialize() {
@@ -24,25 +26,12 @@ namespace NGraphQL.Tests.HttpTests {
       if (File.Exists(LogFilePath))
         File.Delete(LogFilePath);
 
-      StartWebHost();
       Client = new GraphQLClient(GraphQLEndPointUrl);
       Client.RequestCompleted += Client_RequestCompleted;
+
+      _task = ThingsWebServerStartupHelper.StartThingsGraphqQLWebServer(args: null, enablePreviewFeatures: true, useGraphiql: false, serverUrl: ServiceUrl);
     }
 
-    private static void StartWebHost() {
-      var hostBuilder = WebHost.CreateDefaultBuilder()
-          .ConfigureAppConfiguration((context, config) => { })
-          .UseStartup<Things.GraphQL.HttpServer.TestServerStartup>()
-          .UseUrls(ServiceUrl)
-          ;
-      _webHost = hostBuilder.Build();
-      Task.Run(() => _webHost.Run());
-      Debug.WriteLine("The service is running on URL: " + ServiceUrl);
-    }
-
-    public static void ShutDown() {
-      _webHost?.StopAsync().Wait();
-    }
 
     public static void LogTestMethodStart([CallerMemberName] string testName = null) {
       LogText($@"
