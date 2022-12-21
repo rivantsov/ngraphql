@@ -50,7 +50,7 @@ namespace Things.GraphQL.HttpServer {
         name: "default",
         pattern: "{controller=DefaultGraphQL}/{action}"
       );
-      // Use GraphiQL UI
+
       if (useGraphiql)
         app.UseGraphQLGraphiQL("/ui/graphiql", new GraphiQLOptions() { GraphQLEndPoint = "/graphql" });
 
