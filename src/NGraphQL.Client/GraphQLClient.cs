@@ -64,7 +64,7 @@ namespace NGraphQL.Client {
 
     #endregion
 
-    public Task<ServerResponse> PostAsync(string query, IDict variables = null, string operationName = null,
+    public Task<GraphQLResult> PostAsync(string query, IDict variables = null, string operationName = null,
                                          CancellationToken cancellationToken = default) {
       var request = new GraphQLRequest() { Query = query, Variables = variables, OperationName = operationName };
       var reqData = new ClientRequest() {
@@ -73,7 +73,7 @@ namespace NGraphQL.Client {
       return SendAsync(reqData);
     }
 
-    public Task<ServerResponse> GetAsync(string query, IDict variables = null, string operationName = null,
+    public Task<GraphQLResult> GetAsync(string query, IDict variables = null, string operationName = null,
                           CancellationToken cancellationToken = default) {
       var request = new GraphQLRequest() { Query = query, Variables = variables, OperationName = operationName };
       var reqData = new ClientRequest() {
@@ -91,9 +91,9 @@ namespace NGraphQL.Client {
       return doc;
     }
 
-    public async Task<ServerResponse> SendAsync(ClientRequest request) {
+    public async Task<GraphQLResult> SendAsync(ClientRequest request) {
       var start = GetTimestamp();
-      var response = new ServerResponse(request);
+      var response = new GraphQLResult(request, _jsonOptions);
       try {
         RequestStarting?.Invoke(this, new RequestStartingEventArgs(request));
         await SendAsync(request, response);

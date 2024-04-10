@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using NGraphQL.Model;
 using NGraphQL.Utilities;
@@ -13,6 +14,10 @@ namespace NGraphQL.Client {
     // We want to handle enum, enum? types. For arrays of enums, we do not want to interfere, the main serializer will handle 
     // array, and only come here for individual values.  
     public override bool CanConvert(Type objectType) {
+      // TEMP! - disabling it
+      if (true)
+        return false; 
+
       if (objectType.IsEnum)
         return true;
       if (!objectType.IsValueType)
@@ -22,6 +27,11 @@ namespace NGraphQL.Client {
       return handler != null; 
     }
 
+    public override JsonConverter CreateConverter(Type typeToConvert, JsonSerializerOptions options) {
+      throw new NotImplementedException();
+    }
+
+    /*
     public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer) {
       var enumType = objectType; 
       var nullable = ReflectionHelper.CheckNullable(ref enumType);
@@ -82,5 +92,7 @@ namespace NGraphQL.Client {
       }
 
     }//method
+
+    */
   }
 }

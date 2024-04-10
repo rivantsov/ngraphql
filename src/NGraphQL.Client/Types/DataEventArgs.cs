@@ -11,10 +11,10 @@ namespace NGraphQL.Client {
   }
 
   public class RequestCompletedEventArgs : EventArgs {
-    public readonly ServerResponse Response;
+    public readonly GraphQLResult Result;
 
-    public RequestCompletedEventArgs(ServerResponse response) {
-      Response = response; 
+    public RequestCompletedEventArgs(GraphQLResult result) {
+      Result = result; 
     }
   }
 

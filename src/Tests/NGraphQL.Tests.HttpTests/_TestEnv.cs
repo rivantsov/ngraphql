@@ -44,12 +44,12 @@ Testing: {descr}
     }
 
     private static void Client_RequestCompleted(object sender, RequestCompletedEventArgs e) {
-      LogCompletedRequest(e.Response);
+      LogCompletedRequest(e.Result);
     }
 
-    public static void LogCompletedRequest(ServerResponse response) {
+    public static void LogCompletedRequest(GraphQLResult result) {
       string reqText;
-      var req = response.Request; 
+      var req = result.Request; 
       if (req.HttpMethod == "GET") {
         reqText = @$"GET, URL: {req.UrlQueryPartForGet} 
                 unescaped: {Uri.UnescapeDataString(req.UrlQueryPartForGet)}";
@@ -58,7 +58,7 @@ Testing: {descr}
         var bodyUnesc = req.Body.Replace("\\r\\n", Environment.NewLine);
         reqText = "POST, payload: " + Environment.NewLine + bodyUnesc;
       }
-      var jsonResponse = JsonConvert.SerializeObject(response.TopFields, Formatting.Indented);
+      var jsonResponse = JsonConvert.SerializeObject(result.TopFields, Formatting.Indented);
       var text = $@"
 Request: 
 {reqText}
@@ -66,13 +66,13 @@ Request:
 Response:
 {jsonResponse}
 
-//  time: {response.DurationMs} ms
+//  time: {result.DurationMs} ms
 ----------------------------------------------------------------------------------------------------------------------------------- 
 
 ";
       LogText(text);
-      if (response.Exception != null)
-        LogText(response.Exception.ToText());
+      if (result.Exception != null)
+        LogText(result.Exception.ToText());
     }
 
 

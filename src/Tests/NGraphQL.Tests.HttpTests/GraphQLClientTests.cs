@@ -22,7 +22,7 @@ namespace NGraphQL.Tests.HttpTests.Client {
     [TestMethod]
     public async Task TestGraphQLClient() {
       TestEnv.LogTestMethodStart();
-      ServerResponse resp;
+      GraphQLResult gResult;
       string thingName;
       var query1 = "query ($id: Int) { getThing(id: $id) {name kind theFlags} }";
       var queryM = "query { things {name} }";
@@ -31,38 +31,38 @@ namespace NGraphQL.Tests.HttpTests.Client {
       // Post requests
       TestEnv.LogTestDescr("Testing Post requests");
       // single thing with query parameter
-      resp = await TestEnv.Client.PostAsync(query1, vars);
-      resp.EnsureNoErrors();
-      var thing = resp.data.getThing;
-      thingName = thing.name;
+      gResult = await TestEnv.Client.PostAsync(query1, vars);
+      gResult.EnsureNoErrors();
+      var thing = gResult.GetTopField<Thing>("getThing");
+      thingName = thing.Name;
       Assert.AreEqual("Name3", thingName);
-      var thingKind = ResponseHelper.ToEnum<ThingKind>(thing.kind);
-      Assert.AreEqual(ThingKind.KindThree, thingKind, "Invalid kind field value.");
-      var flags = ResponseHelper.ToEnum<TheFlags>(thing.theFlags);
-      Assert.AreEqual(TheFlags.FlagOne | TheFlags.FlagTwo, flags, "Invalid flags field value");
+      Assert.AreEqual(ThingKind.KindThree, thing.TheKind, "Invalid kind field value.");
+      Assert.AreEqual(TheFlags.FlagOne | TheFlags.FlagTwo, thing.Flags, "Invalid flags field value");
 
       // list of things 
-      resp = await TestEnv.Client.PostAsync(queryM, vars);
-      resp.EnsureNoErrors();
-      thingName = resp.data.things[1].name;
+      gResult = await TestEnv.Client.PostAsync(queryM, vars);
+      gResult.EnsureNoErrors();
+      var things = gResult.GetTopField<Thing[]>("things");
+      thingName = things[1].Name;
       Assert.AreEqual("Name2", thingName);
 
       TestEnv.LogTestDescr("Testing Get requests");
       // single thing with query parameter
-      resp = await TestEnv.Client.GetAsync(query1, vars);
-      resp.EnsureNoErrors();
-      thingName = resp.data.getThing.name;
-      Assert.AreEqual("Name3", thingName);
+      gResult = await TestEnv.Client.GetAsync(query1, vars);
+      gResult.EnsureNoErrors();
+      thing = gResult.GetTopField<Thing>("getThing");
+      Assert.AreEqual("Name3", thing.Name);
 
       // list of things 
-      resp = await TestEnv.Client.GetAsync(queryM, vars);
-      resp.EnsureNoErrors();
-      thingName = resp.data.things[1].name;
+      gResult = await TestEnv.Client.GetAsync(queryM, vars);
+      gResult.EnsureNoErrors();
+      things = gResult.GetTopField<Thing[]>("things");
+      thingName = things[1].Name;
       Assert.AreEqual("Name2", thingName);
 
       TestEnv.LogTestDescr("Testing queries with errors");
-      resp = await TestEnv.Client.PostAsync(query1 + " ABCD ", vars);
-      var errs = resp.Errors;
+      gResult = await TestEnv.Client.PostAsync(query1 + " ABCD ", vars);
+      var errs = gResult.Errors;
       Assert.IsTrue(errs.Count > 0, "Expected syntax error");
     }
 
@@ -70,7 +70,7 @@ namespace NGraphQL.Tests.HttpTests.Client {
     [TestMethod]
     public async Task TestGraphQLClient_StrongTypes() {
       TestEnv.LogTestMethodStart();
-      ServerResponse resp;
+      GraphQLResult result;
       string query;
       var vars = new TDict() { { "id", 3 } };
 
@@ -82,9 +82,9 @@ query ($id: Int) {
     id, name, kind, theFlags, randoms(count: 5), __typename
   } 
 }";
-      resp = await TestEnv.Client.PostAsync(query, vars);
-      resp.EnsureNoErrors();
-      var thing = resp.GetTopField<Thing_>("thing");
+      result = await TestEnv.Client.PostAsync(query, vars);
+      result.EnsureNoErrors();
+      var thing = result.GetTopField<Thing_>("thing");
       Assert.IsNotNull(thing);
       Assert.AreEqual("Name3", thing.Name, "thing name mismatch");
       Assert.AreEqual(ThingKind.KindThree, thing.Kind, "Kind mismatch");
@@ -93,14 +93,14 @@ query ($id: Int) {
       Assert.AreEqual(5, thing.Randoms.Length, "expected 5 randoms");
       
       // Check unmapped introspection field - to be implemented
-      // string typeName = resp.GetUnmappedFieldValue<string>(thing, "__typename");
+      // string typeName = gResult.GetUnmappedFieldValue<string>(thing, "__typename");
       // Assert.AreEqual("Thing", typeName, "type name does not match");
     }
 
     [TestMethod]
     public async Task TestGraphQLClient_Introspection() {
       TestEnv.LogTestMethodStart();
-      ServerResponse resp;
+      GraphQLResult result;
       string query;
        
       // Post requests
@@ -118,9 +118,9 @@ query {
     }
   } 
 }";
-      resp = await TestEnv.Client.PostAsync(query);
-      resp.EnsureNoErrors();
-      var type = resp.GetTopField<__Type>("thingType");
+      result = await TestEnv.Client.PostAsync(query);
+      result.EnsureNoErrors();
+      var type = result.GetTopField<__Type>("thingType");
       Assert.IsNotNull(type);
       Assert.AreEqual("Thing", type.Name, "thing name mismatch");
       Assert.IsTrue(type.Fields.Count > 5, "Expected fields");

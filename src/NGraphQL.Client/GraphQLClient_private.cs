@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace NGraphQL.Client {
   public partial class GraphQLClient {
 
-    private async Task SendAsync(ClientRequest request, ServerResponse response) {
+    private async Task SendAsync(ClientRequest request, GraphQLResult response) {
       var reqMessage = new HttpRequestMessage();
       switch (request.HttpMethod) {
 
@@ -32,23 +33,19 @@ namespace NGraphQL.Client {
           reqHeaders.Add(de.Key, de.Value);
 
       // actually execute
-      var respMessage = await _client.SendAsync(reqMessage, request.CompletionOption, request.CancellationToken);
+      var respMessage = await _client.SendAsync(reqMessage, HttpCompletionOption.ResponseContentRead, request.CancellationToken);
       respMessage.EnsureSuccessStatusCode();
       await ReadServerResponseAsync(response, respMessage);
     }
 
-    private async Task ReadServerResponseAsync(ServerResponse response, HttpResponseMessage respMessage) {
-      response.BodyJson = await respMessage.Content.ReadAsStringAsync();
-      response.TopFields = JsonConvert.DeserializeObject<IDictionary<string, JToken>>(response.BodyJson);
-      if (response.TopFields.TryGetValue("errors", out var errs) && errs != null) {
-        response.Errors = errs.ToObject<IList<GraphQLError>>(); //convert to strongly-typed objects
-      }
+    private async Task ReadServerResponseAsync(GraphQLResult result, HttpResponseMessage respMessage) {
+      result.ResponseJson = await respMessage.Content.ReadAsStringAsync();
+      result.ResponseBody = JsonSerializer.Deserialize<GraphQLResponseBody>(result.ResponseJson);
     }
 
     private HttpContent BuildPostMessageContent(ClientRequest request) {
       var payloadDict = BuildPayload(request.CoreRequest);
-      // use this settings object to ensure camel-case names in objects (varirable values)
-      request.Body = JsonConvert.SerializeObject(payloadDict, ClientSerializers.TypedJsonSerializerSettings);
+      request.Body = JsonSerializer.Serialize(payloadDict, _jsonOptions);
       var content = new StringContent(request.Body, Encoding.UTF8, MediaTypeJson);
       return content;
     }
@@ -63,7 +60,7 @@ namespace NGraphQL.Client {
         return urlQry;
       // serializer vars as json, and add to URL qry
       // do not use settings here, we don't need fancy settings here from body serialization process
-      var varsJson = JsonConvert.SerializeObject(req.Variables, ClientSerializers.UrlJsonSettings);
+      var varsJson = JsonSerializer.Serialize(req.Variables, _jsonUrlOptions);
       urlQry += "&variables=" + Uri.EscapeUriString(varsJson);
       return urlQry;
     }

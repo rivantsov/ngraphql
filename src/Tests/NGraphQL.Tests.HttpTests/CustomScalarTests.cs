@@ -39,7 +39,7 @@ query {
   }
 }";
       var resp = await ExecuteAsync(query);
-      var resDict = (IDict)resp.data.res; // ["res"];
+      var resDict = resp.GetTopField<IDict>("res");
       var propsObj = resDict["props"];
       var props = (IDict)propsObj;
       Assert.AreEqual(2, props.Count, "Expected 2 props in Dict"); // 
@@ -62,7 +62,7 @@ query ($inp: InputObjWithCustomScalars) {
       Assert.AreEqual(4, inpBack.Map.Count, "Expected 4 props in Dict");
       // check nested dict and value inside
       dynamic nested = inpBack.Map["nested"];
-      int nestedInt = (int) nested.nestedInt;
+      int nestedInt = (int)nested.nestedInt;
       Assert.AreEqual(234, nestedInt);
 
       TestEnv.LogTestDescr(@" MapScalar test 3 - map in Input object; sending map value as literal (array of arrays).");
@@ -88,11 +88,9 @@ query {
       resp = await ExecuteAsync(query);
       inpBack = resp.GetTopField<InputObjWithCustomScalars>("res");
       Assert.AreEqual(2, inpBack.Map.Count, "Expected 2 props in Dict");
-
     }
 
-
-    public async Task<ServerResponse> ExecuteAsync(string query, IDictionary<string, object> vars = null) {
+    public async Task<GraphQLResult> ExecuteAsync(string query, IDictionary<string, object> vars = null) {
       var resp = await TestEnv.Client.PostAsync(query, vars);
       resp.EnsureNoErrors();
       return resp; 

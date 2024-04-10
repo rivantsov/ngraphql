@@ -14,7 +14,6 @@ namespace NGraphQL.Client {
     public Type ResultType;
     public CancellationToken CancellationToken;
     public IDictionary<string, string> Headers;
-    public HttpCompletionOption CompletionOption = HttpCompletionOption.ResponseContentRead;
 
     public ClientRequest() { }
   }
