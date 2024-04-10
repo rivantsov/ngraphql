@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Serialization;
 
 namespace NGraphQL.Client {
   using IDict = IDictionary<string, object>;
@@ -20,6 +20,8 @@ namespace NGraphQL.Client {
 
     string _endpointUrl; 
     HttpClient _client;
+    JsonSerializerOptions _jsonOptions;
+    JsonSerializerOptions _jsonUrlOptions;
 
     public GraphQLClient(string endpointUrl) {
       _endpointUrl = endpointUrl;
@@ -30,6 +32,23 @@ namespace NGraphQL.Client {
     public GraphQLClient(HttpClient httpClient) {
       _client = httpClient;
       _endpointUrl = httpClient.BaseAddress.ToString();
+    }
+
+    private GraphQLClient() {
+      _jsonOptions = new JsonSerializerOptions {
+        PropertyNameCaseInsensitive = true,
+        PropertyNamingPolicy = null, // remove camel-style policy
+        IncludeFields = true,
+        WriteIndented = true
+      };
+      _jsonUrlOptions = new JsonSerializerOptions {
+        PropertyNameCaseInsensitive = true,
+        PropertyNamingPolicy = null, // remove camel-style policy
+        IncludeFields = true,
+      };
+      var conv = new JsonEnumConverter();
+      _jsonOptions.Converters.Add(conv);
+      _jsonUrlOptions.Converters.Add(conv);
     }
 
     #region Headers

@@ -2,14 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json.Serialization;
 using NGraphQL.Model;
 using NGraphQL.Utilities;
 
-namespace NGraphQL.Client.Serialization {
+namespace NGraphQL.Client {
 
-  internal class JsonEnumConverter : JsonConverter {
+  internal class JsonEnumConverter : JsonConverterFactory {
 
     // We want to handle enum, enum? types. For arrays of enums, we do not want to interfere, the main serializer will handle 
     // array, and only come here for individual values.  
