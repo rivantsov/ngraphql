@@ -8,7 +8,7 @@
     <Import Project="..\Packages.proj" />
 
     <ItemGroup>
-        <PackageReference Include="Irony" Version="1.1.0" />
+        <PackageReference Include="Irony" Version="1.5.1" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     </ItemGroup>
 

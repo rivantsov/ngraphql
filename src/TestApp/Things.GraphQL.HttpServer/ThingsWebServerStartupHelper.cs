@@ -1,18 +1,15 @@
-﻿using GraphQL.Server.Ui.GraphiQL;
+﻿using System.Threading.Tasks;
+using GraphQL.Server.Ui.GraphiQL;
 using Microsoft.AspNetCore.Builder;
-using NGraphQL.Server.AspNetCore;
-using NGraphQL.Server;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore;
-using System.Diagnostics;
-using Microsoft.AspNetCore.Hosting;
-using System.Threading;
-using Microsoft.AspNetCore.Mvc.ApplicationParts;
+using NGraphQL.Server;
+using NGraphQL.Server.AspNetCore;
 
 namespace Things.GraphQL.HttpServer {
-  
+
   public static class ThingsWebServerStartupHelper {
 
     /// <summary>Starts GraphQL Web Server. </summary>
