@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 
-namespace NGraphQL.Client {
+namespace NGraphQL.Client.Types {
 
   public class ClientRequest {
-    public GraphQLRequest CoreRequest;
+    public GraphQLRequest Body;
+    public string BodyJson;
 
     public string HttpMethod;
-    public string Body;
     public string UrlQueryPartForGet;
     public Type ResultType;
     public CancellationToken CancellationToken;

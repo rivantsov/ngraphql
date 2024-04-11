@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
+using NGraphQL.Client.Types;
 
 namespace NGraphQL.Client {
 
   public class GraphQLResult {
     public readonly ClientRequest Request;
-    public GraphQLResponseBody ResponseBody;
+    public DeserializedGraphQLResponse ResponseBody;
     public IList<GraphQLError> Errors => ResponseBody?.Errors;
     public string ResponseJson;
     public double DurationMs;
@@ -42,12 +43,13 @@ namespace NGraphQL.Client {
           if (HasData())
             _topFields = RootDataElem.Deserialize<Dictionary<string, JsonElement>>(_jsonOptions);
           else
-            _topFields = new Dictionary<string, JsonElement>();
+            _topFields = _emptyDict;
         }
         return _topFields;
       }
-    }
-    IDictionary<string, JsonElement> _topFields;
+    } IDictionary<string, JsonElement> _topFields;
+    private static IDictionary<string, JsonElement> _emptyDict = new Dictionary<string, JsonElement>();
+
 
     public T GetTopField<T>(string name) {
       if (!TopFields.TryGetValue(name, out var jsonElem))

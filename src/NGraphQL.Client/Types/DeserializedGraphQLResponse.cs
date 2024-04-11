@@ -4,12 +4,13 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Text.Json;
 
-namespace NGraphQL.Client {
+namespace NGraphQL.Client.Types {
 
-  public class GraphQLResponseBody {
+  public class DeserializedGraphQLResponse {
     [JsonPropertyName("data")]
     public JsonElement Data;
+
     [JsonPropertyName("errors")]
-    public IList<GraphQLError> Errors;
+    public IList<GraphQLError> Errors; 
   }
 }

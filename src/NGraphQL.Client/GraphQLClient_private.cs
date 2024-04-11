@@ -5,11 +5,13 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using NGraphQL.Client.Types;
 
 namespace NGraphQL.Client {
   public partial class GraphQLClient {
 
-    private async Task SendAsync(ClientRequest request, GraphQLResult response) {
+    private async Task SendAsync(GraphQLResult result) {
+      var request = result.Request;
       var reqMessage = new HttpRequestMessage();
       switch (request.HttpMethod) {
 
@@ -35,24 +37,20 @@ namespace NGraphQL.Client {
       // actually execute
       var respMessage = await _client.SendAsync(reqMessage, HttpCompletionOption.ResponseContentRead, request.CancellationToken);
       respMessage.EnsureSuccessStatusCode();
-      await ReadServerResponseAsync(response, respMessage);
-    }
-
-    private async Task ReadServerResponseAsync(GraphQLResult result, HttpResponseMessage respMessage) {
       result.ResponseJson = await respMessage.Content.ReadAsStringAsync();
-      result.ResponseBody = JsonSerializer.Deserialize<GraphQLResponseBody>(result.ResponseJson, _jsonOptions);
+      result.ResponseBody = JsonSerializer.Deserialize<DeserializedGraphQLResponse>(result.ResponseJson, _jsonOptions);
     }
 
     private HttpContent BuildPostMessageContent(ClientRequest request) {
-      var payloadDict = BuildPayload(request.CoreRequest);
-      request.Body = JsonSerializer.Serialize(payloadDict, _jsonOptions);
-      var content = new StringContent(request.Body, Encoding.UTF8, MediaTypeJson);
+      var reqDict = ConvertToSparseDictionary(request.Body);
+      request.BodyJson = JsonSerializer.Serialize(reqDict, _jsonOptions);
+      var content = new StringContent(request.BodyJson, Encoding.UTF8, MediaTypeJson);
       return content;
     }
 
     // see https://graphql.org/learn/serving-over-http/#get-request
     private string BuildGetMessageUrlQuery(ClientRequest request) {
-      var req = request.CoreRequest;
+      var req = request.Body;
       var urlQry = "query=" + Uri.EscapeUriString(req.Query);
       if (!string.IsNullOrWhiteSpace(req.OperationName))
         urlQry += "&operationName=" + Uri.EscapeUriString(req.OperationName);
@@ -65,7 +63,9 @@ namespace NGraphQL.Client {
       return urlQry;
     }
 
-    private IDictionary<string, object> BuildPayload(GraphQLRequest request) {
+    // we do not serialize request directly, but first convert it to dictionary, to make sure
+    //  null values do not show up in Json.
+    private IDictionary<string, object> ConvertToSparseDictionary(GraphQLRequest request) {
       var dict = new Dictionary<string, object>();
       dict["query"] = request.Query;
       var vars = request.Variables;

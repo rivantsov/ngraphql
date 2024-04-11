@@ -16,6 +16,8 @@ namespace NGraphQL {
     public IList<object> Path;
     public IDictionary<string, object> Extensions = new Dictionary<string, object>(); 
 
+    public GraphQLError() { }
+
     public GraphQLError(string message, IList<object> path = null, SourceLocation location = null, string type = null) {
       Message = message;
       Path = path?.ToArray() ?? _emptyPath;

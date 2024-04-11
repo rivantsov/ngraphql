@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NGraphQL.Client;
+using Things;
 using Things.GraphQL.Types;
 
 namespace NGraphQL.Tests.HttpTests {
@@ -39,9 +40,9 @@ query {
   }
 }";
       var resp = await ExecuteAsync(query);
-      var resDict = resp.GetTopField<IDict>("res");
-      var propsObj = resDict["props"];
-      var props = (IDict)propsObj;
+      var thing1 = resp.GetTopField<Thing>("res");
+      var props = thing1.Props;
+      //var props = (Dict)propsObj;
       Assert.AreEqual(2, props.Count, "Expected 2 props in Dict"); // 
 
 

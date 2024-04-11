@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NGraphQL.Client {
+namespace NGraphQL.Client.Types {
 
   public class RequestStartingEventArgs : EventArgs {
     public readonly ClientRequest Request;

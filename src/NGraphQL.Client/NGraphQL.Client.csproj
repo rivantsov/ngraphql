@@ -16,12 +16,10 @@
 
     <ItemGroup>
       <Compile Remove="ResponseHelper_Disabled.cs" />
-      <Compile Remove="Types\ServerResponse_Disabled.cs" />
     </ItemGroup>
 
     <ItemGroup>
       <None Include="ResponseHelper_Disabled.cs" />
-      <None Include="Types\ServerResponse_Disabled.cs" />
     </ItemGroup>
 
     <ItemGroup>

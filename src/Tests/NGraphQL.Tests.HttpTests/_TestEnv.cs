@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 using NGraphQL.Client;
+using NGraphQL.Client.Types;
 using NGraphQL.Utilities;
 using Things.GraphQL.HttpServer;
 
@@ -55,7 +56,7 @@ Testing: {descr}
                 unescaped: {Uri.UnescapeDataString(req.UrlQueryPartForGet)}";
       } else {
         // for better readability, unescape \r\n; Json serializer escapes new-line symbols inside strings,
-        var bodyUnesc = req.Body.Replace("\\r\\n", Environment.NewLine);
+        var bodyUnesc = req.BodyJson.Replace("\\r\\n", Environment.NewLine);
         reqText = "POST, payload: " + Environment.NewLine + bodyUnesc;
       }
       var jsonResponse = JsonConvert.SerializeObject(result.TopFields, Formatting.Indented);
