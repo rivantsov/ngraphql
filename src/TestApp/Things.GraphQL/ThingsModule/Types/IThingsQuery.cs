@@ -7,17 +7,17 @@ namespace Things.GraphQL.Types {
 
   public interface IThingsQuery {
     // Resolver is linked thru attribute on resolver method
-    List<Thing_> Things { get; }
+    List<Thing> Things { get; }
 
     [Resolver(nameof(ThingsResolvers.GetThings))]
-    List<ThingX_> ThingsX { get; }
+    List<ThingX> ThingsX { get; }
 
-    /// <summary>Returns the Thing specified by Id.</summary>
-    /// <param name="id">Thing id.</param>
-    Thing_ GetThing(int id);
+    /// <summary>Returns the ThingEntity specified by Id.</summary>
+    /// <param name="id">ThingEntity id.</param>
+    Thing GetThing(int id);
 
-    /// <summary>Returns the Thing with invalid value(s).</summary>
-    Thing_ GetInvalidThing();
+    /// <summary>Returns the ThingEntity with invalid value(s).</summary>
+    Thing GetInvalidThing();
 
     int WaitForPositiveValueAsync();
 
@@ -59,9 +59,9 @@ namespace Things.GraphQL.Types {
 
     string EchoIntListRank2(int[][] values);
 
-    Thing_[] GetThingsList();
+    Thing[] GetThingsList();
 
-    Thing_[][] GetThingsListRank2();
+    Thing[][] GetThingsListRank2();
 
     // test of sending, receiving Flag sets
     TheFlags EchoFlags(TheFlags? flags);

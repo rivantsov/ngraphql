@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace Things {
 
-  /// <summary>Thing kind enumeration.</summary>  
+  /// <summary>ThingEntity kind enumeration.</summary>  
   public enum ThingKind {
-    /// <summary>Thing kind #1.</summary>  
+    /// <summary>ThingEntity kind #1.</summary>  
     KindOne,
     KindTwo,
 
@@ -21,7 +21,7 @@ namespace Things {
     KindFour_Ignored,
   }
 
-  /// <summary>Thing flags enumeration.</summary>  
+  /// <summary>ThingEntity flags enumeration.</summary>  
   [Flags]
   public enum TheFlags {
     None = 0, // this will not appear in GraphQL enum: 0-valued values in Flags enums are ignored automatically
@@ -32,33 +32,33 @@ namespace Things {
   }
 
   // testing entity subclassing
-  public class ThingBase {
+  public class ThingBaseEntity {
     public int Id { get; set; }
     public string Name { get; set; }
   }
 
   [DebuggerDisplay("Thing: {Name}/{TheKind}")]
-  public class Thing: ThingBase {
+  public class ThingEntity: ThingBaseEntity {
     public string Descr;
     public ThingKind TheKind;
     public TheFlags Flags;
     public DateTime SomeDate;
     public DateTime? DateQ;
-    public Thing NextThing;
+    public ThingEntity NextThing;
 
     // For testing batching
-    public OtherThing MainOtherThing;
-    public IList<OtherThing> OtherThings; 
+    public OtherThingEntity MainOtherThing;
+    public IList<OtherThingEntity> OtherThings; 
 
     public string Tag;
 
-    public IThingIntfEntity IntfThing;
+    public IExtCustomInterface IntfThing;
 
     public Dictionary<string, object> Props;
   }
 
   [DebuggerDisplay("{Name}")]
-  public class OtherThing {
+  public class OtherThingEntity {
     public int Id;
     public string Name { get; set; }
 
@@ -81,16 +81,16 @@ namespace Things {
 
   #region entities as interfaces
   // testing entities as interfaces, with inheritance - the case for VITA ORM
-  public interface IThingIntfEntityBase {
+  public interface ICustomInterface {
     int Id { get; }
     string Name { get; }
   }
 
-  public interface IThingIntfEntity : IThingIntfEntityBase {
+  public interface IExtCustomInterface : ICustomInterface {
     string Tag { get; }
   }
 
-  public class ThingEntity : IThingIntfEntity {
+  public class ThingWithInterfaceEntity : IExtCustomInterface {
     public int Id { get; set; } = _id++;
     public string Name { get; set; } = "name" + _id;
     public string Tag { get; set; } = "tag" + _id; 

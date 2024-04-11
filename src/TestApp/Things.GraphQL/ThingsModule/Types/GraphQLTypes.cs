@@ -8,18 +8,18 @@ using NGraphQL.CodeFirst;
 namespace Things.GraphQL.Types {
 
   // testing subclassing and abstract classes
-  public class ThingBase_ {
+  public class ThingBase {
     public int Id { get; set; }
     /// <summary>The name of the thing.</summary>
     public string Name { get; set; }
-    // testing bug #13, field in base class is not mapped to resolver, even if there's mapping expr to entity
+    // testing bug #13, field in base class is not mapped to resolver, even if there's mapping expr to entity.
     public string StrField;
 
   }
 
   /// <summary>A sample GraphQL output object.</summary>
   [Implements(typeof(IIdNameOtherThingsIntf))]
-  public class Thing_ : ThingBase_, INamedObj, IObjWithId {
+  public class Thing : ThingBase, INamedObj, IObjWithId {
     /// <summary>The description of the thing.</summary>
     [Null]
     public string Description;
@@ -29,16 +29,16 @@ namespace Things.GraphQL.Types {
     public DateTime SomeDateTime;
     public DateTime? DateTimeOpt; //it will be marked as Nullable automatically (no ! mark)
     [Null]
-    public Thing_ NextThing;
+    public Thing NextThing;
 
     [Null, DeprecatedDir("Deprecate-reason1")]
     public string Tag;
 
     [Resolver(nameof(ThingsResolvers.GetMainOtherThing)), Null]
-    public OtherThing_ MainOtherThing;
+    public OtherThing MainOtherThing;
 
     [Resolver(nameof(ThingsResolvers.GetOtherThings))]
-    public IList<OtherThing_> OtherThings;
+    public IList<OtherThing> OtherThings;
 
     // An example of handling a field with parameters, with intent to use it in strongly-typed client
     // We define 2 members: GetRandoms method that defines the parameters of the field; we set its
@@ -52,23 +52,23 @@ namespace Things.GraphQL.Types {
     [Ignore]
     public int[] Randoms;
 
-    public ThingForIntfEntity_ IntfThing;
+    public ThingImplInterface IntfThing;
 
-    [Null] public OtherThingWrapper_ OtherThingWrapped;
+    [Null] public OtherThingWrapper OtherThingWrapped;
 
     [Null] public Dictionary<string, object> Props;
 
   }
 
-  // A second GraphQL type mapped to Thing entity. Test of mapping of one entity type to multiple 
+  // A second GraphQL type mapped to ThingEntity entity. Test of mapping of one entity type to multiple 
   // GraphQL types. We use the same resolver GetThings; but GraphQL field is 'thingsX: [ThingX]!'
-  public class ThingX_ {
+  public class ThingX {
     public int IdX;
     public string NameX;
     public ThingKind KindX; 
   }
 
-  public class OtherThing_ : INamedObj {
+  public class OtherThing : INamedObj {
     [Scalar("ID")]
     public string IdStr;
     public string Name { get; set; }
@@ -91,15 +91,15 @@ namespace Things.GraphQL.Types {
   }
 
   // test case for bug #169 in Vita; 
-  // this class is GraphQL type without business entity behind; it has ref to OtherThing_
-  public class OtherThingWrapper_ {
+  // this class is GraphQL type without business entity behind; it has ref to OtherThing
+  public class OtherThingWrapper {
     public string OtherThingName;
     public DateTime WrappedOn;
-    public OtherThing_ OtherThing; 
+    public OtherThing OtherThing; 
   }
 
   // mapped to interface entity
-  public class ThingForIntfEntity_ {
+  public class ThingImplInterface {
     public int Id { get; set; }
     public string Name { get; set; }
     public string Tag { get; set; }
@@ -194,7 +194,7 @@ namespace Things.GraphQL.Types {
     string Name { get; }
   }
 
-  // An example of covariant implementation of interface field. Covariance and type compatibility: IList<NamedObj> <=> IList<Thing>
+  // An example of covariant implementation of interface field. Covariance and type compatibility: IList<NamedObj> <=> IList<ThingEntity>
   [Implements(typeof(IIdNameIntf))]
   public interface IIdNameOtherThingsIntf {
     int Id { get; }
@@ -203,11 +203,11 @@ namespace Things.GraphQL.Types {
   }
 
   // unions 
-  public class ThingsUnion : Union<Thing_, OtherThing_> {
-    public ThingsUnion(Thing value) {
+  public class ThingsUnion : Union<Thing, OtherThing> {
+    public ThingsUnion(ThingEntity value) {
       Value = value;
     }
-    public ThingsUnion(OtherThing value) {
+    public ThingsUnion(OtherThingEntity value) {
       Value = value;
     }
   }

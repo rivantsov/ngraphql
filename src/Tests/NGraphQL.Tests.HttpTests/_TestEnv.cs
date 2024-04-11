@@ -56,9 +56,10 @@ Testing: {descr}
       } else {
         // for better readability, unescape \r\n; Json serializer escapes new-line symbols inside strings,
         var bodyUnesc = req.BodyJson.Replace("\\r\\n", Environment.NewLine);
-        reqText = "POST, payload: " + Environment.NewLine + bodyUnesc;
+        reqText = bodyUnesc;
       }
       var text = $@"
+HttpMethod: {req.HttpMethod}
 Request: 
 {reqText}
 

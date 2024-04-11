@@ -16,8 +16,8 @@ namespace Things {
     public static ThingsApp Instance;
 
     // it is just things and other-things
-    public List<Thing> Things;
-    public List<OtherThing> OtherThings; 
+    public List<ThingEntity> Things;
+    public List<OtherThingEntity> OtherThings; 
 
     public ThingsApp() {
       Instance = this; 

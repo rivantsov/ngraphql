@@ -32,7 +32,7 @@ fragment Fr2 on NamedObj {
 }
 ";
       // errors: 
-      //   Fragment Fr1: field nameX not defined on type Thing.
+      //   Fragment Fr1: field nameX not defined on type ThingEntity.
       //   Fragment Fr2: field name2 not defined on type NamedObj.
       resp = await ExecuteAsync(query, throwOnError: false);
       Assert.AreEqual(2, resp.Errors.Count, "Expected 2 errors.");

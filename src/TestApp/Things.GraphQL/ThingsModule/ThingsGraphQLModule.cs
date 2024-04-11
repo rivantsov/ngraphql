@@ -14,8 +14,8 @@ namespace Things.GraphQL {
     public ThingsGraphQLModule() {
       // 1. Register all types
       base.EnumTypes.Add(typeof(ThingKind), typeof(TheFlags));
-      base.ObjectTypes.Add(typeof(Thing_), typeof(OtherThing_),
-             typeof(ThingForIntfEntity_), typeof(OtherThingWrapper_), typeof(ThingX_));
+      base.ObjectTypes.Add(typeof(Thing), typeof(OtherThing),
+             typeof(ThingImplInterface), typeof(OtherThingWrapper), typeof(ThingX));
       //Note: NGraphQL allows to use input types as output (Object) types
       base.InputTypes.Add(typeof(InputObj), typeof(InputObjWithNulls), typeof(InputObjWithEnums), typeof(InputObjParent),         
         typeof(InputObjChild),  typeof(InputObjWithList), typeof(InputObjWithCustomScalars));
@@ -27,7 +27,7 @@ namespace Things.GraphQL {
       base.SubscriptionType = typeof(IThingsSubscription);
 
       // Define mappings of entities (biz app objects) to API Object Types 
-      MapEntity<Thing>().To<Thing_>(th => new Thing_() {
+      MapEntity<ThingEntity>().To<Thing>(th => new Thing() {
         Id = th.Id,
         Name = th.Name,
         StrField = th.Name + "-EXT",
@@ -38,20 +38,20 @@ namespace Things.GraphQL {
         SomeDateTime = th.SomeDate,
         // example of using FromMap function to explicitly convert biz object to API object (BizThing => ApiThing)
         // Note: we could skip this, as field names match, it would automap
-        NextThing = FromMap<Thing_>(th.NextThing), 
+        NextThing = FromMap<Thing>(th.NextThing), 
         OtherThingWrapped = CreateOtherThingWrapper(th.MainOtherThing),        
       });
 
-      // map Thing to another GrqphQL type ThingX_
-      MapEntity<Thing>().To<ThingX_>(th => new ThingX_() {
+      // map ThingEntity to another GrqphQL type ThingX
+      MapEntity<ThingEntity>().To<ThingX>(th => new ThingX() {
         IdX = th.Id,
         NameX = th.Name,
         KindX = th.TheKind,
       });
 
 
-      MapEntity<OtherThing>().To<OtherThing_>(); // engine will automatically map all matching fields
-      MapEntity<IThingIntfEntity>().To<ThingForIntfEntity_>();
+      MapEntity<OtherThingEntity>().To<OtherThing>(); // engine will automatically map all matching fields
+      MapEntity<IExtCustomInterface>().To<ThingImplInterface>();
 
       // testing hide-enum-value feature. Use this if you have no control over enum declaration, but you want to 
       //  remove/hide some members; for ex, some flag enums declare extra flag combinations as enum members (I do this often),
@@ -64,12 +64,12 @@ namespace Things.GraphQL {
     }// constructor
 
     // testing bug fix
-    private static OtherThingWrapper_ CreateOtherThingWrapper(OtherThing otherTh) {
+    private static OtherThingWrapper CreateOtherThingWrapper(OtherThingEntity otherTh) {
       if (otherTh == null)
         return null;
-      return new OtherThingWrapper_() {
+      return new OtherThingWrapper() {
         OtherThingName = otherTh.Name, WrappedOn = DateTime.Now,
-        OtherThing = new OtherThing_() { IdStr = otherTh.IdStr, Name = otherTh.Name }
+        OtherThing = new OtherThing() { IdStr = otherTh.IdStr, Name = otherTh.Name }
       };
     }
 

@@ -56,7 +56,7 @@ query {
 
 }";
       resp = await ExecuteAsync(query);
-      // dig to things[0].next (it is a Thing), this object must contain all 4 props: id, name, kind, tag
+      // dig to things[0].next (it is a ThingEntity), this object must contain all 4 props: id, name, kind, tag
       var things = resp.GetValue<IList<object>>("things");
       Assert.IsTrue(things.Count > 0, "expected list");
       var thing0 = (OutputObjectScope)things[0];

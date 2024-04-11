@@ -26,17 +26,17 @@ namespace Things.GraphQL {
     /// <param name="context"></param>
     /// <returns></returns>
     [ResolvesField("things", typeof(IThingsQuery))]
-    public List<Thing> GetThings(IFieldContext context) {
+    public List<ThingEntity> GetThings(IFieldContext context) {
       return _app.Things;
     }
 
-    public Thing GetThing(IFieldContext context, int id) {
+    public ThingEntity GetThing(IFieldContext context, int id) {
       return _app.Things.FirstOrDefault(t => t.Id == id);
     }
 
-    public Thing GetInvalidThing(IFieldContext context) {
-      // Name is declared non-null on Thing_, should result in error
-      return new Thing() { Id = 100, Name = null };
+    public ThingEntity GetInvalidThing(IFieldContext context) {
+      // Name is declared non-null on Thing, should result in error
+      return new ThingEntity() { Id = 100, Name = null };
     }
 
     // The method used in async call test. 
@@ -112,8 +112,8 @@ namespace Things.GraphQL {
     }
 
     // Demo of BATCHing functionality (aka DataLoader) - loading field values for ALL parent objects in request
-    public OtherThing GetMainOtherThing(IFieldContext context, Thing parent) {
-      var allParents = context.GetAllParentEntities<Thing>();
+    public OtherThingEntity GetMainOtherThing(IFieldContext context, ThingEntity parent) {
+      var allParents = context.GetAllParentEntities<ThingEntity>();
       var batchedResults = allParents.ToDictionary(p => p, p => p.MainOtherThing);
       context.SetBatchedResults(batchedResults, null);
       // return parent.MainOtherThing;
@@ -121,21 +121,21 @@ namespace Things.GraphQL {
     }
 
     // Batching when field is a list
-    public IList<OtherThing> GetOtherThings(IFieldContext context, Thing parent) {
-      var allParents = context.GetAllParentEntities<Thing>();
+    public IList<OtherThingEntity> GetOtherThings(IFieldContext context, ThingEntity parent) {
+      var allParents = context.GetAllParentEntities<ThingEntity>();
       var batchedResults = allParents.ToDictionary(p => p, p => p.OtherThings);
-      context.SetBatchedResults(batchedResults, new List<OtherThing>());
+      context.SetBatchedResults(batchedResults, new List<OtherThingEntity>());
       return null; // the engine will lookup result for this field in batched results
     }
 
     // For testing exceptions, thrown by resolver down deep in the data tree
-    public string GetNameOrThrow(IFieldContext context, OtherThing otherThing) {
+    public string GetNameOrThrow(IFieldContext context, OtherThingEntity otherThing) {
       if (otherThing.Id == 5)
         throw new Exception("Exception thrown by GetNameOrThrow.");
       return otherThing.Name;
     }
 
-    public async Task<string> GetNameOrThrowAsync(IFieldContext context, OtherThing otherThing) {
+    public async Task<string> GetNameOrThrowAsync(IFieldContext context, OtherThingEntity otherThing) {
       if (otherThing.Id == 5) // child #2 of ApiThing #1, 
         throw new Exception("Exception thrown by GetNameOrThrowAsync.");
       await Task.CompletedTask;
@@ -154,13 +154,13 @@ namespace Things.GraphQL {
       return string.Join(",", all);
     }
 
-    public Thing[] GetThingsList(IFieldContext context) {
+    public ThingEntity[] GetThingsList(IFieldContext context) {
       var things = _app.Things;
       var result = new[] { things[0], things[1] };
       return result;
     }
 
-    public Thing[][] GetThingsListRank2(IFieldContext context) {
+    public ThingEntity[][] GetThingsListRank2(IFieldContext context) {
       var things = _app.Things;
       var result = new[] {
           new[] { things[0], things[1] },
@@ -195,13 +195,13 @@ namespace Things.GraphQL {
       return list;
     }
 
-    public Thing MutateThing(IFieldContext context, int id, string newName) {
+    public ThingEntity MutateThing(IFieldContext context, int id, string newName) {
       var thing = _app.Things.First(t => t.Id == id);
       thing.Name = newName;
       return thing;
     }
 
-    public Thing MutateThingWithValidation(IFieldContext context, int id, string newName) {
+    public ThingEntity MutateThingWithValidation(IFieldContext context, int id, string newName) {
       context.AddErrorIf(id < 0, "Id value may not be negative.");
       context.AddErrorIf(string.IsNullOrEmpty(newName), "newName may not be empty."); //abort immediately if cond is true
       context.AddErrorIf(newName.Length > 10, "newName too long, max size = 10.");
@@ -215,7 +215,7 @@ namespace Things.GraphQL {
       return thing;
     }
 
-    public int[] GetRandoms(IFieldContext context, Thing parent,  int count = 3) {
+    public int[] GetRandoms(IFieldContext context, ThingEntity parent,  int count = 3) {
       var rand = new Random();
       var result = Enumerable.Range(1, count).Select(i => rand.Next(100)).ToArray();
       return result; 

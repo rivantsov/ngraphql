@@ -47,7 +47,7 @@ query {
       var otherThing1Name = resp.GetValue<string>("things.#1.mainOtherThing.name");
       Assert.AreEqual("Other-2-a", otherThing1Name, "Missing specific string in the output.");
       // Without batching the resolver call count would be 4 - one for top query 'things()', 
-      //  +3 calls for mainOtherThing for each parent Thing.
+      //  +3 calls for mainOtherThing for each parent ThingEntity.
       // The mainOtherThing(method getMainOtherThing) is using batching; on the first call
       // the resolver covers for all future calls from parent objects; 
       // it posts the values through fieldContext. 

@@ -33,7 +33,7 @@ namespace NGraphQL.Tests.HttpTests.Client {
       // single thing with query parameter
       gResult = await TestEnv.Client.PostAsync(query1, vars);
       gResult.EnsureNoErrors();
-      var thing = gResult.GetTopField<Thing_>("getThing");
+      var thing = gResult.GetTopField<Thing>("getThing");
       thingName = thing.Name;
       Assert.AreEqual("Name3", thingName);
       Assert.AreEqual(ThingKind.KindThree, thing.Kind, "Invalid kind field value.");
@@ -42,7 +42,7 @@ namespace NGraphQL.Tests.HttpTests.Client {
       // list of things 
       gResult = await TestEnv.Client.PostAsync(queryM, vars);
       gResult.EnsureNoErrors();
-      var things = gResult.GetTopField<Thing_[]>("things");
+      var things = gResult.GetTopField<Thing[]>("things");
       thingName = things[1].Name;
       Assert.AreEqual("Name2", thingName);
 
@@ -50,13 +50,13 @@ namespace NGraphQL.Tests.HttpTests.Client {
       // single thing with query parameter
       gResult = await TestEnv.Client.GetAsync(query1, vars);
       gResult.EnsureNoErrors();
-      thing = gResult.GetTopField<Thing_>("getThing");
+      thing = gResult.GetTopField<Thing>("getThing");
       Assert.AreEqual("Name3", thing.Name);
 
       // list of things 
       gResult = await TestEnv.Client.GetAsync(queryM, vars);
       gResult.EnsureNoErrors();
-      things = gResult.GetTopField<Thing_[]>("things");
+      things = gResult.GetTopField<Thing[]>("things");
       thingName = things[1].Name;
       Assert.AreEqual("Name2", thingName);
 
@@ -84,7 +84,7 @@ query ($id: Int) {
 }";
       result = await TestEnv.Client.PostAsync(query, vars);
       result.EnsureNoErrors();
-      var thing = result.GetTopField<Thing_>("thing");
+      var thing = result.GetTopField<Thing>("thing");
       Assert.IsNotNull(thing);
       Assert.AreEqual("Name3", thing.Name, "thing name mismatch");
       Assert.AreEqual(ThingKind.KindThree, thing.Kind, "Kind mismatch");
@@ -94,7 +94,7 @@ query ($id: Int) {
       
       // Check unmapped introspection field - to be implemented
       // string typeName = gResult.GetUnmappedFieldValue<string>(thing, "__typename");
-      // Assert.AreEqual("Thing", typeName, "type name does not match");
+      // Assert.AreEqual("ThingEntity", typeName, "type name does not match");
     }
 
     [TestMethod]

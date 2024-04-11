@@ -57,7 +57,7 @@ query {
       Assert.IsNotNull(things, "Expected result");
 
       // bug, issue #8; resolver returning null on non-null field should cause error
-      //   getInvalidthing resolver returns Thing object with Name==null, but Name is String!;
+      //   getInvalidthing resolver returns ThingEntity object with Name==null, but Name is String!;
       //   should be an error. This is server failure, normally details not reported to client
       //   but in this case server explains some details - I think it is safe, and helpful
       query = @"
