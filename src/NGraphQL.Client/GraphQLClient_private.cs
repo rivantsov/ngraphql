@@ -40,7 +40,7 @@ namespace NGraphQL.Client {
 
     private async Task ReadServerResponseAsync(GraphQLResult result, HttpResponseMessage respMessage) {
       result.ResponseJson = await respMessage.Content.ReadAsStringAsync();
-      result.ResponseBody = JsonSerializer.Deserialize<GraphQLResponseBody>(result.ResponseJson);
+      result.ResponseBody = JsonSerializer.Deserialize<GraphQLResponseBody>(result.ResponseJson, _jsonOptions);
     }
 
     private HttpContent BuildPostMessageContent(ClientRequest request) {

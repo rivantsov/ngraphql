@@ -27,14 +27,16 @@ namespace NGraphQL.Client {
       _endpointUrl = endpointUrl;
       _client = new HttpClient();
       _client.BaseAddress = new Uri(endpointUrl);
+      InitializeJsonOptions();
     }
 
     public GraphQLClient(HttpClient httpClient) {
       _client = httpClient;
       _endpointUrl = httpClient.BaseAddress.ToString();
+      InitializeJsonOptions(); 
     }
 
-    private GraphQLClient() {
+    private void InitializeJsonOptions() {
       _jsonOptions = new JsonSerializerOptions {
         PropertyNameCaseInsensitive = true,
         PropertyNamingPolicy = null, // remove camel-style policy
