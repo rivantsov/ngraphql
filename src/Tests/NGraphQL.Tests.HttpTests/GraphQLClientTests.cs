@@ -24,7 +24,7 @@ namespace NGraphQL.Tests.HttpTests.Client {
       TestEnv.LogTestMethodStart();
       GraphQLResult gResult;
       string thingName;
-      var query1 = "query ($id: Int) { getThing(id: $id) {name kind theFlags} }";
+      var query1 = "query ($id: Int) { getThing(id: $id) {name description kind theFlags} }";
       var queryM = "query { things {name} }";
       var vars = new TDict() { { "id", 3 } };
 
@@ -33,16 +33,16 @@ namespace NGraphQL.Tests.HttpTests.Client {
       // single thing with query parameter
       gResult = await TestEnv.Client.PostAsync(query1, vars);
       gResult.EnsureNoErrors();
-      var thing = gResult.GetTopField<Thing>("getThing");
+      var thing = gResult.GetTopField<Thing_>("getThing");
       thingName = thing.Name;
       Assert.AreEqual("Name3", thingName);
-      Assert.AreEqual(ThingKind.KindThree, thing.TheKind, "Invalid kind field value.");
-      Assert.AreEqual(TheFlags.FlagOne | TheFlags.FlagTwo, thing.Flags, "Invalid flags field value");
+      Assert.AreEqual(ThingKind.KindThree, thing.Kind, "Invalid kind field value.");
+      Assert.AreEqual(TheFlags.FlagOne | TheFlags.FlagTwo, thing.TheFlags, "Invalid flags field value");
 
       // list of things 
       gResult = await TestEnv.Client.PostAsync(queryM, vars);
       gResult.EnsureNoErrors();
-      var things = gResult.GetTopField<Thing[]>("things");
+      var things = gResult.GetTopField<Thing_[]>("things");
       thingName = things[1].Name;
       Assert.AreEqual("Name2", thingName);
 
@@ -50,13 +50,13 @@ namespace NGraphQL.Tests.HttpTests.Client {
       // single thing with query parameter
       gResult = await TestEnv.Client.GetAsync(query1, vars);
       gResult.EnsureNoErrors();
-      thing = gResult.GetTopField<Thing>("getThing");
+      thing = gResult.GetTopField<Thing_>("getThing");
       Assert.AreEqual("Name3", thing.Name);
 
       // list of things 
       gResult = await TestEnv.Client.GetAsync(queryM, vars);
       gResult.EnsureNoErrors();
-      things = gResult.GetTopField<Thing[]>("things");
+      things = gResult.GetTopField<Thing_[]>("things");
       thingName = things[1].Name;
       Assert.AreEqual("Name2", thingName);
 

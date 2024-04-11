@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using NGraphQL.Client.Json;
 using NGraphQL.Client.Types;
 
 namespace NGraphQL.Client {
@@ -40,18 +41,15 @@ namespace NGraphQL.Client {
     private void InitializeJsonOptions() {
       _jsonOptions = new JsonSerializerOptions {
         PropertyNameCaseInsensitive = true,
-        PropertyNamingPolicy = null, // remove camel-style policy
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase, 
         IncludeFields = true,
         WriteIndented = true
       };
-      _jsonUrlOptions = new JsonSerializerOptions {
-        PropertyNameCaseInsensitive = true,
-        PropertyNamingPolicy = null, // remove camel-style policy
-        IncludeFields = true,
-      };
-      var conv = new Json.EnumConverterFactory();
-      _jsonOptions.Converters.Add(conv);
-      _jsonUrlOptions.Converters.Add(conv);
+      _jsonOptions.Converters.Add(new Json.EnumConverterFactory());
+      _jsonOptions.Converters.Add(new ObjectAsPrimitiveConverter()); //for converting values inside dictionaries
+      // Url options is a copy with WriteIndented = false
+      _jsonUrlOptions = new JsonSerializerOptions(_jsonOptions);
+      _jsonUrlOptions.WriteIndented = false; 
     }
 
     #region Headers

@@ -24,19 +24,22 @@ namespace NGraphQL.Client.Json {
 
     public override JsonConverter CreateConverter(Type typeToConvert, JsonSerializerOptions options) {
       var convType = typeof(EnumConverter<>).MakeGenericType(typeToConvert);
-      var conv = (JsonConverter)Activator.CreateInstance(convType);
+      var conv = (JsonConverter)Activator.CreateInstance(convType, options);
       return conv;    
     }
   } // class
 
   public class EnumConverter<TEnum> : JsonConverter<TEnum> where TEnum : struct, Enum {
-    EnumHandler _enumHandler; 
-    public EnumConverter() {
+    EnumHandler _enumHandler;
+    JsonSerializerOptions _options; 
+
+    public EnumConverter(JsonSerializerOptions options) {
+      _options = options; 
       _enumHandler = EnumHandlersCache.GetEnumHandler(typeof(TEnum));
     }
-
+    
     public override TEnum Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
-      var enumType = typeToConvert;
+      var enumType = typeToConvert; 
       var nullable = ReflectionHelper.CheckNullable(ref enumType);
       if (!enumType.IsEnum)
         throw new Exception($"{nameof(EnumConverterFactory)}: unexpected conversion type {enumType}; expected enum.");
@@ -75,47 +78,30 @@ namespace NGraphQL.Client.Json {
     }
 
     public override void Write(Utf8JsonWriter writer, TEnum value, JsonSerializerOptions options) {
+      //if (value == null) {
+      //  writer.WriteNull();
+      //  return;
+      //}
+      var enumType = value.GetType();
+      if (!enumType.IsEnum)
+        throw new Exception($"{nameof(EnumConverterFactory)}: unexpected conversion type {enumType}; expected enum.");
+      if (_enumHandler.IsFlagSet) {
+        writer.WriteStartArray();
+        var strings = _enumHandler.ConvertFlagsEnumValueToOutputStringList(value);
+        foreach (var sv in strings)
+          writer.WriteStringValue(sv);
+        writer.WriteEndArray();
+      } else {
+        var sv = _enumHandler.ConvertEnumValueToOutputString(value);
+        writer.WriteStringValue(sv);
+      }
+
     }
+
+
+
   }
   /*
-  public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer) {
-    var enumType = objectType; 
-    var nullable = ReflectionHelper.CheckNullable(ref enumType);
-    if (!enumType.IsEnum)
-      throw new Exception($"{nameof(EnumConverterFactory)}: unexpected conversion type {enumType}; expected enum.");
-    var enumHandler = EnumHandlersCache.GetEnumHandler(enumType);
-    var enumInfo = EnumHandlersCache.GetEnumHandler(enumType);
-    // check null
-    if (reader.TokenType == JsonToken.Null) {
-      if (!nullable)
-        throw new Exception($"{nameof(EnumConverterFactory)}: input value null cannot be converted to type {enumType}.");
-    }
-    var tokenReader = (JTokenReader)reader; 
-    if (enumInfo.IsFlagSet) {
-      switch(tokenReader.CurrentToken) {
-        case JArray jArr:
-          if (jArr.Count == 0)
-            return enumInfo.NoneValue;
-          var strings = jArr.Select(v => v.ToString()).ToArray();
-          var res = enumHandler.ConvertStringListToFlagsEnumValue(strings);
-          reader.Skip();
-          return res; 
-        default:
-          throw new Exception($"{nameof(EnumConverterFactory)}: invalid input value for Flags enum type {enumType}, expected string array.");
-      }
-    } else {
-      switch(tokenReader.CurrentToken) {
-        case JValue jv:
-          if (!(jv.Value is string s))
-            throw new Exception($"{nameof(EnumConverterFactory)}: invalid input value for enum type {objectType}, expected string.");
-          var res = enumHandler.ConvertStringToEnumValue(s);
-          return res;
-        default:
-          throw new Exception($"{nameof(EnumConverterFactory)}: invalid input value for enum type {objectType}, expected string.");
-      } //switch
-    } //else
-  }
-
   // Used in serializing enums on the client
   public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer) {
     if (value == null) {

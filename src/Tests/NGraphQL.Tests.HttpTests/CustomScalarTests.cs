@@ -62,8 +62,8 @@ query ($inp: InputObjWithCustomScalars) {
       var inpBack = resp.GetTopField<InputObjWithCustomScalars>("res");
       Assert.AreEqual(4, inpBack.Map.Count, "Expected 4 props in Dict");
       // check nested dict and value inside
-      dynamic nested = inpBack.Map["nested"];
-      int nestedInt = (int)nested.nestedInt;
+      var nested = (Dict) inpBack.Map["nested"];
+      int nestedInt = (int)nested["nestedInt"];
       Assert.AreEqual(234, nestedInt);
 
       TestEnv.LogTestDescr(@" MapScalar test 3 - map in Input object; sending map value as literal (array of arrays).");

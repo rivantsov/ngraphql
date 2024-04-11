@@ -2,7 +2,6 @@
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 
 using NGraphQL.Client;
 using NGraphQL.Client.Types;
@@ -59,13 +58,12 @@ Testing: {descr}
         var bodyUnesc = req.BodyJson.Replace("\\r\\n", Environment.NewLine);
         reqText = "POST, payload: " + Environment.NewLine + bodyUnesc;
       }
-      var jsonResponse = JsonConvert.SerializeObject(result.TopFields, Formatting.Indented);
       var text = $@"
 Request: 
 {reqText}
 
 Response:
-{jsonResponse}
+{result.ResponseJson}
 
 //  time: {result.DurationMs} ms
 ----------------------------------------------------------------------------------------------------------------------------------- 
