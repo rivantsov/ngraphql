@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using NGraphQL.Client.Json;
 using NGraphQL.Client.Types;
+using NGraphQL.Json;
 
 namespace NGraphQL.Client {
   using IDict = IDictionary<string, object>;
@@ -16,40 +14,29 @@ namespace NGraphQL.Client {
   public partial class GraphQLClient {
     public const string MediaTypeJson = "application/json";
     public const string MediaTypeText = "application/text";
+    public JsonSerializerOptions JsonOptions;
+    public JsonSerializerOptions JsonUrlOptions;
 
     public event EventHandler<RequestStartingEventArgs> RequestStarting;
     public event EventHandler<RequestCompletedEventArgs> RequestCompleted;
 
     string _endpointUrl; 
     HttpClient _client;
-    JsonSerializerOptions _jsonOptions;
-    JsonSerializerOptions _jsonUrlOptions;
 
-    public GraphQLClient(string endpointUrl) {
+    public GraphQLClient(string endpointUrl): this() {
       _endpointUrl = endpointUrl;
       _client = new HttpClient();
       _client.BaseAddress = new Uri(endpointUrl);
-      InitializeJsonOptions();
     }
 
-    public GraphQLClient(HttpClient httpClient) {
+    public GraphQLClient(HttpClient httpClient): this() {
       _client = httpClient;
       _endpointUrl = httpClient.BaseAddress.ToString();
-      InitializeJsonOptions(); 
     }
 
-    private void InitializeJsonOptions() {
-      _jsonOptions = new JsonSerializerOptions {
-        PropertyNameCaseInsensitive = true,
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase, 
-        IncludeFields = true,
-        WriteIndented = true
-      };
-      _jsonOptions.Converters.Add(new Json.EnumConverterFactory());
-      _jsonOptions.Converters.Add(new ObjectAsPrimitiveConverter()); //for converting values inside dictionaries
-      // Url options is a copy with WriteIndented = false
-      _jsonUrlOptions = new JsonSerializerOptions(_jsonOptions);
-      _jsonUrlOptions.WriteIndented = false; 
+    private GraphQLClient() {
+      JsonOptions = JsonDefaults.JsonOptions;
+      JsonUrlOptions = JsonDefaults.JsonUrlOptions;
     }
 
     #region Headers
@@ -94,7 +81,7 @@ namespace NGraphQL.Client {
 
     public async Task<GraphQLResult> SendAsync(ClientRequest request) {
       var start = GetTimestamp();
-      var result = new GraphQLResult(request, _jsonOptions);
+      var result = new GraphQLResult(request, JsonOptions);
       try {
         RequestStarting?.Invoke(this, new RequestStartingEventArgs(request));
         await SendAsync(result);

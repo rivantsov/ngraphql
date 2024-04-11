@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json.Linq;
-
+using System.Text.Json;
 using NGraphQL.Core.Scalars;
 using NGraphQL.Introspection;
+using NGraphQL.Json;
 using NGraphQL.Model;
 using NGraphQL.Server.Execution;
 using NGraphQL.Utilities;
@@ -12,9 +12,7 @@ using NGraphQL.Utilities;
 namespace NGraphQL.Server.AspNetCore {
 
   public class JsonVariablesDeserializer {
-
-    public JsonVariablesDeserializer() {
-    }
+    JsonSerializerOptions _jsonOptions = JsonDefaults.JsonOptions;
 
     public void PrepareRequestVariables(RequestContext context) {
       var req = context.RawRequest;
@@ -27,8 +25,14 @@ namespace NGraphQL.Server.AspNetCore {
       foreach (var varDef in op.Variables) {
         if (!context.RawVariables.TryGetValue(varDef.Name, out var rawValue))
           continue; //it might have default, or might be nullable; if not, it will be handled later
-        path.Add(varDef.Name); 
-        var clrValue = ReadValue(context, varDef.InputDef.TypeRef, rawValue, path);
+        path.Add(varDef.Name);
+        object clrValue;
+        if (rawValue is JsonElement jsonElem) {
+          clrValue = jsonElem.Deserialize(varDef.InputDef.TypeRef.ClrType, _jsonOptions); 
+        } else {
+          clrValue = rawValue;
+        }
+        // var clrValue = ReadValue(context, varDef.InputDef.TypeRef, rawValue, path);
         if (clrValue == null && varDef.InputDef.TypeRef.Kind == TypeKind.NonNull)
           AddError(context, $"Variable {varDef.Name}: null value not allowed.", path);
         req.Variables[varDef.Name] = clrValue;
@@ -36,6 +40,7 @@ namespace NGraphQL.Server.AspNetCore {
       }
     }
 
+    /*
     private object ReadValue(RequestContext context, TypeRef typeRef, object jsonValue, IList<object> path) {
       if (jsonValue == null)
         return null;
@@ -198,6 +203,7 @@ namespace NGraphQL.Server.AspNetCore {
       }
       return inputObj; 
     }
+    */
 
     private void AddError(RequestContext context, string message, IList<object> path) {
       var err = new GraphQLError("Variables: " + message, path);

@@ -12,10 +12,6 @@
         <Description>NGraphQL - GraphQL for .NET; ASP.NET-Core integration.</Description>
     </PropertyGroup>
 
-   <ItemGroup>
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    </ItemGroup>
-
     <ItemGroup>
         <ProjectReference Include="..\NGraphQL.Server\NGraphQL.Server.csproj" />
         <ProjectReference Include="..\NGraphQL\NGraphQL.csproj" />
@@ -23,6 +19,10 @@
 
     <ItemGroup>
       <Folder Include="Properties\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="System.Text.Json" Version="8.0.3" />
     </ItemGroup>
 
 </Project>

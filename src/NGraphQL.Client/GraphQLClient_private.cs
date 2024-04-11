@@ -38,12 +38,12 @@ namespace NGraphQL.Client {
       var respMessage = await _client.SendAsync(reqMessage, HttpCompletionOption.ResponseContentRead, request.CancellationToken);
       respMessage.EnsureSuccessStatusCode();
       result.ResponseJson = await respMessage.Content.ReadAsStringAsync();
-      result.ResponseBody = JsonSerializer.Deserialize<DeserializedGraphQLResponse>(result.ResponseJson, _jsonOptions);
+      result.ResponseBody = JsonSerializer.Deserialize<DeserializedGraphQLResponse>(result.ResponseJson, JsonOptions);
     }
 
     private HttpContent BuildPostMessageContent(ClientRequest request) {
       var reqDict = ConvertToSparseDictionary(request.Body);
-      request.BodyJson = JsonSerializer.Serialize(reqDict, _jsonOptions);
+      request.BodyJson = JsonSerializer.Serialize(reqDict, JsonOptions);
       var content = new StringContent(request.BodyJson, Encoding.UTF8, MediaTypeJson);
       return content;
     }
@@ -58,7 +58,7 @@ namespace NGraphQL.Client {
         return urlQry;
       // serializer vars as json, and add to URL qry
       // do not use settings here, we don't need fancy settings here from body serialization process
-      var varsJson = JsonSerializer.Serialize(req.Variables, _jsonUrlOptions);
+      var varsJson = JsonSerializer.Serialize(req.Variables, JsonUrlOptions);
       urlQry += "&variables=" + Uri.EscapeUriString(varsJson);
       return urlQry;
     }

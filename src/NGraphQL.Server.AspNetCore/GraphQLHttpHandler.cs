@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
+using NGraphQL.Json;
 using NGraphQL.Server.Execution;
 using NGraphQL.Utilities;
 
@@ -19,23 +18,20 @@ namespace NGraphQL.Server.AspNetCore {
     public const string ContentTypeGraphQL = "application/graphql";
     public const string OperationContextKey = "_vita_operation_context_"; // When using VitaWebMiddleware
 
-    public readonly JsonSerializerSettings SerializerSettings; 
+    JsonSerializerOptions _basicJsonOptionsNoConverters;
+    JsonSerializerOptions _jsonOptionsForSerializer;
     public readonly GraphQLServer Server;
     JsonVariablesDeserializer _varDeserializer;
 
-    public GraphQLHttpHandler(GraphQLServer server, JsonSerializerSettings serializerSettings = null) {
+    public GraphQLHttpHandler(GraphQLServer server) {
       Server = server;
       if (Server.Model == null)
-        Server.Initialize(); 
-      SerializerSettings = serializerSettings; 
-      if (SerializerSettings == null) {
-        var stt = SerializerSettings = new JsonSerializerSettings();
-        stt.Formatting = Formatting.Indented;
-        stt.ContractResolver = new DefaultContractResolver {
-          NamingStrategy = new CamelCaseNamingStrategy()
-        };
-        SerializerSettings.MaxDepth = 50;
-     }
+        Server.Initialize();
+      _basicJsonOptionsNoConverters = new JsonSerializerOptions() {
+        IncludeFields = true,
+        PropertyNameCaseInsensitive = true
+      };
+      _jsonOptionsForSerializer = JsonDefaults.JsonOptions; 
       _varDeserializer = new JsonVariablesDeserializer(); 
       // hook to RequestPrepared to deserialize variables after query is parsed and var types are known
       Server.Events.RequestPrepared += Server_RequestPrepared;
@@ -121,7 +117,9 @@ namespace NGraphQL.Server.AspNetCore {
       };
       var varsJson = uriQuery["variables"];
       if (!string.IsNullOrWhiteSpace(varsJson))
-        gqlRequest.Variables = Deserialize<IDictionary<string, object>>(varsJson);
+        // note: we do not want to deserialize each var yet, we do it later when we know their types
+        // for now we want just Dict<string, JsonElement>; that's why we use JsonOptions without converters
+        gqlRequest.Variables = JsonSerializer.Deserialize<IDictionary<string, object>>(varsJson, this._basicJsonOptionsNoConverters);
       var httpReq = new GraphQLHttpRequest() {
         HttpContext = httpContext,
         HttpMethod = "GET",
@@ -148,7 +146,7 @@ namespace NGraphQL.Server.AspNetCore {
           break;
 
         case HttpContentType.Json:
-          var bodyObj = Deserialize<GraphQLRequest>(body);
+          var bodyObj = JsonSerializer.Deserialize<GraphQLRequest>(body, this._basicJsonOptionsNoConverters);
           req.Query = bodyObj.Query;
           req.OperationName = bodyObj.OperationName;
           req.Variables = bodyObj.Variables;
@@ -173,10 +171,6 @@ namespace NGraphQL.Server.AspNetCore {
       }
     }
 
-    private T Deserialize<T>(string json) {
-      return JsonConvert.DeserializeObject<T>(json, SerializerSettings); 
-    }
-
     private string SerializeResponse(GraphQLResponse response) {
       object respObj; 
       // we put data in auto-object, to achieve some special output json formatting 
@@ -188,7 +182,7 @@ namespace NGraphQL.Server.AspNetCore {
       else 
         respObj = new { errors = response.Errors, data = response.Data };
 
-      var json = JsonConvert.SerializeObject(respObj, SerializerSettings);
+      var json = JsonSerializer.Serialize(respObj, _jsonOptionsForSerializer);
       return json; 
     }
    

@@ -7,19 +7,17 @@ using System.Text.Json.Serialization;
 using NGraphQL.Model;
 using NGraphQL.Utilities;
 
-namespace NGraphQL.Client.Json {
+namespace NGraphQL.Json {
 
   internal class EnumConverterFactory : JsonConverterFactory {
 
     // We want to handle enum, enum? types. For arrays of enums, we do not want to interfere, the main serializer will handle 
     // array, and only come here for individual values.  
     public override bool CanConvert(Type objectType) {
-      if (objectType.IsEnum)
-        return true;
       if (!objectType.IsValueType)
         return false;
-      var innerType = Nullable.GetUnderlyingType(objectType);
-      return innerType != null && innerType.IsEnum;
+      ReflectionHelper.CheckNullable(ref objectType);
+      return objectType.IsEnum;
     }
 
     public override JsonConverter CreateConverter(Type typeToConvert, JsonSerializerOptions options) {
@@ -29,7 +27,8 @@ namespace NGraphQL.Client.Json {
     }
   } // class
 
-  public class EnumConverter<TEnum> : JsonConverter<TEnum> where TEnum : struct, Enum {
+  // Handles both Enum and Enum? types for a concrete enum
+  public class EnumConverter<TEnum> : JsonConverter<TEnum> {
     EnumHandler _enumHandler;
     JsonSerializerOptions _options; 
 

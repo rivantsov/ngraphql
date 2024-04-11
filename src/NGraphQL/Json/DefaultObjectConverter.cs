@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Text.Json;
 
-namespace NGraphQL.Client.Json {
+namespace NGraphQL.Json {
 
   // based on code from here: 
   //    https://stackoverflow.com/questions/65972825/c-sharp-deserializing-nested-json-to-nested-dictionarystring-object
