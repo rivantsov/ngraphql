@@ -12,12 +12,11 @@ namespace Things.GraphQL.HttpServer {
 
     /// <summary>Starts GraphQL Web Server. </summary>
     /// <param name="args">Command line args.</param>
-    /// <param name="useGraphiql">Set to true to launch Graphiql UI tool.</param>
     /// <param name="enablePreviewFeatures">Set to true to enable Query methods that use GraphQL preview features (using Input types as output field types).
     ///  Do not use this option with Graphiql, using input types as output crashes Graphiql's introspection query.   </param>
     /// <param name="serverUrl">Optional, use it when there is no launchSettings file; for ex: unit tests </param>
     /// <returns>A task running the server.</returns>
-    public static Task SetupServer(string[] args, bool useGraphiql = false, bool enablePreviewFeatures = false, string serverUrl = null) {
+    public static Task SetupServer(string[] args, bool enablePreviewFeatures = false, string serverUrl = null) {
 
       var builder = WebApplication.CreateBuilder(args);
       if (serverUrl != null) 

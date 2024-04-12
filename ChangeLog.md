@@ -12,7 +12,7 @@
 ``` 
 The default GraphQLController that handles GraphQL requests is provided with the NGraphQL.Server.AspNetCore package and is configured with the methods shown above. 
 - Fixed a minor bug in introspection queries, now introspection types/fields themselves are not returned in introspection queries. The clients like Graphiql and Altair were complaining about this. 
-- Removed dependency on Graphiql package to display GraphQL visual tool. Now the test app (Things.GraphQL.HttpServer project) opens the page of Chrome Altair extension. Make sure you install it before launching the app. 
+- Removed dependency on Graphiql package to display GraphQL visual tool. Now the test app (Things.GraphQL.HttpServer project) opens the page of Chrome Altair extension. Make sure you install it in Chrome before launching the app. 
 - 
 
 ## Oct 31, 2022. Version 1.5.0
