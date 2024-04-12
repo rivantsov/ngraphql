@@ -26,7 +26,7 @@ namespace NGraphQL.Tests.HttpTests {
       Client = new GraphQLClient(GraphQLEndPointUrl);
       Client.RequestCompleted += Client_RequestCompleted;
 
-      _task = ThingsWebServerStartupHelper.StartThingsGraphqQLWebServer(args: null, enablePreviewFeatures: true, useGraphiql: false, serverUrl: ServiceUrl);
+      _task = TestServerStartup.SetupServer(args: null, enablePreviewFeatures: true, useGraphiql: false, serverUrl: ServiceUrl);
     }
 
 

@@ -7,7 +7,7 @@ namespace Things.GraphQL.HttpServer {
   public class Program
   {
     public static void Main(string[] args) {
-      var task = ThingsWebServerStartupHelper.StartThingsGraphqQLWebServer(args, useGraphiql: true, enablePreviewFeatures: false);
+      var task = TestServerStartup.SetupServer(args, useGraphiql: true, enablePreviewFeatures: false);
       task.Wait(); 
     }
   }

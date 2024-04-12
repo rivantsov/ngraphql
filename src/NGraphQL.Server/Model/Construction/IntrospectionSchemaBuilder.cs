@@ -20,7 +20,9 @@ namespace NGraphQL.Model.Construction {
       // Create type objects without internal details; for typeDef and its typeRefs
       foreach (var typeDef in _model.Types) {
         if (typeDef.IsModuleTransientType())
-          continue; 
+          continue;
+        if (typeDef.Name.StartsWith("__"))
+          continue; // it is schema type with name starting with underscores
         CreateTypeObject(typeDef);
         foreach(var typeRef in typeDef.TypeRefs)
           SetupTypeObject(typeRef); 
@@ -97,7 +99,7 @@ namespace NGraphQL.Model.Construction {
     private void BuildTypeObjectsInternals() {
       foreach(var typeDef in _model.Types) {
         if (typeDef.Type_ == null) //not schema type
-          continue; 
+          continue;
         switch(typeDef) {
           case ScalarTypeDef std:
             BuildScalarType(std);
@@ -149,6 +151,8 @@ namespace NGraphQL.Model.Construction {
       // build fields
       foreach(var fld in typeDef.Fields) {
         var hidden = fld.Flags.IsSet(FieldFlags.Hidden); // ex: _typename should not be listed as field in intro queries
+        if (hidden)
+          continue;
         var fld_ = new __Field() { Name = fld.Name, Description = fld.Description, Type = fld.TypeRef.Type_, IsHidden = hidden };
         fld.Intro_ = fld_; 
         // convert args

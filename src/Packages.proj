@@ -8,6 +8,6 @@
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
         <IncludeSymbols>True</IncludeSymbols>
         <GenerateDocumentationFile>True</GenerateDocumentationFile>
-        <DocumentationFile>$(MSBuildProjectName).xml</DocumentationFile>
+        <DocumentationFile>bin\$(MSBuildProjectName).xml</DocumentationFile>
     </PropertyGroup>
 </Project>
