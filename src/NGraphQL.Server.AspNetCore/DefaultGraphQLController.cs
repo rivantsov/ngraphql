@@ -1,24 +1,25 @@
 ﻿using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace NGraphQL.Server.AspNetCore {
   public class DefaultGraphQLController: Controller {
-    GraphQLHttpHandler _server;
+    GraphQLHttpHandler _handler;
   
-    public DefaultGraphQLController(GraphQLHttpHandler server) {
-      _server = server;
+    public DefaultGraphQLController(GraphQLHttpHandler handler) {
+      _handler = handler;
     }
 
     [HttpPost, HttpGet, Route("graphql")]
     public async Task HandleRequest() {
-      await _server.HandleGraphQLHttpRequestAsync(this.HttpContext);
+      await _handler.HandleGraphQLHttpRequestAsync(this.HttpContext);
     }
 
     [HttpGet, Route("graphql/schema")]
     public string GetSchema() {
-      return _server.Server.Model.SchemaDoc;
+      return _handler.Server.Model.SchemaDoc;
     }
 
   }

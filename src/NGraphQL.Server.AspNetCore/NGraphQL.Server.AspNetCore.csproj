@@ -7,7 +7,6 @@
     <Import Project="..\Packages.proj" />
 
     <PropertyGroup>
-        <!--<TargetFramework>netstandard2.0</TargetFramework>-->
         <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
         <Description>NGraphQL - GraphQL for .NET; ASP.NET-Core integration.</Description>
     </PropertyGroup>
@@ -15,10 +14,6 @@
     <ItemGroup>
         <ProjectReference Include="..\NGraphQL.Server\NGraphQL.Server.csproj" />
         <ProjectReference Include="..\NGraphQL\NGraphQL.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Properties\" />
     </ItemGroup>
 
     <ItemGroup>

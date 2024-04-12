@@ -14,7 +14,7 @@ namespace Things.GraphQL.Types {
 
     /// <summary>Returns the ThingEntity specified by Id.</summary>
     /// <param name="id">ThingEntity id.</param>
-    Thing GetThing(int id);
+    [Null] Thing GetThing(int id);
 
     /// <summary>Returns the ThingEntity with invalid value(s).</summary>
     Thing GetInvalidThing();

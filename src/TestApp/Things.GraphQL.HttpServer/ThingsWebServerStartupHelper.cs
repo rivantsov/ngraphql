@@ -1,15 +1,13 @@
 ﻿using System.Threading.Tasks;
-using GraphQL.Server.Ui.GraphiQL;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.ApplicationParts;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using NGraphQL.Server;
 using NGraphQL.Server.AspNetCore;
 
 namespace Things.GraphQL.HttpServer {
 
+  // Static startup class to be used both by standalone Web App (this project) and unit test project to start 
+  // local instance of GraphQL Http server. Normally this stuff would be directly in Program.cs
   public static class ThingsWebServerStartupHelper {
 
     /// <summary>Starts GraphQL Web Server. </summary>
@@ -26,46 +24,34 @@ namespace Things.GraphQL.HttpServer {
         builder.WebHost.UseUrls(serverUrl); //this is for unit tests only
 
       // create and register GraphQLHttpService
-      var graphQLServer = CreateThingsHttpServer(enablePreviewFeatures);
-      builder.Services.AddSingleton<GraphQLHttpHandler>(graphQLServer);
-      // add controllers and add ref to assembly that contains our DefaultGraphQlController
-      var graphqlControllerAssembly = typeof(DefaultGraphQLController).Assembly;
-      builder.Services.AddControllers().PartManager.ApplicationParts.Add(new AssemblyPart(graphqlControllerAssembly));
-
-
+      var graphQLServer = CreateThingsGraphQLServer(enablePreviewFeatures);
+      builder.AddGraphQLServer(graphQLServer); 
 
       var app = builder.Build();
-
-      if (!app.Environment.IsDevelopment()) {
-        app.UseDeveloperExceptionPage();
-        app.UseHsts();
-      }
+      //if (!app.Environment.IsDevelopment()) {
+      //  app.UseDeveloperExceptionPage();
+      //  app.UseHsts();
+      //}
 
       app.UseRouting();
+      app.MapGraphQLEndpoint(); 
 
-      app.MapControllerRoute(
-        name: "default",
-        pattern: "{controller=DefaultGraphQL}/{action}"
-      );
-
-      if (useGraphiql)
-        app.UseGraphQLGraphiQL("/ui/graphiql", new GraphiQLOptions() { GraphQLEndPoint = "/graphql" });
+      //if (useGraphiql)
+      //  app.UseGraphQLGraphiQL("/ui/graphiql", new GraphiQLOptions() { GraphQLEndPoint = "/graphql" });
 
       var task = Task.Run(() => app.Run());
       return task; 
     }
 
-    private static GraphQLHttpHandler CreateThingsHttpServer(bool enablePreviewFeatures) {
-      // create biz app, graphql httpGraphQLServer and Http graphQL httpGraphQLServer 
+    private static GraphQLServer CreateThingsGraphQLServer(bool enablePreviewFeatures) {
+      // create biz app, graphql server 
       var thingsBizApp = new ThingsApp();
       var serverStt = new GraphQLServerSettings() { Options = GraphQLServerOptions.DefaultDev };
       var thingsServer = new ThingsGraphQLServer(thingsBizApp, serverStt);
       if (!enablePreviewFeatures)
         thingsServer.DisablePreviewFeatures();
-      thingsServer.Initialize(); 
-      // finally httpServer
-      var httpGraphQLServer = new GraphQLHttpHandler(thingsServer);
-      return httpGraphQLServer;
+      thingsServer.Initialize();
+      return thingsServer; 
     }
 
 
