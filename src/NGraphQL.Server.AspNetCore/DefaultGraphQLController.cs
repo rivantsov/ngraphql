@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace NGraphQL.Server.AspNetCore {
+
   public class DefaultGraphQLController: Controller {
     GraphQLHttpHandler _handler;
   

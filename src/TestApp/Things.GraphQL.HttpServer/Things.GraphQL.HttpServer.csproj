@@ -7,10 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Remove="Properties\XlaunchSettings.json" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\NGraphQL.Server.AspNetCore\NGraphQL.Server.AspNetCore.csproj" />
     <ProjectReference Include="..\..\NGraphQL.Server\NGraphQL.Server.csproj" />
     <ProjectReference Include="..\..\NGraphQL\NGraphQL.csproj" />

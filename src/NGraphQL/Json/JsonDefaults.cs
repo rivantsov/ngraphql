@@ -17,7 +17,7 @@ namespace NGraphQL.Json {
         WriteIndented = true
       };
       JsonOptions.Converters.Add(new Json.EnumConverterFactory());
-      JsonOptions.Converters.Add(new ObjectAsPrimitiveConverter()); //for converting values inside dictionaries
+      JsonOptions.Converters.Add(new DefaultObjectConverter()); //for converting values inside dictionaries
       // Url options is a copy with WriteIndented = false
       JsonUrlOptions = new JsonSerializerOptions(JsonOptions);
       JsonUrlOptions.WriteIndented = false;

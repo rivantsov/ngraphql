@@ -94,7 +94,8 @@ namespace NGraphQL.Model {
         return null;
       if (ValuesLookup.TryGetValue(outString, out var enumV))
         return enumV.Value;
-      throw new Exception($"Invalid value {outString} for enum type {this.EnumName}");
+      ThrowError($"Invalid value {outString} for enum type {this.EnumName}");
+      return default; //never happens
     }
 
     public object ConvertStringListToFlagsEnumValue(IList<string> stringValues) {
@@ -103,12 +104,33 @@ namespace NGraphQL.Model {
       long result = 0;
       foreach (var sv in stringValues) {
         if (!ValuesLookup.TryGetValue(sv, out var valueInfo))
-          throw new Exception($"Invalid value {sv} for enum type {this.EnumName}");
+          ThrowError($"Invalid value {sv} for enum type {this.EnumName}");
         result |= valueInfo.LongValue;
       }
       // convert long to typed enum value;
       var v = Enum.ToObject(this.Type, result);
       return v;
+    }
+
+    // rawValue is string or list of strings
+    public object ConvertRawValueToEnum(object rawValue) {
+      if (rawValue == null)
+        return null;
+      if (rawValue.GetType() == this.Type)
+        return rawValue;
+      switch (rawValue) {
+        case null: return null;
+        case string s:
+          return this.ConvertStringToEnumValue(s);
+        case IList<string> sArr:
+          return this.ConvertStringListToFlagsEnumValue(sArr);
+        case IList<object> objArr: // happens in OnMute submit changes
+          var sArr2 = objArr.Select(o => (string)o).ToArray();
+          return this.ConvertStringListToFlagsEnumValue(sArr2);
+        default:
+          ThrowError($"Invalid value for enum type {EnumName}: {rawValue}");
+          return default; //never happens
+      }
     }
 
     public IList<string> ConvertFlagsEnumValueToOutputStringList(object value) {
@@ -135,5 +157,15 @@ namespace NGraphQL.Model {
       }
     }
     #endregion
+
+    internal void ThrowError(string message) {
+      throw new GraphQLException(message); 
+    }
+
+    // static utility method
+    public static object ConvertRawValueToEnum(object rawValue, Type enumType) {
+      var handler = EnumHandlersCache.GetEnumHandler(enumType);
+      return handler.ConvertRawValueToEnum(rawValue); 
+    }
   }
-}
+  }
