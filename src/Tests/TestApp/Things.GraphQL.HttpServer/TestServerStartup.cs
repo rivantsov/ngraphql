@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using NGraphQL.Server;
 using NGraphQL.Server.AspNetCore;
 
@@ -21,6 +22,7 @@ namespace Things.GraphQL.HttpServer {
       var builder = WebApplication.CreateBuilder(args);
       if (serverUrl != null) 
         builder.WebHost.UseUrls(serverUrl); //this is for unit tests only
+      builder.Services.AddSignalR();
 
       // create and register GraphQLHttpService
       var graphQLServer = CreateThingsGraphQLServer(enablePreviewFeatures);
@@ -28,8 +30,9 @@ namespace Things.GraphQL.HttpServer {
 
       var app = builder.Build();
       app.UseRouting();
-      app.MapGraphQLEndpoint(); 
+      app.MapGraphQLEndpoint();
 
+      app.MapHub<SubscriptionHub>("/subscriptions"); 
       var task = Task.Run(() => app.Run());
       return task; 
     }

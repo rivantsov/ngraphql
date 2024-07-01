@@ -7,9 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\NGraphQL.Server.AspNetCore\NGraphQL.Server.AspNetCore.csproj" />
-    <ProjectReference Include="..\..\NGraphQL.Server\NGraphQL.Server.csproj" />
-    <ProjectReference Include="..\..\NGraphQL\NGraphQL.csproj" />
+    <ProjectReference Include="..\..\..\NGraphQL.Server.AspNetCore\NGraphQL.Server.AspNetCore.csproj" />
+    <ProjectReference Include="..\..\..\NGraphQL.Server\NGraphQL.Server.csproj" />
+    <ProjectReference Include="..\..\..\NGraphQL\NGraphQL.csproj" />
     <ProjectReference Include="..\Things.App\Things.App.csproj" />
     <ProjectReference Include="..\Things.GraphQL\Things.GraphQL.csproj" />
   </ItemGroup>

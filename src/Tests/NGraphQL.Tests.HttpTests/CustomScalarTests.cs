@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NGraphQL.Client;
-using Things;
 using Things.GraphQL.Types;
 
 namespace NGraphQL.Tests.HttpTests {
-  using IDict = System.Collections.Generic.IDictionary<string, object>;
   using Dict = System.Collections.Generic.Dictionary<string, object>;
 
   [TestClass]

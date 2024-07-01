@@ -24,7 +24,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\NGraphQL.Server\NGraphQL.Server.csproj" />
-    <ProjectReference Include="..\..\TestApp\Things.GraphQL\Things.GraphQL.csproj" />
+    <ProjectReference Include="..\TestApp\Things.App\Things.App.csproj" />
+    <ProjectReference Include="..\TestApp\Things.GraphQL\Things.GraphQL.csproj" />
   </ItemGroup>
 
 

@@ -9,6 +9,7 @@ namespace NGraphQL.CodeFirst {
     public const string Syntax = "SYNTAX_ERROR";
     public const string InputError = "INPUT_ERROR";
     public const string ObjectNotFound = "OBJECT_NOT_FOUND";
+    public const string CannotDelete = "CANNOT_DELETE";
     public const string Cancelled = "CANCELLED";
     public const string ResolverError = "RESOLVER_ERROR";
     public const string ServerError = "SERVER_ERROR"; // fatal server failure, unexpected

@@ -9,8 +9,8 @@ namespace NGraphQL {
   // see https://spec.graphql.org/June2018/#sec-Errors
   public class GraphQLError {
     private static object[] _emptyPath = new object[] { }; 
-
     public const string ErrorCodeKey = "code";
+
     public string Message;
     public IList<SourceLocation> Locations = new List<SourceLocation>();
     public IList<object> Path;

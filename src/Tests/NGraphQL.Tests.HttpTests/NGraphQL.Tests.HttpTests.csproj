@@ -5,6 +5,8 @@
   </PropertyGroup>
 
     <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.0.4" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.6" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
     <PackageReference Include="MSTest.TestAdapter" Version="3.3.1" />
     <PackageReference Include="MSTest.TestFramework" Version="3.3.1" />
@@ -15,8 +17,9 @@
     <ProjectReference Include="..\..\NGraphQL.Server.AspNetCore\NGraphQL.Server.AspNetCore.csproj" />
     <ProjectReference Include="..\..\NGraphQL.Server\NGraphQL.Server.csproj" />
     <ProjectReference Include="..\..\NGraphQL\NGraphQL.csproj" />
-    <ProjectReference Include="..\..\TestApp\Things.GraphQL.HttpServer\Things.GraphQL.HttpServer.csproj" />
-    <ProjectReference Include="..\..\TestApp\Things.GraphQL\Things.GraphQL.csproj" />
+    <ProjectReference Include="..\TestApp\Things.App\Things.App.csproj" />
+    <ProjectReference Include="..\TestApp\Things.GraphQL.HttpServer\Things.GraphQL.HttpServer.csproj" />
+    <ProjectReference Include="..\TestApp\Things.GraphQL\Things.GraphQL.csproj" />
   </ItemGroup>
 
 </Project>
