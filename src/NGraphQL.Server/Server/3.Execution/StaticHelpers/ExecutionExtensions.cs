@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using NGraphQL.CodeFirst;
-using NGraphQL.Model;
 using NGraphQL.Model.Request;
-using NGraphQL.Server.Subscriptions;
+using NGraphQL.Subscriptions;
 
 namespace NGraphQL.Server.Execution {
 

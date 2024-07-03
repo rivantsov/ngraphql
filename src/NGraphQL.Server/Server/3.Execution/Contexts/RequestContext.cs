@@ -7,6 +7,7 @@ using System.Threading;
 using NGraphQL.CodeFirst;
 using NGraphQL.Model;
 using NGraphQL.Model.Request;
+using NGraphQL.Subscriptions;
 using NGraphQL.Server.Subscriptions;
 using NGraphQL.Utilities;
 

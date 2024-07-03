@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 
 using NGraphQL.Server.Subscriptions;
+using NGraphQL.Subscriptions;
 
 namespace NGraphQL.Server.AspNetCore;
 

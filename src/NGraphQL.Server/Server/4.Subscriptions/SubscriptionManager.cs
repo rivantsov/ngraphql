@@ -13,13 +13,6 @@ using NGraphQL.Utilities;
 
 namespace NGraphQL.Server.Subscriptions; 
 
-public class SubscriptionClientInfo {
-  public ClaimsPrincipal User;
-  public string UserIdentifier;
-  public string ConnectionId;
-  public object Context; //SignalR Context
-}
-
 public class SubscriptionManager {
   IMessageSender _sender;
   GraphQLServer _server; 
@@ -29,6 +22,10 @@ public class SubscriptionManager {
     _server = server;
   }
 
+  // provides a way for SignalRSender singleton to register with SubscriptionManager. 
+  // It's a bit complicated, SignalRListener (hub, transient) and SignalRSender are created by DI, late, when the first message is sent.
+  // It starts from Listener, it has Sender as parameter(not used) that forces DI to create the instance (singleton),
+  // and sender immediately registers itself with SubscriptionManager. 
   public void Init(IMessageSender sender) {
     _sender = sender; 
   }
