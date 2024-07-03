@@ -12,7 +12,4 @@ public interface IMessageSender {
   Task Unsubscribe(string subscriber, string subject);
 }
 
-public interface ISubscriptionManager {
-  IMessageSender Sender { get; set; }
-  Task MessageReceived(string client, string message);
-}
+

@@ -5,15 +5,15 @@ using System.Threading.Tasks;
 
 namespace NGraphQL.Server.Subscriptions {
 
-  public class SubscriptionManager : ISubscriptionManager {
-    public IMessageSender Sender { get; set; }
+  public class SubscriptionManager {
+    IMessageSender _sender;
 
     public SubscriptionManager(IMessageSender sender) {
-      Sender = sender;
+      _sender = sender;
     }
 
     public async Task MessageReceived(string client, string message) {
-      await Sender.Broadcast(null, message); 
+      await _sender.Broadcast(null, "Server: " + message); 
       // await Task.CompletedTask;
     }
   }

@@ -12,7 +12,6 @@ namespace NGraphQL.Server.AspNetCore;
 /// <remarks>This class, like base Hub class from SignalR, is transient, 
 /// meaning instances are created to receive a single message and then disposed. </remarks>
 public class SignalRListener: Hub {
-  public const string ServerReceiveMethod = nameof(ReceiveMessage);
   SubscriptionManager _manager;
 
   public SignalRListener(SubscriptionManager manager) {
@@ -25,7 +24,6 @@ public class SignalRListener: Hub {
 }
 
 public class SignalRSender: IMessageSender {
-  public const string ClientReceiveMethod = "ReceiveMessage";
 
   IHubContext<SignalRListener> _hubContext;
 
@@ -37,11 +35,11 @@ public class SignalRSender: IMessageSender {
   public async Task Broadcast(string subject, string message) {
     var clientProxy = string.IsNullOrEmpty(subject) ?
         _hubContext.Clients.All : _hubContext.Clients.Group(subject);
-    await clientProxy?.SendAsync(ClientReceiveMethod, message);
+    await clientProxy?.SendAsync(SignalRNames.ClientReceiveMethod, message);
   }
 
   public async Task SendMessage(string subscriber, string message) {
-    await _hubContext.Clients.Client(subscriber).SendAsync(ClientReceiveMethod, message);
+    await _hubContext.Clients.Client(subscriber).SendAsync(SignalRNames.ClientReceiveMethod, message);
   }
 
   public async Task Subscribe(string subscriber, string subject) {
@@ -52,10 +50,13 @@ public class SignalRSender: IMessageSender {
     await _hubContext.Groups.RemoveFromGroupAsync(subscriber, subject);
   }
 
-  //public async Task SendMessage(string group, string message) {
-  //    var grp = _hubContext.Clients.Group(group);
-  //    await  grp.SendAsync("ReceiveMessage", message);
-  //}
+}
+
+public static class SignalRNames {
+  public const string ClientReceiveMethod = "ReceiveMessage";
+  public const string ServerReceiveMethod = nameof(SignalRListener.ReceiveMessage);
 
 }
+
+
 
