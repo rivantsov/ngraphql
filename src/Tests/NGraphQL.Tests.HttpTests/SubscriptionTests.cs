@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NGraphQL.Client;
+using NGraphQL.Server.AspNetCore;
+using NGraphQL.Subscriptions;
 using Things.GraphQL.Types;
 
 namespace NGraphQL.Tests.HttpTests;
@@ -25,16 +27,16 @@ public class SubscriptionTests {
     var hubUrl = TestEnv.ServiceUrl + "/subscriptions";
     var hubConn = new HubConnectionBuilder().WithUrl(hubUrl).Build();
 
-    hubConn.On<string, string>("ReceiveMessage", (user, message) =>
+
+    hubConn.On<string>("ReceiveMessage", (msg) =>
     {
-      var encodedMsg = $"{user}: {message}";
-      messages.Add(encodedMsg);
+      messages.Add(msg);
     });
     await hubConn.StartAsync();
 
-    // send a few messages 
-    await hubConn.SendAsync("SendMessage", "John", "Message 1");
-    await hubConn.SendAsync("SendMessage", "John", "Message 2");
+    var serverMethod = SubscriptionHub.ReceiveMethodName;
+    await hubConn.SendAsync(serverMethod, "message 1");
+    await hubConn.SendAsync(serverMethod, "message 2");
     await Task.Delay(500);
 
     Assert.AreEqual(2, messages.Count, "Expected messages");

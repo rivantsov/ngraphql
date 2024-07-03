@@ -23,6 +23,7 @@ namespace Things.GraphQL.HttpServer {
       if (serverUrl != null) 
         builder.WebHost.UseUrls(serverUrl); //this is for unit tests only
       builder.Services.AddSignalR();
+      builder.Services.AddSingleton<SubscriptionManager>(); 
 
       // create and register GraphQLHttpService
       var graphQLServer = CreateThingsGraphQLServer(enablePreviewFeatures);
