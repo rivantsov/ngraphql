@@ -7,9 +7,9 @@ namespace NGraphQL.Server.Subscriptions;
 
 public interface IMessageSender {
   Task SendMessage(string subscriber, string message);
-  Task Broadcast(string subject, string message);
-  Task Subscribe(string subscriber, string subject);
-  Task Unsubscribe(string subscriber, string subject);
+  Task Broadcast(string topic, string message);
+  Task Subscribe(string topic, string subscriber);
+  Task Unsubscribe(string topic, string subscriber);
 }
 
 

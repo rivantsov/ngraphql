@@ -24,20 +24,14 @@ namespace Things.GraphQL.HttpServer {
       if (serverUrl != null) 
         builder.WebHost.UseUrls(serverUrl); //this is for unit tests only
 
-      // SignalR/Subscriptions - move to ext method
-      builder.Services.AddSignalR();
-      builder.Services.AddSingleton<SubscriptionManager>();
-      builder.Services.AddSingleton<IMessageSender, SignalRSender>();
-
       // create and register GraphQLHttpService
       var graphQLServer = CreateThingsGraphQLServer(enablePreviewFeatures);
       builder.AddGraphQLServer(graphQLServer); 
 
       var app = builder.Build();
       app.UseRouting();
-      app.MapGraphQLEndpoint();
+      app.MapGraphQLEndpoint(graphQLServer);
 
-      app.MapHub<SignalRListener>("/subscriptions"); 
       var task = Task.Run(() => app.Run());
       return task; 
     }

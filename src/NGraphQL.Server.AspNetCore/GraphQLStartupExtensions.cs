@@ -6,24 +6,37 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.Extensions.DependencyInjection;
+using NGraphQL.Server.Execution;
+using NGraphQL.Server.Subscriptions;
 
 namespace NGraphQL.Server.AspNetCore {
+
   public static class GraphQLStartupExtensions {
     
     public static WebApplicationBuilder AddGraphQLServer(this WebApplicationBuilder builder, GraphQLServer graphQLServer) {
+      builder.Services.AddSingleton<GraphQLServer>(graphQLServer);
       var graphQLHttpHandler = new GraphQLHttpHandler(graphQLServer);
       builder.Services.AddSingleton<GraphQLHttpHandler>(graphQLHttpHandler);
+
+      if (graphQLServer.Settings.Features.IsSet(GraphQLServerFeatures.Subscriptions)) {
+        builder.Services.AddSignalR();
+        builder.Services.AddSingleton<IMessageSender, SignalRSender>();
+      }
+
       // add controllers and add ref to assembly that contains our DefaultGraphQlController (this assembly)
       var graphqlControllerAssembly = typeof(DefaultGraphQLController).Assembly;
       builder.Services.AddControllers().PartManager.ApplicationParts.Add(new AssemblyPart(graphqlControllerAssembly));
       return builder; 
     }
 
-    public static WebApplication MapGraphQLEndpoint(this WebApplication app) {
+    public static WebApplication MapGraphQLEndpoint(this WebApplication app, GraphQLServer graphQLServer) {
       app.MapControllerRoute(
         name: "default",
         pattern: "{controller=DefaultGraphQL}/{action}"
       ); 
+      if (graphQLServer.Settings.Features.IsSet(GraphQLServerFeatures.Subscriptions)) {
+        app.MapHub<SignalRListener>(graphQLServer.Settings.SubscriptionsEndpoint);
+      }
       return app; 
     }
   

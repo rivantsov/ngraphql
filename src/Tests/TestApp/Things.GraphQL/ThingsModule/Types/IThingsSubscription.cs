@@ -7,6 +7,7 @@ namespace Things.GraphQL.Types {
 
   public interface IThingsSubscription {
 
-    bool Subscribe(string childName);
+    Thing SubscribeToThingUpdates(int thingId);
+  
   }
 }

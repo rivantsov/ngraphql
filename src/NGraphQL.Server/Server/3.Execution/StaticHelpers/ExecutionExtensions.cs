@@ -4,13 +4,17 @@ using System.Linq;
 using NGraphQL.CodeFirst;
 using NGraphQL.Model;
 using NGraphQL.Model.Request;
+using NGraphQL.Server.Subscriptions;
 
 namespace NGraphQL.Server.Execution {
 
   public static partial class ExecutionExtensions {
 
-    public static bool IsSet(this GraphQLServerOptions options, GraphQLServerOptions option) {
-      return (options & option) != 0;
+    public static bool IsSet(this GraphQLServerOptions value, GraphQLServerOptions flag) {
+      return (value & flag) != 0;
+    }
+    public static bool IsSet(this GraphQLServerFeatures value, GraphQLServerFeatures flag) {
+      return (value & flag) != 0;
     }
 
     private static object[] _emptyArray = Array.Empty<object>();
@@ -36,5 +40,14 @@ namespace NGraphQL.Server.Execution {
       return ExecutionExtensions.EvaluateArgs(null, mappedArgs);
     }
 
+    public static GraphQLServer GetServer(this IRequestContext context) {
+      var ctx = (RequestContext)context;
+      return ctx.Server; 
+    }
+
+    public static SubscriptionClientInfo GetSubscriptionClient(this IRequestContext context) {
+      var ctx = (RequestContext)context;
+      return ctx.SubscriptionClient;
+    }
   }
 }

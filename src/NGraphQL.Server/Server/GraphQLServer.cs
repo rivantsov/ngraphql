@@ -12,6 +12,7 @@ using NGraphQL.Model;
 using NGraphQL.Model.Construction;
 using NGraphQL.Server.Execution;
 using NGraphQL.Server.Parsing;
+using NGraphQL.Server.Subscriptions;
 using NGraphQL.Utilities;
 
 namespace NGraphQL.Server {
@@ -25,6 +26,7 @@ namespace NGraphQL.Server {
     public GraphQLGrammar Grammar { get; private set; }
     public readonly GraphQLServerEvents Events = new GraphQLServerEvents();
     public readonly RequestCache RequestCache;
+    public readonly SubscriptionManager Subscriptions;
     public RequestQuota DefaultRequestQuota = new RequestQuota(); //init with default values
     public IList<string> StartupErrors => Model?.Errors ?? Array.Empty<string>();
 
@@ -37,7 +39,7 @@ namespace NGraphQL.Server {
       IntrospectionModule = new IntrospectionModule();
       RegisterModules(this.CoreModule, this.IntrospectionModule);
       RequestCache = new RequestCache(this.Settings);
-      
+      Subscriptions = new SubscriptionManager(this);
     }
 
     public void RegisterModules(params GraphQLModule[] modules) {

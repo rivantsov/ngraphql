@@ -6,16 +6,19 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using NGraphQL.CodeFirst;
-
+using NGraphQL.Server;
+using NGraphQL.Server.Execution;
 using Things.GraphQL.Types;
 
 namespace Things.GraphQL {
 
   public class ThingsResolvers : IResolverClass {
     ThingsApp _app;
+    GraphQLServer _server; 
 
     void IResolverClass.BeginRequest(IRequestContext context) {
       _app = (ThingsApp) context.App;
+      _server = context.GetServer(); 
     }
 
     public void EndRequest(IRequestContext context) {
@@ -237,11 +240,11 @@ namespace Things.GraphQL {
 
     public decimal DecTimesTwo(IFieldContext context, decimal dec) => dec * 2;
 
-
-
-    // this is just a test placeholder
-    public bool Subscribe(IFieldContext context, string childName) {
-      return true;
+    public async Task<Thing> SubscribeToThingUpdates(IFieldContext context, int thingId) {
+      var client = context.RequestContext.GetSubscriptionClient();
+      var topic = $"ThingUpdate/{thingId}";
+      await _server.Subscriptions.Subscribe(topic, client.ConnectionId);
+      return default;
     }
 
   }

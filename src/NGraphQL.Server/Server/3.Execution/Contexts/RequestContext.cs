@@ -7,6 +7,7 @@ using System.Threading;
 using NGraphQL.CodeFirst;
 using NGraphQL.Model;
 using NGraphQL.Model.Request;
+using NGraphQL.Server.Subscriptions;
 using NGraphQL.Utilities;
 
 namespace NGraphQL.Server.Execution {
@@ -21,6 +22,8 @@ namespace NGraphQL.Server.Execution {
     public ParsedGraphQLRequest ParsedRequest;
     public GraphQLOperation Operation { get; internal set; }
     public IList<VariableValue> OperationVariables { get; } = new List<VariableValue>();
+    public SubscriptionClientInfo SubscriptionClient;
+    
     // contexts for all directives in the ParsedRequest
     public IList<DirectiveContext> DirectiveContexts = new List<DirectiveContext>();
     public RequestMetrics Metrics { get; } = new RequestMetrics();

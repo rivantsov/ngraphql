@@ -25,13 +25,15 @@ namespace NGraphQL.Server {
     
     RecursiveFragments = 1 << 8,
     
+    Default = Subscriptions | RecursiveFragments
   }
 
   public class GraphQLServerSettings {
-    public static GraphQLServerFeatures DefaultFeatures = GraphQLServerFeatures.RecursiveFragments;
 
     public GraphQLServerOptions Options = GraphQLServerOptions.DefaultDev;
-    public GraphQLServerFeatures Features = DefaultFeatures;
+    public GraphQLServerFeatures Features = GraphQLServerFeatures.Default;
+
+    public string SubscriptionsEndpoint = "/subscriptions";
 
     public int RequestCacheSize = 2000;
     public TimeSpan RequestCacheEvictionTime = TimeSpan.FromSeconds(60);

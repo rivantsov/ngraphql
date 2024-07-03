@@ -7,17 +7,26 @@ namespace NGraphQL.Json {
 
   public static class JsonDefaults {
     public static readonly JsonSerializerOptions JsonOptions;
+    public static readonly JsonSerializerOptions JsonOptionsSlim;
     public static readonly JsonSerializerOptions JsonUrlOptions;
 
     static JsonDefaults() {
-      JsonOptions = new JsonSerializerOptions {
+      var baseOptions = new JsonSerializerOptions {
         PropertyNameCaseInsensitive = true,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         IncludeFields = true,
         WriteIndented = true
       };
-      JsonOptions.Converters.Add(new Json.EnumConverterFactory());
-      JsonOptions.Converters.Add(new DefaultObjectConverter()); //for converting values inside dictionaries
+      baseOptions.Converters.Add(new Json.EnumConverterFactory());
+
+      // Slim options - for deserializing without converting untyped objects, they remain JsonElement
+      // we use it in Subscriptions
+      JsonOptionsSlim = new JsonSerializerOptions(baseOptions);
+
+      // general options
+      JsonOptions = new JsonSerializerOptions(baseOptions); 
+      JsonOptions.Converters.Add(new DefaultObjectConverter()); //for converting untyped, including values inside dictionaries
+
       // Url options is a copy with WriteIndented = false
       JsonUrlOptions = new JsonSerializerOptions(JsonOptions);
       JsonUrlOptions.WriteIndented = false;

@@ -1,11 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 
 namespace NGraphQL.Utilities {
 
   internal static class Utility {
-    
+
+    public static void Check(bool condition, string message, params object[] args) {
+      if (!condition)
+        Throw(message, args);
+    }
+    public static Exception Throw(string message, params object[] args) {
+      var msg = SafeFormat(message, args);
+      throw new Exception(msg);
+    }
+
+    public static string SafeFormat(string message, params object[] args) {
+      if (args == null || args.Length == 0)
+        return message;
+      try {
+        return string.Format(CultureInfo.InvariantCulture, message, args);
+      } catch (Exception ex) {
+        return message + " (System error: failed to format message. " + ex.Message + ")";
+      }
+    }
+
     public static string ToUnderscoreUpperCase(string value) {
       if (string.IsNullOrEmpty(value))
         return value;
