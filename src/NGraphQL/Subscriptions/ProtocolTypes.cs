@@ -5,7 +5,7 @@ using System.Text;
 namespace NGraphQL.Subscriptions {
   // based on protocol patterns from here: https://github.com/enisdenjo/graphql-ws/blob/master/PROTOCOL.md
   
-  public abstract class MessageBase {
+  public class MessageBase {
     public string Id;
     public string Type;
     public object Payload;

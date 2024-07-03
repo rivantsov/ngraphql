@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -28,16 +29,20 @@ public class SubscriptionTests {
     var hubConn = new HubConnectionBuilder().WithUrl(hubUrl).Build();
 
 
-    hubConn.On<string>("ReceiveMessage", (msg) =>
+    hubConn.On<string>(SignalRSender.ClientReceiveMethod, (msg) =>
     {
       messages.Add(msg);
     });
     await hubConn.StartAsync();
 
-    var serverMethod = SubscriptionHub.ReceiveMethodName;
+    var serverMethod = SignalRListener.ServerReceiveMethod;
     await hubConn.SendAsync(serverMethod, "message 1");
     await hubConn.SendAsync(serverMethod, "message 2");
-    await Task.Delay(500);
+    // make multiple delays (for thread yields)
+    for(int i=0; i < 5; i++) {
+      Thread.Yield();
+      await Task.Delay(50);
+    }
 
     Assert.AreEqual(2, messages.Count, "Expected messages");
 

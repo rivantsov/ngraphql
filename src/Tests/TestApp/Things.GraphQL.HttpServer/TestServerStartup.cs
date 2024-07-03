@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using NGraphQL.Server;
 using NGraphQL.Server.AspNetCore;
+using NGraphQL.Server.Subscriptions;
 
 namespace Things.GraphQL.HttpServer {
 
@@ -22,8 +23,11 @@ namespace Things.GraphQL.HttpServer {
       var builder = WebApplication.CreateBuilder(args);
       if (serverUrl != null) 
         builder.WebHost.UseUrls(serverUrl); //this is for unit tests only
+
+      // SignalR/Subscriptions - move to ext method
       builder.Services.AddSignalR();
-      builder.Services.AddSingleton<SubscriptionManager>(); 
+      builder.Services.AddSingleton<SubscriptionManager>();
+      builder.Services.AddSingleton<IMessageSender, SignalRSender>();
 
       // create and register GraphQLHttpService
       var graphQLServer = CreateThingsGraphQLServer(enablePreviewFeatures);
@@ -33,7 +37,7 @@ namespace Things.GraphQL.HttpServer {
       app.UseRouting();
       app.MapGraphQLEndpoint();
 
-      app.MapHub<SubscriptionHub>("/subscriptions"); 
+      app.MapHub<SignalRListener>("/subscriptions"); 
       var task = Task.Run(() => app.Run());
       return task; 
     }
