@@ -12,8 +12,9 @@ namespace NGraphQL.Server {
     EnableRequestCache = 1 << 1,
     EnableParallelQueries = 1 << 2,
     IgnoreUnknownJsonFields = 1 << 3,
+    IgnoreOutNullFaults = 1 << 4,
 
-    DefaultProd = EnableRequestCache | EnableParallelQueries | IgnoreUnknownJsonFields,
+    DefaultProd = EnableRequestCache | EnableParallelQueries | IgnoreUnknownJsonFields | IgnoreOutNullFaults,
     DefaultDev = DefaultProd | ReturnExceptionDetails,
 
   }

@@ -4,6 +4,7 @@ using System.Linq;
 
 using NGraphQL.CodeFirst;
 using NGraphQL.Model.Request;
+using NGraphQL.Server.Subscriptions;
 using NGraphQL.Subscriptions;
 
 namespace NGraphQL.Server.Execution {
@@ -45,9 +46,9 @@ namespace NGraphQL.Server.Execution {
       return ctx.Server; 
     }
 
-    public static SubscriptionClientInfo GetSubscriptionClient(this IRequestContext context) {
+    public static SubscriptionContext GetSubscriptionContext(this IRequestContext context) {
       var ctx = (RequestContext)context;
-      return ctx.SubscriptionClient;
+      return ctx.Subscription;
     }
   }
 }

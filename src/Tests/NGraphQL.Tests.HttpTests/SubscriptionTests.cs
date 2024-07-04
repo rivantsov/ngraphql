@@ -34,10 +34,10 @@ public class SubscriptionTests {
     });
     await hubConn.StartAsync();
 
-    // 1. Subscribe to ThingUpdates
-    var thingId = 123;
-    var subscribeMsg = new SubscriptionMessage() {
-      Id = "ThingUpdate/12345",
+    // 1. SubscribeCaller to ThingUpdates
+    var thingId = 1;
+    var subscribeMsg = new SubscribeMessage() {
+      Id = "ThingUpdate/1",
       Type = SubscriptionMessageTypes.Subscribe,
       Payload = new SubscribePayload() {
         OperationName = null,

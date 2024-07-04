@@ -208,7 +208,7 @@ namespace Things.GraphQL {
       context.AddErrorIf(id < 0, "Id value may not be negative.");
       context.AddErrorIf(string.IsNullOrEmpty(newName), "newName may not be empty."); //abort immediately if cond is true
       context.AddErrorIf(newName.Length > 10, "newName too long, max size = 10.");
-      // abort exc has no error info inside, it is assumed errors are already posted to request context
+      // abort exc has no error info inside, it is assumed errors are already posted to request field
       // and will be returned in response
       context.AbortIfErrors(); // throw abort exc if there were errors detected
       var thing = _app.Things.FirstOrDefault(t => t.Id == id);
@@ -240,10 +240,9 @@ namespace Things.GraphQL {
 
     public decimal DecTimesTwo(IFieldContext context, decimal dec) => dec * 2;
 
-    public async Task<Thing> SubscribeToThingUpdates(IFieldContext context, int thingId) {
-      var client = context.RequestContext.GetSubscriptionClient();
+    public async Task<Thing> SubscribeToThingUpdates(IFieldContext field, int thingId) {
       var topic = $"ThingUpdate/{thingId}";
-      await _server.Subscriptions.Subscribe(topic, client.ConnectionId);
+      await _server.Subscriptions.SubscribeCaller(field, topic);      
       return default;
     }
 

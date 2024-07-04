@@ -23,8 +23,8 @@ namespace NGraphQL.Server.Execution {
     public ParsedGraphQLRequest ParsedRequest;
     public GraphQLOperation Operation { get; internal set; }
     public IList<VariableValue> OperationVariables { get; } = new List<VariableValue>();
-    public SubscriptionClientInfo SubscriptionClient;
-    
+    public SubscriptionContext Subscription;
+
     // contexts for all directives in the ParsedRequest
     public IList<DirectiveContext> DirectiveContexts = new List<DirectiveContext>();
     public RequestMetrics Metrics { get; } = new RequestMetrics();

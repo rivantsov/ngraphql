@@ -20,12 +20,21 @@ public class SignalRListener: Hub {
     _server = server;
   }
 
+  public override Task OnConnectedAsync() {
+    _server.Subscriptions.OnClientConnected(Context.ConnectionId, Context.User, Context.UserIdentifier);
+    return base.OnConnectedAsync();
+  }
+  public override Task OnDisconnectedAsync(Exception exception) {
+    _server.Subscriptions.OnClientDisconnected(Context.ConnectionId, exception);
+    return base.OnDisconnectedAsync(exception);
+  }
+
   public async Task ReceiveMessage(string message) {
-    var clientInfo = new SubscriptionClientInfo() {
-      User = this.Context.User, UserIdentifier = this.Context.UserIdentifier, ConnectionId = this.Context.ConnectionId,
-      Context = this.Context
+    var clientConn = new ClientConnection() {
+      User = this.Context.User, UserId = this.Context.UserIdentifier, ConnectionId = this.Context.ConnectionId,
+//      Context = this.Context
     };
-    await _server.Subscriptions.MessageReceived(clientInfo, message);
+    await _server.Subscriptions.MessageReceived(clientConn, message);
   }
 }
 
@@ -42,8 +51,8 @@ public class SignalRSender: IMessageSender {
     _server.Subscriptions.Init(this); 
   }
 
-  public async Task SendMessage(string subscriber, string message) {
-    await _hubContext.Clients.Client(subscriber).SendAsync(SignalRNames.ClientReceiveMethod, message);
+  public async Task SendMessage(string connectionId, string message) {
+    await _hubContext.Clients.Client(connectionId).SendAsync(SignalRNames.ClientReceiveMethod, message);
   }
 
   public async Task Broadcast(string topic, string message) {
@@ -52,12 +61,12 @@ public class SignalRSender: IMessageSender {
     await clientProxy?.SendAsync(SignalRNames.ClientReceiveMethod, message);
   }
 
-  public async Task Subscribe(string topic, string subscriber) {
-    await _hubContext.Groups.AddToGroupAsync(subscriber, topic);
+  public async Task Subscribe(string topic, string connectionId) {
+    await _hubContext.Groups.AddToGroupAsync(connectionId, topic);
   }
 
-  public async Task Unsubscribe(string topic, string subscriber) {
-    await _hubContext.Groups.RemoveFromGroupAsync(subscriber, topic);
+  public async Task Unsubscribe(string topic, string connectionId) {
+    await _hubContext.Groups.RemoveFromGroupAsync(connectionId, topic);
   }
 
 }

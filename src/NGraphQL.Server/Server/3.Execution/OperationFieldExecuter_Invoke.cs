@@ -18,7 +18,7 @@ namespace NGraphQL.Server.Execution {
       try {
         // Invoke resolver
         object result;
-        object convResult; 
+        object convResult;
         if (fieldContext.MappedField.Resolver.ResolverFunc != null)
           result = InvokeResolverFunc(fieldContext);
         else
@@ -31,8 +31,8 @@ namespace NGraphQL.Server.Execution {
         } else {
           convResult = fieldContext.ConvertToOutputValue(result);
         }
-        // check for null in non-null field
-        if (convResult == null && fieldContext.FieldDef.TypeRef.IsNotNull) {
+        // check for null in non-null field; this check is suppressed by IgnoreOutNullFaults flag in server options
+        if (!_ignoreOutNullFaults && convResult == null && fieldContext.FieldDef.TypeRef.IsNotNull ) {
           var selFld = fieldContext.MappedField.Field;
           _requestContext.AddError($"Server error: resolver for non-nullable field '{selFld.Key}' returned null.",
                 selFld, ErrorCodes.ServerError);

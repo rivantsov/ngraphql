@@ -30,6 +30,8 @@ namespace NGraphQL.Server.Execution {
     //  but it is for ALL operation fields executing concurrently. We track individual oper field in this _failed
     //  flag, so that we know when to abort this field based on its own errors
     private bool _failed;
+    bool _ignoreOutNullFaults;
+
 
     // executed field contexts for fields returning objects; these are pending for process result
     // subsets - we do not do it immediately after executing resolver and getting result objects. 
@@ -41,6 +43,7 @@ namespace NGraphQL.Server.Execution {
       _requestContext = requestContext;
       _parentScope = parentScope;
       _mappedOpField = mappedOpField;
+      _ignoreOutNullFaults = _requestContext.Server.Settings.Options.IsSet(GraphQLServerOptions.IgnoreOutNullFaults);
     }
 
     public async Task ExecuteOperationFieldAsync() {
@@ -49,13 +52,20 @@ namespace NGraphQL.Server.Execution {
           Result = DBNull.Value; // it's a signal to skip value in output
           return;
         }
+
         var opFieldContext = new FieldContext(_requestContext, this, _mappedOpField);
         opFieldContext.SetCurrentParentScope(_parentScope);
+
         // We do not save result in parent top-level context: we maybe executing in parallel with other top-level fields;
         // we need synchronization(lock), and also op fields might finish out of order. So we save result in a field, and 
         //  RequestHandler will save all results from executers in proper order. 
         //_parentScope.SetValue(_mappedOpField.Field.Key, opOutValue); -- do not do this
-        this.Result = await InvokeResolverAsync(opFieldContext);
+        // check Subscription mode first
+        var subCtx = _requestContext.Subscription;
+        if (subCtx != null && subCtx.IsSubscriptionNextMode) // we already have the object
+          this.Result = subCtx.SubscriptionNextResolverResult;
+        else 
+          this.Result = await InvokeResolverAsync(opFieldContext);
         // for fields returning objects, save for further processing of results
         if (opFieldContext.MappedField.Field.SelectionSubset != null)
           _executedObjectFieldContexts.Add(opFieldContext);
