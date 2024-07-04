@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
@@ -9,6 +10,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Irony.Parsing;
 using NGraphQL.CodeFirst;
 using NGraphQL.Json;
 using NGraphQL.Model.Request;
@@ -18,24 +20,10 @@ using NGraphQL.Utilities;
 
 namespace NGraphQL.Server.Subscriptions; 
 
-public class ClientConnection {
-  public string ConnectionId;
-  public ClaimsPrincipal User;
-  public string UserId; 
-  public ConcurrentDictionary<string, ClientSubscription> Subscriptions = new();
-}
-
-public class ClientSubscription {
-  public ParsedGraphQLRequest ParsedRequest;
-  public string Topic;
-}
-
 public class SubscriptionManager {
   IMessageSender _sender;
   GraphQLServer _server;
-  // To keep from polluting memory with identical parsed requests, we keep cache  
-  ConcurrentDictionary<string, ParsedGraphQLRequest> _cachedParsedRequests = new ();
-  ConcurrentDictionary<string, ClientConnection> _connections = new();
+  ClientSubscriptionStore _subscriptionStore = new(); 
 
   public SubscriptionManager(GraphQLServer server) {
     _server = server;
@@ -51,11 +39,11 @@ public class SubscriptionManager {
 
   public void OnClientConnected(string connectionId, ClaimsPrincipal user, string userId) {
     var conn = new ClientConnection() { ConnectionId = connectionId, User = user, UserId = userId };
-    _connections[connectionId] = conn; 
+    _subscriptionStore.AddClient(conn); 
   }
 
   public void OnClientDisconnected(string connectionId, Exception exc) {
-    _connections.TryGetValue(connectionId, out var clientConn);
+    _subscriptionStore.RemoveClient(connectionId);  
   }
      
   public async Task MessageReceived(ClientConnection client, string message) {
@@ -79,10 +67,10 @@ public class SubscriptionManager {
       default:
         break;
     }
-    await _sender.Broadcast(null, "Server: " + message);  // this is test code
+    await _sender.Publish("Server: " + message, new string[] { client.ConnectionId });  // this is test code
   }
 
-  // Sequence: SignalRListener -> HandleSubscribeMessage -> ExecuteRequest -> Resolver -> SubscribeCaller(here)
+  // Sequence: SignalRListener -> HandleSubscribeMessage -> ExecuteRequest -> Resolver -> AddSubscription(here)
   private async Task HandleSubscribeMessage(ClientConnection client, SubscribeMessage message) {
     var payloadElem = (JsonElement)message.Payload;
     Util.Check(payloadElem.ValueKind == JsonValueKind.Object, "Subscribe.Payload is a JsonElement of invalid type {0}.", message.Type);
@@ -91,45 +79,56 @@ public class SubscriptionManager {
     var rawReq = new GraphQLRequest() { OperationName = pload.OperationName, Query = pload.Query, Variables = pload.Variables };
     var requestContext = new RequestContext(this._server, rawReq, CancellationToken.None);
     requestContext.Subscription = new SubscriptionContext() { Connection = client }; 
-    await _server.ExecuteRequestAsync(requestContext);
+    await _server.ExecuteRequestAsync(requestContext); //in the call, the resolver adds subscription using AddSubscription method below
   }
 
   // To be called by Subscription Resolver method
   public async Task SubscribeCaller(IFieldContext field, string topic) {
-    var reqContext = (RequestContext)field.RequestContext;
-    var subCtx = reqContext.GetSubscriptionContext();
-    var connId = subCtx.Connection.ConnectionId;
-    if (!_connections.TryGetValue(connId, out var clientConn)) {
-      return;
-    }
-    var queryText = reqContext.RawRequest.Query;
-    var parsedReq = reqContext.ParsedRequest;
-    parsedReq = CacheRequest(queryText, parsedReq);
-    var subscr = new ClientSubscription() { Topic = topic, ParsedRequest = parsedReq };
-    clientConn.Subscriptions[topic] = subscr;
-    await _sender.Subscribe(topic, connId);
+    var clientSub = _subscriptionStore.AddSubscription(field.RequestContext, topic);
+    await Task.CompletedTask;
   }
 
   public async Task UnsubscribeCaller(string topic, string connectionId) {
-    await _sender.Unsubscribe(topic, connectionId);
-    if (!_connections.TryGetValue(connectionId, out var clientConn)) {
-      return;
-    }
-    clientConn.Subscriptions.TryRemove(topic, out var _);
+    _subscriptionStore.RemoveSubscription(topic, connectionId);
+    await Task.CompletedTask;
   }
 
+  public async Task Publish(string topic, object payload) {
+    var task = Task.Run(async () => await PublishImpl(topic, payload));
+    await Task.CompletedTask;
+  }
 
+  private async Task PublishImpl(string topic, object payload) {
+    var subs = _subscriptionStore.GetTopicSubscriptions(topic);
+    // Group by sub variant
+    var varGroups = subs.GroupBy(sub => sub.Variant);
+    // Each group contains Subscriptions with the same Variant (topic and query), so all clients will get identical message
+    foreach(var grp in varGroups) {
+      var subscrVariant = grp.Key;
+      var groupSubs = grp.ToList();
+      var connIds = groupSubs.Select(cs => cs.Client.ConnectionId).ToList();
+      var msgJson = await BuildMessage(subscrVariant, payload);
+      await _sender.Publish(msgJson, connIds);
+    }
+  }
 
-  private ParsedGraphQLRequest CacheRequest(string query, ParsedGraphQLRequest request) {
-    if (_cachedParsedRequests.TryGetValue(query, out var cached))
-      return cached;
-    _cachedParsedRequests.TryAdd(query, request);
-    return request; 
+  private async Task<string> BuildMessage(SubscriptionVariant sub, object data) {
+    var opId = $"{sub.Topic}/{Guid.NewGuid()}";
+    var subContext = new SubscriptionContext() { IsSubscriptionNextMode = true, SubscriptionNextResolverResult = data };
+    var reqContext = new RequestContext(_server, sub.ParsedRequest, subContext);
+    var reqHandler = new RequestHandler(_server, reqContext);
+    var topOp = sub.ParsedRequest.Operations.First();
+    var topScope = (OutputObjectScope) reqContext.Response.Data;
+    await reqHandler.ExecuteOperationAsync(topOp, topScope);
+    var msg = new NextMessage() { Id = opId, Type = "next", Payload = reqContext.Response.Data };
+    var json = SerializationHelper.Serialize(msg);
+    return json;    
   }
 
   // deserializes message, but leaves Payload as JsonElement, to be later deserialized as a specific subtype
   public static SubscribeMessage DeserializeMessage(string json) {
-    var obj = JsonSerializer.Deserialize<SubscribeMessage>(json, JsonDefaults.JsonOptionsSlim); //Slim options is for Payload - do not convert it to dict
+    //Slim options is for message.Payload - do not convert it to dict, leave as JsonElement
+    var obj = JsonSerializer.Deserialize<SubscribeMessage>(json, JsonDefaults.JsonOptionsSlim); 
     return obj;
   }
 

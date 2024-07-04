@@ -4,6 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <AssemblyName>Things.GraphQL.HttpServer</AssemblyName>
     <RootNamespace>Things.GraphQL.HttpServer</RootNamespace>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
@@ -34,10 +35,10 @@ public class SubscriptionTests {
     });
     await hubConn.StartAsync();
 
-    // 1. SubscribeCaller to ThingUpdates
+    // 1. AddSubscription to ThingUpdates
     var thingId = 1;
     var subscribeMsg = new SubscribeMessage() {
-      Id = "ThingUpdate/1",
+      Id = "ThingUpdate/1/" + Guid.NewGuid(),
       Type = SubscriptionMessageTypes.Subscribe,
       Payload = new SubscribePayload() {
         OperationName = null,

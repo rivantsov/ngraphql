@@ -16,8 +16,8 @@ namespace NGraphQL.Server.Execution {
   public class RequestContext : IRequestContext {
     public GraphQLServer Server { get; }
     public object App => Server.App;
-    public ClaimsPrincipal User { get; set; } 
-    public GraphQLApiModel ApiModel => Server.Model; 
+    public ClaimsPrincipal User { get; set; }
+    public GraphQLApiModel ApiModel => Server.Model;
 
     public GraphQLRequest RawRequest;
     public ParsedGraphQLRequest ParsedRequest;
@@ -47,12 +47,12 @@ namespace NGraphQL.Server.Execution {
     // see comment on GetCreateDerivedTypeRef method for more info
     internal readonly IList<TypeRef> CustomTypeRefs = new List<TypeRef>();
     // used by http server
-    public object HttpContext { get; } 
+    public object HttpContext { get; }
     // For Http server, original variables
     public IDictionary<string, object> RawVariables;
 
 
-    public RequestContext(GraphQLServer server, GraphQLRequest rawRequest, CancellationToken cancellationToken = default, 
+    public RequestContext(GraphQLServer server, GraphQLRequest rawRequest, CancellationToken cancellationToken = default,
                           ClaimsPrincipal user = null, RequestQuota quota = null, object httpContext = null) {
       Server = server;
       RawRequest = rawRequest;
@@ -67,7 +67,15 @@ namespace NGraphQL.Server.Execution {
       if (_externalCancellationToken != default)
         _externalCancellationToken.Register(OnExternalTokenCancelled);
     }
-
+    
+    // special case for re-executing request for subscriptions, just to grab output tree
+    public RequestContext(GraphQLServer server, ParsedGraphQLRequest parsedRequest, SubscriptionContext subContext) {
+      Server = server;
+      ParsedRequest = parsedRequest;
+      Subscription = subContext;
+      var topScope = new OutputObjectScope(new RequestPath(), null, null);
+      this.Response.Data = topScope;
+    }
 
     bool _externalCancelled;
     private void OnExternalTokenCancelled() {

@@ -10,6 +10,7 @@ namespace NGraphQL.Subscriptions {
     public string Type;
     public object Payload;
   }
+  public class NextMessage: SubscribeMessage { } //they are identical
 
   public class SubscribePayload {
     public string OperationName;

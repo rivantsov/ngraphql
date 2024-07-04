@@ -13,7 +13,7 @@ using NGraphQL.Server.Mapping;
 
 namespace NGraphQL.Server {
 
-  internal class RequestHandler {
+  public class RequestHandler {
     GraphQLServer _server; 
     RequestContext _requestContext;
     bool _parallelQueryEnabled;
@@ -60,7 +60,7 @@ namespace NGraphQL.Server {
       }
     }
 
-    private async Task ExecuteOperationAsync(GraphQLOperation op, OutputObjectScope topScope) {
+    public async Task ExecuteOperationAsync(GraphQLOperation op, OutputObjectScope topScope) {
       var mappedTopSubset = op.SelectionSubset.MappedSubSets[0];
       var topMappedItems = mappedTopSubset.MappedItems;
       var parallel = _parallelQueryEnabled && op.OperationType == OperationType.Query 

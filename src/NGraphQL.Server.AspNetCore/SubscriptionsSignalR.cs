@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -51,22 +53,21 @@ public class SignalRSender: IMessageSender {
     _server.Subscriptions.Init(this); 
   }
 
-  public async Task SendMessage(string connectionId, string message) {
+  public async Task Publish(string message, IList<string> connectionIds) {
+    foreach (var conn in connectionIds)
+      await PushMessage(message, conn);
+  }
+  public async Task PushMessage(string message, string connectionId) {
     await _hubContext.Clients.Client(connectionId).SendAsync(SignalRNames.ClientReceiveMethod, message);
   }
 
-  public async Task Broadcast(string topic, string message) {
-    var clientProxy = string.IsNullOrEmpty(topic) ?
-        _hubContext.Clients.All : _hubContext.Clients.Group(topic);
-    await clientProxy?.SendAsync(SignalRNames.ClientReceiveMethod, message);
+
+  public async Task Subscribe(string group, string connectionId) {
+    await _hubContext.Groups.AddToGroupAsync(connectionId, group);
   }
 
-  public async Task Subscribe(string topic, string connectionId) {
-    await _hubContext.Groups.AddToGroupAsync(connectionId, topic);
-  }
-
-  public async Task Unsubscribe(string topic, string connectionId) {
-    await _hubContext.Groups.RemoveFromGroupAsync(connectionId, topic);
+  public async Task Unsubscribe(string group, string connectionId) {
+    await _hubContext.Groups.RemoveFromGroupAsync(connectionId, group);
   }
 
 }

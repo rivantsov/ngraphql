@@ -153,6 +153,7 @@ namespace NGraphQL.Model.Request {
   }
 
   public class ParsedGraphQLRequest {
+    public string Query;
     public List<GraphQLOperation> Operations = new List<GraphQLOperation>();
     public List<FragmentDef> Fragments = new List<FragmentDef>();
     // all directives from all elements

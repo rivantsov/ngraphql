@@ -38,7 +38,7 @@ namespace NGraphQL.Server.Parsing {
       ParseTree parseTree = ParseToSyntaxTree(query);
       if (_requestContext.Failed)
         return false;
-      _requestContext.ParsedRequest = new ParsedGraphQLRequest();
+      _requestContext.ParsedRequest = new ParsedGraphQLRequest() { Query = query} ;
       var requestDocNode = parseTree.Root;
       var rootTerm = requestDocNode.Term.Name;
       // Find top request elements (operations, fragments) and validate them
