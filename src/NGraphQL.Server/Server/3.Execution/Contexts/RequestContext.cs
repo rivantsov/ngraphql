@@ -73,8 +73,11 @@ namespace NGraphQL.Server.Execution {
       Server = server;
       ParsedRequest = parsedRequest;
       Subscription = subContext;
-      var topScope = new OutputObjectScope(new RequestPath(), null, null);
-      this.Response.Data = topScope;
+      //var topScope = new OutputObjectScope(new RequestPath(), null, null);
+      //this.Response.Data = topScope;
+      Quota = Server.DefaultRequestQuota ?? new RequestQuota();
+      _cancellationTokenSource = new CancellationTokenSource(Quota.MaxRequestTime);
+      _cancellationTokenSource.Token.Register(OnCancelled);
     }
 
     bool _externalCancelled;

@@ -18,13 +18,17 @@ namespace NGraphQL.Server.Execution {
       try {
         // Invoke resolver
         object result;
-        object convResult;
-        if (fieldContext.MappedField.Resolver.ResolverFunc != null)
+        // check Subscription mode first
+        var subCtx = _requestContext.Subscription;
+        if (subCtx != null && subCtx.IsSubscriptionNextMode) // we already have the object
+          result = subCtx.SubscriptionNextResolverResult;
+        else if (fieldContext.MappedField.Resolver.ResolverFunc != null)
           result = InvokeResolverFunc(fieldContext);
         else
           result = await InvokeResolverMethodAsync(fieldContext);
         // if it was batch result set, and result is null, lookup result from current scope
         //  we still need to return real result 
+        object convResult;
         if (result == null && fieldContext.BatchResultWasSet) {
           var fldKey = fieldContext.MappedField.Field.Key;
           fieldContext.CurrentParentScope.TryGetValue(fldKey, out convResult); // value already converted

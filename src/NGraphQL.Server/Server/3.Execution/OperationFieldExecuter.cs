@@ -60,12 +60,7 @@ namespace NGraphQL.Server.Execution {
         // we need synchronization(lock), and also op fields might finish out of order. So we save result in a field, and 
         //  RequestHandler will save all results from executers in proper order. 
         //_parentScope.SetValue(_mappedOpField.Field.Key, opOutValue); -- do not do this
-        // check Subscription mode first
-        var subCtx = _requestContext.Subscription;
-        if (subCtx != null && subCtx.IsSubscriptionNextMode) // we already have the object
-          this.Result = subCtx.SubscriptionNextResolverResult;
-        else 
-          this.Result = await InvokeResolverAsync(opFieldContext);
+        this.Result = await InvokeResolverAsync(opFieldContext);
         // for fields returning objects, save for further processing of results
         if (opFieldContext.MappedField.Field.SelectionSubset != null)
           _executedObjectFieldContexts.Add(opFieldContext);

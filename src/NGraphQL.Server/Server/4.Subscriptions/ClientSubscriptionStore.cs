@@ -1,80 +1,102 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using NGraphQL.CodeFirst;
 using NGraphQL.Model.Request;
 using NGraphQL.Server.Execution;
+using NGraphQL.Utilities;
 
 namespace NGraphQL.Server.Subscriptions;
 
 internal class ClientSubscriptionStore {
 
-  ConcurrentDictionary<string, ParsedGraphQLRequest> _parsedRequestsCache = new();
-  ConcurrentDictionary<string, SubscriptionVariant> _variantsCache = new();
-
-  ConcurrentDictionary<string, ClientConnection> _clients = new(); //by connection Id
-  ConcurrentDictionary<string, TopicSubscribers> _topicSubscribers = new(); //by connection Id
-
-
-  // ConcurrentDictionary<string, IList<ClientConnection>> _clientsByTopic = new();
-
+  Dictionary<string, ParsedGraphQLRequest> _parsedRequestsCache = new();
+  Dictionary<string, SubscriptionVariant> _variantsCache = new();
+  Dictionary<string, ClientConnection> _clients = new(); //by connection Id
+  Dictionary<string, TopicSubscribers> _topicSubscribers = new(); //by connection Id
+  ReaderWriterLockSlim _lock = new();
 
   public void AddClient(ClientConnection conn) {
-    _clients[conn.ConnectionId] = conn;
+    _lock.EnterWriteLock();
+    try {
+      _clients[conn.ConnectionId] = conn;
+    } finally { _lock.ExitWriteLock(); }
   }
+ 
 
   public void RemoveClient(string connId) {
-    _clients.TryRemove(connId, out var _);
+    _lock.EnterWriteLock();
+    try {
+      _clients.SafeRemove(connId);
+    } finally { _lock.ExitWriteLock(); }
+  }
+
+  public ClientConnection GetClient(string connectionId) {
+    _lock.EnterReadLock();
+    try {
+      return _clients.SafeGet(connectionId);
+    } finally { _lock.ExitReadLock(); }
   }
 
   public ClientSubscription AddSubscription(IRequestContext request, string topic) {
-    var reqContext = (RequestContext)request;
-    var subCtx = reqContext.GetSubscriptionContext();
-    var connId = subCtx.Connection.ConnectionId;
-    if (!_clients.TryGetValue(connId, out var clientConn)) { 
-      return null; 
-    }
-    var parsedReq = reqContext.ParsedRequest;
-    var subscrVariant = GetOrAddVariant(topic, parsedReq);
-    var clientSub = AddClientSubscription(clientConn, subscrVariant); 
-    return clientSub;
+    _lock.EnterWriteLock();
+    try {
+      var reqContext = (RequestContext)request;
+      var subCtx = reqContext.GetSubscriptionContext();
+      var connId = subCtx.Connection.ConnectionId;
+      if (!_clients.TryGetValue(connId, out var client)) {
+        return null;
+      }
+      var parsedReq = reqContext.ParsedRequest;
+      var subscrVariant = GetOrAddVariant(topic, parsedReq);
+      var clientSub = AddClientSubscription(client, subscrVariant);
+      return clientSub;
+    } finally { _lock.ExitWriteLock(); }
   }
 
+  public void RemoveSubscription(string connectionId, string topic) {
+    _lock.EnterWriteLock();
+    try {
+      // remove from the client's list
+      if (!_clients.TryGetValue(connectionId, out var clientConn))
+        return;
+      clientConn.Subscriptions.RemoveAll(cs => cs.Topic == topic);
+      // remove from the topic's list
+      if (!_topicSubscribers.TryGetValue(topic, out var topicSubs))
+        return;
+      topicSubs.Subscribers.SafeRemove(connectionId);
+      if (topicSubs.Subscribers.Count == 0)
+        _topicSubscribers.SafeRemove(topic);
+    } finally { _lock.ExitWriteLock(); }
+  }
+
+  public IList<ClientSubscription> GetTopicSubscriptions(string topic) {
+    _lock.EnterReadLock();
+    try {
+      if (!_topicSubscribers.TryGetValue(topic, out var topicSubs))
+        return _emptyClientSubList;
+      var subs = topicSubs.Subscribers.SelectMany(
+                           kv => kv.Value.Subscriptions.Where(cs => cs.Topic == topic)
+                    ).ToList();
+      return subs;
+    } finally { _lock.ExitReadLock(); }
+  }
+  static IList<ClientSubscription> _emptyClientSubList = new ClientSubscription[] { };
+
+
+// ===================== Private stuff ===============================================
   private ClientSubscription AddClientSubscription(ClientConnection client, SubscriptionVariant subVariant) {
     var clientSub = new ClientSubscription() { Client = client, Variant = subVariant };
     client.Subscriptions.Add(clientSub);
     if (!_topicSubscribers.TryGetValue(subVariant.Topic, out var topicSubs)) {
       topicSubs = new TopicSubscribers() { Topic = subVariant.Topic };
+      _topicSubscribers[subVariant.Topic] = topicSubs;
     }
     topicSubs.Subscribers[client.ConnectionId] = client;
-    return clientSub; 
+    return clientSub;
   }
-
-  public void RemoveSubscription(string connectionId, string topic) {
-    // remove from the client's list
-    if (!_clients.TryGetValue(connectionId, out var clientConn))
-      return;
-    clientConn.Subscriptions.RemoveAll(cs => cs.Topic == topic);
-    // remove from the topic's list
-    if (!_topicSubscribers.TryGetValue(topic, out var topicSubs))
-      return;
-    topicSubs.Subscribers.TryRemove(connectionId, out var _);
-    if (topicSubs.Subscribers.Count == 0)
-      _topicSubscribers.TryRemove(topic, out var _);
-  }
-
-
-  public IList<ClientSubscription> GetTopicSubscriptions(string topic) {
-    if (!_topicSubscribers.TryGetValue(topic, out var topicSubs))
-      return _emptyClientSubList;
-    var subs = topicSubs.Subscribers.SelectMany(
-                         kv => kv.Value.Subscriptions.Where(cs => cs.Topic == topic)
-                  ).ToList();
-    return subs;
-  }
-  static IList<ClientSubscription> _emptyClientSubList = new ClientSubscription[] { };
 
   private SubscriptionVariant GetOrAddVariant(string topic, ParsedGraphQLRequest request) {
     request = GetOrAddCacheParsedRequest(request);
@@ -94,7 +116,7 @@ internal class ClientSubscriptionStore {
       return cached;
     // protection against flood attack
     CheckPurgeDictionary(_parsedRequestsCache, 1000);
-    _parsedRequestsCache.TryAdd(query, request);
+    _parsedRequestsCache[query] = request;
     return request;
   }
 
@@ -105,6 +127,5 @@ internal class ClientSubscriptionStore {
     while(dict.Count > newCount)
       dict.Remove(dict.First().Key);
   }
-
 
 }

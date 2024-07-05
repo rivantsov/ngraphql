@@ -46,17 +46,20 @@ public class SubscriptionManager {
     _subscriptionStore.RemoveClient(connectionId);  
   }
      
-  public async Task MessageReceived(ClientConnection client, string message) {
+  public async Task MessageReceived(string connectionId, string message) {
     try {
       Util.Check(_sender != null, "Subscription manager not initialized, message sender not set.");
-      await MessageReceivedImpl(client, message); 
+      await MessageReceivedImpl(connectionId, message); 
     } catch(Exception ex) {
       Trace.WriteLine($"MessageReceived error: {ex.ToString()}");
       Debugger.Break(); 
     }
   }
   
-  private async Task MessageReceivedImpl(ClientConnection client, string message) {
+  private async Task MessageReceivedImpl(string connectionId, string message) {
+    var client = _subscriptionStore.GetClient(connectionId);
+    if (client == null)
+      return;
     var msg = DeserializeMessage(message); 
     switch(msg.Type) {
       case SubscriptionMessageTypes.Subscribe:
@@ -94,7 +97,8 @@ public class SubscriptionManager {
   }
 
   public async Task Publish(string topic, object payload) {
-    var task = Task.Run(async () => await PublishImpl(topic, payload));
+    await PublishImpl(topic, payload);
+    //var task = Task.Run(async () => await PublishImpl(topic, payload));
     await Task.CompletedTask;
   }
 
@@ -106,23 +110,29 @@ public class SubscriptionManager {
     foreach(var grp in varGroups) {
       var subscrVariant = grp.Key;
       var groupSubs = grp.ToList();
-      var connIds = groupSubs.Select(cs => cs.Client.ConnectionId).ToList();
       var msgJson = await BuildMessage(subscrVariant, payload);
+      var connIds = groupSubs.Select(cs => cs.Client.ConnectionId).ToList();
       await _sender.Publish(msgJson, connIds);
     }
   }
 
   private async Task<string> BuildMessage(SubscriptionVariant sub, object data) {
     var opId = $"{sub.Topic}/{Guid.NewGuid()}";
-    var subContext = new SubscriptionContext() { IsSubscriptionNextMode = true, SubscriptionNextResolverResult = data };
-    var reqContext = new RequestContext(_server, sub.ParsedRequest, subContext);
-    var reqHandler = new RequestHandler(_server, reqContext);
-    var topOp = sub.ParsedRequest.Operations.First();
-    var topScope = (OutputObjectScope) reqContext.Response.Data;
-    await reqHandler.ExecuteOperationAsync(topOp, topScope);
-    var msg = new NextMessage() { Id = opId, Type = "next", Payload = reqContext.Response.Data };
-    var json = SerializationHelper.Serialize(msg);
-    return json;    
+    try {
+      var subContext = new SubscriptionContext() { IsSubscriptionNextMode = true, SubscriptionNextResolverResult = data };
+      var reqContext = new RequestContext(_server, sub.ParsedRequest, subContext);
+      var reqHandler = new RequestHandler(_server, reqContext);
+      var topOp = sub.ParsedRequest.Operations.First();
+      var topScope = new OutputObjectScope(new RequestPath(), null, null);
+      await reqHandler.ExecuteOperationAsync(topOp, topScope);
+      var msg = new NextMessage() { Id = opId, Type = "next", Payload = reqContext.Response.Data };
+      var json = SerializationHelper.Serialize(msg);
+      return json;
+    } catch (Exception ex) {
+      Trace.WriteLine("Error: " + ex.ToString());
+      Debugger.Break();
+      return null; 
+    }
   }
 
   // deserializes message, but leaves Payload as JsonElement, to be later deserialized as a specific subtype

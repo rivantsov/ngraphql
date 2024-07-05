@@ -11,6 +11,7 @@ using NGraphQL.Server.AspNetCore;
 using NGraphQL.Subscriptions;
 
 namespace NGraphQL.Tests.HttpTests;
+using TVars = Dictionary<string, object>;
 
 [TestClass]
 public class SubscriptionTests {
@@ -55,7 +56,9 @@ subscription($thingId: Int) {
     var msgJson = SerializationHelper.Serialize(subscribeMsg);
     var serverMethod = SignalRNames.ServerReceiveMethod;
     await hubConn.SendAsync(serverMethod, msgJson);
-    
+
+    // make Thing update through mutation
+    await MutateThing(1, "newName");
     
     // make multiple delays (for thread yields)
     for(int i=0; i < 5; i++) {
@@ -63,8 +66,20 @@ subscription($thingId: Int) {
       await Task.Delay(20);
     }
 
-    Assert.AreEqual(2, messages.Count, "Expected messages");
+    Assert.AreEqual(1, messages.Count, "Expected messages");
 
   }// method
+
+  private async Task MutateThing(int thingId, string newName) {
+    var mutReq = @"
+mutation myMut($thingId: Int, $newName: String) { 
+  mutateThing(id: $thingId, newName: $newName) { 
+    id 
+    name 
+  }
+}";
+    var vars = new TVars() { { "thingId", thingId }, { "newName", newName } };
+    await TestEnv.Client.PostAsync(mutReq, vars);
+  }
 
 }

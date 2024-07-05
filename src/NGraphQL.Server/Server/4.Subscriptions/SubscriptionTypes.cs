@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Text;
@@ -50,7 +49,7 @@ public class ClientSubscription {
 
 public class TopicSubscribers {
   public string Topic;
-  public ConcurrentDictionary<string, ClientConnection> Subscribers = new(); 
+  public Dictionary<string, ClientConnection> Subscribers = new(); 
 }
 
 // sits on RequestContext
