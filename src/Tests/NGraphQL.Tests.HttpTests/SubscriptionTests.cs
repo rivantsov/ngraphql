@@ -30,7 +30,7 @@ public class SubscriptionTests {
     // setup SignalR client
     var hubUrl = TestEnv.ServiceUrl + "/subscriptions";
     var hubConn = new HubConnectionBuilder().WithUrl(hubUrl).Build();
-    hubConn.On<string>(SignalRNames.ClientReceiveMethod, 
+    hubConn.On<string>(SignalRSender.ClientReceiveMethod, 
       (msg) => { 
         messages.Add(msg);  
     });
@@ -54,7 +54,7 @@ subscription($thingId: Int) {
     };
 
     var msgJson = SerializationHelper.Serialize(subscribeMsg);
-    var serverMethod = SignalRNames.ServerReceiveMethod;
+    var serverMethod = SignalRListener.ServerReceiveMethod;
     await hubConn.SendAsync(serverMethod, msgJson);
 
     // make Thing update through mutation

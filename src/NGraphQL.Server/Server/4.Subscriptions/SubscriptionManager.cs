@@ -33,7 +33,7 @@ public class SubscriptionManager {
   // It's a bit complicated, SignalRListener (hub, transient object) and SignalRSender are created by DI, late, when the first subscribe message is received.
   // It starts from Listener, it has Sender as parameter(not used) that forces DI to create the MessageSender instance (singleton),
   // and sender immediately registers itself with SubscriptionManager. 
-  public void Init(IMessageSender sender) {
+  public void SetSender(IMessageSender sender) {
     _sender = sender; 
   }
 
@@ -70,7 +70,6 @@ public class SubscriptionManager {
       default:
         break;
     }
-    await _sender.Publish("Server: " + message, new string[] { client.ConnectionId });  // this is test code
   }
 
   // Sequence: SignalRListener -> HandleSubscribeMessage -> ExecuteRequest -> Resolver -> AddSubscription(here)

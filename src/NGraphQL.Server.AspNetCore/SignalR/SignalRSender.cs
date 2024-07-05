@@ -22,33 +22,17 @@ public class SignalRSender: IMessageSender {
   public SignalRSender(GraphQLServer server, IHubContext<SignalRListener> hubContext) {
     _server = server;
     _hubContext = hubContext;
-    _server.Subscriptions.Init(this); 
+    _server.Subscriptions.SetSender(this); 
   }
 
   public async Task Publish(string message, IList<string> connectionIds) {
     foreach (var conn in connectionIds)
       await PushMessage(message, conn);
   }
+
   public async Task PushMessage(string message, string connectionId) {
-    await _hubContext.Clients.Client(connectionId).SendAsync(SignalRNames.ClientReceiveMethod, message);
-  }
-
-
-  public async Task Subscribe(string group, string connectionId) {
-    await _hubContext.Groups.AddToGroupAsync(connectionId, group);
-  }
-
-  public async Task Unsubscribe(string group, string connectionId) {
-    await _hubContext.Groups.RemoveFromGroupAsync(connectionId, group);
+    await _hubContext.Clients.Client(connectionId).SendAsync(ClientReceiveMethod, message);
   }
 
 }
-
-public static class SignalRNames {
-  public const string ClientReceiveMethod = "ClientReceiveMessage";
-  public const string ServerReceiveMethod = nameof(SignalRListener.ServerReceiveMessage);
-
-}
-
-
 
