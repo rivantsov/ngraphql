@@ -245,7 +245,8 @@ public class ThingsResolvers : IResolverClass {
 
   public async Task<Thing> SubscribeToThingUpdates(IFieldContext field, int thingId) {
     var topic = $"ThingUpdate/{thingId}";
-    await _server.Subscriptions.SubscribeCaller(field, topic);      
+    _server.Subscriptions.SubscribeCaller(field, topic);
+    await Task.CompletedTask;
     return default;
   }
 

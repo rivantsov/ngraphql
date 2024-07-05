@@ -40,18 +40,12 @@ internal class ClientSubscriptionStore {
     } finally { _lock.ExitReadLock(); }
   }
 
-  public ClientSubscription AddSubscription(IRequestContext request, string topic) {
+  public ClientSubscription AddSubscription(ClientConnection client, string topic, ParsedGraphQLRequest parsedReq) {
     _lock.EnterWriteLock();
     try {
-      var reqContext = (RequestContext)request;
-      var subCtx = reqContext.GetSubscriptionContext();
-      var connId = subCtx.Connection.ConnectionId;
-      if (!_clients.TryGetValue(connId, out var client)) {
-        return null;
-      }
-      var parsedReq = reqContext.ParsedRequest;
       var subscrVariant = GetOrAddVariant(topic, parsedReq);
-      var clientSub = AddClientSubscription(client, subscrVariant);
+      var clientSub = new ClientSubscription() { Client = client, Variant = subscrVariant };
+      RegisterClientSubscription(clientSub);
       return clientSub;
     } finally { _lock.ExitWriteLock(); }
   }
@@ -87,15 +81,15 @@ internal class ClientSubscriptionStore {
 
 
 // ===================== Private stuff ===============================================
-  private ClientSubscription AddClientSubscription(ClientConnection client, SubscriptionVariant subVariant) {
-    var clientSub = new ClientSubscription() { Client = client, Variant = subVariant };
+  private void RegisterClientSubscription(ClientSubscription clientSub) {
+    var client = clientSub.Client;
     client.Subscriptions.Add(clientSub);
+    var subVariant = clientSub.Variant;
     if (!_topicSubscribers.TryGetValue(subVariant.Topic, out var topicSubs)) {
       topicSubs = new TopicSubscribers() { Topic = subVariant.Topic };
       _topicSubscribers[subVariant.Topic] = topicSubs;
     }
     topicSubs.Subscribers[client.ConnectionId] = client;
-    return clientSub;
   }
 
   private SubscriptionVariant GetOrAddVariant(string topic, ParsedGraphQLRequest request) {

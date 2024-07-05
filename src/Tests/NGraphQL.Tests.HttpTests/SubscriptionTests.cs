@@ -59,16 +59,19 @@ subscription($thingId: Int) {
 
     // make Thing update through mutation
     await MutateThing(1, "newName");
-    
-    // make multiple delays (for thread yields)
-    for(int i=0; i < 5; i++) {
-      Thread.Yield();
-      await Task.Delay(20);
-    }
 
+    // make multiple delays (for thread yields)
+    await WaitYield(); 
     Assert.AreEqual(1, messages.Count, "Expected messages");
 
   }// method
+
+  private async Task WaitYield() {
+    for (int i = 0; i < 10; i++) {
+      Thread.Yield();
+      await Task.Delay(50);
+    }
+  }
 
   private async Task MutateThing(int thingId, string newName) {
     var mutReq = @"

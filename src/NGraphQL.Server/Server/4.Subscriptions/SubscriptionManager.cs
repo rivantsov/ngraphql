@@ -1,16 +1,11 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
-using System.Security.Principal;
-using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Irony.Parsing;
+
 using NGraphQL.CodeFirst;
 using NGraphQL.Json;
 using NGraphQL.Model.Request;
@@ -18,7 +13,7 @@ using NGraphQL.Server.Execution;
 using NGraphQL.Subscriptions;
 using NGraphQL.Utilities;
 
-namespace NGraphQL.Server.Subscriptions; 
+namespace NGraphQL.Server.Subscriptions;
 
 public class SubscriptionManager {
   IMessageSender _sender;
@@ -85,14 +80,20 @@ public class SubscriptionManager {
   }
 
   // To be called by Subscription Resolver method
-  public async Task SubscribeCaller(IFieldContext field, string topic) {
-    var clientSub = _subscriptionStore.AddSubscription(field.RequestContext, topic);
-    await Task.CompletedTask;
+  public ClientSubscription SubscribeCaller(IFieldContext field, string topic) {
+    var reqContext = (RequestContext) field.RequestContext;
+    var subCtx = reqContext.GetSubscriptionContext();
+    var connId = subCtx.Connection.ConnectionId;
+    var client = _subscriptionStore.GetClient(connId);
+    if (client == null)
+      return null;
+    var parsedReq = reqContext.ParsedRequest;
+    var clientSub = _subscriptionStore.AddSubscription(client, topic, parsedReq);
+    return clientSub;
   }
 
-  public async Task UnsubscribeCaller(string topic, string connectionId) {
+  public void UnsubscribeCaller(string topic, string connectionId) {
     _subscriptionStore.RemoveSubscription(topic, connectionId);
-    await Task.CompletedTask;
   }
 
   public async Task Publish(string topic, object payload) {
