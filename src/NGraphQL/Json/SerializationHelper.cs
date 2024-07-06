@@ -32,4 +32,15 @@ public static class SerializationHelper {
     return obj;
   }
 
+  /// <summary>Deserializes object leaving object fields as JsonElement, 
+  /// to be later deserialized as a specific type. </summary>
+  /// <typeparam name="T">Type</typeparam>
+  /// <param name="json">Json content</param>
+  /// <returns>Deserialized object.</returns>
+  public static T DeserializePartial<T>(string json) {
+    var obj = JsonSerializer.Deserialize<T>(json, JsonDefaults.JsonOptionsPartial);
+    return obj;
+  }
+
+
 }

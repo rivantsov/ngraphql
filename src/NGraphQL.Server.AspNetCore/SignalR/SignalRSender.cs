@@ -13,7 +13,6 @@ namespace NGraphQL.Server.AspNetCore;
 
 /// <summary> Singleton service in charge of pushing messages to clients through Web sockets/SignalR. </summary>
 public class SignalRSender: IMessageSender {
-  public const string ClientReceiveMethod = "ClientReceiveMessage";
 
   IHubContext<SignalRListener> _hubContext;
   GraphQLServer _server;
@@ -31,7 +30,8 @@ public class SignalRSender: IMessageSender {
   }
 
   public async Task PushMessage(string message, string connectionId) {
-    await _hubContext.Clients.Client(connectionId).SendAsync(ClientReceiveMethod, message);
+    await _hubContext.Clients.Client(connectionId).SendAsync(
+             SubscriptionMethodNames.ClientReceiveMethod, message);
   }
 
 }

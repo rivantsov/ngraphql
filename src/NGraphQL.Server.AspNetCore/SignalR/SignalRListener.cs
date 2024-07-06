@@ -15,7 +15,6 @@ namespace NGraphQL.Server.AspNetCore;
 /// <remarks>This class, like base Hub class from SignalR, is transient. 
 /// Instances are created to receive a single message and then disposed. </remarks>
 public class SignalRListener: Hub {
-  public const string ServerReceiveMethod = nameof(ServerReceiveMessage);
   GraphQLServer _server;
 
   // The sender parameter is to just force DI to create the sender before calling this method

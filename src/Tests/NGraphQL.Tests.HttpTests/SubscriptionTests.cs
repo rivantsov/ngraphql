@@ -30,7 +30,7 @@ public class SubscriptionTests {
     // setup SignalR client
     var hubUrl = TestEnv.ServiceUrl + "/subscriptions";
     var hubConn = new HubConnectionBuilder().WithUrl(hubUrl).Build();
-    hubConn.On<string>(SignalRSender.ClientReceiveMethod, 
+    hubConn.On<string>(SubscriptionMethodNames.ClientReceiveMethod, 
       (msg) => { 
         messages.Add(msg);  
     });
@@ -53,7 +53,7 @@ subscription($thingId: Int) {
        }
     };
     var msgJson = SerializationHelper.Serialize(subscribeMsg);
-    await hubConn.SendAsync(SignalRListener.ServerReceiveMethod, msgJson);
+    await hubConn.SendAsync(SubscriptionMethodNames.ServerReceiveMethod, msgJson);
     WaitYield(); // this is important here, let subscribe message go thru
 
     // 2.  make Thing update through mutation

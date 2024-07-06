@@ -15,7 +15,7 @@ internal class ClientSubscriptionStore {
   Dictionary<string, ParsedGraphQLRequest> _parsedRequestsCache = new();
   Dictionary<string, SubscriptionVariant> _variantsCache = new();
   Dictionary<string, ClientConnection> _clients = new(); //by connection Id
-  Dictionary<string, TopicSubscribers> _topicSubscribers = new(); //by connection Id
+  Dictionary<string, TopicSubscribers> _topicSubscribers = new(); //by topic
   ReaderWriterLockSlim _lock = new();
 
   public void AddClient(ClientConnection conn) {
@@ -40,11 +40,11 @@ internal class ClientSubscriptionStore {
     } finally { _lock.ExitReadLock(); }
   }
 
-  public ClientSubscription AddSubscription(ClientConnection client, string topic, ParsedGraphQLRequest parsedReq) {
+  public ClientSubscriptionInfo AddSubscription(ClientConnection client, string topic, ParsedGraphQLRequest parsedReq) {
     _lock.EnterWriteLock();
     try {
       var subscrVariant = GetOrAddVariant(topic, parsedReq);
-      var clientSub = new ClientSubscription() { Client = client, Variant = subscrVariant };
+      var clientSub = new ClientSubscriptionInfo() { Client = client, Variant = subscrVariant };
       RegisterClientSubscription(clientSub);
       return clientSub;
     } finally { _lock.ExitWriteLock(); }
@@ -66,7 +66,7 @@ internal class ClientSubscriptionStore {
     } finally { _lock.ExitWriteLock(); }
   }
 
-  public IList<ClientSubscription> GetTopicSubscriptions(string topic) {
+  public IList<ClientSubscriptionInfo> GetTopicSubscriptions(string topic) {
     _lock.EnterReadLock();
     try {
       if (!_topicSubscribers.TryGetValue(topic, out var topicSubs))
@@ -77,11 +77,11 @@ internal class ClientSubscriptionStore {
       return subs;
     } finally { _lock.ExitReadLock(); }
   }
-  static IList<ClientSubscription> _emptyClientSubList = new ClientSubscription[] { };
+  static IList<ClientSubscriptionInfo> _emptyClientSubList = new ClientSubscriptionInfo[] { };
 
 
 // ===================== Private stuff ===============================================
-  private void RegisterClientSubscription(ClientSubscription clientSub) {
+  private void RegisterClientSubscription(ClientSubscriptionInfo clientSub) {
     var client = clientSub.Client;
     client.Subscriptions.Add(clientSub);
     var subVariant = clientSub.Variant;

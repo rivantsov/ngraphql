@@ -4,13 +4,21 @@ using System.Text;
 
 namespace NGraphQL.Subscriptions {
   // based on protocol patterns from here: https://github.com/enisdenjo/graphql-ws/blob/master/PROTOCOL.md
-  
-  public class SubscribeMessage {
+  public abstract class SubscriptionMessageBase {
     public string Id;
     public string Type;
-    public object Payload;
   }
-  public class NextMessage: SubscribeMessage { } //they are identical
+
+  public class PayloadMessage<TPayload> : SubscriptionMessageBase {
+    public TPayload Payload;
+  }
+  public class PayloadMessage : PayloadMessage<object> { }
+
+  public class SubscribeMessage: PayloadMessage<SubscribePayload> {
+  }
+
+  public class NextMessage<T>: PayloadMessage<T> { }
+  public class NextMessage : NextMessage<object> { }
 
   public class SubscribePayload {
     public string OperationName;

@@ -16,7 +16,7 @@ public class ClientConnection {
   public string ConnectionId;
   public ClaimsPrincipal User;
   public string UserId;
-  public List<ClientSubscription> Subscriptions = new();
+  public List<ClientSubscriptionInfo> Subscriptions = new();
 }
 
 public class SubscriptionVariant {
@@ -25,23 +25,23 @@ public class SubscriptionVariant {
   public ParsedGraphQLRequest ParsedRequest;
   public string LookupKey;  // Topic/QueryText
 
-  public SubscriptionVariant(string topic, ParsedGraphQLRequest parsedRequest, string lookupKey = null) {
+  public SubscriptionVariant(string topic, ParsedGraphQLRequest parsedRequest, string lookupKey) {
     Topic = topic;
     ParsedRequest = parsedRequest;
-    LookupKey = lookupKey ?? GetLookupKey(topic, parsedRequest.Query);
-    var variantId = Interlocked.Increment(ref _variantCount);
-    Id = $"{topic}/{variantId}";
+    LookupKey = lookupKey;
+    var variantNum = Interlocked.Increment(ref _variantCount);
+    Id = $"{topic}/v-{variantNum}";
   }
 
   public static string GetLookupKey(string topic, string queryText) {
     return $"{topic}/{queryText}";
   }
+  public override string ToString() => Id; 
 
   private static long _variantCount;
 }
 
-// We need collections by: Client, Topic
-public class ClientSubscription {
+public class ClientSubscriptionInfo {
   public ClientConnection Client;
   public SubscriptionVariant Variant;
   public string Topic => Variant.Topic;

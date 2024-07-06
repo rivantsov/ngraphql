@@ -7,7 +7,8 @@ namespace NGraphQL.Json {
 
   public static class JsonDefaults {
     public static readonly JsonSerializerOptions JsonOptions;
-    public static readonly JsonSerializerOptions JsonOptionsSlim;
+    // for deserializing types with 'object' type field - to leave it as JsonElement, to deserialize later
+    public static readonly JsonSerializerOptions JsonOptionsPartial;
     public static readonly JsonSerializerOptions JsonUrlOptions;
 
     static JsonDefaults() {
@@ -21,7 +22,7 @@ namespace NGraphQL.Json {
 
       // Slim options - for deserializing without converting untyped objects, they remain JsonElement
       // we use it in Subscriptions
-      JsonOptionsSlim = new JsonSerializerOptions(baseOptions);
+      JsonOptionsPartial = new JsonSerializerOptions(baseOptions);
 
       // general options
       JsonOptions = new JsonSerializerOptions(baseOptions); 
