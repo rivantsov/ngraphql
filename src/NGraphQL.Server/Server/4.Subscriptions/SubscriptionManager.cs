@@ -118,7 +118,7 @@ public class SubscriptionManager {
   }
 
   private async Task<string> BuildMessage(SubscriptionVariant sub, object data) {
-    var opId = $"{sub.Topic}/{Guid.NewGuid()}";
+    var opId = sub.Topic; 
     try {
       var reqContext = new RequestContext(_server, sub.ParsedRequest, null);
       var reqHandler = new RequestHandler(_server, reqContext);
@@ -126,8 +126,12 @@ public class SubscriptionManager {
       var topScope = new OutputObjectScope(new RequestPath(), null, null) 
         { IsSubscriptionNextTopScope = true, SubscriptionNextResolverResult = data };
       await reqHandler.ExecuteOperationAsync(topOp, topScope);
-      var msg = new NextMessage() { Id = opId, Type = "next", Payload = topScope };
-      var json = JsonSerializer.Serialize(msg, JsonDefaults.JsonOptionsSlim);
+      // top scope is similar to Data node in regular query; it contains top node corresponding 
+      //  to subscription method, like 'subscribeToX' followed by actual selection data.
+      // we need to retrieve this data under root node. 
+      var dataScope = topScope.FirstOrDefault().Value;
+      var msg = new NextMessage() { Id = opId, Type = "next", Payload = dataScope };
+      var json = SerializationHelper.Serialize(msg); // JsonSerializer.Serialize(msg, JsonDefaults.JsonOptionsSlim);
       return json;
     } catch (Exception ex) {
       Trace.WriteLine("Error: " + ex.ToString());
