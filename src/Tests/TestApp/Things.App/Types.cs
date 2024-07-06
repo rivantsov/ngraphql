@@ -64,7 +64,7 @@ namespace Things {
 
     public string NameOrThrow {
       get {
-        if(this.Id == 5)
+        if (this.Id == 5)
           throw new Exception("Exception thrown by NameOrThrow.");
         return Name; 
       }

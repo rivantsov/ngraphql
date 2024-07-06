@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
@@ -75,15 +76,14 @@ public class SubscriptionManager {
     // parse the query
     var rawReq = new GraphQLRequest() { OperationName = pload.OperationName, Query = pload.Query, Variables = pload.Variables };
     var requestContext = new RequestContext(this._server, rawReq, CancellationToken.None);
-    requestContext.Subscription = new SubscriptionContext() { Connection = client }; 
+    requestContext.SubscriptionClient = client; 
     await _server.ExecuteRequestAsync(requestContext); //in the call, the resolver adds subscription using AddSubscription method below
   }
 
   // To be called by Subscription Resolver method
   public ClientSubscription SubscribeCaller(IFieldContext field, string topic) {
     var reqContext = (RequestContext) field.RequestContext;
-    var subCtx = reqContext.GetSubscriptionContext();
-    var connId = subCtx.Connection.ConnectionId;
+    var connId = reqContext.SubscriptionClient.ConnectionId;
     var client = _subscriptionStore.GetClient(connId);
     if (client == null)
       return null;
@@ -97,8 +97,9 @@ public class SubscriptionManager {
   }
 
   public async Task Publish(string topic, object payload) {
-    await PublishImpl(topic, payload);
-    //var task = Task.Run(async () => await PublishImpl(topic, payload));
+    //await PublishImpl(topic, payload);
+    // Execute it on background thread, to avoid blocking caller for too long
+    var task = Task.Run(async () => await PublishImpl(topic, payload));
     await Task.CompletedTask;
   }
 
@@ -119,14 +120,14 @@ public class SubscriptionManager {
   private async Task<string> BuildMessage(SubscriptionVariant sub, object data) {
     var opId = $"{sub.Topic}/{Guid.NewGuid()}";
     try {
-      var subContext = new SubscriptionContext() { IsSubscriptionNextMode = true, SubscriptionNextResolverResult = data };
-      var reqContext = new RequestContext(_server, sub.ParsedRequest, subContext);
+      var reqContext = new RequestContext(_server, sub.ParsedRequest, null);
       var reqHandler = new RequestHandler(_server, reqContext);
       var topOp = sub.ParsedRequest.Operations.First();
-      var topScope = new OutputObjectScope(new RequestPath(), null, null);
+      var topScope = new OutputObjectScope(new RequestPath(), null, null) 
+        { IsSubscriptionNextTopScope = true, SubscriptionNextResolverResult = data };
       await reqHandler.ExecuteOperationAsync(topOp, topScope);
-      var msg = new NextMessage() { Id = opId, Type = "next", Payload = reqContext.Response.Data };
-      var json = SerializationHelper.Serialize(msg);
+      var msg = new NextMessage() { Id = opId, Type = "next", Payload = topScope };
+      var json = JsonSerializer.Serialize(msg, JsonDefaults.JsonOptionsSlim);
       return json;
     } catch (Exception ex) {
       Trace.WriteLine("Error: " + ex.ToString());

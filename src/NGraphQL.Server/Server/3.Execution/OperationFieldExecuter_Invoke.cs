@@ -18,10 +18,9 @@ namespace NGraphQL.Server.Execution {
       try {
         // Invoke resolver
         object result;
-        // check Subscription mode first
-        var subCtx = _requestContext.Subscription;
-        if (subCtx != null && subCtx.IsSubscriptionNextMode) // we already have the object
-          result = subCtx.SubscriptionNextResolverResult;
+        var fldParScope = fieldContext.CurrentParentScope;
+        if (fldParScope.IsSubscriptionNextTopScope) // special case for Subscription
+          result = fldParScope.SubscriptionNextResolverResult;
         else if (fieldContext.MappedField.Resolver.ResolverFunc != null)
           result = InvokeResolverFunc(fieldContext);
         else

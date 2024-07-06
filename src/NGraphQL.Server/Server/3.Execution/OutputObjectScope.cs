@@ -35,6 +35,12 @@ namespace NGraphQL.Server.Execution {
     public FieldContext ParentFieldContext;
     public bool Merged; // skip it on producing output, the value merged to another parent
 
+    // If IsSubscriptionNextTopScope is true, we are executing 'subscription-next' action
+    // - building data for push notification; We invoke the original 'subscribe' resolver,
+    // but set its return Result to be the value provided by 'observer' function.  
+    internal bool IsSubscriptionNextTopScope;
+    internal object SubscriptionNextResolverResult; 
+
     internal readonly List<KeyValuePairExt> KeysValuePairs = new List<KeyValuePairExt>();
 
     public OutputObjectScope(RequestPath path, object entity, FieldContext parentFieldContext) {

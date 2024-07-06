@@ -243,7 +243,7 @@ public class ThingsResolvers : IResolverClass {
 
   public decimal DecTimesTwo(IFieldContext context, decimal dec) => dec * 2;
 
-  public async Task<Thing> SubscribeToThingUpdates(IFieldContext field, int thingId) {
+  public async Task<ThingEntity> SubscribeToThingUpdates(IFieldContext field, int thingId) {
     var topic = $"ThingUpdate/{thingId}";
     _server.Subscriptions.SubscribeCaller(field, topic);
     await Task.CompletedTask;

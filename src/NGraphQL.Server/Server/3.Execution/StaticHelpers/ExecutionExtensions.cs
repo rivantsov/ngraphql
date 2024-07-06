@@ -46,9 +46,5 @@ namespace NGraphQL.Server.Execution {
       return ctx.Server; 
     }
 
-    public static SubscriptionContext GetSubscriptionContext(this IRequestContext context) {
-      var ctx = (RequestContext)context;
-      return ctx.Subscription;
-    }
   }
 }

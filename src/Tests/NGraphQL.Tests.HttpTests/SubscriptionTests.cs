@@ -52,24 +52,22 @@ subscription($thingId: Int) {
         Variables = new Dictionary<string, object>() { { "thingId", thingId } },
        }
     };
-
     var msgJson = SerializationHelper.Serialize(subscribeMsg);
-    var serverMethod = SignalRListener.ServerReceiveMethod;
-    await hubConn.SendAsync(serverMethod, msgJson);
+    await hubConn.SendAsync(SignalRListener.ServerReceiveMethod, msgJson);
+    WaitYield(); // this is important here, let subscribe message go thru
 
-    // make Thing update through mutation
+    // 2.  make Thing update through mutation
     await MutateThing(1, "newName");
+    WaitYield();
 
-    // make multiple delays (for thread yields)
-    await WaitYield(); 
+    // 3. Check notifications pushed by server
     Assert.AreEqual(1, messages.Count, "Expected messages");
 
   }// method
 
-  private async Task WaitYield() {
-    for (int i = 0; i < 10; i++) {
-      Thread.Yield();
-      await Task.Delay(50);
+  private void WaitYield() {
+    for (int i = 0; i < 3; i++) {
+      Thread.Sleep(20);
     }
   }
 
