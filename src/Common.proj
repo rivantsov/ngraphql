@@ -5,7 +5,7 @@
 
         <AssemblyName>$(MSBuildProjectName)</AssemblyName>
         <RootNamespace>$(MSBuildProjectName)</RootNamespace>
-        <LangVersion>10.0</LangVersion>
+        <LangVersion>11.0</LangVersion>
         <NoWarn>1701;1702;1591</NoWarn>
         <PackageProjectUrl>https://github.com/rivantsov/ngraphql</PackageProjectUrl>
         <RepositoryUrl>https://github.com/rivantsov/ngraphql</RepositoryUrl>

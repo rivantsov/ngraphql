@@ -24,7 +24,7 @@ namespace NGraphQL.Server.Execution {
     public GraphQLOperation Operation { get; internal set; }
     public IList<VariableValue> OperationVariables { get; } = new List<VariableValue>();
     
-    public Subscriptions.ClientConnection SubscriptionClient;
+    public SubscriptionContext Subscription;
 
     // contexts for all directives in the ParsedRequest
     public IList<DirectiveContext> DirectiveContexts = new List<DirectiveContext>();
@@ -71,10 +71,10 @@ namespace NGraphQL.Server.Execution {
     
     // special case for re-executing request for subscriptions, just to grab output tree
     public RequestContext(GraphQLServer server, ParsedGraphQLRequest parsedRequest, 
-          Subscriptions.ClientConnection subscriptionClient) {
+          SubscriptionContext subscriptionContext) {
       Server = server;
       ParsedRequest = parsedRequest;
-      SubscriptionClient = subscriptionClient;
+      Subscription = subscriptionContext;
       //var topScope = new OutputObjectScope(new RequestPath(), null, null);
       //this.Response.Data = topScope;
       Quota = Server.DefaultRequestQuota ?? new RequestQuota();

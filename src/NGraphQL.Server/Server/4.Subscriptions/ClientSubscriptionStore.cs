@@ -40,11 +40,11 @@ internal class ClientSubscriptionStore {
     } finally { _lock.ExitReadLock(); }
   }
 
-  public ClientSubscriptionInfo AddSubscription(ClientConnection client, string topic, ParsedGraphQLRequest parsedReq) {
+  public ClientSubscriptionInfo AddSubscription(ClientConnection client, string id, string topic, ParsedGraphQLRequest parsedReq) {
     _lock.EnterWriteLock();
     try {
       var subscrVariant = GetOrAddVariant(topic, parsedReq);
-      var clientSub = new ClientSubscriptionInfo() { Client = client, Variant = subscrVariant };
+      var clientSub = new ClientSubscriptionInfo() { Client = client, Variant = subscrVariant, Id = id };
       RegisterClientSubscription(clientSub);
       return clientSub;
     } finally { _lock.ExitWriteLock(); }
@@ -94,7 +94,7 @@ internal class ClientSubscriptionStore {
 
   private SubscriptionVariant GetOrAddVariant(string topic, ParsedGraphQLRequest request) {
     request = GetOrAddCacheParsedRequest(request);
-    var key = SubscriptionVariant.GetLookupKey(topic, request.Query);
+    var key = SubscriptionVariant.MakeLookupKey(topic, request.Query);
     if (_variantsCache.TryGetValue(key, out var subVariant))
       return subVariant;
     // protection against flood attack

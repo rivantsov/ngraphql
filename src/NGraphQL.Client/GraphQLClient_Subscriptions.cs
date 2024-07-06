@@ -28,7 +28,9 @@ public partial class GraphQLClient {
 
   public ClientSubscription Subscribe<TPayload>(string requestText, string topic,
                                      Action<ClientSubscription, TPayload> action) {
-    var subInfo = new ClientSubscription() { Request = requestText, Topic = topic, PayloadType = typeof(TPayload) };
+    var subInfo = new ClientSubscription() { Request = requestText, Topic = topic, 
+               PayloadType = typeof(TPayload), Id = $"{topic}/{Guid.NewGuid()}"
+     };
     subInfo.OnReceived = (subInfo, payload) => {
       action(subInfo, (TPayload)payload);
     };
@@ -40,13 +42,12 @@ public partial class GraphQLClient {
     var msg = SerializationHelper.DeserializePartial<PayloadMessage>(json);
     switch (msg.Type) {
       case "next":
-        HandleSubscriptionNextMessage(msg);
+        HandleHubNextMessage(msg);
         break;
-
     }
   }
 
-  private void HandleSubscriptionNextMessage(PayloadMessage msg) {
+  private void HandleHubNextMessage(PayloadMessage msg) {
     var clientSub = _subscriptions.FirstOrDefault(s => s.Id == msg.Id);
     if (clientSub == null)
       return;

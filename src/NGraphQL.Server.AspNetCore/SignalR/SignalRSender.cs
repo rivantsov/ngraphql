@@ -24,12 +24,7 @@ public class SignalRSender: IMessageSender {
     _server.Subscriptions.SetSender(this); 
   }
 
-  public async Task Publish(string message, IList<string> connectionIds) {
-    foreach (var conn in connectionIds)
-      await PushMessage(message, conn);
-  }
-
-  public async Task PushMessage(string message, string connectionId) {
+  public async Task SendMessage(string connectionId, string message) {
     await _hubContext.Clients.Client(connectionId).SendAsync(
              SubscriptionMethodNames.ClientReceiveMethod, message);
   }

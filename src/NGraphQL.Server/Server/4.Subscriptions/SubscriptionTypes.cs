@@ -9,7 +9,7 @@ using NGraphQL.Model.Request;
 namespace NGraphQL.Server.Subscriptions; 
 
 public interface IMessageSender {
-  Task Publish(string message, IList<string> connectionIds);
+  Task SendMessage(string connectionId, string message);
 }
 
 public class ClientConnection {
@@ -20,7 +20,6 @@ public class ClientConnection {
 }
 
 public class SubscriptionVariant {
-  public string Id;    
   public string Topic;      //  Ex: ThingUpdate/123
   public ParsedGraphQLRequest ParsedRequest;
   public string LookupKey;  // Topic/QueryText
@@ -29,27 +28,33 @@ public class SubscriptionVariant {
     Topic = topic;
     ParsedRequest = parsedRequest;
     LookupKey = lookupKey;
-    var variantNum = Interlocked.Increment(ref _variantCount);
-    Id = $"{topic}/v-{variantNum}";
   }
 
-  public static string GetLookupKey(string topic, string queryText) {
+  public static string MakeLookupKey(string topic, string queryText) {
     return $"{topic}/{queryText}";
   }
-  public override string ToString() => Id; 
+  public override string ToString() => Topic; 
 
-  private static long _variantCount;
 }
 
 public class ClientSubscriptionInfo {
+  public string Id;
   public ClientConnection Client;
   public SubscriptionVariant Variant;
   public string Topic => Variant.Topic;
+
+  public override string ToString() => $"{Topic}/{Client.ConnectionId}";
 }
 
 public class TopicSubscribers {
   public string Topic;
   public Dictionary<string, ClientConnection> Subscribers = new(); 
+}
+
+// Sits on RequestContext
+public class SubscriptionContext {
+  public ClientConnection Client;
+  public string ClientSubscriptionId;
 }
 
 
