@@ -34,7 +34,7 @@ namespace NGraphQL.Server {
     public GraphQLServerOptions Options = GraphQLServerOptions.DefaultDev;
     public GraphQLServerFeatures Features = GraphQLServerFeatures.Default;
 
-    public string SubscriptionsEndpoint = "/subscriptions";
+    public string SubscriptionsEndpoint = "/graphql/subscriptions";
 
     public int RequestCacheSize = 2000;
     public TimeSpan RequestCacheEvictionTime = TimeSpan.FromSeconds(60);

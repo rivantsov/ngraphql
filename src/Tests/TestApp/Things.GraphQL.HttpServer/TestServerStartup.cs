@@ -30,7 +30,7 @@ namespace Things.GraphQL.HttpServer {
 
       var app = builder.Build();
       app.UseRouting();
-      app.MapGraphQLEndpoint(graphQLServer);
+      app.MapGraphQLEndpoint(graphQLServer.Settings);
 
       var task = Task.Run(() => app.Run());
       return task; 

@@ -15,6 +15,11 @@ namespace NGraphQL.Subscriptions {
   public class PayloadMessage : PayloadMessage<object> { }
 
   public class SubscribeMessage: PayloadMessage<SubscribePayload> {
+    public SubscribeMessage(string id, SubscribePayload payload) {
+      Type = SubscriptionMessageTypes.Subscribe;
+      Id = id;
+      Payload = payload;
+    }
   }
 
   public class NextMessage<T>: PayloadMessage<T> { }

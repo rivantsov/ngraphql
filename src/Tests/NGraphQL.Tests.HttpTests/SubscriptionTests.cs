@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NGraphQL.Json;
 using NGraphQL.Server.AspNetCore;
 using NGraphQL.Subscriptions;
+using Things;
 
 namespace NGraphQL.Tests.HttpTests;
 using TVars = Dictionary<string, object>;
@@ -21,47 +22,40 @@ public class SubscriptionTests {
     TestEnv.Initialize();
   }
 
+  public class ThingUpdate {
+    public string Id;
+    public string Name;
+    public ThingKind Kind; 
+  }
+
   [TestMethod]
   public async Task TestSubscriptions() {
     TestEnv.LogTestMethodStart();
     TestEnv.LogTestDescr(@"  Simple subscription test");
-    var messages = new List<string>();
+    var updates = new List<ThingUpdate>();
 
-    // setup SignalR client
-    var hubUrl = TestEnv.ServiceUrl + "/subscriptions";
-    var hubConn = new HubConnectionBuilder().WithUrl(hubUrl).Build();
-    hubConn.On<string>(SubscriptionMethodNames.ClientReceiveMethod, 
-      (msg) => { 
-        messages.Add(msg);  
-    });
-    await hubConn.StartAsync();
-
-    // 1. AddSubscription to ThingUpdates
-    var thingId = 1;
-    var subscribeMsg = new SubscribeMessage() {
-      Id = "ThingUpdate/1/" + Guid.NewGuid(),
-      Type = SubscriptionMessageTypes.Subscribe,
-      Payload = new SubscribePayload() {
-        OperationName = null,
-        Query = @"
+    const string subscribeRequest = @"
 subscription($thingId: Int) {
   subscribeToThingUpdates(thingId: $thingId) {
      id name kind 
   }
-}",
-        Variables = new Dictionary<string, object>() { { "thingId", thingId } },
-       }
-    };
-    var msgJson = SerializationHelper.Serialize(subscribeMsg);
-    await hubConn.SendAsync(SubscriptionMethodNames.ServerReceiveMethod, msgJson);
-    WaitYield(); // this is important here, let subscribe message go thru
+}";
+
+    // subscribe
+    var client = TestEnv.Client;
+    client.InitSubscriptions();
+    var thingId = 1;
+    var vars = new Dictionary<string, object>() { { "thingId", thingId } };
+    await client.Subscribe<ThingUpdate>(subscribeRequest, vars, (clientSub, msg) => {
+      updates.Add(msg);
+    });
 
     // 2.  make Thing update through mutation
     await MutateThing(1, "newName");
     WaitYield();
 
     // 3. Check notifications pushed by server
-    Assert.AreEqual(1, messages.Count, "Expected messages");
+    Assert.AreEqual(1, updates.Count, "Expected messages");
 
   }// method
 

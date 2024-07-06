@@ -10,31 +10,39 @@ using System.Text.Json;
 using System.Linq;
 
 namespace NGraphQL.Client;
+using TDict = Dictionary<string, object>;
+
 public partial class GraphQLClient {
   // _subscriptions
   List<ClientSubscription> _subscriptions = new();
   HubConnection _hubConnection;
 
-  private void InitSubscriptions() {
+  public void InitSubscriptions() {
     if (_hubConnection != null)
       return;
     var hubUrl = this._endpointUrl + "/subscriptions";
     _hubConnection = new HubConnectionBuilder().WithUrl(hubUrl).Build();
     _hubConnection.On<string>(SubscriptionMethodNames.ClientReceiveMethod,
       (json) => { HandleReceivedHubMessage(json); });
-    Task.Run(async () => await _hubConnection.StartAsync());
+    //Task.Run(async () => await _hubConnection.StartAsync());
+    _hubConnection.StartAsync().Wait();
     Thread.Yield();
   }
 
-  public ClientSubscription Subscribe<TPayload>(string requestText, string topic,
-                                     Action<ClientSubscription, TPayload> action) {
-    var subInfo = new ClientSubscription() { Request = requestText, Topic = topic, 
-               PayloadType = typeof(TPayload), Id = $"{topic}/{Guid.NewGuid()}"
+  public async Task<ClientSubscription> Subscribe<TPayload>(string requestText, TDict vars, 
+                                     Action<ClientSubscription, TPayload> action, string id = null) {
+    id ??= $"Subscription/{Guid.NewGuid()}";
+    var subInfo = new ClientSubscription() { Request = requestText, Variables = vars,  
+               PayloadType = typeof(TPayload), Id = id
      };
     subInfo.OnReceived = (subInfo, payload) => {
       action(subInfo, (TPayload)payload);
     };
     _subscriptions.Add(subInfo);
+    var subscribeMsg = new SubscribeMessage(subInfo.Id,  
+              new SubscribePayload() { Query = requestText, Variables = vars});
+    var msgJson = SerializationHelper.Serialize(subscribeMsg);
+    await _hubConnection.SendAsync(SubscriptionMethodNames.ServerReceiveMethod, msgJson);
     return subInfo;
   }
 

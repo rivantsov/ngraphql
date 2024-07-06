@@ -29,16 +29,17 @@ namespace NGraphQL.Server.AspNetCore {
       return builder; 
     }
 
-    public static WebApplication MapGraphQLEndpoint(this WebApplication app, GraphQLServer graphQLServer) {
+    public static WebApplication MapGraphQLEndpoint(this WebApplication app, GraphQLServerSettings settings) {
       app.MapControllerRoute(
         name: "default",
         pattern: "{controller=DefaultGraphQL}/{action}"
       ); 
-      if (graphQLServer.Settings.Features.IsSet(GraphQLServerFeatures.Subscriptions)) {
-        app.MapHub<SignalRListener>(graphQLServer.Settings.SubscriptionsEndpoint);
+      if (settings.Features.IsSet(GraphQLServerFeatures.Subscriptions)) {
+        app.MapHub<SignalRListener>(settings.SubscriptionsEndpoint);
       }
       return app; 
     }
   
   }
 }
+
