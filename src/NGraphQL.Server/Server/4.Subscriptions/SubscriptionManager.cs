@@ -142,18 +142,15 @@ public class SubscriptionManager {
   }
 
   private string FormatNextMessage(string id, string payload) {
-    var json = string.Format(_nextMessageTemplate, id, payload);
+    const string startStr = @"{
+  ""id"": """;
+    const string middleStr = @""", ""type"": ""next"", ""payload"": ";
+    const string endStr = @"
+}";
+
+    var json = startStr + id + middleStr + payload + endStr;
     return json;
   }
-
-  string _nextMessageTemplate = 
-"""
-{
-    "id": "{0}",
-    "type": "next",
-    "payload": {1}
-}
-""";
 
   /* sample next message
   {

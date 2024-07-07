@@ -29,9 +29,12 @@ public partial class GraphQLClient {
     Thread.Yield();
   }
 
+  string _machineName = Environment.MachineName;
+  int _subCount = 0;
+
   public async Task<ClientSubscription> Subscribe<TPayload>(string requestText, TDict vars, 
                                      Action<ClientSubscription, TPayload> action, string id = null) {
-    id ??= $"Subscription/{Guid.NewGuid()}";
+    id ??= $"{_machineName}/{_subCount++}";
     var subInfo = new ClientSubscription() { Request = requestText, Variables = vars,  
                PayloadType = typeof(TPayload), Id = id
      };
@@ -62,7 +65,7 @@ public partial class GraphQLClient {
     var ploadElem = (JsonElement)msg.Payload;
     object payload = null;
     if (ploadElem.ValueKind != JsonValueKind.Null && ploadElem.ValueKind != JsonValueKind.Undefined)
-      payload = ploadElem.Deserialize(clientSub.PayloadType);
+      payload = ploadElem.Deserialize(clientSub.PayloadType, JsonDefaults.JsonOptions);
     clientSub.OnReceived(clientSub, payload);    
   }
 

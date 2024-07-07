@@ -23,7 +23,7 @@ public class SubscriptionTests {
   }
 
   public class ThingUpdate {
-    public string Id;
+    public int Id;
     public string Name;
     public ThingKind Kind; 
   }
@@ -41,7 +41,7 @@ subscription($thingId: Int) {
   }
 }";
 
-    // subscribe
+    // 1. Subscribe
     var client = TestEnv.Client;
     client.InitSubscriptions();
     var thingId = 1;
@@ -49,14 +49,14 @@ subscription($thingId: Int) {
     await client.Subscribe<ThingUpdate>(subscribeRequest, vars, (clientSub, msg) => {
       updates.Add(msg);
     });
-
-    // 2.  make Thing update through mutation
-    await MutateThing(1, "newName");
     WaitYield();
 
-    // 3. Check notifications pushed by server
-    Assert.AreEqual(1, updates.Count, "Expected messages");
+    // 2.Make Thing update through mutation
+    await MutateThing(1, "newNameABC");
+    WaitYield();
 
+    // 3. Check notifications pushed by the server
+    Assert.AreEqual(1, updates.Count, "Expected update notifications");
   }// method
 
   private void WaitYield() {
