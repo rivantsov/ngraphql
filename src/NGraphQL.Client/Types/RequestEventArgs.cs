@@ -18,6 +18,16 @@ namespace NGraphQL.Client.Types {
     }
   }
 
+  public class RequestErrorEventArgs : EventArgs {
+    public readonly Exception Exception;
+    public readonly string Information;
+
+    public RequestErrorEventArgs(Exception exc, string info) {
+      Exception = exc;
+      Information = info;
+    }
+  }
+
 
 }
 

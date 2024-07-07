@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
@@ -41,22 +42,31 @@ subscription($thingId: Int) {
   }
 }";
 
-    // 1. Subscribe
+    // 1. Subscribe to updates of Thing #1 and #2
     var client = TestEnv.Client;
-    client.InitSubscriptions();
-    var thingId = 1;
-    var vars = new Dictionary<string, object>() { { "thingId", thingId } };
-    await client.Subscribe<ThingUpdate>(subscribeRequest, vars, (clientSub, msg) => {
+    await client.Subscribe<ThingUpdate>(subscribeRequest, new TVars() { { "thingId", 1 } }, (clientSub, msg) => {
+      updates.Add(msg);
+    });
+    await client.Subscribe<ThingUpdate>(subscribeRequest, new TVars() { { "thingId", 2 } }, (clientSub, msg) => {
       updates.Add(msg);
     });
     WaitYield();
 
     // 2.Make Thing update through mutation
-    await MutateThing(1, "newNameABC");
+    await MutateThing(1, "newName_1A");
+    await MutateThing(1, "newName_1B");
+    await MutateThing(2, "newName_2A");
+    await MutateThing(3, "newName_3A"); //this will not come, we are not subscribed to #3
     WaitYield();
 
     // 3. Check notifications pushed by the server
-    Assert.AreEqual(1, updates.Count, "Expected update notifications");
+    Assert.AreEqual(3, updates.Count, "Expected 3 total notifications");
+    var updates1 = updates.Where(u => u.Id == 1).ToList();
+    var updates2 = updates.Where(u => u.Id == 2).ToList();
+    Assert.AreEqual(2, updates1.Count, "Expected 2 updates for Thing 1");
+    Assert.AreEqual(1, updates2.Count, "Expected 1 update for Thing 2");
+
+
   }// method
 
   private void WaitYield() {

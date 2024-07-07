@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 using NGraphQL.Client;
@@ -14,7 +16,6 @@ namespace NGraphQL.Tests.HttpTests {
     public static string ServiceUrl = "http://127.0.0.1:55571";
     public static string GraphQLEndPointUrl = ServiceUrl + "/graphql";
     public static GraphQLClient Client;
-    static Task _task; 
     public static string LogFilePath = "_graphQLHttpTests.log";
 
     public static void Initialize() {
@@ -22,13 +23,26 @@ namespace NGraphQL.Tests.HttpTests {
         return;
       if (File.Exists(LogFilePath))
         File.Delete(LogFilePath);
-
-      Client = new GraphQLClient(GraphQLEndPointUrl);
+      // start server
+      var task = TestServerStartup.SetupServer(args: null, enablePreviewFeatures: true, serverUrl: ServiceUrl);
+      Thread.Sleep(50);
+      // setup client
+      Client = new GraphQLClient(GraphQLEndPointUrl, enableSubscriptions: true);
+      Client.OnError += Client_OnError;
       Client.RequestCompleted += Client_RequestCompleted;
-
-      _task = TestServerStartup.SetupServer(args: null, enablePreviewFeatures: true, serverUrl: ServiceUrl);
     }
 
+    private static void Client_OnError(object sender, RequestErrorEventArgs e) {
+      var text = @$"
+================================  GraphQLClient reported error ================================
+ {e.Exception}
+Additional info: 
+{e.Information}    
+
+";
+      LogText(text);
+      Trace.WriteLine(text); 
+    }
 
     public static void LogTestMethodStart([CallerMemberName] string testName = null) {
       LogText($@"

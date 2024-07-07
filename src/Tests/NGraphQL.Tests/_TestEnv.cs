@@ -33,7 +33,10 @@ namespace NGraphQL.Tests {
         File.Delete(LogFilePath);
       try {
         var thingsBizApp = new ThingsApp();
-        var stt = new GraphQLServerSettings() { Options = GraphQLServerOptions.DefaultDev };
+        // By default now server ignores when a resolver for non-null field returns null.
+        // We have explicitly turn it off, to make server detect it and throw error - we have a special test for this
+        var options = GraphQLServerOptions.DefaultDev & ~GraphQLServerOptions.IgnoreOutNullFaults;
+        var stt = new GraphQLServerSettings() { Options = options };
         ThingsServer = new ThingsGraphQLServer(thingsBizApp, stt);
         // Add logging hook
         ThingsServer.Events.RequestCompleted += ThingsServer_RequestCompleted;

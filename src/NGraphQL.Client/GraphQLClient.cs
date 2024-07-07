@@ -21,14 +21,17 @@ public partial class GraphQLClient {
 
   public event EventHandler<RequestStartingEventArgs> RequestStarting;
   public event EventHandler<RequestCompletedEventArgs> RequestCompleted;
+  public event EventHandler<RequestErrorEventArgs> OnError;
 
   string _endpointUrl; 
   HttpClient _client;
 
-  public GraphQLClient(string endpointUrl): this() {
+  public GraphQLClient(string endpointUrl, bool enableSubscriptions = false): this() {
     _endpointUrl = endpointUrl;
     _client = new HttpClient();
     _client.BaseAddress = new Uri(endpointUrl);
+    if (enableSubscriptions)
+      InitSubscriptions(this._endpointUrl + "/subscriptions");
   }
 
   public GraphQLClient(HttpClient httpClient): this() {
@@ -89,8 +92,11 @@ public partial class GraphQLClient {
       await SendAsync(result);
       result.DurationMs = GetTimeSince(start);
       RequestCompleted?.Invoke(this, new RequestCompletedEventArgs(result));
+      if (result.HasErrors())
+        ReportResultErrors(result); 
     } catch (Exception ex) {
-      result.Exception = ex;   
+      result.Exception = ex;
+      OnError?.Invoke(this, new RequestErrorEventArgs(ex, "Request: " + request.Body?.Query));
       RequestCompleted?.Invoke(this, new RequestCompletedEventArgs(result));
       if (result.Exception != null) {
         if (result.Exception == ex)
@@ -102,5 +108,19 @@ public partial class GraphQLClient {
     return result;
   }
 
+  private void ReportResultErrors(GraphQLResult result) {
+    if (!result.HasErrors())
+      return;
+    var exc = new GraphQLException("GraphQL operation failed, client received errors from the server.");
+    var query = result.Request?.Body?.Query;
+    var errors = result.GetErrorsAsText();
+    var info = $@"Request: 
+{query}
+Errors: 
+{errors}
+";
+    var args = new RequestErrorEventArgs(exc, info);
+    OnError?.Invoke(this, args);
+  }
 
 }

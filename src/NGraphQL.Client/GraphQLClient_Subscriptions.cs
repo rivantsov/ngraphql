@@ -17,10 +17,9 @@ public partial class GraphQLClient {
   List<ClientSubscription> _subscriptions = new();
   HubConnection _hubConnection;
 
-  public void InitSubscriptions() {
+  public void InitSubscriptions(string hubUrl = "graphql/subscriptions") {
     if (_hubConnection != null)
       return;
-    var hubUrl = this._endpointUrl + "/subscriptions";
     _hubConnection = new HubConnectionBuilder().WithUrl(hubUrl).Build();
     _hubConnection.On<string>(SubscriptionMethodNames.ClientReceiveMethod,
       (json) => { HandleReceivedHubMessage(json); });
@@ -32,7 +31,18 @@ public partial class GraphQLClient {
   string _machineName = Environment.MachineName;
   int _subCount = 0;
 
-  public async Task<ClientSubscription> Subscribe<TPayload>(string requestText, TDict vars, 
+  public async Task<ClientSubscription> Subscribe<TPayload>(string requestText, TDict vars,
+                                     Action<ClientSubscription, TPayload> action, string id = null) {
+    try {
+      return await SubscribeImpl<TPayload>(requestText, vars, action, id);
+    } catch (Exception exc) {
+      var info = "Subscription request: " + requestText;
+      this.OnError?.Invoke(this, new Types.RequestErrorEventArgs(exc, info));
+      throw;
+    }
+  }
+
+  private async Task<ClientSubscription> SubscribeImpl<TPayload>(string requestText, TDict vars, 
                                      Action<ClientSubscription, TPayload> action, string id = null) {
     id ??= $"{_machineName}/{_subCount++}";
     var subInfo = new ClientSubscription() { Request = requestText, Variables = vars,  
@@ -68,6 +78,5 @@ public partial class GraphQLClient {
       payload = ploadElem.Deserialize(clientSub.PayloadType, JsonDefaults.JsonOptions);
     clientSub.OnReceived(clientSub, payload);    
   }
-
 
 }
