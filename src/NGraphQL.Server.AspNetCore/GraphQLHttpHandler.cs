@@ -47,7 +47,7 @@ namespace NGraphQL.Server.AspNetCore {
       var reqCtx = gqlHttpReq.RequestContext; //internal request context
 
       try {
-        await Server.ExecuteRequestAsync(gqlHttpReq.RequestContext);
+        await Server.ExecuteRequestAsync(reqCtx);
       } catch (Exception exc) {
         gqlHttpReq.RequestContext.AddError(exc);
       }

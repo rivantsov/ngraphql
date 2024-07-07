@@ -79,8 +79,17 @@ internal class ClientSubscriptionStore {
   }
   static IList<ClientSubscriptionInfo> _emptyClientSubList = new ClientSubscriptionInfo[] { };
 
+  // quick check
+  public bool HasSubscribers(string topic) {
+    _lock.EnterReadLock();
+    try {
+      return _topicSubscribers.ContainsKey(topic);
+    } finally { _lock.ExitReadLock(); }
+  }
 
-// ===================== Private stuff ===============================================
+
+
+  // ===================== Private stuff ===============================================
   private void RegisterClientSubscription(ClientSubscriptionInfo clientSub) {
     var client = clientSub.Client;
     client.Subscriptions.Add(clientSub);

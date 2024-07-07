@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NGraphQL.Model.Request;
+using NGraphQL.Server.Execution;
 
 namespace NGraphQL.Server.Subscriptions; 
 
@@ -53,8 +54,22 @@ public class TopicSubscribers {
 
 // Sits on RequestContext
 public class SubscriptionContext {
+  public string ConnectionId;
+  public string MessageJson;
   public ClientConnection Client;
   public string ClientSubscriptionId;
+  public Exception Exception;
+
+  public SubscriptionContext() {}
+}
+
+public class PublishContext {
+  public int ErrorCount;
+  public string Topic;
+  public object Data;
+  public ClientConnection Client; //might be null
+  public Exception Exception; 
+
 }
 
 

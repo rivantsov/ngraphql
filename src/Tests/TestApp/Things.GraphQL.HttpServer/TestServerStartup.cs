@@ -25,7 +25,7 @@ namespace Things.GraphQL.HttpServer {
         builder.WebHost.UseUrls(serverUrl); //this is for unit tests only
 
       // create and register GraphQLHttpService
-      var graphQLServer = CreateThingsGraphQLServer(enablePreviewFeatures);
+      var graphQLServer = CreateTestGraphQLServer(enablePreviewFeatures);
       builder.AddGraphQLServer(graphQLServer); 
 
       var app = builder.Build();
@@ -36,12 +36,12 @@ namespace Things.GraphQL.HttpServer {
       return task; 
     }
 
-    private static GraphQLServer CreateThingsGraphQLServer(bool enablePreviewFeatures) {
+    private static GraphQLServer CreateTestGraphQLServer(bool enablePreviewFeatures) {
       // create biz app, graphql server 
       var thingsBizApp = new ThingsApp();
       // Note: By default now server ignores when a resolver for non-null field returns null.
-      // In another test project we explicitly turn it off, to make server detect it and throw error - we have a special test for this;
-      // here we are OK with default behavior
+      // In another test project we explicitly turn it off, to make server detect it and throw error
+      // - we have a special test for this. In this test project we are OK with default behavior
       var serverStt = new GraphQLServerSettings() { Options = GraphQLServerOptions.DefaultDev };
       var thingsServer = new ThingsGraphQLServer(thingsBizApp, serverStt);
       if (!enablePreviewFeatures)

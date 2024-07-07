@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Text.Json;
 using System.Threading;
@@ -45,23 +43,27 @@ public class SubscriptionManager {
   }
 
   public async Task MessageReceived(string connectionId, string message) {
+    var ctx = new SubscriptionContext() { ConnectionId = connectionId, MessageJson = message };
     try {
       Util.Check(_sender != null, "Subscription manager not initialized, message sender not set.");
-      await MessageReceivedImpl(connectionId, message);
+      await MessageReceivedImpl(ctx);
+      _server.Events.OnSubscriptionAction(ctx);
     } catch (Exception ex) {
-      Trace.WriteLine($"MessageReceived error: {ex.ToString()}");
-      Debugger.Break();
+      ctx.Exception = ex;
+      _server.Events.OnSubscriptionActionError(ctx);
+//      Debugger.Break();
     }
   }
 
-  private async Task MessageReceivedImpl(string connectionId, string message) {
-    var client = _subscriptionStore.GetClient(connectionId);
-    if (client == null)
+  private async Task MessageReceivedImpl(SubscriptionContext context) {
+    context.Client = _subscriptionStore.GetClient(context.ConnectionId);
+    if (context.Client == null)
       return;
-    var msg = SerializationHelper.DeserializePartial<PayloadMessage>(message);
+    var msg = SerializationHelper.DeserializePartial<PayloadMessage>(context.MessageJson);
+    context.ClientSubscriptionId = msg.Id; 
     switch (msg.Type) {
       case SubscriptionMessageTypes.Subscribe:
-        await HandleSubscribeMessage(client, msg);
+        await HandleSubscribeMessage(context, msg);
         break;
       case SubscriptionMessageTypes.Complete:
         break;
@@ -71,14 +73,14 @@ public class SubscriptionManager {
   }
 
   // Sequence: SignalRListener -> HandleSubscribeMessage -> ExecuteRequest -> Resolver -> AddSubscription(here)
-  private async Task HandleSubscribeMessage(ClientConnection client, PayloadMessage message) {
+  private async Task HandleSubscribeMessage(SubscriptionContext context, PayloadMessage message) {
     var payloadElem = (JsonElement)message.Payload;
     Util.Check(payloadElem.ValueKind == JsonValueKind.Object, "Subscribe.Payload is a JsonElement of invalid type {0}.", message.Type);
     var pload = payloadElem.Deserialize<SubscribePayload>(JsonDefaults.JsonOptions);
     // parse the query
     var rawReq = new GraphQLRequest() { OperationName = pload.OperationName, Query = pload.Query, Variables = pload.Variables };
     var requestContext = new RequestContext(this._server, rawReq, CancellationToken.None);
-    requestContext.Subscription = new SubscriptionContext() { Client = client, ClientSubscriptionId = message.Id };
+    requestContext.Subscription = context;
     await _server.ExecuteRequestAsync(requestContext); //in the call, the resolver adds subscription using AddSubscription method below
   }
 
@@ -96,31 +98,44 @@ public class SubscriptionManager {
   }
 
   public async Task Publish(string topic, object data) {
-    //await PublishImpl(topic, data);
+    if (!_subscriptionStore.HasSubscribers(topic)) //quick check if there are any
+      return; 
     // Execute it on background thread, to avoid blocking caller for too long
     var task = Task.Run(async () => await PublishImpl(topic, data));
     await Task.CompletedTask;
   }
 
   private async Task PublishImpl(string topic, object data) {
+    var ctx = new PublishContext() { Topic = topic, Data = data };
     var subs = _subscriptionStore.GetTopicSubscriptions(topic);
-    if (subs.Count == 0)
-      return;
     // Group by sub variant
     var varGroups = subs.GroupBy(sub => sub.Variant);
-    // Each group contains Subscriptions with the same Variant (topic and query), so all clients will get
-    // identical data 
+    // Each group contains Subscriptions with the same Variant (topic and query), so all clients will get identical data 
     foreach (var grp in varGroups) {
       var subscrVariant = grp.Key;
-      var payloadJson = await GetNextMessagePayloadJson(subscrVariant, data);
+      var payloadJson = await GetPublishMessagePayloadJson(subscrVariant, data);
       foreach(var clientSub in grp) {
-        var msgJson = FormatNextMessage(clientSub.Id, payloadJson);
-        await _sender.SendMessage(clientSub.Client.ConnectionId, msgJson);
+        var msgJson = FormatMessageToPublish(clientSub.Id, payloadJson);
+        await SendMessage(ctx, clientSub.Client, msgJson);
       }
     }
   }
 
-  private async Task<string> GetNextMessagePayloadJson(SubscriptionVariant sub, object data) {
+  private async Task SendMessage(PublishContext ctx, ClientConnection client, string msgJson) {
+    try {
+      ctx.Client = client;
+      await _sender.SendMessage(client.ConnectionId, msgJson);
+    } catch (Exception exc) {
+      ctx.Exception = exc;
+      ctx.ErrorCount++;
+      if (ctx.ErrorCount < 3)
+        _server.Events.OnSubscriptionPublishError(ctx);
+      ctx.Exception = null; 
+      // we swallow individual failures, no rethrow
+    }
+  }
+
+  private async Task<string> GetPublishMessagePayloadJson(SubscriptionVariant sub, object data) {
     var opId = sub.Topic;
     try {
       var reqContext = new RequestContext(_server, sub.ParsedRequest, null);
@@ -141,7 +156,7 @@ public class SubscriptionManager {
     }
   }
 
-  private string FormatNextMessage(string id, string payload) {
+  private string FormatMessageToPublish(string id, string payload) {
     const string startStr = @"{
   ""id"": """;
     const string middleStr = @""", ""type"": ""next"", ""payload"": ";
