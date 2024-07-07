@@ -51,6 +51,7 @@ public class SubscriptionManager {
     } catch (Exception ex) {
       ctx.Exception = ex;
       _server.Events.OnSubscriptionActionError(ctx);
+      await SendErrorMessage(ctx);
 //      Debugger.Break();
     }
   }
@@ -72,16 +73,49 @@ public class SubscriptionManager {
     }
   }
 
-  // Sequence: SignalRListener -> HandleSubscribeMessage -> ExecuteRequest -> Resolver -> AddSubscription(here)
+  // Sequence: SignalRListener -> HandleSubscribeMessage -> ExecuteRequest -> Resolver -> SubscribeCaller
   private async Task HandleSubscribeMessage(SubscriptionContext context, PayloadMessage message) {
-    var payloadElem = (JsonElement)message.Payload;
-    Util.Check(payloadElem.ValueKind == JsonValueKind.Object, "Subscribe.Payload is a JsonElement of invalid type {0}.", message.Type);
-    var pload = payloadElem.Deserialize<SubscribePayload>(JsonDefaults.JsonOptions);
-    // parse the query
-    var rawReq = new GraphQLRequest() { OperationName = pload.OperationName, Query = pload.Query, Variables = pload.Variables };
-    var requestContext = new RequestContext(this._server, rawReq, CancellationToken.None);
-    requestContext.Subscription = context;
-    await _server.ExecuteRequestAsync(requestContext); //in the call, the resolver adds subscription using AddSubscription method below
+    try {
+      var payloadElem = (JsonElement)message.Payload;
+      Util.Check(payloadElem.ValueKind == JsonValueKind.Object, "Subscribe.Payload is a JsonElement of invalid type {0}.", message.Type);
+      var pload = payloadElem.Deserialize<SubscribePayload>(JsonDefaults.JsonOptions);
+      // parse the query
+      var rawReq = new GraphQLRequest() { OperationName = pload.OperationName, Query = pload.Query, Variables = pload.Variables };
+      var requestContext = new RequestContext(this._server, rawReq, CancellationToken.None);
+      requestContext.Subscription = context;
+      await _server.ExecuteRequestAsync(requestContext); //in the call, the resolver adds subscription using SubscribeCaller method below
+      if (requestContext.Failed)
+        await SendErrorMessage(requestContext);
+      // await SendCompleteMessage(context); // not clear if this is necessary, to confirm sucess; docs not clear
+    } catch (Exception ex) {
+      if (context.Exception == null)
+        context.Exception = ex;
+      _server.Events.OnSubscriptionActionError(context); 
+      await SendErrorMessage(context);
+    }
+  }
+
+  private async Task SendErrorMessage(SubscriptionContext context) {
+    var errorMsg = new ErrorMessage() { Id = context.ClientSubscriptionId };
+    var exc = context.Exception;
+    if (exc != null) {
+      errorMsg.Payload = new GraphQLError[] { new GraphQLError(exc.Message) };
+    }
+    var msgJson = SerializationHelper.Serialize(errorMsg);
+    await _sender.SendMessage(context.ConnectionId, msgJson);
+  }
+
+  private async Task SendErrorMessage(RequestContext context) {
+    var errorMsg = new ErrorMessage() { Id = context.Subscription.ClientSubscriptionId, 
+      Payload = context.Response?.Errors.ToArray() };
+    var msgJson = SerializationHelper.Serialize(errorMsg);
+    await _sender.SendMessage(context.Subscription.Client.ConnectionId, msgJson);
+  }
+
+  private async Task SendCompleteMessage(SubscriptionContext context) {
+    var msg = new CompleteMessage() { Id = context.ClientSubscriptionId };
+    var msgJson = SerializationHelper.Serialize(msg);
+    await _sender.SendMessage(context.ConnectionId, msgJson);
   }
 
   // To be called by Subscription Resolver method

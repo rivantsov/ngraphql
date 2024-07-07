@@ -5,7 +5,7 @@ using Irony.Parsing;
 
 namespace NGraphQL.Server.Parsing {
 
-  // Names of parse nodes (grammar terms) used by the RequestBuilder to find the specific nodes.
+  // Names of parse nodes (grammar terms) used by the RequestParser to find the specific nodes.
   public static class TermNames {
     public const string RequestDoc = "requestDoc";
     public const string RequestOp = "requestOp";

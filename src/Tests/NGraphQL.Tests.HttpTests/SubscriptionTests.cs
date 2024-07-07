@@ -33,7 +33,18 @@ public class SubscriptionTests {
   public async Task TestSubscriptions() {
     TestEnv.LogTestMethodStart();
     TestEnv.LogTestDescr(@"  Simple subscription test");
+    var client = TestEnv.Client;
     var updates = new List<ThingUpdate>();
+    // listen to all messages, and error messages
+    var messages = new List<SubscriptionMessage>();
+    client.MessageReceived += (s, args) => {
+      messages.Add(args.Message);
+    };
+    // listen to all received errors
+    var errors = new List<ErrorMessage>();
+    client.ErrorReceived += (s, args) => {
+      errors.Add(args.Message);
+    };
 
     const string subscribeRequest = @"
 subscription($thingId: Int) {
@@ -43,11 +54,10 @@ subscription($thingId: Int) {
 }";
 
     // 1. Subscribe to updates of Thing #1 and #2
-    var client = TestEnv.Client;
-    await client.Subscribe<ThingUpdate>(subscribeRequest, new TVars() { { "thingId", 1 } }, (clientSub, msg) => {
+    var sub1 = await client.Subscribe<ThingUpdate>(subscribeRequest, new TVars() { { "thingId", 1 } }, (clientSub, msg) => {
       updates.Add(msg);
     });
-    await client.Subscribe<ThingUpdate>(subscribeRequest, new TVars() { { "thingId", 2 } }, (clientSub, msg) => {
+    var sub2 = await client.Subscribe<ThingUpdate>(subscribeRequest, new TVars() { { "thingId", 2 } }, (clientSub, msg) => {
       updates.Add(msg);
     });
     WaitYield();
@@ -66,6 +76,17 @@ subscription($thingId: Int) {
     Assert.AreEqual(2, updates1.Count, "Expected 2 updates for Thing 1");
     Assert.AreEqual(1, updates2.Count, "Expected 1 update for Thing 2");
 
+    // send bad subscr request; if Subscribe fails, you can handle/see error either thru global client.ErrorReceived event, 
+    //   or per subscription call.
+    var badSubErrors = new List<ErrorMessage>();
+    var badSubRequest = "ABCD " + subscribeRequest;
+    var errSubsrc = await client.Subscribe<ThingUpdate>(badSubRequest, null, (c, p) => { }, 
+         (c, err) => { 
+           badSubErrors.Add(err); } 
+         );
+    WaitYield();
+    Assert.AreEqual(1, badSubErrors.Count, "Expected subscription error");
+    Assert.AreEqual(1, errors.Count, "Expected 1 global error");
 
   }// method
 

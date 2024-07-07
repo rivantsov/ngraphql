@@ -11,5 +11,6 @@ public class ClientSubscription {
   public string Request;
   public TDict Variables; 
   public Type PayloadType;
-  public Action<ClientSubscription, object> OnReceived; 
+  public Action<ClientSubscription, object> OnReceiveAction;
+  public Action<ClientSubscription, ErrorMessage> OnErrorAction;
 }

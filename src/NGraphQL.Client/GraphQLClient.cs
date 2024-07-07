@@ -21,6 +21,8 @@ public partial class GraphQLClient {
 
   public event EventHandler<RequestStartingEventArgs> RequestStarting;
   public event EventHandler<RequestCompletedEventArgs> RequestCompleted;
+  public event EventHandler<SubscriptionMessageEventArgs> MessageReceived;
+  public event EventHandler<ErrorMessageEventArgs> ErrorReceived;
   public event EventHandler<RequestErrorEventArgs> OnError;
 
   string _endpointUrl; 
