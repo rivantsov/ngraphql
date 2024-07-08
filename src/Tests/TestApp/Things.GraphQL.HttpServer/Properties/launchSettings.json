@@ -5,7 +5,7 @@
       "launchBrowser": true,
       // The start page is Chrome extensions Altair, make sure you install it. 
       // Notice double :: , it will be single in the final URL; this is a way of escaping the special char.
-      "launchUrl": "chrome-extension:://flnheeellpciglgpaodhkhmapeljopja/index.html",
+      "launchUrl": "chrome-extension://kjhjcgclphafojaeeickcokfbhlegecd/cgp.html",
       "hotReloadEnabled": false,
       "applicationUrl": "http://localhost:55571"
     }
