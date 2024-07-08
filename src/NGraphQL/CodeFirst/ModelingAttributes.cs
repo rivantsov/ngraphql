@@ -14,10 +14,17 @@ namespace NGraphQL.CodeFirst {
     }
   }
 
-  /// <summary>Marks the value as nullable. The mapped GraphQL type will not have a not-null marker (!). </summary>
+  /// <summary>Marks the value as nullable. The mapped GraphQL type will not have a non-null marker (!). </summary>
   [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property 
                 | AttributeTargets.Method | AttributeTargets.Parameter)]
   public class NullAttribute: Attribute { }
+
+  /// <summary>Marks the value as not nullable.</summary>
+  /// <remarks>Opposite of [Null] attribute. Use it with GraphQLServerOptions.RefTypesNullableByDefault flag that
+  /// makes all reference types nullable by default. </remarks>
+  [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property
+                | AttributeTargets.Method | AttributeTargets.Parameter)]
+  public class NotNullAttribute : Attribute { }
 
   /// <summary>Marks a list as possibly containing null values. The mapped GraphQL type will not have a non-null
   /// marker for the element type.  </summary>

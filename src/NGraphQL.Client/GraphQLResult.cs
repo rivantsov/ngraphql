@@ -74,7 +74,7 @@ namespace NGraphQL.Client {
       var msg = "Request failed.";
       if (!string.IsNullOrWhiteSpace(errText))
         msg += " Error(s):" + Environment.NewLine + errText;
-      throw new Exception(msg);
+      throw new GraphQLException(msg);
     }
 
     public string GetErrorsAsText() {

@@ -189,6 +189,7 @@ query myQuery($inpObj: InputObj!) {
       var schema = await TestEnv.Client.GetSchemaDocument();
       Assert.IsTrue(!string.IsNullOrWhiteSpace(schema), "expected schema doc");
       TestEnv.LogText("  Success: received Schema doc from server using endpoint '.../schema' ");
+      TestEnv.LogText(schema);
     }
 
   }

@@ -10,6 +10,7 @@ using NGraphQL.Model;
 using NGraphQL.Introspection;
 using NGraphQL.Utilities;
 using System.ComponentModel;
+using NGraphQL.Server.Execution;
 
 namespace NGraphQL.Model.Construction {
 
@@ -236,7 +237,12 @@ namespace NGraphQL.Model.Construction {
                                   MethodBase paramOwner) {
       kinds = new List<TypeKind>();
       var attrs = GetAllAttributesAndAdjustments(attributeSource, paramOwner);
-      bool notNull = attrs.Find<NullAttribute>() == null;
+      bool notNull;
+      if (_server.Settings.Options.IsSet(Server.GraphQLServerOptions.RefTypesNullableByDefault)) {
+        notNull = type.IsValueType || attrs.Find<NotNullAttribute>() != null; //either ref type or NonNull attr
+      } else 
+        notNull = attrs.Find<NullAttribute>() == null;
+      
       Type valueTypeUnder;
 
       if (type.IsGenericListOrArray(out baseType, out var rank)) {

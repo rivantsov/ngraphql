@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
@@ -18,6 +19,7 @@ public partial class GraphQLClient {
   public const string MediaTypeText = "application/text";
   public JsonSerializerOptions JsonOptions;
   public JsonSerializerOptions JsonUrlOptions;
+  public bool ThrowOnError;
 
   public event EventHandler<RequestStartingEventArgs> RequestStarting;
   public event EventHandler<RequestCompletedEventArgs> RequestCompleted;
@@ -28,8 +30,9 @@ public partial class GraphQLClient {
   string _endpointUrl; 
   HttpClient _client;
 
-  public GraphQLClient(string endpointUrl, bool enableSubscriptions = false): this() {
+  public GraphQLClient(string endpointUrl, bool enableSubscriptions = false, bool throwOnError = false): this() {
     _endpointUrl = endpointUrl;
+    ThrowOnError = throwOnError;
     _client = new HttpClient();
     _client.BaseAddress = new Uri(endpointUrl);
     if (enableSubscriptions) {
@@ -97,8 +100,11 @@ public partial class GraphQLClient {
       await SendAsync(result);
       result.DurationMs = GetTimeSince(start);
       RequestCompleted?.Invoke(this, new RequestCompletedEventArgs(result));
-      if (result.HasErrors())
-        ReportResultErrors(result); 
+      if (result.HasErrors()) {
+        ReportResultErrors(result);
+        if (ThrowOnError)
+          throw new ClientGraphQLException(result.Errors.ToArray());
+      }
     } catch (Exception ex) {
       result.Exception = ex;
       OnError?.Invoke(this, new RequestErrorEventArgs(ex, "Request: " + request.Body?.Query));

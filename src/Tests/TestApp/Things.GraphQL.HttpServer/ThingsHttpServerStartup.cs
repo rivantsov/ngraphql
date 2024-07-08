@@ -44,7 +44,8 @@ namespace Things.GraphQL.HttpServer {
       // Note: By default now server ignores when a resolver for non-null field returns null.
       // In another test project we explicitly turn it off, to make server detect it and throw error
       // - we have a special test for this. In this test project we are OK with default behavior
-      var serverStt = new GraphQLServerSettings() { Options = GraphQLServerOptions.DefaultDev };
+      var serverStt = new GraphQLServerSettings() { Options = GraphQLServerOptions.DefaultDev }; 
+           // | GraphQLServerOptions.RefTypesNullableByDefault }; //just for testing
       var thingsServer = new ThingsGraphQLServer(thingsBizApp, serverStt);
       if (!enablePreviewFeatures)
         thingsServer.DisablePreviewFeatures();
