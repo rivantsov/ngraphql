@@ -32,8 +32,11 @@ public partial class GraphQLClient {
     _endpointUrl = endpointUrl;
     _client = new HttpClient();
     _client.BaseAddress = new Uri(endpointUrl);
-    if (enableSubscriptions)
-      InitSubscriptions(this._endpointUrl + "/subscriptions");
+    if (enableSubscriptions) {
+      var task = Task.Run(async () => await InitSubscriptions(this._endpointUrl + "/subscriptions"));
+      Thread.Yield(); 
+    }
+
   }
 
   public GraphQLClient(HttpClient httpClient): this() {

@@ -17,15 +17,13 @@ public partial class GraphQLClient {
   List<ClientSubscription> _subscriptions = new();
   HubConnection _hubConnection;
 
-  public void InitSubscriptions(string hubUrl = "graphql/subscriptions") {
+  public async Task InitSubscriptions(string hubUrl = "graphql/subscriptions") {
     if (_hubConnection != null)
       return;
     _hubConnection = new HubConnectionBuilder().WithUrl(hubUrl).Build();
     _hubConnection.On<string>(SubscriptionMethodNames.ClientReceiveMethod,
-      (json) => { HandleReceivedHubMessage(json); });
-    //Task.Run(async () => await _hubConnection.StartAsync());
-    _hubConnection.StartAsync().Wait();
-    Thread.Yield();
+      (json) => { HandleReceivedMessage(json); });
+    await _hubConnection.StartAsync();
   }
 
   string _machineName = Environment.MachineName;
@@ -44,40 +42,70 @@ public partial class GraphQLClient {
     }
   }
 
+  public ClientSubscription[] GetSubscriptions() => _subscriptions.ToArray();
+  public HubConnection GetHub() => _hubConnection;
+
+
+  public async Task Unsubscribe(string subscriptionId) {
+    var sub = _subscriptions.FirstOrDefault(s => s.Id == subscriptionId);
+    if (sub == null)
+      throw new Exception("Subscription not found.");
+    await Unsubscribe(sub); 
+  }
+
+  public async Task Unsubscribe(ClientSubscription sub) {
+    if (!_subscriptions.Contains(sub))
+      throw new Exception("Subscription not registered.");
+    var completeMsg = new CompleteMessage() { Id = sub.Id };
+    var msgJson = SerializationHelper.Serialize(completeMsg);
+    await _hubConnection.SendAsync(SubscriptionMethodNames.ServerReceiveMethod, msgJson);
+    _subscriptions.Remove(sub);      
+  }
+
+  public async Task PingServer() {
+    var msg = new PingMessage();
+    var msgJson = SerializationHelper.Serialize(msg);
+    await _hubConnection.SendAsync(SubscriptionMethodNames.ServerReceiveMethod, msgJson);
+  }
+
   private async Task<ClientSubscription> SubscribeImpl<TPayload>(string requestText, TDict vars, 
                                      Action<ClientSubscription, TPayload> action, 
                                      Action<ClientSubscription, ErrorMessage> errorAction = null,  
                                      string id = null) {
     id ??= $"{_machineName}/{_subCount++}";
-    var subInfo = new ClientSubscription() { Request = requestText, Variables = vars,  
+    var subscr = new ClientSubscription() { Request = requestText, Variables = vars,  
                PayloadType = typeof(TPayload), OnErrorAction = errorAction, Id = id
      };
-    subInfo.OnReceiveAction = (subInfo, payload) => {
+    subscr.OnReceiveAction = (subInfo, payload) => {
       action(subInfo, (TPayload)payload);
     };
-    _subscriptions.Add(subInfo);
-    var subscribeMsg = new SubscribeMessage(subInfo.Id,  
+    _subscriptions.Add(subscr);
+    var subscribeMsg = new SubscribeMessage(subscr.Id,  
               new SubscribePayload() { Query = requestText, Variables = vars});
     var msgJson = SerializationHelper.Serialize(subscribeMsg);
     await _hubConnection.SendAsync(SubscriptionMethodNames.ServerReceiveMethod, msgJson);
-    return subInfo;
+    return subscr;
   }
 
-  private void HandleReceivedHubMessage(string json) {
+  private void HandleReceivedMessage(string json) {
     // generally it is message without errors, but this does not hurt
     var msg = SerializationHelper.DeserializePartial<PayloadMessage>(json);
     MessageReceived?.Invoke(this, new Types.SubscriptionMessageEventArgs(msg));
     switch (msg.Type) {
-      case "next":
-        HandleHubNextMessage(msg);
+      case SubscriptionMessageTypes.Next:
+        HandleReceivedNextMessage(msg);
         break;
-      case "error":
-        HandleHubErrorMessage(msg); 
-        break; 
+      case SubscriptionMessageTypes.Error:
+        HandleReceivedErrorMessage(msg); 
+        break;
+      case SubscriptionMessageTypes.Pong: //nothing to do
+        break;
+      case SubscriptionMessageTypes.ConnectionAck: //nothing to do
+        break;
     }
   }
 
-  private void HandleHubNextMessage(PayloadMessage msg) {
+  private void HandleReceivedNextMessage(PayloadMessage msg) {
     var clientSub = _subscriptions.FirstOrDefault(s => s.Id == msg.Id);
     if (clientSub == null)
       return;
@@ -88,7 +116,7 @@ public partial class GraphQLClient {
     clientSub.OnReceiveAction(clientSub, payload);    
   }
 
-  private void HandleHubErrorMessage(PayloadMessage msg) {
+  private void HandleReceivedErrorMessage(PayloadMessage msg) {
     var clientSub = _subscriptions.FirstOrDefault(s => s.Id == msg.Id);
     if (clientSub == null)
       return;

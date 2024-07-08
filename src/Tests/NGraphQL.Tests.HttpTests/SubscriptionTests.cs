@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using NGraphQL.Json;
-using NGraphQL.Server.AspNetCore;
 using NGraphQL.Subscriptions;
 using Things;
 
@@ -76,8 +70,17 @@ subscription($thingId: Int) {
     Assert.AreEqual(2, updates1.Count, "Expected 2 updates for Thing 1");
     Assert.AreEqual(1, updates2.Count, "Expected 1 update for Thing 2");
 
+    // 4. Unsubsribe sub1, we should no longer see updates for Thing/1 
+    updates.Clear();
+    await client.Unsubscribe(sub1);
+    WaitYield();
+    await MutateThing(1, "newName_1F");
+    WaitYield();
+    Assert.AreEqual(0, updates.Count, "No updates expected after unsubscribe for Thing 1");
+
+
     // send bad subscr request; if Subscribe fails, you can handle/see error either thru global client.ErrorReceived event, 
-    //   or per subscription call.
+    //   or per subscription callback.
     var badSubErrors = new List<ErrorMessage>();
     var badSubRequest = "ABCD " + subscribeRequest;
     var errSubsrc = await client.Subscribe<ThingUpdate>(badSubRequest, null, (c, p) => { }, 
@@ -87,6 +90,13 @@ subscription($thingId: Int) {
     WaitYield();
     Assert.AreEqual(1, badSubErrors.Count, "Expected subscription error");
     Assert.AreEqual(1, errors.Count, "Expected 1 global error");
+
+    // Ping server, client should receive pong message 
+    messages.Clear();
+    await client.PingServer();
+    WaitYield();
+    Assert.AreEqual(1, messages.Count, "Expected 1 pong message");
+    Assert.AreEqual(SubscriptionMessageTypes.Pong, messages[0].Type, "Expected 'pong' message.");
 
   }// method
 

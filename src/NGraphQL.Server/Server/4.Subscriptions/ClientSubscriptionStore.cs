@@ -66,6 +66,22 @@ internal class ClientSubscriptionStore {
     } finally { _lock.ExitWriteLock(); }
   }
 
+  public void RemoveSubscription(ClientConnection client, string subId) {
+    _lock.EnterWriteLock();
+    try {
+      var sub = client.Subscriptions.FirstOrDefault(cs => cs.Id == subId);
+      if (sub == null)
+        return; 
+      client.Subscriptions.Remove(sub); 
+      // remove from the topic's list
+      if (!_topicSubscribers.TryGetValue(sub.Topic, out var topicSubs))
+        return;
+      topicSubs.Subscribers.SafeRemove(client.ConnectionId);
+      if (topicSubs.Subscribers.Count == 0)
+        _topicSubscribers.SafeRemove(sub.Topic);
+    } finally { _lock.ExitWriteLock(); }
+  }
+
   public IList<ClientSubscriptionInfo> GetTopicSubscriptions(string topic) {
     _lock.EnterReadLock();
     try {
