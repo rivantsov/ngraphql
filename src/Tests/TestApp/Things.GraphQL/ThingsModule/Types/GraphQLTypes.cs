@@ -30,6 +30,7 @@ namespace Things.GraphQL.Types {
     public DateTime? DateTimeOpt; //it will be marked as Nullable automatically (no ! mark)
     [Null]
     public Thing NextThing;
+    public string IdStr(string prefix) => default;
 
     [Null, DeprecatedDir("Deprecate-reason1")]
     public string Tag;

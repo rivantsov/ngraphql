@@ -125,6 +125,13 @@ namespace NGraphQL.Server {
       if (_requestContext.Failed)
         return false;
 
+      // Validate subscription - only one subscription field, and no variables in selection field args
+      if (_requestContext.ParsedRequest.Operations.Any(op => op.OperationType == OperationType.Subscription)) {
+        _server.Subscriptions.ValidateParsedRequest(_requestContext);
+        if (_requestContext.Failed)
+          return false;
+      }
+
       PrepareDirectives(); 
 
       var success = !_requestContext.Failed;

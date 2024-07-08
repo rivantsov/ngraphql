@@ -121,6 +121,50 @@ public class SubscriptionManager {
     }
   }
 
+  // Validate subscription - only one subscription field, and no variables in selection field args
+  internal bool ValidateParsedRequest(RequestContext context) {
+    var subOps = context.ParsedRequest.Operations
+      .Where(op => op.OperationType == Model.OperationType.Subscription).ToList();
+    foreach(var op in subOps) {
+      // no multiple subscriptions in one call, limitation by GraphQL spec
+      if (op.SelectionSubset.Items.Count != 1) {
+        var msg = "Only one subscription operation is allowed per request.";
+        context.AddError(msg, op);
+        return false;
+      }
+      // No fragment as top-level item
+      var req = context.ParsedRequest;
+      var subscrItem = op.SelectionSubset.Items.First();
+      if (subscrItem.Kind != SelectionItemKind.Field) {
+        context.AddError("Subscription item may not be a fragment.", subscrItem);
+        return false;
+      }
+      // verify that selection subset does not use variables;
+      // this is a limitation of NGraphQL for efficiency
+      var subField = subscrItem as SelectionField;
+      CheckNoVariablesInSelectionFieldArgs(context, subField);
+    } //foreach op
+    return !context.Failed;
+  }
+
+  private bool CheckNoVariablesInSelectionFieldArgs(RequestContext ctx, SelectionField field) {
+    if (field.SelectionSubset == null || field.SelectionSubset.Items.Count == 0)
+      return true; 
+    foreach(var item in field.SelectionSubset.Items) {
+      if (!(item is SelectionField fld))
+        continue;
+      if (fld.Args == null || fld.Args.Count == 0)
+        continue; 
+      foreach(var arg in fld.Args) {
+        if(arg.ValueSource is VariableValueSource varSrc) {
+          var msg = $"Use of variables is not allowed in subscription selection set (var: ${varSrc.VariableName}).";
+          ctx.AddError(msg, arg.ValueSource);
+        } 
+      } //foreach arg
+    } // foreach item
+    return !ctx.Failed; 
+  }
+
   // Sequence: SignalRListener -> HandleSubscribeMessage -> ExecuteRequest -> Resolver -> SubscribeCaller
   private async Task HandleSubscribeMessage(SubscriptionContext context, PayloadMessage message) {
     try {

@@ -78,19 +78,6 @@ subscription($thingId: Int) {
     WaitYield();
     Assert.AreEqual(0, updates.Count, "No updates expected after unsubscribe for Thing 1");
 
-
-    // send bad subscr request; if Subscribe fails, you can handle/see error either thru global client.ErrorReceived event, 
-    //   or per subscription callback.
-    var badSubErrors = new List<ErrorMessage>();
-    var badSubRequest = "ABCD " + subscribeRequest;
-    var errSubsrc = await client.Subscribe<ThingUpdate>(badSubRequest, null, (c, p) => { }, 
-         (c, err) => { 
-           badSubErrors.Add(err); } 
-         );
-    WaitYield();
-    Assert.AreEqual(1, badSubErrors.Count, "Expected subscription error");
-    Assert.AreEqual(1, errors.Count, "Expected 1 global error");
-
     // Ping server, client should receive pong message 
     messages.Clear();
     await client.PingServer();
@@ -98,7 +85,59 @@ subscription($thingId: Int) {
     Assert.AreEqual(1, messages.Count, "Expected 1 pong message");
     Assert.AreEqual(SubscriptionMessageTypes.Pong, messages[0].Type, "Expected 'pong' message.");
 
+    // Checking error handling
+    // if Subscribe fails, client can see error either thru global client.ErrorReceived event, 
+    //   or per subscription callback.
+    // Check syntax error first
+    var badSubErrors = new List<ErrorMessage>();
+    var badSubRequest = "ABCD " + subscribeRequest;
+    var errSubsrc = await client.Subscribe<ThingUpdate>(badSubRequest, null, (c, p) => { },
+         (c, err) => {
+           badSubErrors.Add(err);
+         }
+         );
+    WaitYield();
+    Assert.AreEqual(1, badSubErrors.Count, "Expected subscription error");
+    Assert.AreEqual(1, errors.Count, "Expected 1 global error");
+
+    // Two subscriptions in one call - not allowed
+    badSubErrors.Clear(); 
+    badSubRequest = @"
+subscription {
+  sub1: subscribeToThingUpdates(thingId: 1) {
+     id name kind 
+  }
+  sub2: subscribeToThingUpdates(thingId: 2) {
+     id name kind 
+  }
+}";
+    errSubsrc = await client.Subscribe<ThingUpdate>(badSubRequest, null, (c, p) => { },
+         (c, err) => {
+           badSubErrors.Add(err);
+         }
+         );
+    WaitYield();
+    Assert.AreEqual(1, badSubErrors.Count, "Expected subscription error - only one subscr allowed");
+
+    // Use of variables in subscription selection subset - not allowed
+    badSubErrors.Clear();
+    badSubRequest = @"
+subscription($prefix: String) {
+  sub1: subscribeToThingUpdates(thingId: 1) {
+     id name kind 
+     idStr(prefix: $prefix)
+  }
+}";
+    var vars = new TVars() { { "prefix", "Id:" } };
+    errSubsrc = await client.Subscribe<ThingUpdate>(badSubRequest, null, (c, p) => { },
+         (c, err) => {
+           badSubErrors.Add(err);
+         }
+         );
+    WaitYield();
+    Assert.AreEqual(1, badSubErrors.Count, "Expected subscription error - vars not allowed");
   }// method
+
 
   private void WaitYield() {
     for (int i = 0; i < 3; i++) {

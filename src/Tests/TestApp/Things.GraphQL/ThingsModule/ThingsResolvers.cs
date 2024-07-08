@@ -114,6 +114,11 @@ public class ThingsResolvers : IResolverClass {
     return string.Join("|", dt.ToString("yyyy-MM-dd"), date.ToString("yyyy-MM-dd"), time);
   }
 
+  // Thing.IdStr(prefix) resolver
+  public string IdStr(IFieldContext context, Thing thing, string prefix) {
+    return prefix + thing.Id;
+  }
+
   // Demo of BATCHing functionality (aka DataLoader) - loading field values for ALL parent objects in request
   public OtherThingEntity GetMainOtherThing(IFieldContext context, ThingEntity parent) {
     var allParents = context.GetAllParentEntities<ThingEntity>();

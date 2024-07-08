@@ -46,6 +46,7 @@ namespace Things {
     public DateTime? DateQ;
     public ThingEntity NextThing;
 
+
     // For testing batching
     public OtherThingEntity MainOtherThing;
     public IList<OtherThingEntity> OtherThings; 
