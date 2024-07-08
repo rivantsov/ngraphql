@@ -1,6 +1,14 @@
 # Code Changes History
 
 ## July 8, 2024. Version 2.0.0
+- Subscriptions, full implementation based on SignalR - see SubscriptionTests.cs in HttpTests project.
+- Added GraphQLClient.OnError event
+- Server automatically returns the response header with time it took processing the request, ex: "X-GraphQL-Server-Statistics: exec-time=5.6ms". Useful when you want to quickly see on the client (web browser) - why it took so long? (or quick!)
+- Added IResolverClassAsync interface, async version of IResolverClass, to allow resolver instances to initialize in async manner.
+- Added IRequestContext.HostServices property (IServiceProvider) - this is service provider passed from the host AspNetCore app, you can use it in resolver to reach any registered service.
+- Added flag ThrowOnError to automatically throw ClientGraphQLError if server returns errors in response. This does not apply to subscriptions (push messages). 
+- New option GraphQLServerOptions.IgnoreOutNullFaults - (default is set). On the server, when the resulting value for a non-nullable field is null (returned by resolver), the server normally throws an error and report the error to client. That's expected, violation of the contract and server acknoledges this. But this gets very annoying and troublesome in some situations, when you work with external data sources, or even externally defined types (which you use in your GraphQL model). So if you set this flag, the server would ignore the fault and return null as the field value.
+- Similar flag GraphQLServerOptions.RefTypesNullableByDefault - make all fields of reference types (string, objects, etc) nullable by default. To make it NonNull, use [NonNull] attribute. Useful when you use externally defined types in your GraphQL model, and have no control over type definitions and cannot put [Null] attribute on the fields.  
 
 
 ## April 12, 2024. Version 1.7.0

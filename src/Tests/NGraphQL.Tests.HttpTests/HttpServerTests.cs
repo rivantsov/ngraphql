@@ -192,5 +192,41 @@ query myQuery($inpObj: InputObj!) {
       TestEnv.LogText(schema);
     }
 
+    [TestMethod]
+    public async Task TestServerValidation() {
+      string query;
+      TDict vars;
+      GraphQLResult result;
+      TestEnv.LogTestMethodStart();
+
+      var client = TestEnv.Client;
+
+      TestEnv.LogTestDescr("Validation of input values in resolver code, catching GraphQL exception with errors.");
+      query = @"
+mutation ($id: Int!, $newName: String!) { 
+  th: mutateThingWithValidation(id: $id, newName: $newName) { 
+         id, name 
+      }
+}";
+      vars = new TDict() { { "id", -1 }, { "newName", "Name  Tooo  Loooooooooooooooooooooong" } };
+
+      // We do it in ThrowOnError=true, so client throws error automatically
+      client.ThrowOnError = true;
+      ClientGraphQLException exc = null;
+      try {
+        result = await client.PostAsync(query, vars);
+      } catch(ClientGraphQLException e) {
+        exc = e; 
+      } finally {
+        client.ThrowOnError = false; 
+      }
+      Assert.AreEqual(2, exc.Errors.Length, "expected errors");
+      Assert.AreEqual("Id value may not be negative.", exc.Errors[0].Message);
+      Assert.AreEqual("newName too long, max size = 10.", exc.Errors[1].Message);
+
+    }
+
+
+
   }
 }

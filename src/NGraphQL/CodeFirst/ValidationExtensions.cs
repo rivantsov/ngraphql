@@ -30,7 +30,7 @@ namespace NGraphQL.CodeFirst {
 
     public static void AbortIfErrors (this IFieldContext context) {
       if (context.Failed)
-      throw new AbortRequestException();
+        throw new AbortRequestException();
     }
 
     public static string GetErrorsAsText(this GraphQLResponse response) {
