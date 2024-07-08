@@ -7,7 +7,7 @@ namespace Things.GraphQL.HttpServer {
   public class Program
   {
     public static void Main(string[] args) {
-      var task = TestServerStartup.SetupServer(args);
+      var task = ThingsHttpServerStartup.StartServer(args);
       task.Wait(); 
     }
   }

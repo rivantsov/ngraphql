@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 using NGraphQL.Client;
 using NGraphQL.Client.Types;
+using NGraphQL.Server.AspNetCore;
 using NGraphQL.Utilities;
 using Things.GraphQL.HttpServer;
 
@@ -17,6 +18,7 @@ namespace NGraphQL.Tests.HttpTests {
     public static string GraphQLEndPointUrl = ServiceUrl + "/graphql";
     public static GraphQLClient Client;
     public static string LogFilePath = "_graphQLHttpTests.log";
+    public static GraphQLHttpHandler HttpServerInstance;
 
     public static void Initialize() {
       if (Client != null) //already initialized
@@ -24,7 +26,8 @@ namespace NGraphQL.Tests.HttpTests {
       if (File.Exists(LogFilePath))
         File.Delete(LogFilePath);
       // start server
-      var task = TestServerStartup.SetupServer(args: null, enablePreviewFeatures: true, serverUrl: ServiceUrl);
+      var task = ThingsHttpServerStartup.StartServer(args: null, enablePreviewFeatures: true, serverUrl: ServiceUrl);
+      HttpServerInstance = ThingsHttpServerStartup.Instance;
       Thread.Sleep(50);
       // setup client
       Client = new GraphQLClient(GraphQLEndPointUrl, enableSubscriptions: true);

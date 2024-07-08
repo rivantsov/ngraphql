@@ -13,7 +13,7 @@ namespace NGraphQL.Server.AspNetCore {
 
   public static class GraphQLStartupExtensions {
     
-    public static WebApplicationBuilder AddGraphQLServer(this WebApplicationBuilder builder, GraphQLServer graphQLServer) {
+    public static GraphQLHttpHandler AddGraphQLServer(this WebApplicationBuilder builder, GraphQLServer graphQLServer) {
       builder.Services.AddSingleton<GraphQLServer>(graphQLServer);
       var graphQLHttpHandler = new GraphQLHttpHandler(graphQLServer);
       builder.Services.AddSingleton<GraphQLHttpHandler>(graphQLHttpHandler);
@@ -26,7 +26,7 @@ namespace NGraphQL.Server.AspNetCore {
       // add controllers and add ref to assembly that contains our DefaultGraphQlController (this assembly)
       var graphqlControllerAssembly = typeof(DefaultGraphQLController).Assembly;
       builder.Services.AddControllers().PartManager.ApplicationParts.Add(new AssemblyPart(graphqlControllerAssembly));
-      return builder; 
+      return graphQLHttpHandler; 
     }
 
     public static WebApplication MapGraphQLEndpoint(this WebApplication app, GraphQLServerSettings settings) {

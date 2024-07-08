@@ -61,7 +61,7 @@ query {
       TestEnv.LogTestDescr("literal input object as argument.");
       query = @"
 query { 
-  res: echoInputObjAsString (inpObj: {id: 1, name: ""abc"", num: 0, 
+  res: echoInputObjAsString (inpObj: {id: 1, name: ""abc"", num: 0, today: ""2000-01-01"",
                    flags: [[FLAG_ONE]], kind: KIND_ONE })       # returns inpObj.ToString()
 }";
       resp = await ExecuteAsync(query);
@@ -71,7 +71,7 @@ query {
       TestEnv.LogTestDescr("literal input object as argument, with some of its properties set from variables.");
       query = @"
 query myQuery($id : int) { 
-  res: echoInputObjAsString(inpObj: {id: $id, name: ""abc"", num:456, 
+  res: echoInputObjAsString(inpObj: {id: $id, name: ""abc"", num:456, today: ""2000-01-01"", 
                               flags: [[]], kind: KIND_TWO })
 }";
       vars = new TDict() { { "id", 1 } };
@@ -82,7 +82,7 @@ query myQuery($id : int) {
       TestEnv.LogTestDescr("literal input object as argument; variable value ($id) is not provided and is assigned from default.");
       query = @"
 query myQuery($num: Int!, $name: String!, $id: Int = 123) { 
-  result: echoInputObjAsString (inpObj: {id: $id, num: $num, name: $name, flags: [[]], kind: KIND_ONE }) 
+  result: echoInputObjAsString (inpObj: {id: $id, num: $num, name: $name, flags: [[]], kind: KIND_ONE,  today: ""2000-01-01"" }) 
 }";
       vars = new TDict();
       vars["num"] = 456;
@@ -98,7 +98,7 @@ query myQuery($inpObj: InputObj!) {
 }";
       vars = new TDict();
       // we cannot use InputObj here, serializer will send first-cap prop names and request will fail
-      vars["inpObj"] = new InputObj() { Id = 123, Num = 456, Name = "SomeName" };
+      vars["inpObj"] = new InputObj() { Id = 123, Num = 456, Name = "SomeName", Today = DateTime.Now.Date.AddDays(3) };
       resp = await ExecuteAsync(query, vars);
       result = resp.GetValue<string>("result");
       Assert.AreEqual("id:123,name:SomeName,num:456,flags:(None),kind:KindOne", result); //this is InputObj.ToString()

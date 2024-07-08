@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NGraphQL.Model;
 using NGraphQL.Client;
 using Things;
 using Things.GraphQL.Types;
+using System.Linq;
 
 namespace NGraphQL.Tests.HttpTests {
   using TDict = Dictionary<string, object>;
@@ -31,7 +33,7 @@ namespace NGraphQL.Tests.HttpTests {
       TestEnv.LogTestDescr("Trying basic query, get all things, with names");
       result = await TestEnv.Client.PostAsync("query { things {name kind theFlags aBCGuids} }");
       result.EnsureNoErrors();
-      var things = result.GetTopField<Thing[]>("things"); 
+      var things = result.GetTopField<Thing[]>("things");
       var thing0Name = things[0].Name;
       Assert.IsNotNull(result);
 
@@ -73,6 +75,15 @@ query ($objWithEnums: InputObjWithEnums) {
     }
 
 
+    [TestMethod]
+    public async Task TestBugFixes() {
+      TestEnv.LogTestMethodStart();
+      var server = TestEnv.HttpServerInstance.Server;
+      var inpObjTypeDef = (ComplexTypeDef) server.Model.GetTypeDef(typeof(InputObj));
+      var todayNullField = inpObjTypeDef.Fields.FirstOrDefault(f => f.Name == "todayNull");
+      Assert.IsTrue(todayNullField.Flags.IsSet(FieldFlags.Nullable), "Expected Nullable for todayNull");
+      await Task.CompletedTask;
+    }
 
     [TestMethod]
     public async Task TestVariables() {
@@ -127,7 +138,7 @@ query myQuery($inpObj: InputObj!) {
       TestEnv.LogTestDescr("literal object as argument, but with prop values coming from variables."); //------------------
       query = @"
 query myQuery($num: Int!, $name: String!) { 
-  result: echoInputObjAsString (inpObj: {id: 123, num: $num, name: $name,  flags: [[FLAG_ONE]], kind: KIND_ONE }) 
+  result: echoInputObjAsString (inpObj: {id: 123, num: $num, name: $name,  flags: [[FLAG_ONE]], kind: KIND_ONE, today: ""2024-01-01"" }) 
 }";
       varsDict = new TDict();
       // we cannot use InputObj here, serializer will send first-cap prop names and request will fail

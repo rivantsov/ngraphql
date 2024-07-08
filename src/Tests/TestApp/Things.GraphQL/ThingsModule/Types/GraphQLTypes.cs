@@ -123,6 +123,11 @@ namespace Things.GraphQL.Types {
     [Null]
     public string NullableProp;
 
+    // testing a bug
+    [Scalar("Date")]
+    public DateTime Today = DateTime.Now.Date;
+    public DateTime? TodayNull = DateTime.Now.Date;
+
     public TheFlags Flags;
     public ThingKind Kind;
     [Null] public TheFlags[] FlagsArray;

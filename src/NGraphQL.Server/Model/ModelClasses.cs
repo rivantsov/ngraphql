@@ -173,6 +173,9 @@ namespace NGraphQL.Model {
       OwnerType = ownerType; 
       Name = name;
       TypeRef = typeRef;
+      // bug fix: DateTime? field should have Nullable flag set
+      if (typeRef.Kind != TypeKind.NonNull)
+        this.Flags |= FieldFlags.Nullable;
       Index = ownerType.Fields.Count;
       var typeDef = TypeRef.TypeDef;
       if (typeDef.IsComplexReturnType())
