@@ -1,5 +1,8 @@
 # Code Changes History
 
+## July 8, 2024. Version 2.0.0
+
+
 ## April 12, 2024. Version 1.7.0
 - Switched Json serialization to System.Text.Json package (from good old NewtonSoft). Support for dynamic return types (keyword dynamic) in GraphQLClient is dropped since this new serializer does not support it (fully). 
 - Upgraded dependent package references. Microsoft changed the distribution model for AspNetCore (no longer in packages but in one App bundle), so I could not find a way for the package NGraphQL.Server.AspNetCore to stay at .NET Standard. Now this package/assembly is double-targeted to Net6 and Net8. The rest of the packages are still on .NET Standard 2.0

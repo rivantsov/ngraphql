@@ -66,7 +66,7 @@ namespace NGraphQL.Server.Execution {
       // we might have encountered errors when evaluating args; if so, abort all
       this.AbortIfFailed();
       if (fieldContext.ResolverClassInstance == null)
-        AssignResolverClassInstance(fieldContext, fldResolver);
+        await AssignResolverClassInstance(fieldContext, fldResolver);
       // set current parentEntity arg
       var isStatic = fldDef.Flags.IsSet(FieldFlags.Static);
       if (!isStatic) {
@@ -151,7 +151,7 @@ namespace NGraphQL.Server.Execution {
     }
 
     // gets cached resolver class instance or creates new one
-    private void AssignResolverClassInstance(FieldContext fieldCtx, FieldResolverInfo fieldResolver) {
+    private async Task AssignResolverClassInstance(FieldContext fieldCtx, FieldResolverInfo fieldResolver) {
       var resClassType = fieldResolver.ResolverMethod.ResolverClass.Type;
       object resInstance = null; 
       if (_resolverInstances.Count == 1 && _resolverInstances[0].GetType() == resClassType) // fast track
@@ -162,6 +162,8 @@ namespace NGraphQL.Server.Execution {
         resInstance = Activator.CreateInstance(resClassType);
         if(resInstance is IResolverClass iRes)
           iRes.BeginRequest(_requestContext);
+        if (resInstance is IResolverClassAsync iResAsync)
+          await iResAsync.BeginRequestAsync(_requestContext);
         _resolverInstances.Add(resInstance); 
       }
       fieldCtx.ResolverClassInstance = resInstance;

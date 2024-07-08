@@ -79,8 +79,13 @@ namespace NGraphQL.Server.Execution {
       } finally {
         // notify resolvers about end request
         if (_resolverInstances.Count > 0)
-          foreach (var resObj in _resolverInstances)
-            (resObj as IResolverClass)?.EndRequest(_requestContext);
+          foreach (var resObj in _resolverInstances) {
+            if (resObj is IResolverClass ires)
+              ires.EndRequest(_requestContext);
+            if (resObj is IResolverClassAsync iresAsync)
+              await iresAsync.EndRequestAsync(_requestContext);
+
+          }
       }
     }
 

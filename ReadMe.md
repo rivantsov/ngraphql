@@ -7,9 +7,10 @@ Here is an [overview of the project](https://rivantsov.medium.com/ngraphql-a-new
 * Conforms to [GraphQL Specification, Oct 2021 Edition](https://spec.graphql.org/October2021/).
 * GraphQL model is defined using plain c# (POCO) classes decorated with some attributes. Unlike other .NET GraphQL solutions, *NGraphQL*-based API definitions look and feel like real .NET artifacts - strongly typed, compact and readable.   
 * Server and client components. ASP.NET Core -based HTTP server implementation following the standard "serving over HTTP" rules 
-* Light-weight but capable GraphQL Client - supports both dynamic-type objects for return data, or strongly-typed objects by directly using the GraphQL c# classes from the model. 
+* Subscriptions are fully supported
+* Light-weight but capable GraphQL Client - supports strongly-type objects for the returned data. Easy client-side API for subscriptions 
 * Modular construction - separately coded modules define parts of the overall GraphQL API Schema; modules are registered with the GraphQL host server which implements the GraphQL API. 
-* Parallel execution of Query requests
+* Supports parallel execution of Query requests
 * Sync and Async resolver methods
 * Full Introspection support
 * Schema descriptions are automatically imported from XML comments in c# code
@@ -43,13 +44,8 @@ See also [Star Wars Example](https://github.com/rivantsov/starwars) in a separat
 ## Documentation
 See the [Wiki pages](https://github.com/rivantsov/ngraphql/wiki) for this project. 
 
-##  Limitations
-* *Code-first only, no schema-first scenario*. Implementing a working GraphQL API requires creating a number of detailed c#/.NET artefacts that cannot be directly derived from the Schema document. The complete schema-first scenario is not feasible.
-
-* Subscriptions are not supported directly, only at GraphQL parsing/invocation level. The actual bi-directional channel (websockets) is expected to be implemented in a separate library. A sample and a reference implementation is planned in the future.  
-
 ## System requirements
-Visual Studio 2022+, .NET Standard 2.0, fully compatible with .NET 5, 6 and up.  
+.NET Standard 2.0, fully compatible with .NET 6, 8.  
 
 ## Other GraphQL on .NET solutions
 * [GraphQL DotNet](https://github.com/graphql-dotnet/graphql-dotnet)

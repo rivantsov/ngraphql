@@ -18,6 +18,7 @@ namespace NGraphQL.Server.Execution {
     public object App => Server.App;
     public ClaimsPrincipal User { get; set; }
     public GraphQLApiModel ApiModel => Server.Model;
+    public IServiceProvider HostServices { get; private set; }
 
     public GraphQLRequest RawRequest;
     public ParsedGraphQLRequest ParsedRequest;
@@ -54,14 +55,16 @@ namespace NGraphQL.Server.Execution {
 
 
     public RequestContext(GraphQLServer server, GraphQLRequest rawRequest, CancellationToken cancellationToken = default,
-                          ClaimsPrincipal user = null, RequestQuota quota = null, object httpContext = null) {
+                          ClaimsPrincipal user = null, RequestQuota quota = null, 
+                          IServiceProvider hostServices = null, object httpContext = null) {
       Server = server;
       RawRequest = rawRequest;
       _externalCancellationToken = cancellationToken;
       User = user;
+      HostServices = hostServices;
       HttpContext = httpContext;
-      StartTimestamp = AppTime.GetTimestamp();
       Quota = quota ?? Server.DefaultRequestQuota ?? new RequestQuota();
+      StartTimestamp = AppTime.GetTimestamp();
       // cancellation tokens, initial implementation of limiting request time by quota
       _cancellationTokenSource = new CancellationTokenSource(Quota.MaxRequestTime);
       _cancellationTokenSource.Token.Register(OnCancelled);

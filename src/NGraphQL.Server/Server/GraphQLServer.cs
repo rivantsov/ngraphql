@@ -56,7 +56,7 @@ namespace NGraphQL.Server {
         Grammar = new GraphQLGrammar();
         Grammar.Init();
         // call init on all types
-        foreach (var typeDef in Model.Types)
+        foreach (var typeDef in Model.Types) 
           typeDef.Init(this);
       } catch (Exception ex) {
         Model.Errors.Add(ex.ToText());
@@ -81,10 +81,11 @@ namespace NGraphQL.Server {
     }
 
     public RequestContext CreateRequestContext(GraphQLRequest request, CancellationToken cancellationToken = default,
-                      ClaimsPrincipal user = null, RequestQuota quota = null, object httpContext = null) {
+                      ClaimsPrincipal user = null, RequestQuota quota = null,
+                      IServiceProvider hostServices = null, object httpContext = null) {
       if (Model == null)
         Initialize(); 
-      var context = new RequestContext(this, request, cancellationToken, user, quota, httpContext);
+      var context = new RequestContext(this, request, cancellationToken, user, quota, hostServices, httpContext);
       return context; 
     }
 

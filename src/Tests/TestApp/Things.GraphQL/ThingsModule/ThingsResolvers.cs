@@ -246,6 +246,11 @@ public class ThingsResolvers : IResolverClass {
     throw agrExc; 
   }
 
+  [ResolvesField("aBCGuids", targetType: typeof(Thing))]
+  public Guid[] GetAbcGuids(IFieldContext context, ThingEntity thing) {
+    return null;
+  }
+
   public decimal DecTimesTwo(IFieldContext context, decimal dec) => dec * 2;
 
   public async Task<ThingEntity> SubscribeToThingUpdates(IFieldContext field, int thingId) {

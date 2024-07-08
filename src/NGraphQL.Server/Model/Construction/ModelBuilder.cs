@@ -65,7 +65,7 @@ namespace NGraphQL.Model.Construction {
         return;
 
       // apply model directives to all model objects in the model
-      
+
       ApplyModelDirectives();
       if (_model.HasErrors)
         return;
@@ -74,8 +74,17 @@ namespace NGraphQL.Model.Construction {
       if (_model.HasErrors)
         return;
 
-      var schemaGen = new SchemaDocGenerator();
-      _model.SchemaDoc = schemaGen.GenerateSchema(_model);
+      MarkIntrospectionTypeDefs();
+
+      var schemaDocGen = new SchemaDocGenerator();
+      _model.SchemaDoc = schemaDocGen.GenerateSchema(_model);
+    }
+
+    private void MarkIntrospectionTypeDefs() {
+      foreach(var type in _server.IntrospectionModule.EnumTypes)
+        _model.GetTypeDef(type).IsIntrospectionType = true;
+      foreach (var type in _server.IntrospectionModule.ObjectTypes)
+        _model.GetTypeDef(type).IsIntrospectionType = true;
     }
 
     private void ApplyModelDirectives() {

@@ -6,6 +6,7 @@ using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Primitives;
 using NGraphQL.Json;
 using NGraphQL.Server.Execution;
 using NGraphQL.Utilities;
@@ -38,11 +39,19 @@ namespace NGraphQL.Server.AspNetCore {
     }
 
     public async Task HandleGraphQLHttpRequestAsync(HttpContext httpContext) {
+      var start = AppTime.GetTimestamp();
+      // Add output header with server execution time
+      httpContext.Response.OnStarting(() => {
+        var timeMs = AppTime.GetDuration(start).TotalMilliseconds;
+        var hdrValue = new StringValues($"exec-time={timeMs}ms");
+        httpContext.Response.Headers.Add("X-GraphQL-Server-Statistics", hdrValue);
+        return Task.CompletedTask;
+      });
+
       if (httpContext.Request.Path.Value.EndsWith("/schema")) {
         await HandleSchemaDocRequestAsync(httpContext);
         return;
       }
-      var start = AppTime.GetTimestamp();
       var gqlHttpReq = await BuildGraphQLHttpRequestAsync(httpContext);
       var reqCtx = gqlHttpReq.RequestContext; //internal request context
 
@@ -54,11 +63,10 @@ namespace NGraphQL.Server.AspNetCore {
 
       // success,  serialize response
       try {
-        var httpResp = httpContext.Response;
-        httpResp.ContentType = ContentTypeJson;
         var respJson = SerializeResponse(reqCtx.Response);
-        await httpResp.WriteAsync(respJson, httpContext.RequestAborted);
         reqCtx.Metrics.HttpRequestDuration = AppTime.GetDuration(start);
+        httpContext.Response.ContentType = ContentTypeJson;
+        await httpContext.Response.WriteAsync(respJson, httpContext.RequestAborted);
       } catch (Exception ex) {
         // this ex is at attempt to write response as json; we try to write it as plain text and return something
         await WriteExceptionsAsTextAsync(httpContext, new[] { ex });
@@ -102,7 +110,7 @@ namespace NGraphQL.Server.AspNetCore {
       // create internal request context
       gqlHttpReq.RequestContext =
             Server.CreateRequestContext(gqlHttpReq.Request, httpContext.RequestAborted,
-                    httpContext.User, null, httpContext);
+                    httpContext.User, null, httpContext.RequestServices, httpContext);
       // Try retrieving VITA operation context. 
       if (httpContext.Items.TryGetValue(OperationContextKey, out object opContext))
         gqlHttpReq.RequestContext.VitaOperationContext = opContext; 

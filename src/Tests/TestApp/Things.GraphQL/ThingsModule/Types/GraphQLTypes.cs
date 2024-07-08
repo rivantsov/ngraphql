@@ -30,7 +30,7 @@ namespace Things.GraphQL.Types {
     public DateTime? DateTimeOpt; //it will be marked as Nullable automatically (no ! mark)
     [Null]
     public Thing NextThing;
-    public string IdStr(string prefix) => default;
+    public string IdStr(string prefix) => default; //used in subscription tests
 
     [Null, DeprecatedDir("Deprecate-reason1")]
     public string Tag;
@@ -57,7 +57,12 @@ namespace Things.GraphQL.Types {
 
     [Null] public OtherThingWrapper OtherThingWrapped;
 
+    // testing Map scalar
     [Null] public Dictionary<string, object> Props;
+
+    // testing bug fix
+    [Null]  
+    public Guid[] ABCGuids;
 
   }
 
@@ -123,7 +128,13 @@ namespace Things.GraphQL.Types {
     [Null] public TheFlags[] FlagsArray;
 
     [DefaultValue(999), DeprecatedDir("It's not needed anymore.")]
-    public int? IntPropWithDefault; 
+    public int? IntPropWithDefault;
+
+    // Testing bug fixes
+    //   1. Guid[] prop returning null results in empty Guid array returned to the client
+    //   2. Fields with names starting with multiple CAP letters end up with incorrect first-cap names
+    [Null]
+    public Guid[] ABCGuids;
 
     // ToString is used in one of the resolvers
     public override string ToString() => $"id:{Id},name:{Name},num:{Num},flags:({Flags}),kind:{Kind}";

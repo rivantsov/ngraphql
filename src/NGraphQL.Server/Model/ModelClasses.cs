@@ -18,6 +18,7 @@ namespace NGraphQL.Model {
     public TypeKind Kind;
     public Type ClrType;
     public bool Hidden;
+    public bool IsIntrospectionType;
     public bool IsDefaultForClrType = true; // false for ID type, to skip registration
     public virtual IList<ObjectTypeDef> PossibleOutTypes => null;
 
@@ -55,7 +56,8 @@ namespace NGraphQL.Model {
       return value.ToString();
     }
 
-    public virtual void Init(GraphQLServer server) { }
+    public virtual void Init(GraphQLServer server) { 
+    }
     public override string ToString() => $"{Name}/{Kind}";
   }
 
@@ -107,6 +109,7 @@ namespace NGraphQL.Model {
     }
     
     public override IList<ObjectTypeDef> PossibleOutTypes => _possibleOutTypes;
+
   }
 
   public class InterfaceTypeDef : ComplexTypeDef {

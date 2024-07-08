@@ -30,6 +30,7 @@ namespace Things.GraphQL.HttpServer {
 
       var app = builder.Build();
       app.UseRouting();
+      // maps GraphQL endpoint to '/graphql', subscriptions to '/graphql/subscriptions'
       app.MapGraphQLEndpoint(graphQLServer.Settings);
 
       var task = Task.Run(() => app.Run());

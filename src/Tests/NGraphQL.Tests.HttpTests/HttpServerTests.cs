@@ -29,9 +29,9 @@ namespace NGraphQL.Tests.HttpTests {
       Assert.AreEqual(3, allKinds.Length, "Expected 3 values");
 
       TestEnv.LogTestDescr("Trying basic query, get all things, with names");
-      result = await TestEnv.Client.PostAsync("query { things {name kind theFlags} }");
+      result = await TestEnv.Client.PostAsync("query { things {name kind theFlags aBCGuids} }");
       result.EnsureNoErrors();
-      var things = result.GetTopField<ThingEntity[]>("things");
+      var things = result.GetTopField<Thing[]>("things"); 
       var thing0Name = things[0].Name;
       Assert.IsNotNull(result);
 

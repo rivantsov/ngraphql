@@ -14,10 +14,13 @@ namespace NGraphQL.CodeFirst {
     /// <summary>Values for use by app code - resolvers etc. </summary>
     IDictionary<string, object> CustomData { get; }
 
+    /// <summary>Services from the host - AspNetCore DI service container. </summary>
+    IServiceProvider HostServices { get; }
+
     /// <summary>Protocol context; for HTTP server - HttpContext instance (ASP.NET Core). </summary>
     object HttpContext { get; }
 
-    /// <summary>Reserved for VITA ORM operation context, assigned by VitaWebMiddleware. </summary>
+    /// <summary>Reserved for VITA ORM operation context. </summary>
     object VitaOperationContext { get; }
   }
 
