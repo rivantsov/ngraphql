@@ -27,6 +27,21 @@ namespace Things {
             SomeDate = date0, DateQ = date0, TheKind = ThingKind.KindThree,  Tag = "tag3",
             Flags = TheFlags.FlagOne | TheFlags.FlagTwo, IntfThing = new ThingWithInterfaceEntity()
           },
+          // used in subscriptions
+          new ThingEntity() { Name = "Name4", Id = 4, Descr = "Descr4",
+            SomeDate = date0, DateQ = date0, TheKind = ThingKind.KindOne,  Tag = "tag4",
+            Flags = TheFlags.FlagOne, IntfThing = new ThingWithInterfaceEntity()
+          },
+          new ThingEntity() { Name = "Name5", Id = 5, Descr = "Descr5",
+            SomeDate = date0, DateQ = null, TheKind = ThingKind.KindTwo,  Tag = "tag5",
+            Flags = TheFlags.FlagOne | TheFlags.FlagTwo, IntfThing = new ThingWithInterfaceEntity()
+          },
+          new ThingEntity() { Name = "Name6", Id = 6, Descr = "Descr6",
+            SomeDate = date0, DateQ = date0, TheKind = ThingKind.KindThree,  Tag = "tag6",
+            Flags = TheFlags.FlagOne | TheFlags.FlagThree, IntfThing = new ThingWithInterfaceEntity()
+          },
+
+
       };
       app.Things[0].NextThing = app.Things[1];
       app.Things[1].NextThing = app.Things[2];

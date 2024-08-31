@@ -42,7 +42,7 @@ query {
       var things = resp.Data["things"];
       Assert.IsNotNull(things, "Expected result");
       var thingsList = (IList)things;
-      Assert.AreEqual(3, thingsList.Count);
+      Assert.AreEqual(6, thingsList.Count);
       // check that resp contains certain string deep in object tree
       var otherThing1Name = resp.GetValue<string>("things.#1.mainOtherThing.name");
       Assert.AreEqual("Other-2-a", otherThing1Name, "Missing specific string in the output.");
@@ -174,7 +174,7 @@ query {
 }";
       resp = await ExecuteAsync(query);
       var resList = resp.GetValue<IList>("thingsX");
-      Assert.AreEqual(3, resList.Count, "Expected 3 objects");
+      Assert.AreEqual(6, resList.Count, "Expected 6 objects");
     }
 
 
@@ -258,7 +258,7 @@ query myQuery {
       TestEnv.LogTestDescr("Run 1: warm-up, query not in cache, resolver method might need JITed, so the call might be relatively slow, 10 ms or more");
       resp = await ExecuteAsync(query);
       var th1 = resp.GetValue<IList>("th1");
-      Assert.AreEqual(3, th1.Count, "Invalid thing count");
+      Assert.AreEqual(6, th1.Count, "Invalid thing count");
 
       TestEnv.LogTestDescr("Run 2, same query with disabled query cache, so query should be parsed again, but now with path warmed up - should be 1 ms or less.");
       var reqCache = TestEnv.ThingsServer.RequestCache;
@@ -269,12 +269,12 @@ query myQuery {
         reqCache.Enabled = true;
       }
       th1 = resp.GetValue<IList>("th1");
-      Assert.AreEqual(3, th1.Count, "Invalid thing count");
+      Assert.AreEqual(6, th1.Count, "Invalid thing count");
 
       TestEnv.LogTestDescr("Run 3: all warmed up, parsed query is retrieved from cache, not parsed. Should be really fast.");
       resp = await ExecuteAsync(query);
       th1 = resp.GetValue<IList>("th1");
-      Assert.AreEqual(3, th1.Count, "Invalid thing count");
+      Assert.AreEqual(6, th1.Count, "Invalid thing count");
     }
 
 

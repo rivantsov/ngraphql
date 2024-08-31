@@ -9,7 +9,7 @@ namespace NGraphQL.Json {
 
   // based on code from here: 
   //    https://stackoverflow.com/questions/65972825/c-sharp-deserializing-nested-json-to-nested-dictionarystring-object
-  // this converter is used mostly for reading insided Maps/Dictionaries, when value under a key is an object
+  // this converter is used mostly for reading inside Maps/Dictionaries, when value under a key is an object
 
   public class DefaultObjectConverter : JsonConverter<object> {
 

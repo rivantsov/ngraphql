@@ -1,4 +1,7 @@
 # Code Changes History
+## Aug 31, 2024. Version 2.1.0
+Minor release, upgraded references (Irony, System.Text.Json), fixed unit tests.
+
 
 ## July 8, 2024. Version 2.0.0
 - Subscriptions, full implementation based on SignalR - see SubscriptionTests.cs in HttpTests project.

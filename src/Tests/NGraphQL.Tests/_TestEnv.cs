@@ -4,10 +4,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 
 using NGraphQL.CodeFirst;
+using NGraphQL.Json;
 using NGraphQL.Server;
 using NGraphQL.Server.Execution;
 using NGraphQL.Utilities;
@@ -22,7 +21,6 @@ namespace NGraphQL.Tests {
     public static ThingsGraphQLServer ThingsServer;
     public static bool LogEnabled = true;
     public static string LogFilePath = "_graphQLtests.log";
-    private static JsonSerializerSettings _serializerSettings;
 
     public static RequestContext LastRequestContext;
 
@@ -49,11 +47,6 @@ namespace NGraphQL.Tests {
       // Write schema doc to file
       var schemaDoc = ThingsServer.Model.SchemaDoc;
       File.WriteAllText("_thingsApiSchema.txt", schemaDoc);
-
-      _serializerSettings = new JsonSerializerSettings() {
-        Formatting = Formatting.Indented, 
-        ContractResolver = new DefaultContractResolver() { NamingStrategy = new CamelCaseNamingStrategy() }
-      };
     }
 
 
@@ -79,7 +72,7 @@ Testing: {descr}
       if(!LogEnabled)
         return;
       var mx = context.Metrics;
-      var jsonRequest = JsonConvert.SerializeObject(context.RawRequest, _serializerSettings);
+      var jsonRequest = SerializationHelper.Serialize(context.RawRequest);
       // for better readability, unescape \r\n
       jsonRequest = jsonRequest.Replace("\\r\\n", Environment.NewLine);
       var jsonResponse = SerializeResponse(context.Response);
@@ -139,9 +132,9 @@ Failed request:
     private static string SerializeResponse(GraphQLResponse response) {
       try {
         if (response.Errors.Count > 0)
-          return JsonConvert.SerializeObject(response, _serializerSettings);
+          return SerializationHelper.Serialize(response);
         else
-          return JsonConvert.SerializeObject(new { response.Data }, _serializerSettings);
+          return SerializationHelper.Serialize(new { response.Data });
       } catch (Exception ex) {
         var errText = "FATAL: " + ex.ToString();
         LogText(errText);

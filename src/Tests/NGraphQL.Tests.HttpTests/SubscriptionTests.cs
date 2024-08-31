@@ -48,35 +48,35 @@ subscription($thingId: Int) {
 }";
 
     // 1. Subscribe to updates of Thing #1 and #2
-    var sub1 = await client.Subscribe<ThingUpdate>(subscribeRequest, new TVars() { { "thingId", 1 } }, (clientSub, msg) => {
+    var sub4 = await client.Subscribe<ThingUpdate>(subscribeRequest, new TVars() { { "thingId", 4 } }, (clientSub, msg) => {
       updates.Add(msg);
     });
-    var sub2 = await client.Subscribe<ThingUpdate>(subscribeRequest, new TVars() { { "thingId", 2 } }, (clientSub, msg) => {
+    var sub5 = await client.Subscribe<ThingUpdate>(subscribeRequest, new TVars() { { "thingId", 5 } }, (clientSub, msg) => {
       updates.Add(msg);
     });
     WaitYield();
 
     // 2.Make Thing update through mutation
-    await MutateThing(1, "newName_1A");
-    await MutateThing(1, "newName_1B");
-    await MutateThing(2, "newName_2A");
-    await MutateThing(3, "newName_3A"); //this will not come, we are not subscribed to #3
+    await MutateThing(4, "newName_4A");
+    await MutateThing(4, "newName_4B");
+    await MutateThing(5, "newName_5A");
+    await MutateThing(6, "newName_6A"); //this will not come, we are not subscribed to #3
     WaitYield();
 
     // 3. Check notifications pushed by the server
     Assert.AreEqual(3, updates.Count, "Expected 3 total notifications");
-    var updates1 = updates.Where(u => u.Id == 1).ToList();
-    var updates2 = updates.Where(u => u.Id == 2).ToList();
-    Assert.AreEqual(2, updates1.Count, "Expected 2 updates for Thing 1");
-    Assert.AreEqual(1, updates2.Count, "Expected 1 update for Thing 2");
+    var updates4 = updates.Where(u => u.Id == 4).ToList();
+    var updates5 = updates.Where(u => u.Id == 5).ToList();
+    Assert.AreEqual(2, updates4.Count, "Expected 2 updates for Thing 4");
+    Assert.AreEqual(1, updates5.Count, "Expected 1 update for Thing 5");
 
-    // 4. Unsubsribe sub1, we should no longer see updates for Thing/1 
+    // 4. Unsubsribe sub4, we should no longer see updates for Thing/4 
     updates.Clear();
-    await client.Unsubscribe(sub1);
+    await client.Unsubscribe(sub4);
     WaitYield();
-    await MutateThing(1, "newName_1F");
+    await MutateThing(4, "newName_1F");
     WaitYield();
-    Assert.AreEqual(0, updates.Count, "No updates expected after unsubscribe for Thing 1");
+    Assert.AreEqual(0, updates.Count, "No updates expected after unsubscribe for Thing 4");
 
     // Ping server, client should receive pong message 
     messages.Clear();
